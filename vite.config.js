@@ -1,13 +1,16 @@
-import { defineConfig } from 'vite';
-import laravel from 'laravel-vite-plugin';
-import react from '@vitejs/plugin-react';
+// vite.config.js
+import { defineConfig } from 'vite'
+import laravel from 'laravel-vite-plugin'
+import react from '@vitejs/plugin-react-oxc' // ganti ini
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-    plugins: [
-        laravel({
-            input: 'resources/js/app.tsx',
-            refresh: true,
-        }),
-        react(),
-    ],
-});
+  plugins: [
+    laravel({
+      input: ['resources/css/app.css', 'resources/js/app.jsx'],
+      refresh: true,
+    }),
+    react(),
+    tailwindcss(),
+  ],
+})
