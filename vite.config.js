@@ -1,7 +1,7 @@
 // vite.config.js
 import { defineConfig } from 'vite'
 import laravel from 'laravel-vite-plugin'
-import react from '@vitejs/plugin-react-oxc' // ganti ini
+import react from '@vitejs/plugin-react' // ganti ini
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
