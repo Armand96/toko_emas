@@ -2,17 +2,36 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ApiResponse;
+use App\Http\Requests\MBranchRequest;
 use App\Models\MBranch;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
 
 class MBranchController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $query = MBranch::latest();
+
+        if ($request->has('branch_name') && $request->branch_name != "") {
+            $query->where('branch_name', 'like', '%' . $request->branch_name . '%');
+        }
+        if ($request->has('branch_code') && $request->branch_code != "") {
+            $query->where('branch_code', 'like', '%' . $request->branch_code . '%');
+        }
+        if ($request->has('address') && $request->address != "") {
+            $query->where('address', 'like', '%' . $request->address . '%');
+        }
+
+        $perPage = $request->input('per_page', 10); // Default to 10 items per page
+        $branches = $query->paginate($perPage);
+
+        return response()->json($branches);
     }
 
     /**
@@ -20,46 +39,144 @@ class MBranchController extends Controller
      */
     public function create()
     {
-        //
+        return ApiResponse::error('route not found', null, 404);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(MBranchRequest $request)
     {
-        //
+        $validated = $request->validated();
+
+        try {
+            if ($request->hasFile('image')) {
+
+                // Upload new image
+                $image = $request->file('image');
+
+                $imageName = $image->hashName();
+
+                $image->storeAs(
+                    'images',
+                    $imageName,
+                    'public'
+                );
+
+                $validated['image_cover'] = 'images/' . $imageName;
+
+                $validated['thumb_path'] = 'images/thumbs/' . $imageName;
+
+                // Generate thumbnail
+                $thumb = Image::decode($image)
+                    ->scale(height: 200);
+
+                Storage::disk('public')->put(
+                    $validated['thumb_path'],
+                    $thumb->encodeUsingFileExtension(
+                        $image->getClientOriginalExtension(),
+                        quality: 70
+                    )
+                );
+            }
+
+            $branch = MBranch::create($validated);
+
+            return ApiResponse::success($branch, "Success create branch", 201);
+        } catch (\Throwable $th) {
+            ApiResponse::error("server error", $th, 500);
+        }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(MBranch $mBranch)
+    public function show(MBranch $branch)
     {
-        //
+        return ApiResponse::success($branch, "Success");
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(MBranch $mBranch)
+    public function edit(MBranch $branch)
     {
-        //
+        return ApiResponse::error('route not found', null, 404);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, MBranch $mBranch)
+    public function update(Request $request, MBranch $branch)
     {
-        //
+        $validated = $request->validated();
+
+        try {
+            if ($request->hasFile('image')) {
+
+                // Delete old files
+                if (Storage::disk('public')->exists($branch->image_cover)) {
+                    Storage::disk('public')->delete($branch->image_cover);
+                }
+
+                if (Storage::disk('public')->exists($branch->thumb_path)) {
+                    Storage::disk('public')->delete($branch->thumb_path);
+                }
+
+                // Upload new image
+                $image = $request->file('image');
+
+                $imageName = $image->hashName();
+
+                $image->storeAs(
+                    'images',
+                    $imageName,
+                    'public'
+                );
+
+                $validated['image_cover'] = 'images/' . $imageName;
+
+                $validated['thumb_path'] = 'images/thumbs/' . $imageName;
+
+                // Generate thumbnail
+                $thumb = Image::decode($image)
+                    ->scale(height: 200);
+
+                Storage::disk('public')->put(
+                    $validated['thumb_path'],
+                    $thumb->encodeUsingFileExtension(
+                        $image->getClientOriginalExtension(),
+                        quality: 70
+                    )
+                );
+            }
+
+            $branch->update($validated);
+
+            return ApiResponse::success($branch, "Success create branch", 201);
+        } catch (\Throwable $th) {
+            ApiResponse::error("server error", $th, 500);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(MBranch $mBranch)
+    public function destroy(MBranch $branch)
     {
-        //
+        try {
+            $branch->delete();
+
+            if (Storage::disk('public')->exists($branch->image_cover)) {
+                Storage::disk('public')->delete($branch->image_cover);
+            }
+            if (Storage::disk('public')->exists($branch->thumb_path)) {
+                Storage::disk('public')->delete($branch->thumb_path);
+            }
+
+            return ApiResponse::success($branch, "Branch deleted", 200);
+        } catch (\Throwable $th) {
+            ApiResponse::error("server error", $th, 500);
+        }
     }
 }

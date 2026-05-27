@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class MCategory extends Model
+class StoreSetting extends Model
 {
     protected $fillable = [
-        'category_name',
-        'description',
-        'parent_id',
+        'shop_name',
+        'website',
+        'email',
         'image_path',
         'thumb_path'
     ];

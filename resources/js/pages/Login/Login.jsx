@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { UserIcon, EyeIcon, EyeSlashIcon, LockKeyIcon } from '@phosphor-icons/react';
+import { UserIcon, LockKeyIcon } from '@phosphor-icons/react';
 import InputGroup from '../../components/FormElement/InputGroup';
 import { showAlert } from '../../utils/showAlert';
+import Logo from '../../assets/images/logo_login.png';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -10,8 +11,8 @@ const Login = () => {
     username: '',
     password: ''
   });
+
   const [errors, setErrors] = useState({});
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -32,13 +33,9 @@ const Login = () => {
       newErrors.password = 'Password wajib diisi';
     }
 
+    setErrors(newErrors);
+
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      showAlert({
-        title: 'Validasi Gagal',
-        message: 'Mohon periksa kembali username dan password Anda.',
-        icon: 'danger'
-      });
       return;
     }
 
@@ -46,21 +43,19 @@ const Login = () => {
 
     setTimeout(async () => {
       setIsLoading(false);
-     navigate('/table');
+      navigate('/table');
     }, 1500);
   };
 
   const formFields = [
     {
       type: 'text',
-      label: 'Username / Email',
+      label: 'Username',
       name: 'username',
       value: formData.username,
-      placeholder: 'Masukkan username atau email',
+      placeholder: 'Masukkan username',
       isRequired: true,
-      error: errors.username,
       onChange: handleChange,
-      icon: <UserIcon size={18} />
     },
     {
       type: 'password',
@@ -69,78 +64,41 @@ const Login = () => {
       value: formData.password,
       placeholder: '••••••••',
       isRequired: true,
-      error: errors.password,
       onChange: handleChange,
-      icon: <LockKeyIcon size={18} />,
-      showPassword: showPassword,
-      onTogglePassword: () => setShowPassword(!showPassword),
-      toggleIcon: showPassword ? <EyeSlashIcon size={18} /> : <EyeIcon size={18} />
     }
   ];
 
+
   return (
-    <div className="min-h-screen w-full flex bg-[#F8FAFC]">
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#1E293B] to-[#0F172A] p-12 flex-col justify-between relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#f3810d_1px,transparent_1px)] [background-size:16px_16px]"></div>
-
-        <div className="flex items-center gap-3 relative z-10">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-[#f3810d] to-[#d75e08] flex items-center justify-center shadow-lg shadow-orange-500/20">
-            <span className="text-white font-bold text-xl">G</span>
-          </div>
-          <span className="text-white font-bold text-xl tracking-wider">GOLD SYSTEM</span>
+    <div className="w-full min-h-screen bg-gray-50 flex justify-center items-center p-4">
+      <div className="w-full max-w-[440px] bg-neutral-white rounded-2xl border border-gray-100 p-8 shadow-sm">
+        <div className="flex flex-col items-center mb-8">
+          <img src={Logo} alt="Logo" className="size-[100px] mb-4" />
+          <h1 className="text-xl font-semibold text-gray-950 mb-1">Selamat Datang Kembali</h1>
+          <p className="text-sm text-gray-500 text-center">Silakan masuk ke sistem untuk mengelola inventori, transaksi, dan operasional toko Anda.</p>
         </div>
 
-        <div className="relative z-10 max-w-md">
-          <h1 className="text-4xl font-bold text-white leading-tight mb-4">
-            Kelola Aset Dan Transaksi Emas Lebih Efisien.
-          </h1>
-          <p className="text-slate-400 text-lg">
-            Sistem pergudangan dan kasir terintegrasi khusus untuk ekosistem toko perhiasan modern.
-          </p>
-        </div>
+        <div className="space-y-4">
+          <InputGroup fields={formFields} onChange={handleChange} formData={formData} formError={errors} />
 
-        <div className="relative z-10 text-slate-500 text-sm">
-          &copy; 2026 Proyek Toko Emas. All rights reserved.
-        </div>
-      </div>
-
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-white">
-        <div className="w-full max-w-md space-y-8">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold text-[#121212] tracking-tight">
-              Selamat Datang
-            </h2>
-            <p className="text-sm text-slate-500">
-              Silakan masukkan akun Anda untuk mengakses sistem dashboard
-            </p>
-          </div>
-
-          <div
-            className="space-y-6"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                handleSubmit();
-              }
-            }}
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="w-full btn btn-primary font-medium py-2.5 px-4 rounded-lg text-sm shadow-md shadow-primary-500/10 focus:ring-2 focus:ring-primary-500/50 focus:ring-offset-2 transition-all duration-150 flex justify-center items-center gap-2 mt-2"
           >
-            <div className="space-y-4">
-              <InputGroup fields={formFields} formData={formData} formError={errors} onChange={handleChange} isDisable={isLoading} />
-            </div>
-
-
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isLoading}
-              className="w-full btn-primary  text-white font-medium py-2.5 px-4 rounded-lg text-sm shadow-md shadow-orange-500/10 focus:outline-none focus:ring-2 focus:ring-[#f3810d]/50 focus:ring-offset-2 transition-all duration-150 flex justify-center items-center gap-2 cursor-pointer disabled:from-slate-300 disabled:to-slate-400 disabled:text-slate-200 disabled:cursor-no-drop disabled:shadow-none"
-            >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                'Masuk ke Akun'
-              )}
-            </button>
-          </div>
+            {isLoading ? (
+              <>
+                <svg className="animate-spin h-4 w-4 text-neutral-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                <span>Memproses...</span>
+              </>
+            ) : (
+              <span>Masuk Ke Akun</span>
+            )}
+          </button>
         </div>
       </div>
     </div>

@@ -58,13 +58,13 @@ export default function AlertModal({ title, isAutoClose, message, icon, confirmT
         {(confirmText || cancelText) && (
           <div className="flex justify-center mt-6 space-x-2">
             {cancelText && (
-              <button className="px-4 py-2 btn-outline rounded-[50px] w-3/6" onClick={() => handleClose(false)}>
+              <button className="px-4 py-2 btn-outline rounded-lg  w-3/6" onClick={() => handleClose(false)}>
                 {cancelText}
               </button>
             )}
             {confirmText && (
               <button
-                className={`px-4 py-2 btn-primary rounded-[50px] text-nowrap text-white ${cancelText ? 'w-3/6' : 'w-full'}  hover:bg-red-600 transition-colors`}
+                className={`px-4 py-2 btn-primary rounded-lg text-nowrap text-white ${cancelText ? 'w-3/6' : 'w-full'}  hover:bg-red-600 transition-colors`}
                 disabled={isDisable || (textarea && !value)}
                 onClick={() => {
                   handleClose(true);

@@ -1,5 +1,28 @@
 import { Info, InfoIcon, WarningCircle, WarningCircleIcon } from "@phosphor-icons/react";
 
+
+const spanClasses = {
+    1: 'md:col-span-1',
+    2: 'md:col-span-2',
+    3: 'md:col-span-3',
+    4: 'md:col-span-4',
+    5: 'md:col-span-5',
+    6: 'md:col-span-6',
+    7: 'md:col-span-7',
+    8: 'md:col-span-8',
+};
+
+const DesktopSpanClasses = {
+    1: 'lg:col-span-1',
+    2: 'lg:col-span-2',
+    3: 'lg:col-span-3',
+    4: 'lg:col-span-4',
+    5: 'lg:col-span-5',
+    6: 'lg:col-span-6',
+    7: 'lg:col-span-7',
+    8: 'lg:col-span-8',
+};
+
 const Input = ({
     label,
     type = "text",
@@ -9,10 +32,12 @@ const Input = ({
     isDisable,
     isRequired,
     error,
+    colSpan = '1',
+    deskSpan = colSpan,
     onChange,
 }) => {
     return (
-        <div className="flex flex-col gap-1 w-full">
+        <div className={`flex flex-col gap-1 w-full ${spanClasses[colSpan] ? `${spanClasses[colSpan]}` : ''} ${DesktopSpanClasses[deskSpan] ? DesktopSpanClasses[deskSpan] : ''}`}>
             {label && (
                 <label className="flex items-center gap-1 text-sm font-medium text-gray-900">
                     {label}
@@ -36,12 +61,12 @@ const Input = ({
                         }
           `}
                 />
-                {error && (
+                {/* {error && (
                     <WarningCircleIcon
                         size={18}
                         className="absolute right-3 text-danger-500"
                     />
-                )}
+                )} */}
             </div>
             {error && <span className="text-xs text-danger-500 mt-1">{error}</span>}
         </div>

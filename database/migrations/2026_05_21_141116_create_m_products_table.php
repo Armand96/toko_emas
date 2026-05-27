@@ -18,6 +18,7 @@ return new class extends Migration
             $table->bigInteger('category_id', false, true);
             $table->string('image_path');
             $table->string('thumb_path');
+            $table->string('barcode');
             $table->boolean('is_active')->default(true);
             $table->string('deskripsi')->nullable();
             $table->timestamps();

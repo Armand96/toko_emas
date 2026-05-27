@@ -114,6 +114,9 @@
   --color-danger-800: #9f0712;
   --color-danger-900: #82181a;
   --color-danger-950: #460809;
+
+    --color-border-default: #e2e8f0;
+
 }
 
 
@@ -138,7 +141,7 @@
 }
 
 .btn-outline {
-  @apply bg-transparent text-primary-500 border border-primary-500 cursor-pointer focus:ring-primary-500;
+  @apply bg-transparent text-primary-500 border border-gray-200 cursor-pointer focus:ring-gray-200;
 }
 
 .btn-outline:hover {
@@ -183,4 +186,84 @@
 
 .btn-danger-outline:disabled {
   @apply bg-transparent text-gray-400 border-gray-400 hover:bg-transparent cursor-not-allowed;
+}
+
+.overlay {
+  background-color: rgba(0, 0, 0, 0.4);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 300ms ease-in-out;
+}
+
+.overlay.ReactModal__Overlay--after-open {
+  opacity: 1;
+}
+
+.overlay.ReactModal__Overlay--before-close {
+  opacity: 0;
+}
+
+.modal {
+  background: #fff;
+  /* max-width: 850px; */
+  width: 90%;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.modal:focus {
+  outline: none;
+}
+
+.modal-xl {
+  max-width: 90%;
+}
+
+.modal-lg {
+  max-width: 80%;
+}
+
+.modal-md {
+  max-width: 60%;
+}
+
+.modal-sm {
+  max-width: 40%;
+}
+
+.modal-xs {
+  max-width: 18%;
+}
+
+.ReactModal__Body--open {
+  overflow: hidden;
+}
+
+@media (max-width: 680px) {
+  .modal-lg,
+  .modal-md,
+  .modal-sm,
+  .modal-xl,
+  .modal {
+    max-width: 90% !important;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modal-body {
+  overflow-y: auto;
+  line-height: 1.5;
 }
