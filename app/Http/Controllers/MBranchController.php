@@ -50,36 +50,6 @@ class MBranchController extends Controller
         $validated = $request->validated();
 
         try {
-            if ($request->hasFile('image')) {
-
-                // Upload new image
-                $image = $request->file('image');
-
-                $imageName = $image->hashName();
-
-                $image->storeAs(
-                    'images',
-                    $imageName,
-                    'public'
-                );
-
-                $validated['image_cover'] = 'images/' . $imageName;
-
-                $validated['thumb_path'] = 'images/thumbs/' . $imageName;
-
-                // Generate thumbnail
-                $thumb = Image::decode($image)
-                    ->scale(height: 200);
-
-                Storage::disk('public')->put(
-                    $validated['thumb_path'],
-                    $thumb->encodeUsingFileExtension(
-                        $image->getClientOriginalExtension(),
-                        quality: 70
-                    )
-                );
-            }
-
             $branch = MBranch::create($validated);
 
             return ApiResponse::success($branch, "Success create branch", 201);
@@ -112,45 +82,6 @@ class MBranchController extends Controller
         $validated = $request->validated();
 
         try {
-            if ($request->hasFile('image')) {
-
-                // Delete old files
-                if (Storage::disk('public')->exists($branch->image_cover)) {
-                    Storage::disk('public')->delete($branch->image_cover);
-                }
-
-                if (Storage::disk('public')->exists($branch->thumb_path)) {
-                    Storage::disk('public')->delete($branch->thumb_path);
-                }
-
-                // Upload new image
-                $image = $request->file('image');
-
-                $imageName = $image->hashName();
-
-                $image->storeAs(
-                    'images',
-                    $imageName,
-                    'public'
-                );
-
-                $validated['image_cover'] = 'images/' . $imageName;
-
-                $validated['thumb_path'] = 'images/thumbs/' . $imageName;
-
-                // Generate thumbnail
-                $thumb = Image::decode($image)
-                    ->scale(height: 200);
-
-                Storage::disk('public')->put(
-                    $validated['thumb_path'],
-                    $thumb->encodeUsingFileExtension(
-                        $image->getClientOriginalExtension(),
-                        quality: 70
-                    )
-                );
-            }
-
             $branch->update($validated);
 
             return ApiResponse::success($branch, "Success create branch", 201);
@@ -166,14 +97,6 @@ class MBranchController extends Controller
     {
         try {
             $branch->delete();
-
-            if (Storage::disk('public')->exists($branch->image_cover)) {
-                Storage::disk('public')->delete($branch->image_cover);
-            }
-            if (Storage::disk('public')->exists($branch->thumb_path)) {
-                Storage::disk('public')->delete($branch->thumb_path);
-            }
-
             return ApiResponse::success($branch, "Branch deleted", 200);
         } catch (\Throwable $th) {
             ApiResponse::error("server error", $th, 500);

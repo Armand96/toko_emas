@@ -17,8 +17,6 @@ return new class extends Migration
             $table->string('branch_code', 10);
             $table->string('address');
             $table->bigInteger('pic', false, true);
-            $table->string('image_path')->nullable();
-            $table->string('thumb_path')->nullable();
             $table->date('branch_open_date');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
