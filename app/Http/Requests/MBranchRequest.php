@@ -24,23 +24,6 @@ class MBranchRequest extends FormRequest
      */
     public function rules(): array
     {
-        $imageRules = [
-            'image',
-            'mimes:jpeg,png,jpg,gif',
-            'max:2048',
-            'nullable'
-        ];
-
-        // Create
-        if ($this->isMethod('post')) {
-            array_unshift($imageRules, 'required');
-        }
-
-        // Update
-        if ($this->isMethod('put') || $this->isMethod('patch')) {
-            array_unshift($imageRules, 'nullable');
-        }
-
         return [
             'branch_name' => 'required|string',
             'branch_code' => 'required|string',
@@ -49,8 +32,7 @@ class MBranchRequest extends FormRequest
             'image_path' => 'nullable|string',
             'thumb_path' => 'nullable|string',
             'branch_open_date' => 'required|date',
-            'is_active' => 'required|string',
-            'image' => $imageRules,
+            'is_active' => 'required|string'
         ];
     }
 

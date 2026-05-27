@@ -11,8 +11,6 @@ class MBranch extends Model
         'branch_code',
         'address',
         'pic',
-        'image_path',
-        'thumb_path',
         'branch_open_date',
         'is_active'
     ];
