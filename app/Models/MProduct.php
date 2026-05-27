@@ -13,7 +13,8 @@ class MProduct extends Model
         'deskripsi',
         'is_active',
         'image_path',
-        'thumb_path'
+        'thumb_path',
+        'barcode'
     ];
 
     protected $hidden = [
