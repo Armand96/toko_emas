@@ -5,6 +5,7 @@ import Radio from "./SingleElement/Radio";
 import Checklist from "./SingleElement/Checklist";
 import Switch from "./SingleElement/Switch";
 import InputPassword from "./SingleElement/Password";
+import PhotoInput from "./SingleElement/PhotoInput";
 
 const gridColsMap = {
     1: "lg:grid-cols-1",
@@ -47,6 +48,7 @@ const InputGroup = ({
             onChange: onChange,
             colSpan: field.colSpan,
             deskSpan: field.deskSpan,
+            helperText: field.helperText,
         };
 
         switch (field.type) {
@@ -57,6 +59,8 @@ const InputGroup = ({
                 return <Input key={index}  {...commonProps} type={field.type} />;
             case "password":
                 return <InputPassword key={index} {...commonProps} type={field.type} />;
+            case "photoInput":
+                return <PhotoInput key={index} {...commonProps} accept={field.accept} />;
             case "textarea":
                 return <TextArea key={index} {...commonProps} rows={field.rows} />;
             case "dropdown":
@@ -84,6 +88,8 @@ const InputGroup = ({
             case "switch":
             case "toggle":
                 return <Switch key={index} {...commonProps} />;
+            case "":
+                return <div></div>
             default:
                 return null;
         }

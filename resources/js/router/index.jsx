@@ -4,7 +4,8 @@ import { Inventory } from "./inventory";
 
 import { Ui } from "./ui";
 import Layout from "../components/layout/Layout";
-import BranchPage from "../pages/Branch/Branch";
+import Branch from "../pages/administrator/Branch/Page";
+import SettingStore from "../pages/administrator/Store/Page";
 
 
 const router = createBrowserRouter([
@@ -16,8 +17,12 @@ const router = createBrowserRouter([
         element: <Layout />,
         children: [
             {
-                path: "/branch",
-                element: <BranchPage />
+                path: "/administrator/cabang",
+                element: <Branch />
+            },
+              {
+                path: "/administrator/setting",
+                element: <SettingStore />
             },
             ...Inventory,
             ...Ui

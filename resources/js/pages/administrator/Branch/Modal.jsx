@@ -1,5 +1,5 @@
-import ModalCustom from "../../components/modalCustom";
-import InputGroup from "../../components/FormElement/InputGroup";
+import ModalCustom from "../../../components/modalCustom";
+import InputGroup from "../../../components/FormElement/InputGroup";
 
 export default function Modal({
     isOpen,

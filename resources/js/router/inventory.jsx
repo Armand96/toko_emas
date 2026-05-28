@@ -1,5 +1,5 @@
 import Layout from "../components/layout/Layout";
-import MasterProduk from "../pages/Inventory/MasterProduk/MasterProduk";
+import MasterProduk from "../pages/Inventory/MasterProduk/Page";
 
 
 export const Inventory = [
