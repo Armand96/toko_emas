@@ -77,7 +77,7 @@ class MBranchController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, MBranch $branch)
+    public function update(MBranchRequest $request, MBranch $branch)
     {
         $validated = $request->validated();
 
