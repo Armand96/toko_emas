@@ -84,7 +84,7 @@ class MBranchController extends Controller
         try {
             $branch->update($validated);
 
-            return ApiResponse::success($branch, "Success create branch", 201);
+            return ApiResponse::success($branch, "Success update branch", 201);
         } catch (\Throwable $th) {
             ApiResponse::error("server error", $th, 500);
         }
