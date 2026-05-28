@@ -14,7 +14,7 @@ class MBranchRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -32,7 +32,7 @@ class MBranchRequest extends FormRequest
             'image_path' => 'nullable|string',
             'thumb_path' => 'nullable|string',
             'branch_open_date' => 'required|date',
-            'is_active' => 'required|string'
+            'is_active' => 'required|boolean'
         ];
     }
 
