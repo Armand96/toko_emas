@@ -6,8 +6,6 @@ use App\Helpers\ApiResponse;
 use App\Http\Requests\MBranchRequest;
 use App\Models\MBranch;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Laravel\Facades\Image;
 
 class MBranchController extends Controller
 {
@@ -16,7 +14,7 @@ class MBranchController extends Controller
      */
     public function index(Request $request)
     {
-        $query = MBranch::latest();
+        $query = MBranch::query();
 
         if ($request->has('branch_name') && $request->branch_name != "") {
             $query->where('branch_name', 'like', '%' . $request->branch_name . '%');

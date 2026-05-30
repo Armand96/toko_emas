@@ -10,7 +10,7 @@ class MProduct extends Model
         'product_name',
         'branch_id',
         'category_id',
-        'deskripsi',
+        'description',
         'is_active',
         'image_path',
         'thumb_path',
