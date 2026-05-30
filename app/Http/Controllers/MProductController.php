@@ -22,10 +22,10 @@ class MProductController extends Controller
             $query->where('product_name', 'like', '%' . $request->product_name . '%');
         }
         if ($request->has('branch_id') && $request->branch_id != "") {
-            $query->where('branch_id', 'like', '%' . $request->branch_id . '%');
+            $query->where('branch_id', $request->branch_id);
         }
         if ($request->has('category_id') && $request->category_id != "") {
-            $query->where('category_id', 'like', '%' . $request->category_id . '%');
+            $query->where('category_id', $request->category_id);
         }
         if ($request->has('description') && $request->description != "") {
             $query->where('description', 'like', '%' . $request->description . '%');
@@ -38,9 +38,9 @@ class MProductController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $branches = $query->paginate($perPage);
+        $products = $query->paginate($perPage);
 
-        return response()->json($branches);
+        return response()->json($products);
     }
 
     /**
@@ -95,7 +95,7 @@ class MProductController extends Controller
 
             return ApiResponse::success($product, "Success create product", 201);
         } catch (\Throwable $th) {
-            ApiResponse::error("server error", $th, 500);
+            return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
 
@@ -127,11 +127,11 @@ class MProductController extends Controller
             if ($request->hasFile('image')) {
 
                 // Delete old files
-                if (Storage::disk('public')->exists($product->image_path)) {
+                if ($product->image_path != null && Storage::disk('public')->exists($product->image_path)) {
                     Storage::disk('public')->delete($product->image_path);
                 }
 
-                if (Storage::disk('public')->exists($product->thumb_path)) {
+                if ($product->thumb_path != null && Storage::disk('public')->exists($product->thumb_path)) {
                     Storage::disk('public')->delete($product->thumb_path);
                 }
 
@@ -167,7 +167,7 @@ class MProductController extends Controller
 
             return ApiResponse::success($product, "Success update product", 201);
         } catch (\Throwable $th) {
-            ApiResponse::error("server error", $th, 500);
+            return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
 
@@ -178,16 +178,16 @@ class MProductController extends Controller
     {
         try {
             $product->delete();
-            if (Storage::disk('public')->exists($product->image_path)) {
+            if ($product->image_path != null && Storage::disk('public')->exists($product->image_path)) {
                 Storage::disk('public')->delete($product->image_path);
             }
 
-            if (Storage::disk('public')->exists($product->thumb_path)) {
+            if ($product->thumb_path != null && Storage::disk('public')->exists($product->thumb_path)) {
                 Storage::disk('public')->delete($product->thumb_path);
             }
             return ApiResponse::success($product, "Product deleted", 200);
         } catch (\Throwable $th) {
-            ApiResponse::error("server error", $th, 500);
+            return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
 }

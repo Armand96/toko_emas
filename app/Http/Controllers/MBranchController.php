@@ -52,7 +52,7 @@ class MBranchController extends Controller
 
             return ApiResponse::success($branch, "Success create branch", 201);
         } catch (\Throwable $th) {
-            ApiResponse::error("server error", $th, 500);
+            return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
 
@@ -84,7 +84,7 @@ class MBranchController extends Controller
 
             return ApiResponse::success($branch, "Success update branch", 201);
         } catch (\Throwable $th) {
-            ApiResponse::error("server error", $th, 500);
+            return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
 
@@ -97,7 +97,7 @@ class MBranchController extends Controller
             $branch->delete();
             return ApiResponse::success($branch, "Branch deleted", 200);
         } catch (\Throwable $th) {
-            ApiResponse::error("server error", $th, 500);
+            return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
 }
