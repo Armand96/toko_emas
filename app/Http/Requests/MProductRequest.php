@@ -7,7 +7,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class MBranchRequest extends FormRequest
+class MProductRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,19 +24,26 @@ class MBranchRequest extends FormRequest
      */
     public function rules(): array
     {
+        $imageRules = [
+            'image',
+            'mimes:jpeg,png,jpg,gif',
+            'max:2048',
+            'nullable'
+        ];
+
         return [
-            'branch_name' => 'required|string',
-            'branch_code' => 'required|string',
-            'address' => 'required|string',
-            'pic' => 'required|numeric',
+            'product_name' => 'required|string',
+            'branch_id' => 'required|numeric',
+            'category_id' => 'required|numeric',
+            'description' => 'required|string',
+            'is_active' => 'nullable|boolean',
             'image_path' => 'nullable|string',
             'thumb_path' => 'nullable|string',
-            'branch_open_date' => 'required|date',
-            'is_active' => 'required|boolean'
+            'barcode' => 'nullable|string',
+            'image' => $imageRules,
         ];
     }
 
-    // 🔥 Important for API (return JSON instead of redirect)
     protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(response()->json([

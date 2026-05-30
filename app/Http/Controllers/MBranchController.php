@@ -6,8 +6,6 @@ use App\Helpers\ApiResponse;
 use App\Http\Requests\MBranchRequest;
 use App\Models\MBranch;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Laravel\Facades\Image;
 
 class MBranchController extends Controller
 {
@@ -16,7 +14,7 @@ class MBranchController extends Controller
      */
     public function index(Request $request)
     {
-        $query = MBranch::latest();
+        $query = MBranch::query();
 
         if ($request->has('branch_name') && $request->branch_name != "") {
             $query->where('branch_name', 'like', '%' . $request->branch_name . '%');
@@ -54,7 +52,7 @@ class MBranchController extends Controller
 
             return ApiResponse::success($branch, "Success create branch", 201);
         } catch (\Throwable $th) {
-            ApiResponse::error("server error", $th, 500);
+            return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
 
@@ -77,16 +75,16 @@ class MBranchController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, MBranch $branch)
+    public function update(MBranchRequest $request, MBranch $branch)
     {
         $validated = $request->validated();
 
         try {
             $branch->update($validated);
 
-            return ApiResponse::success($branch, "Success create branch", 201);
+            return ApiResponse::success($branch, "Success update branch", 201);
         } catch (\Throwable $th) {
-            ApiResponse::error("server error", $th, 500);
+            return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
 
@@ -99,7 +97,7 @@ class MBranchController extends Controller
             $branch->delete();
             return ApiResponse::success($branch, "Branch deleted", 200);
         } catch (\Throwable $th) {
-            ApiResponse::error("server error", $th, 500);
+            return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
 }
