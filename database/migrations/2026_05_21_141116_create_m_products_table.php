@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('image_path');
             $table->string('thumb_path');
             $table->string('barcode');
+            $table->string('product_code');
             $table->boolean('is_active')->default(true);
             $table->string('description')->nullable();
             $table->timestamps();

@@ -49,6 +49,7 @@ const sidebarData = [
         label: "Inventory",
         icon: CubeIcon,
         subItems: [
+           { label: "Master Kategori", link: "/inventory/master-kategori" },
           { label: "Master Produk", link: "/inventory/master-produk" },
           { label: "Pembelian", link: "/inventory/pembelian" },
           { label: "Item Inventory", link: "/inventory/item-inventory" },

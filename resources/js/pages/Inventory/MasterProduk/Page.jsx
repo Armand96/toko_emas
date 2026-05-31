@@ -1,47 +1,28 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PlusCircleIcon, PencilSimpleLineIcon, TrashIcon, EyeIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
 import InputGroup from '../../../components/FormElement/InputGroup';
 import { showAlert } from '../../../utils/showAlert';
+import InventoryApis from '../../../Services/Inventory.apis';
+import LoadingStore from '../../../Store/LoadingStore';
 
-const DUMMY_PRODUCTS = [
-    {
-        id: 1,
-        kode_produk: 'PRD-001',
-        nama_produk: 'Cincin Kawin Emas',
-        kategori: 'Perhiasan',
-        sub_kategori: 'Cincin',
-        deskripsi: 'Emas 24K berat 5gr',
-        cabang: 'Promas Pusat',
-        status: 'active'
-    },
-    {
-        id: 2,
-        kode_produk: 'PRD-002',
-        nama_produk: 'Kalung Emas Murni',
-        kategori: 'Perhiasan',
-        sub_kategori: 'Kalung',
-        deskripsi: 'Emas 22K berat 10gr',
-        cabang: 'Promas Bandung',
-        status: 'inactive'
-    },
-];
 
 const MasterProduk = () => {
     const [paramFetch, setParamFetch] = useState({
-        data: DUMMY_PRODUCTS,
-        page: 1,
+        data: [],
+        current_page: 1,
         total: 2,
-        pageSize: 10,
+        per_page: 10,
     });
-
+    const setLoading = LoadingStore((state) => state.setLoading);
     const [requiredFields, setRequiredFields] = useState([
-        { name: 'kode_produk', error_message: 'Kode produk wajib diisi' },
-        { name: 'nama_produk', error_message: 'Nama produk wajib diisi' },
-        { name: 'kategori', error_message: 'Kategori wajib diisi' },
-        { name: 'cabang', error_message: 'Cabang wajib diisi' }
+        { name: 'product_code', error_message: 'Kode produk wajib diisi' },
+        { name: 'is_active', error_message: 'Status produk wajib diisi' },
+        { name: 'product_name', error_message: 'Nama produk wajib diisi' },
+        { name: 'category_id', error_message: 'Kategori wajib diisi' },
+        { name: 'branch_id', error_message: 'Cabang wajib diisi' }
     ]);
 
     const [search, setSearch] = useState({
@@ -53,10 +34,30 @@ const MasterProduk = () => {
     const [formData, setFormData] = useState({});
     const [formError, setFormError] = useState({});
     const [isView, setIsView] = useState(false);
+    const [branchOptions, setBranchOptions] = useState([]);
+    const [categoryOptions, setCategoryOptions] = useState([]);
+    const [firstLoading, setFirstLoading] = useState(false);
 
-    const handlePaginate = (page) => {};
+       const fetchData = async (page = 1, pageSize = 10, product_name = '', category_id = null, branch_id = null) => {
+        setLoading(true);
+        try {
+            const res = await InventoryApis.GetProducts(`?page=${page}&limit=${pageSize}${product_name ? `&product_name=${product_name}` : ''}${category_id ? `&category_id=${category_id}` : ''}${branch_id ? `&branch_id=${branch_id}` : ''}`);
+            setParamFetch(res);
+            setFirstLoading(true);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    const handleRow = (pageSize) => {};
+    const handlePaginate = (page) => {
+                fetchData(page, paramFetch.pageSize, search.product_name);
+    };
+
+    const handleRow = (pageSize) => {
+        fetchData(1, pageSize, search.product_name);
+    };
 
     const handleOpenModal = (mode, record = null) => {
         if (mode === 'add') {
@@ -71,6 +72,11 @@ const MasterProduk = () => {
         }
         setIsModalOpen(true);
     };
+
+    useEffect(() => {
+        setLoading(true);
+        fetchData();
+    }, []);
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
@@ -153,7 +159,7 @@ const MasterProduk = () => {
                     <span className={`px-3 py-1 rounded-md text-xs font-medium border ${isActive
                         ? 'bg-success-50 text-success-700 border-success-200'
                         : 'bg-danger-50 text-danger-700 border-danger-200'
-                    }`}>
+                        }`}>
                         {isActive ? 'Aktif' : 'Tidak Aktif'}
                     </span>
                 );

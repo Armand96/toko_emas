@@ -98,7 +98,6 @@ export default function Modal({
             !formData?.kode_produk ||
             !formData?.nama_produk ||
             !formData?.kategori ||
-            !formData?.sub_kategori ||
             !formData?.cabang
         ) {
             return true;

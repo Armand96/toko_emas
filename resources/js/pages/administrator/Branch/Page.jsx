@@ -1,27 +1,29 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PlusCircleIcon, PencilSimpleLineIcon, TrashIcon, EyeIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
 import InputGroup from '../../../components/FormElement/InputGroup';
 import { showAlert } from '../../../utils/showAlert';
+import LoadingStore from '../../../Store/LoadingStore';
+import BranchApis from '../../../Services/Branch.apis';
 
 const Branch = () => {
     const [paramFetch, setParamFetch] = useState({
-        data: [
-        { id: 1, branch_code: 'CBG-001', branch_name: 'Promas Pusat', address: 'Jl. Jendral Sudirman No. 123, Jakarta', pic: 'Budi Santoso', open_date: '2024-01-15', status: ['active'] },
-        { id: 2, branch_code: 'CBG-002', branch_name: 'Promas Bandung', address: 'Jl. Asia Afrika No. 45, Bandung', pic: 'Siti Rahma', open_date: '2024-06-20', status: [] },
-        { id: 3, branch_code: 'CBG-003', branch_name: 'Promas Surabaya', address: 'Jl. Basuki Rahmat No. 88, Surabaya', pic: 'Andi Wijaya', open_date: '2025-02-10', status: ['active'] }
-    ],
-    page: 1,
-    total: 3,
-    pageSize: 10,
+        data: [],
+        current_page: 1,
+        total: 3,
+        per_page: 10,
     });
+    const [firstLoading, setFirstLoading] = useState(false)
+    const setLoading = LoadingStore((state) => state.setLoading);
     const [requiredFields, setRequiredFields] = useState([
         { name: 'branch_code', error_message: 'Kode cabang wajib diisi' },
         { name: 'branch_name', error_message: 'Nama cabang wajib diisi' },
+                { name: 'address', error_message: 'Alamat wajib diisi' },
+                                { name: 'is_active', error_message: 'Status wajib diisi' },
         { name: 'pic', error_message: 'PIC wajib diisi' },
-        { name: 'open_date', error_message: 'Tanggal buka cabang wajib diisi' }
+        { name: 'branch_open_date', error_message: 'Tanggal buka cabang wajib diisi' }
     ]);
     const [search, setSearch] = useState({
         search: '',
@@ -33,11 +35,31 @@ const Branch = () => {
     const [formError, setFormError] = useState({});
     const [isView, setIsView] = useState(false);
 
+
+    const fetchData = async (page = 1, pageSize = 10, branch_name = '', status = '') => {
+        setLoading(true);
+        try {
+            const res = await BranchApis.GetBranch(`?page=${page}&limit=${pageSize}${branch_name ? `&branch_name=${branch_name}` : ''}${status ? `&status=${status}` : ''}`);
+            setParamFetch(res);
+            setFirstLoading(true);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    useEffect(() => {
+        setLoading(true);
+        fetchData();
+    }, []);
+
     const handlePaginate = (page) => {
 
     };
 
-   const handleRow = (pageSize) => {
+    const handleRow = (pageSize) => {
 
     }
 
@@ -84,7 +106,7 @@ const Branch = () => {
         }
     };
 
-    const handleSubmit = (submitData) => {
+    const handleSubmit = async (submitData) => {
         let hasError = false;
         const newErrors = {};
 
@@ -96,30 +118,33 @@ const Branch = () => {
             }
         });
 
-        console.log(newErrors)
 
         if (hasError) {
             setFormError(newErrors);
             return;
         }
 
-        if (submitData.id) {
-            setParamFetch(prev => ({
-                ...prev,
-                data: prev.data.map(item => item.id === submitData.id ? submitData : item)
-            }));
-        } else {
-            showAlert({
-                title: 'Berhasil',
-                message: 'Cabang berhasil ditambahkan',
-                icon: 'success'
-            })
-            setParamFetch(prev => ({
-                ...prev,
-                data: [...prev.data, { ...submitData, id: Date.now() }]
-            }));
+        try {
+            const body = new FormData();
+            body.append('branch_name', submitData.branch_name);
+            body.append('address', submitData.address);
+            // body.append('pic', submitData.pic );
+            body.append('pic', 1);
+            body.append('branch_open_date', submitData.branch_open_date);
+            body.append('is_active', submitData.is_active);
+            body.append('branch_code', submitData.branch_code);
+
+            await BranchApis.PostBranch(body);
+            showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
+            handleCloseModal();
+            setLoading(false)
+            fetchData();
+        } catch (error) {
+           console.log(error.response?.data);
+            showAlert({ title: 'Gagal', message: 'Gagal menyimpan data', icon: 'error' });
+        } finally {
+            setLoading(false);
         }
-        handleCloseModal();
     };
 
 
@@ -200,9 +225,9 @@ const Branch = () => {
                 data={paramFetch.data}
                 onPageChange={handlePaginate}
                 onPageSizeChange={handleRow}
-                totalData={paramFetch.total}
-                currentPage={paramFetch.page}
-                pageSize={paramFetch.pageSize}
+                total={paramFetch.total}
+                page={paramFetch.current_page}
+                pageSize={paramFetch.per_page}
             />
 
             <Modal

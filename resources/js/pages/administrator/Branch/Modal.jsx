@@ -37,7 +37,7 @@ export default function Modal({
         },
         {
             label: "Tanggal Buka Cabang",
-            name: "open_date",
+            name: "branch_open_date",
             type: "date",
             placeholder: "Masukkan tanggal buka cabang",
             isRequired: !isView,
@@ -46,18 +46,16 @@ export default function Modal({
         {
             label: "Alamat",
             name: "address",
-            type: "textArea",
+            type: "text",
             placeholder: "Masukkan alamat lengkap cabang",
             isRequired: !isView,
             isDisable: isView,
-
-
         },
         {
             label: "Status Cabang",
-            name: "status",
+            name: "is_active",
             type: "checklist",
-            options: [{ value: "active", label: "Aktif" }],
+            options: [{ value: true, label: "Aktif" }],
             isRequired: false,
             isDisable: isView,
 

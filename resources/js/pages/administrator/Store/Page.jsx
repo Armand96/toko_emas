@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PencilSimple, PencilSimpleIcon } from "@phosphor-icons/react";
 import ModalSettingStore from "./Modal";
 import HeaderSection from '../../../components/HeaderSection';
 import NullState from '../../../assets/images/setting_store.svg'
+import StoreApis from '../../../Services/Store.Apis';
+import LoadingStore from '../../../Store/LoadingStore';
 
 const SettingStore = () => {
     const [storeData, setStoreData] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('add');
-
+    const setLoading = LoadingStore((state) => state.setLoading);
     const [formData, setFormData] = useState({});
     const [formError, setFormError] = useState({});
     const [requiredFields, setRequiredFields] = useState([
@@ -17,6 +19,19 @@ const SettingStore = () => {
     { name: 'website', error_message: 'Website wajib diisi' },
     { name: 'email', error_message: 'Email wajib diisi' }
 ]);
+
+
+   const fetchData = () => {
+    StoreApis.GetSettingsStore('').then(data => {
+        console.log(data);
+        setLoading(false);
+    })
+   }
+
+   useEffect(() => {
+    setLoading(true)
+    fetchData();
+   }, []);
 
 
     const handleOpenModal = (mode) => {
@@ -72,6 +87,8 @@ const SettingStore = () => {
         setStoreData(data);
         handleCloseModal();
     };
+
+
 
     return (
         <div className="flex flex-col w-full h-full gap-6">
