@@ -31,8 +31,8 @@ class TInventoryController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $products = $query->paginate($perPage);
+        $trxIntenvories = $query->paginate($perPage);
 
-        return response()->json($products);
+        return response()->json($trxIntenvories);
     }
 }
