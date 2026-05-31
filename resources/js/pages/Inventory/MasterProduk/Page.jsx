@@ -7,7 +7,8 @@ import InputGroup from '../../../components/FormElement/InputGroup';
 import { showAlert } from '../../../utils/showAlert';
 import InventoryApis from '../../../Services/Inventory.apis';
 import LoadingStore from '../../../Store/LoadingStore';
-
+import HelperFunctions from '../../../utils/HelperFunctions';
+import BranchApis from '../../../Services/Branch.apis';
 
 const MasterProduk = () => {
     const [paramFetch, setParamFetch] = useState({
@@ -38,7 +39,7 @@ const MasterProduk = () => {
     const [categoryOptions, setCategoryOptions] = useState([]);
     const [firstLoading, setFirstLoading] = useState(false);
 
-       const fetchData = async (page = 1, pageSize = 10, product_name = '', category_id = null, branch_id = null) => {
+    const fetchData = async (page = 1, pageSize = 10, product_name = '', category_id = null, branch_id = null) => {
         setLoading(true);
         try {
             const res = await InventoryApis.GetProducts(`?page=${page}&limit=${pageSize}${product_name ? `&product_name=${product_name}` : ''}${category_id ? `&category_id=${category_id}` : ''}${branch_id ? `&branch_id=${branch_id}` : ''}`);
@@ -52,11 +53,11 @@ const MasterProduk = () => {
     };
 
     const handlePaginate = (page) => {
-                fetchData(page, paramFetch.pageSize, search.product_name);
+        fetchData(page, paramFetch.pageSize, search.product_name, search.category_id, search.branch_id);
     };
 
     const handleRow = (pageSize) => {
-        fetchData(1, pageSize, search.product_name);
+        fetchData(1, pageSize, search.product_name, search.category_id, search.branch_id);
     };
 
     const handleOpenModal = (mode, record = null) => {
@@ -76,6 +77,17 @@ const MasterProduk = () => {
     useEffect(() => {
         setLoading(true);
         fetchData();
+        Promise.all([
+            InventoryApis.GetCategories('?limit=1000'),
+            BranchApis.GetBranch('?limit=1000')
+        ]).then(([categoryRes, branchRes]) => {
+            setCategoryOptions(HelperFunctions.formatDropdown(categoryRes.data, 'id', 'category_name', true));
+            setBranchOptions(HelperFunctions.formatDropdown(branchRes.data, 'id', 'branch_name', true));
+        }).catch(error => {
+            console.error('Error fetching options:', error);
+        }).finally(() => {
+            setLoading(false);
+        });
     }, []);
 
     const handleCloseModal = () => {
@@ -107,7 +119,7 @@ const MasterProduk = () => {
         }
     };
 
-    const handleSubmit = (submitData) => {
+    const handleSubmit = async (submitData) => {
         let hasError = false;
         const newErrors = {};
 
@@ -124,23 +136,23 @@ const MasterProduk = () => {
             return;
         }
 
-        if (submitData.id) {
-            setParamFetch(prev => ({
-                ...prev,
-                data: prev.data.map(item => item.id === submitData.id ? submitData : item)
-            }));
-        } else {
-            showAlert({
-                title: 'Berhasil',
-                message: 'Produk berhasil ditambahkan',
-                icon: 'success'
-            });
-            setParamFetch(prev => ({
-                ...prev,
-                data: [...prev.data, { ...submitData, id: Date.now() }]
-            }));
+        try {
+            const body = new FormData();
+            body.append('category_name', submitData.category_name);
+            if (submitData.description) body.append('description', submitData.description);
+            if (submitData.parent_id) body.append('parent_id', submitData.parent_id);
+            if (submitData.id) body.append('id', submitData.id);
+
+            await InventoryApis.PostProducts(body);
+            showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
+            handleCloseModal();
+            setLoading(false)
+            fetchData();
+        } catch (error) {
+            showAlert({ title: 'Gagal', message: 'Gagal menyimpan data', type: 'danger' });
+        } finally {
+            setLoading(false);
         }
-        handleCloseModal();
     };
 
     const columns = [
@@ -189,8 +201,8 @@ const MasterProduk = () => {
 
     const searchFields = [
         { name: 'search', label: 'Cari Produk', type: 'text' },
-        { name: 'status', label: 'Pilih Kategori', type: 'dropdown', options: [{ value: null, label: 'Semua Kategori' }] },
-        { name: 'cabang', label: 'Pilih Cabang', type: 'dropdown', options: [{ value: null, label: 'Semua Cabang' }] }
+        { name: 'status', label: 'Pilih Kategori', type: 'dropdown', options: categoryOptions},
+        { name: 'cabang', label: 'Pilih Cabang', type: 'dropdown', options: branchOptions }
     ];
 
     return (
@@ -215,7 +227,7 @@ const MasterProduk = () => {
                 data={paramFetch.data}
                 onPageChange={handlePaginate}
                 onPageSizeChange={handleRow}
-                totalData={paramFetch.total}
+                total={paramFetch.total}
                 currentPage={paramFetch.page}
                 pageSize={paramFetch.pageSize}
             />

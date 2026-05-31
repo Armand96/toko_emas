@@ -1,5 +1,7 @@
 import ModalCustom from "../../../components/modalCustom";
 import InputGroup from "../../../components/FormElement/InputGroup";
+import { useEffect, useState } from "react";
+import LoadingStore from "../../../Store/LoadingStore";
 
 export default function Modal({
     isOpen,
@@ -10,10 +12,38 @@ export default function Modal({
     formError,
     isView,
 }) {
+    const setLoading = LoadingStore((state) => state.setLoading);
+        const [branchOptions, setBranchOptions] = useState([]);
+        const [categoryOptions, setCategoryOptions] = useState([]);
+
+    useEffect(() => {
+        setLoading(true);
+        fetchData();
+        Promise.all([
+            InventoryApis.GetCategories('?limit=1000'),
+            BranchApis.GetBranch('?limit=1000')
+        ]).then(([categoryRes, branchRes]) => {
+            setCategoryOptions(HelperFunctions.formatDropdown(categoryRes.data, 'id', 'category_name', true));
+            setBranchOptions(HelperFunctions.formatDropdown(branchRes.data, 'id', 'branch_name', true));
+        }).catch(error => {
+            console.error('Error fetching options:', error);
+        }).finally(() => {
+            setLoading(false);
+        });
+    }, []);
+
+    useEffect(() => {
+        if (formData?.category_id) {
+            console.log('Selected category ID:', formData.category_id);
+        }
+    }, [formData]);
+
+
+
     const fieldsModal = [
         {
             label: "Kode Produk",
-            name: "kode_produk",
+            name: "product_code",
             type: "text",
             placeholder: "Masukkan kode produk",
             isRequired: !isView,
@@ -21,15 +51,15 @@ export default function Modal({
         },
         {
             label: "Nama Produk",
-            name: "nama_produk",
+            name: "product_name",
             type: "text",
             placeholder: "Masukkan nama produk",
             isRequired: !isView,
             isDisable: isView,
         },
-          {
+        {
             label: "Keterangan Produk",
-            name: "keterangan_produk",
+            name: "description",
             type: "text",
             placeholder: "Masukkan keterangan produk",
             isRequired: !isView,
@@ -43,10 +73,7 @@ export default function Modal({
             name: "kategori",
             type: "dropdown",
             placeholder: "Pilih kategori",
-            options: [
-                { value: "perhiasan", label: "Perhiasan" },
-                { value: "logam_mulia", label: "Logam Mulia" }
-            ],
+            options: categoryOptions,
             isRequired: !isView,
             isDisable: isView,
         },
@@ -55,30 +82,16 @@ export default function Modal({
             name: "sub_kategori",
             type: "dropdown",
             placeholder: "Pilih sub kategori",
-            options: [
-                { value: "cincin", label: "Cincin" },
-                { value: "kalung", label: "Kalung" }
-            ],
-            isRequired: !isView,
-            isDisable: isView,
-        },
-        {
-            label: "Deskripsi",
-            name: "deskripsi",
-            type: "textArea",
-            placeholder: "Masukkan deskripsi produk",
+            options: [],
             isRequired: !isView,
             isDisable: isView,
         },
         {
             label: "Cabang",
-            name: "cabang",
+            name: "branch_id",
             type: "dropdown",
             placeholder: "Pilih cabang",
-            options: [
-                { value: "pusat", label: "Promas Pusat" },
-                { value: "bandung", label: "Promas Bandung" }
-            ],
+            options: branchOptions,
             isRequired: !isView,
             isDisable: isView,
         },
@@ -86,7 +99,7 @@ export default function Modal({
             label: "Status Produk",
             name: "status",
             type: "checkbox",
-            options: [{ value: "active", label: "Aktif" }],
+            options: [{ value: true , label: "Aktif" }],
             isRequired: false,
             isDisable: isView,
         },
@@ -114,8 +127,8 @@ export default function Modal({
                 isView
                     ? "Detail Produk"
                     : formData?.id
-                    ? "Edit Produk"
-                    : "Tambah Produk"
+                        ? "Edit Produk"
+                        : "Tambah Produk"
             }
             confirmTextButton="Simpan Perubahan"
             cancelTextButton={isView ? "Tutup" : "Batal"}
