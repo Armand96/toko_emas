@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('nik');
             $table->string('image_path');
             $table->string('thumb_path');
+            $table->bigInteger('role_id', false, true);
             $table->boolean('is_active')->default(true);
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
