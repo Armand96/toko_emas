@@ -16,6 +16,7 @@ return new class extends Migration
             $table->bigInteger('product_id', false, true);
             $table->bigInteger('branch_id', false, true);
             $table->bigInteger('category_id', false, true);
+            $table->bigInteger('approval_id', false, true);
             $table->float('berat');
             $table->integer('karat');
             $table->decimal('modal');

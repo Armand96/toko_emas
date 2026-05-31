@@ -14,6 +14,7 @@ class Inventory extends Model
         'karat',
         'modal',
         'jual',
+        'approval_id',
         'status_inventory'
     ];
 

@@ -16,6 +16,7 @@ class TInventory extends Model
         'jual',
         'image_path',
         'thumb_path',
+        'approval_id',
         'type',
         'status',
     ];

@@ -21,6 +21,7 @@ return new class extends Migration
             $table->bigInteger('created_by', false, true);
             $table->enum('payment_type', ['TUNAI', 'TRANSFER']);
             $table->enum('approval_type', ['TRANSACTION', 'TRANSFER']);
+            $table->enum('status', ['APPROVAL', 'APPROVED', 'REJECTED']);
             $table->timestamps();
         });
     }

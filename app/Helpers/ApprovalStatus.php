@@ -2,7 +2,7 @@
 
 namespace App\Helpers;
 
-enum TInventoryStatus
+enum ApprovalStatus
 {
     case APPROVAL;
     case APPROVED;

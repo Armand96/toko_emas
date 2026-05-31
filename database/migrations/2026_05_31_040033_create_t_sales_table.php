@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('inventories', function (Blueprint $table) {
+        Schema::create('t_sales', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('product_id', false, true);
-            $table->bigInteger('category_id', false, true);
+            $table->bigInteger('customer_id', false, true);
             $table->bigInteger('branch_id', false, true);
+            $table->bigInteger('created_by', false, true);
             $table->bigInteger('approval_id', false, true);
-            $table->float('berat');
-            $table->integer('karat');
-            $table->decimal('modal');
-            $table->decimal('jual');
-            $table->enum('status', ['AVAILABLE', 'TRANSIT', 'SOLD', 'REPAIR']);
+            $table->decimal('sub_total');
+            $table->decimal('grand_total');
+            $table->enum('payment_type', ['TUNAI', 'TRANSFER']);
+            $table->string('sender_name', 150);
+            $table->enum('approval_status', ['APPROVAL', 'APPROVED', 'REJECTED']);
             $table->timestamps();
         });
     }
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('inventories');
+        Schema::dropIfExists('t_sales');
     }
 };
