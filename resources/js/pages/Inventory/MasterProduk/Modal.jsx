@@ -2,6 +2,9 @@ import ModalCustom from "../../../components/modalCustom";
 import InputGroup from "../../../components/FormElement/InputGroup";
 import { useEffect, useState } from "react";
 import LoadingStore from "../../../Store/LoadingStore";
+import InventoryApis from "../../../Services/Inventory.apis";
+import BranchApis from "../../../Services/Branch.apis";
+import HelperFunctions from "../../../utils/HelperFunctions";
 
 export default function Modal({
     isOpen,
@@ -15,10 +18,10 @@ export default function Modal({
     const setLoading = LoadingStore((state) => state.setLoading);
         const [branchOptions, setBranchOptions] = useState([]);
         const [categoryOptions, setCategoryOptions] = useState([]);
+        const [subCategoriesOptions, setSubCategoriesOptions] = useState([]);
 
     useEffect(() => {
         setLoading(true);
-        fetchData();
         Promise.all([
             InventoryApis.GetCategories('?limit=1000'),
             BranchApis.GetBranch('?limit=1000')
@@ -33,10 +36,27 @@ export default function Modal({
     }, []);
 
     useEffect(() => {
-        if (formData?.category_id) {
-            console.log('Selected category ID:', formData.category_id);
+
+        if(formData?.category) {
+            InventoryApis.GetCategories(`?parent_id=${formData.category}&limit=1000`).then(res => {
+                setSubCategoriesOptions(HelperFunctions.formatDropdown(res.data, 'id', 'category_name', ));
+            })
         }
     }, [formData]);
+
+
+    const handleOnChange = (e) => {
+        const { name, value, type } = e.target;
+        console.log('Field changed:', name, value);
+        if(name === 'category') {
+            onChange({ target: { name: 'sub_category', value: '' }});
+            setSubCategoriesOptions([]);
+            onChange({ target: { name, value, type } });
+        }else{
+            onChange({ target: { name, value, type } });
+        }
+    };
+
 
 
 
@@ -70,7 +90,7 @@ export default function Modal({
         },
         {
             label: "Kategori",
-            name: "kategori",
+            name: "category",
             type: "dropdown",
             placeholder: "Pilih kategori",
             options: categoryOptions,
@@ -79,16 +99,16 @@ export default function Modal({
         },
         {
             label: "Sub Kategori",
-            name: "sub_kategori",
+            name: "sub_category",
             type: "dropdown",
             placeholder: "Pilih sub kategori",
-            options: [],
-            isRequired: !isView,
+            options: subCategoriesOptions,
+            isRequired: !isView && subCategoriesOptions.length > 0,
             isDisable: isView,
         },
         {
             label: "Cabang",
-            name: "branch_id",
+            name: "branch",
             type: "dropdown",
             placeholder: "Pilih cabang",
             options: branchOptions,
@@ -97,24 +117,15 @@ export default function Modal({
         },
         {
             label: "Status Produk",
-            name: "status",
+            name: "is_active",
             type: "checkbox",
-            options: [{ value: true , label: "Aktif" }],
-            isRequired: false,
+            isRequired: !isView,
             isDisable: isView,
         },
     ];
 
     const disableButton = () => {
         if (isView) return true;
-        if (
-            !formData?.kode_produk ||
-            !formData?.nama_produk ||
-            !formData?.kategori ||
-            !formData?.cabang
-        ) {
-            return true;
-        }
         if (formError && Object.values(formError).some((error) => error)) {
             return true;
         }
@@ -143,7 +154,7 @@ export default function Modal({
                     cols="2"
                     fields={fieldsModal}
                     formData={formData}
-                    onChange={onChange}
+                    onChange={handleOnChange}
                     formError={formError}
                 />
             </div>

@@ -6,6 +6,7 @@ import Checklist from "./SingleElement/Checklist";
 import Switch from "./SingleElement/Switch";
 import InputPassword from "./SingleElement/Password";
 import PhotoInput from "./SingleElement/PhotoInput";
+import Checkbox from "./SingleElement/Checkbox";
 
 const gridColsMap = {
     1: "lg:grid-cols-1",
@@ -76,15 +77,16 @@ const InputGroup = ({
                     />
                 );
             case "checklist":
+                   return (
+                        <Checklist
+                            {...commonProps}
+                            key={index}
+                            options={field.options}
+                            direction={field.direction}
+                        />
+                    );
             case "checkbox":
-                return (
-                    <Checklist
-                        {...commonProps}
-                        key={index}
-                        options={field.options}
-                        direction={field.direction}
-                    />
-                );
+                return <Checkbox key={index} {...commonProps} />;
             case "switch":
             case "toggle":
                 return <Switch key={index} {...commonProps} />;

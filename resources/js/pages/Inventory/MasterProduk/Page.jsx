@@ -22,8 +22,8 @@ const MasterProduk = () => {
         { name: 'product_code', error_message: 'Kode produk wajib diisi' },
         { name: 'is_active', error_message: 'Status produk wajib diisi' },
         { name: 'product_name', error_message: 'Nama produk wajib diisi' },
-        { name: 'category_id', error_message: 'Kategori wajib diisi' },
-        { name: 'branch_id', error_message: 'Cabang wajib diisi' }
+        { name: 'category', error_message: 'Kategori wajib diisi' },
+        { name: 'branch', error_message: 'Cabang wajib diisi' }
     ]);
 
     const [search, setSearch] = useState({
@@ -102,17 +102,7 @@ const MasterProduk = () => {
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
 
-        if (type === 'checkbox') {
-            setFormData(prev => {
-                const currentValues = prev[name] || [];
-                return {
-                    ...prev,
-                    [name]: checked ? [...currentValues, value] : currentValues.filter(v => v !== value)
-                };
-            });
-        } else {
             setFormData(prev => ({ ...prev, [name]: value }));
-        }
 
         if (formError[name]) {
             setFormError(prev => ({ ...prev, [name]: '' }));
@@ -136,12 +126,16 @@ const MasterProduk = () => {
             return;
         }
 
+
         try {
+            setLoading(true);
             const body = new FormData();
-            body.append('category_name', submitData.category_name);
-            if (submitData.description) body.append('description', submitData.description);
-            if (submitData.parent_id) body.append('parent_id', submitData.parent_id);
-            if (submitData.id) body.append('id', submitData.id);
+            body.append('category_id', formData.category);
+            body.append('product_code', formData.product_code);
+            body.append('product_name', formData.product_name);
+            body.append('description', formData.description);
+            body.append('branch_id', formData.branch);
+            body.append('is_active', formData.is_active );
 
             await InventoryApis.PostProducts(body);
             showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
@@ -149,7 +143,7 @@ const MasterProduk = () => {
             setLoading(false)
             fetchData();
         } catch (error) {
-            showAlert({ title: 'Gagal', message: 'Gagal menyimpan data', type: 'danger' });
+            showAlert({ title: 'Gagal', message: 'Gagal menyimpan data', icon: 'error' });
         } finally {
             setLoading(false);
         }
