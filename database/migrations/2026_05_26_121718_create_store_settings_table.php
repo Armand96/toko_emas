@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('shop_name');
             $table->string('website');
             $table->string('email');
-            $table->string('image_path');
-            $table->string('thumb_path');
+            $table->string('image_path')->nullable(true);
+            $table->string('thumb_path')->nullable(true);
             $table->timestamps();
         });
     }
