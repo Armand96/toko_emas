@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BankCabangController;
 use App\Http\Controllers\MBankController;
 use App\Http\Controllers\MBranchController;
 use App\Http\Controllers\MCategoryController;
@@ -13,5 +14,6 @@ Route::apiResource('settings-store', StoreSettingController::class);
 Route::apiResource('products', MProductController::class);
 Route::apiResource('categories', MCategoryController::class);
 Route::apiResource('banks', MBankController::class);
+Route::apiResource('bankCabangs', BankCabangController::class);
 Route::apiResource('customers', MCustomerController::class);
 Route::apiResource('storeSettings', StoreSettingController::class);
