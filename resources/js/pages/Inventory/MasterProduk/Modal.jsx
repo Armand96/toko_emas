@@ -94,8 +94,8 @@ export default function Modal({
             type: "dropdown",
             placeholder: "Pilih kategori",
             options: categoryOptions,
-            isRequired: !isView,
-            isDisable: isView,
+            isRequired: !isView ,
+            isDisable: isView || (formData?.sub_category && formData?.id),
         },
         {
             label: "Sub Kategori",

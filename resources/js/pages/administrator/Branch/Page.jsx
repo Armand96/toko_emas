@@ -136,12 +136,12 @@ const Branch = () => {
             body.append('branch_code', submitData.branch_code);
 
             await submitData?.id ? BranchApis.PutBranch(submitData.id, body) : BranchApis.PostBranch(body);
-           setTimeout(() => {
-             fetchData();
-              handleCloseModal();
-            setLoading(false)
-                        showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
-           }, 500);
+            setTimeout(() => {
+                fetchData();
+                handleCloseModal();
+                setLoading(false)
+                showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
+            }, 500);
 
 
         } catch (error) {

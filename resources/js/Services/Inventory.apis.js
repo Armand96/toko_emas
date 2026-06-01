@@ -5,7 +5,7 @@ const InventoryApis = {
         return Apis.Get(`/api/products${params}`).then(({ data }) => data);
     },
     PostProducts: (body) => {
-        return Apis.Post(`/api/products`, body, { headers: { "Content-Type": "multipart/form-data" } });
+        return Apis.Post(`/api/products`, body, );
     },
     GetCategories: (params) => {
         return Apis.Get(`/api/categories${params}`).then(({ data }) => data);
@@ -17,7 +17,7 @@ const InventoryApis = {
         return Apis.Put(`api/categories/${id}`, body,);
     },
     PutProducts: (id, body) => {
-        return Apis.Put(`api/products/${id}`, body, { headers: { "Content-Type": "multipart/form-data" } });
+        return Apis.Put(`api/products/${id}`, body, );
     }
 }
 

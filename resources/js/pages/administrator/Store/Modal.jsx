@@ -13,7 +13,7 @@ export default function Modal({
     const fieldsModal = [
         {
             label: "Logo Toko",
-            name: "logo",
+            name: "image",
             type: "photoInput",
             placeholder: "Upload",
             helperText: "Logo Anda berukuran min. 512 x 512 piksel, kurang dari 2 MB, dan berformat JPG, JPEG, atau PNG",
@@ -21,7 +21,7 @@ export default function Modal({
         },
         {
             label: "Nama Toko",
-            name: "nama_toko",
+            name: "shop_name",
             type: "text",
             placeholder: "Masukkan nama toko",
             isRequired: true,

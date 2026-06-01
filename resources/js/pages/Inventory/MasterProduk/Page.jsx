@@ -62,17 +62,21 @@ const MasterProduk = () => {
 
     const handleOpenModal = (mode, record = null) => {
         if (mode === 'add') {
-            setFormData({ is_active: false});
+            setFormData({ is_active: false });
             setIsView(false);
         } else if (mode === 'edit') {
-            setFormData({...record, is_active:record.status ? 1 : 0});
+            let categoryList = categoryOptions.find(option => option.value == record.category_id);
+            setFormData({ ...record, is_active: record.is_active === 1 ? true : false, category: categoryList?.details?.parent_id !== null ? categoryList?.details?.parent_id : record.category_id, sub_category: record.category_id, branch: record.branch_id });
             setIsView(false);
         } else if (mode === 'view') {
-            setFormData(record);
+            let categoryList = categoryOptions.find(option => option.value == record.category_id);
+            setFormData({ ...record, is_active: record.is_active === 1 ? true : false, category: categoryList?.details?.parent_id !== null ? categoryList?.details?.parent_id : record.category_id, sub_category: record.category_id, branch: record.branch_id });
             setIsView(true);
         }
         setIsModalOpen(true);
     };
+
+    console.log(formData)
 
     useEffect(() => {
         setLoading(true);
@@ -100,9 +104,9 @@ const MasterProduk = () => {
     };
 
     const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
+        const { name, value } = e.target;
 
-            setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => ({ ...prev, [name]: value }));
 
         if (formError[name]) {
             setFormError(prev => ({ ...prev, [name]: '' }));
@@ -197,7 +201,7 @@ const MasterProduk = () => {
 
     const searchFields = [
         { name: 'search', label: 'Cari Produk', type: 'text' },
-        { name: 'status', label: 'Pilih Kategori', type: 'dropdown', options: categoryOptions},
+        { name: 'status', label: 'Pilih Kategori', type: 'dropdown', options: categoryOptions },
         { name: 'cabang', label: 'Pilih Cabang', type: 'dropdown', options: branchOptions }
     ];
 

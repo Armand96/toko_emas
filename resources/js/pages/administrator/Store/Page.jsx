@@ -14,24 +14,25 @@ const SettingStore = () => {
     const [formData, setFormData] = useState({});
     const [formError, setFormError] = useState({});
     const [requiredFields, setRequiredFields] = useState([
-    { name: 'logo', error_message: 'Logo toko wajib diupload' },
-    { name: 'nama_toko', error_message: 'Nama toko wajib diisi' },
-    { name: 'website', error_message: 'Website wajib diisi' },
-    { name: 'email', error_message: 'Email wajib diisi' }
-]);
+        { name: 'image', error_message: 'Logo toko wajib diupload' },
+        { name: 'shop_name', error_message: 'Nama toko wajib diisi' },
+        { name: 'website', error_message: 'Website wajib diisi' },
+        { name: 'email', error_message: 'Email wajib diisi' }
+    ]);
 
 
-   const fetchData = () => {
-    StoreApis.GetSettingsStore('').then(data => {
-        console.log(data);
-        setLoading(false);
-    })
-   }
+    const fetchData = () => {
+        StoreApis.GetSettingsStore('').then(data => {
+            console.log(data);
+            setStoreData({...data?.data?.[0], image: data?.data?.[0]?.image_path ? `${import.meta.env.VITE_API_BASE_URL}storage/${data?.data?.[0]?.image_path}` : data?.data?.[0]?.logo } || null);
+            setLoading(false);
+        })
+    }
 
-   useEffect(() => {
-    setLoading(true)
-    fetchData();
-   }, []);
+    useEffect(() => {
+        setLoading(true)
+        fetchData();
+    }, []);
 
 
     const handleOpenModal = (mode) => {
@@ -67,7 +68,7 @@ const SettingStore = () => {
         }
     };
 
-    const handleSubmit = (data) => {
+    const handleSubmit = async (data) => {
         let hasError = false;
         const newErrors = {};
 
@@ -84,7 +85,27 @@ const SettingStore = () => {
             return;
         }
 
-        setStoreData(data);
+        setLoading(true);
+
+        try {
+            const body = new FormData();
+           if(data.image instanceof File) {
+                body.append('image', data.image);
+           }
+            body.append('shop_name', data.shop_name);
+            body.append('website', data.website);
+            body.append('email', data.email);
+            await data?.id ? StoreApis.PutSettingsStore(data.id, body) : StoreApis.PostSettingsStore(body);
+            setTimeout(() => {
+                fetchData();
+                handleCloseModal();
+                setLoading(false)
+                showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
+            }, 500);
+        } catch (error) {
+            setLoading(false);
+        }
+
         handleCloseModal();
     };
 
@@ -124,8 +145,8 @@ const SettingStore = () => {
                             <div className="flex flex-col gap-2">
                                 <span className="text-sm text-gray-500">Logo Toko</span>
                                 <div className="flex items-center justify-center w-24 h-24 border rounded-lg border-gray-200/60 p-2">
-                                    {storeData.logo ? (
-                                        <img src={URL.createObjectURL(storeData.logo)} alt="Logo Toko" className="object-contain w-full h-full" />
+                                    {storeData.logo || storeData?.image_path ? (
+                                        <img src={storeData.image_path ? `${import.meta.env.VITE_API_BASE_URL}storage/${storeData.image_path}` : URL.createObjectURL(storeData.logo)} alt="Logo Toko" className="object-contain w-full h-full" />
                                     ) : (
                                         <div className="text-gray-400">Logo</div>
                                     )}
@@ -134,7 +155,7 @@ const SettingStore = () => {
                             <div className="grid grid-cols-2 gap-y-6 gap-x-24">
                                 <div className="flex flex-col col-span-2">
                                     <span className="text-sm text-gray-500">Nama Toko</span>
-                                    <span className="font-medium text-gray-950">{storeData.nama_toko}</span>
+                                    <span className="font-medium text-gray-950">{storeData.shop_name}</span>
                                 </div>
                                 <div className="flex flex-col gap-1">
                                     <span className="text-sm text-gray-500">Website</span>
