@@ -96,10 +96,12 @@ const MasterKategori = () => {
             if (submitData.id) body.append('id', submitData.id);
 
             await submitData?.id ? InventoryApis.PutCategories(submitData.id, body) : InventoryApis.PostCategories(body);
-            showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
+            setTimeout(() => {
+                  showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
             handleCloseModal();
             setLoading(false)
             fetchData();
+            }, 500);
         } catch (error) {
             showAlert({ title: 'Gagal', message: 'Gagal menyimpan data', type: 'danger' });
         } finally {

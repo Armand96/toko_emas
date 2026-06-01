@@ -14,7 +14,6 @@ class MProduct extends Model
         'is_active',
         'image_path',
         'thumb_path',
-        'product_code',
         'barcode'
     ];
 

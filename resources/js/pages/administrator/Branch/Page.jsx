@@ -124,6 +124,7 @@ const Branch = () => {
             return;
         }
 
+        setLoading(true);
         try {
             const body = new FormData();
             body.append('branch_name', submitData.branch_name);
@@ -135,10 +136,14 @@ const Branch = () => {
             body.append('branch_code', submitData.branch_code);
 
             await submitData?.id ? BranchApis.PutBranch(submitData.id, body) : BranchApis.PostBranch(body);
-            showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
-            handleCloseModal();
+           setTimeout(() => {
+             fetchData();
+              handleCloseModal();
             setLoading(false)
-            fetchData();
+                        showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
+           }, 500);
+
+
         } catch (error) {
            console.log(error.response?.data);
             showAlert({ title: 'Gagal', message: 'Gagal menyimpan data', icon: 'error' });

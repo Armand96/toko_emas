@@ -5,10 +5,10 @@ const BranchApis = {
         return Apis.Get(`api/branches${params}`).then(({data}) => data);
     },
     PostBranch: (body) => {
-        return Apis.Post(`api/branches`, body, { headers: { "Content-Type": "multipart/form-data" } });
+        return Apis.Post(`api/branches`, body, );
     },
     PutBranch: (id, body) => {
-        return Apis.Put(`api/branches/${id}`, body, { headers: { "Content-Type": "multipart/form-data" } });
+        return Apis.Put(`api/branches/${id}`, body, );
     }
 }
 

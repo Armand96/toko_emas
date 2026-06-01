@@ -20,7 +20,7 @@ const MasterProduk = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
     const [requiredFields, setRequiredFields] = useState([
         { name: 'barcode', error_message: 'Kode produk wajib diisi' },
-        { name: 'is_active', error_message: 'Status produk wajib diisi' },
+        // { name: 'is_active', error_message: 'Status produk wajib diisi' },
         { name: 'product_name', error_message: 'Nama produk wajib diisi' },
         { name: 'category', error_message: 'Kategori wajib diisi' },
         { name: 'branch', error_message: 'Cabang wajib diisi' }
@@ -137,6 +137,7 @@ const MasterProduk = () => {
             body.append('description', formData.description);
             body.append('branch_id', formData.branch);
             body.append('is_active', formData.is_active ? 1 : 0);
+            body.append('category_id', formData?.sub_category || formData.category);
 
             await formData?.id ? InventoryApis.PutProducts(formData.id, body) : InventoryApis.PostProducts(body);
             showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
