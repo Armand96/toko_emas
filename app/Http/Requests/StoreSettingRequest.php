@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class MProductRequest extends FormRequest
+class StoreSettingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -32,15 +32,12 @@ class MProductRequest extends FormRequest
         ];
 
         return [
-            'product_name' => 'required|string',
-            'branch_id' => 'required|numeric',
-            'category_id' => 'required|numeric',
-            'description' => 'required|string',
-            'is_active' => 'nullable|boolean',
+            'shop_name' => 'required|string',
+            'website' => 'required|string',
+            'email' => 'required|string',
             'image_path' => 'nullable|string',
             'thumb_path' => 'nullable|string',
-            'barcode' => 'nullable|string',
-            'image' => $imageRules,
+            'image' => $imageRules
         ];
     }
 
