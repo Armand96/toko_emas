@@ -3,11 +3,11 @@
 namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class MBranchRequest extends FormRequest
+class MBankRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,16 +25,13 @@ class MBranchRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'branch_name' => 'required|string',
-            'branch_code' => 'required|string',
-            'address' => 'required|string',
-            'pic' => 'required|numeric',
-            'branch_open_date' => 'required|date',
-            'is_active' => 'required|boolean'
+            'bank_name' => 'required|string',
+            'no_rekening' => 'required|string',
+            'pemilik' => 'required|string',
+            'is_active' => 'required|boolean',
         ];
     }
 
-    // 🔥 Important for API (return JSON instead of redirect)
     protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(response()->json([
