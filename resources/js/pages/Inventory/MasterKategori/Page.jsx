@@ -95,7 +95,7 @@ const MasterKategori = () => {
             if (submitData.parent_id) body.append('parent_id', submitData.parent_id);
             if (submitData.id) body.append('id', submitData.id);
 
-            await InventoryApis.PostCategories(body);
+            await submitData?.id ? InventoryApis.PutCategories(submitData.id, body) : InventoryApis.PostCategories(body);
             showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
             handleCloseModal();
             setLoading(false)

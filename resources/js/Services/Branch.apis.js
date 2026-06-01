@@ -7,6 +7,9 @@ const BranchApis = {
     PostBranch: (body) => {
         return Apis.Post(`api/branches`, body, { headers: { "Content-Type": "multipart/form-data" } });
     },
+    PutBranch: (id, body) => {
+        return Apis.Put(`api/branches/${id}`, body, { headers: { "Content-Type": "multipart/form-data" } });
+    }
 }
 
 export default BranchApis;

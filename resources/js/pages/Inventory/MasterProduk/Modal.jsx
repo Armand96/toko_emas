@@ -63,7 +63,7 @@ export default function Modal({
     const fieldsModal = [
         {
             label: "Kode Produk",
-            name: "product_code",
+            name: "barcode",
             type: "text",
             placeholder: "Masukkan kode produk",
             isRequired: !isView,

@@ -54,8 +54,7 @@ export default function Modal({
         {
             label: "Status Cabang",
             name: "is_active",
-            type: "checklist",
-            options: [{ value: true, label: "Aktif" }],
+            type: "checkbox",
             isRequired: false,
             isDisable: isView,
 

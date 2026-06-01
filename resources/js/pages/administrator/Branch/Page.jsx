@@ -20,12 +20,12 @@ const Branch = () => {
     const [requiredFields, setRequiredFields] = useState([
         { name: 'branch_code', error_message: 'Kode cabang wajib diisi' },
         { name: 'branch_name', error_message: 'Nama cabang wajib diisi' },
-                { name: 'address', error_message: 'Alamat wajib diisi' },
-                                { name: 'is_active', error_message: 'Status wajib diisi' },
+         { name: 'address', error_message: 'Alamat wajib diisi' },
+        // { name: 'is_active', error_message: 'Status wajib diisi' },
         { name: 'pic', error_message: 'PIC wajib diisi' },
         { name: 'branch_open_date', error_message: 'Tanggal buka cabang wajib diisi' }
-    ]);
-    const [search, setSearch] = useState({
+        ]);
+        const [search, setSearch] = useState({
         search: '',
         status: null,
     })
@@ -56,19 +56,19 @@ const Branch = () => {
     }, []);
 
     const handlePaginate = (page) => {
-
+        fetchData(page, paramFetch.pageSize, search.search, search.status);
     };
 
     const handleRow = (pageSize) => {
-
+        fetchData(1, pageSize, search.search, search.status);
     }
 
     const handleOpenModal = (mode, record = null) => {
         if (mode === 'add') {
-            setFormData({ status: [] });
+            setFormData({ is_active: false});
             setIsView(false);
         } else if (mode === 'edit') {
-            setFormData(record);
+            setFormData({...record, is_active:record.is_active === 1 ? true : false});
             setIsView(false);
         } else if (mode === 'view') {
             setFormData(record);
@@ -131,10 +131,10 @@ const Branch = () => {
             // body.append('pic', submitData.pic );
             body.append('pic', 1);
             body.append('branch_open_date', submitData.branch_open_date);
-            body.append('is_active', submitData.is_active);
+            body.append('is_active', submitData.is_active ? 1 : 0);
             body.append('branch_code', submitData.branch_code);
 
-            await BranchApis.PostBranch(body);
+            await submitData?.id ? BranchApis.PutBranch(submitData.id, body) : BranchApis.PostBranch(body);
             showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
             handleCloseModal();
             setLoading(false)
@@ -156,9 +156,9 @@ const Branch = () => {
         { header: 'Tanggal Buka', accessor: 'open_date', },
         {
             header: 'Status',
-            accessor: 'status',
+            accessor: 'is_active',
             render: (row) => {
-                const isActive = row.status && row.status.includes('active');
+                const isActive = row.is_active === 1;
                 return (
                     <span className={`px-3 py-1 rounded-md text-xs font-medium border ${isActive
                         ? 'bg-success-50 text-success-700 border-success-200'

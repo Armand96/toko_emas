@@ -13,6 +13,12 @@ const InventoryApis = {
     PostCategories: (body) => {
         return Apis.Post(`api/categories`, body, { headers: { "Content-Type": "multipart/form-data" } });
     },
+    PutCategories: (id, body) => {
+        return Apis.Put(`api/categories/${id}`, body, { headers: { "Content-Type": "multipart/form-data" } });
+    },
+    PutProducts: (id, body) => {
+        return Apis.Put(`api/products/${id}`, body, { headers: { "Content-Type": "multipart/form-data" } });
+    }
 }
 
 export default InventoryApis;

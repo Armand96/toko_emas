@@ -19,7 +19,7 @@ const MasterProduk = () => {
     });
     const setLoading = LoadingStore((state) => state.setLoading);
     const [requiredFields, setRequiredFields] = useState([
-        { name: 'product_code', error_message: 'Kode produk wajib diisi' },
+        { name: 'barcode', error_message: 'Kode produk wajib diisi' },
         { name: 'is_active', error_message: 'Status produk wajib diisi' },
         { name: 'product_name', error_message: 'Nama produk wajib diisi' },
         { name: 'category', error_message: 'Kategori wajib diisi' },
@@ -62,10 +62,10 @@ const MasterProduk = () => {
 
     const handleOpenModal = (mode, record = null) => {
         if (mode === 'add') {
-            setFormData({ status: 'inactive' });
+            setFormData({ is_active: false});
             setIsView(false);
         } else if (mode === 'edit') {
-            setFormData(record);
+            setFormData({...record, is_active:record.status ? 1 : 0});
             setIsView(false);
         } else if (mode === 'view') {
             setFormData(record);
@@ -121,6 +121,8 @@ const MasterProduk = () => {
             }
         });
 
+        console.log(newErrors)
+
         if (hasError) {
             setFormError(newErrors);
             return;
@@ -130,14 +132,13 @@ const MasterProduk = () => {
         try {
             setLoading(true);
             const body = new FormData();
-            body.append('category_id', formData.category);
-            body.append('product_code', formData.product_code);
+            body.append('barcode', formData.barcode);
             body.append('product_name', formData.product_name);
             body.append('description', formData.description);
             body.append('branch_id', formData.branch);
-            body.append('is_active', formData.is_active );
+            body.append('is_active', formData.is_active ? 1 : 0);
 
-            await InventoryApis.PostProducts(body);
+            await formData?.id ? InventoryApis.PutProducts(formData.id, body) : InventoryApis.PostProducts(body);
             showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
             handleCloseModal();
             setLoading(false)
@@ -150,17 +151,17 @@ const MasterProduk = () => {
     };
 
     const columns = [
-        { header: 'Kode Produk', accessor: 'kode_produk' },
-        { header: 'Nama Produk', accessor: 'nama_produk' },
-        { header: 'Kategori', accessor: 'kategori' },
-        { header: 'Sub Kategori', accessor: 'sub_kategori' },
-        { header: 'Deskripsi', accessor: 'deskripsi' },
-        { header: 'Cabang', accessor: 'cabang' },
+        { header: 'Kode Produk', accessor: 'barcode' },
+        { header: 'Nama Produk', accessor: 'product_name' },
+        { header: 'Kategori', accessor: 'category' },
+        { header: 'Sub Kategori', accessor: 'sub_category' },
+        { header: 'Deskripsi', accessor: 'description' },
+        { header: 'Cabang', accessor: 'branch' },
         {
             header: 'Status',
-            accessor: 'status',
+            accessor: 'is_active',
             render: (row) => {
-                const isActive = row.status == 'active';
+                const isActive = row.is_active === 1;
                 return (
                     <span className={`px-3 py-1 rounded-md text-xs font-medium border ${isActive
                         ? 'bg-success-50 text-success-700 border-success-200'
