@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('product_name');
             $table->bigInteger('branch_id', false, true);
             $table->bigInteger('category_id', false, true);
-            $table->string('image_path');
-            $table->string('thumb_path');
+            $table->string('image_path')->nullable();
+            $table->string('thumb_path')->nullable();
             $table->string('barcode');
             $table->boolean('is_active')->default(true);
             $table->string('description')->nullable();
