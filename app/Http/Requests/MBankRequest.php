@@ -26,8 +26,7 @@ class MBankRequest extends FormRequest
     {
         return [
             'bank_name' => 'required|string',
-            'no_rekening' => 'required|string',
-            'pemilik' => 'required|string',
+            'bank_code' => 'required|string',
             'is_active' => 'required|boolean',
         ];
     }

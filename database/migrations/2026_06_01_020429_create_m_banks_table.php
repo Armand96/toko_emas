@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('m_banks', function (Blueprint $table) {
             $table->id();
             $table->string('bank_name', 150);
-            $table->string('no_rekening', 150);
-            $table->string('pemilik', 150);
+            $table->string('bank_code', 150);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

@@ -19,11 +19,11 @@ class MBankController extends Controller
         if ($request->has('bank_name') && $request->bank_name != "") {
             $query->where('bank_name', 'like', '%' . $request->bank_name . '%');
         }
-        if ($request->has('no_rekening') && $request->no_rekening != "") {
-            $query->where('no_rekening', 'like', '%' . $request->no_rekening . '%');
+        if ($request->has('bank_code') && $request->bank_code != "") {
+            $query->where('bank_code', 'like', '%' . $request->bank_code . '%');
         }
-        if ($request->has('pemilik') && $request->pemilik != "") {
-            $query->where('pemilik', 'like', '%' . $request->pemilik . '%');
+        if ($request->has('is_active') && $request->is_active != "") {
+            $query->where('is_active', $request->is_active);
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page

@@ -8,8 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 #[Fillable([
     'bank_name',
-    'no_rekening',
-    'pemilik',
+    'bank_code',
     'is_active',
 ])]
 #[Hidden(['created_at', 'updated_at'])]
