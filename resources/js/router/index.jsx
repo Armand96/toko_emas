@@ -6,6 +6,7 @@ import { Ui } from "./ui";
 import Layout from "../components/layout/Layout";
 import Branch from "../pages/administrator/Branch/Page";
 import SettingStore from "../pages/administrator/Store/Page";
+import { Approval } from "./approval";
 
 
 const router = createBrowserRouter([
@@ -25,7 +26,8 @@ const router = createBrowserRouter([
                 element: <SettingStore />
             },
             ...Inventory,
-            ...Ui
+            ...Ui,
+            ...Approval
         ]
     }
 ])

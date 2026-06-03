@@ -7,6 +7,7 @@ import Switch from "./SingleElement/Switch";
 import InputPassword from "./SingleElement/Password";
 import PhotoInput from "./SingleElement/PhotoInput";
 import Checkbox from "./SingleElement/Checkbox";
+import SearchInput from "./SingleElement/SearchInput";
 
 const gridColsMap = {
     1: "lg:grid-cols-1",
@@ -62,6 +63,8 @@ const InputGroup = ({
                 return <InputPassword key={index} {...commonProps} type={field.type} />;
             case "photoInput":
                 return <PhotoInput key={index} {...commonProps} accept={field.accept} />;
+            case "search":
+                return <SearchInput key={index} {...commonProps}     />;
             case "textarea":
                 return <TextArea key={index} {...commonProps} rows={field.rows} />;
             case "dropdown":

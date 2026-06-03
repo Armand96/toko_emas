@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { CaretLeftIcon, FloppyDiskIcon } from "@phosphor-icons/react";
+import { CaretLeftIcon, FloppyDiskIcon, PlusCircleIcon, TrashIcon } from "@phosphor-icons/react";
 import InputGroup from "../../../components/FormElement/InputGroup";
 import { showAlert } from "../../../utils/showAlert";
+import HeaderSection from "../../../components/HeaderSection";
+import Dropdown from "../../../components/FormElement/SingleElement/Dropdown";
+import Table from "../../../components/Table/Table";
 
 const Form = ({ setCurentState }) => {
     const [formData, setFormData] = useState({
@@ -16,50 +19,100 @@ const Form = ({ setCurentState }) => {
         is_active: true
     });
 
-    const [formError, setFormError] = useState({});
+    const [listData, setListData] = useState([]);
 
-    const fields = [
-        { name: 'tanggal', label: 'Tanggal', type: 'date', isRequired: true },
-        { name: 'batch', label: 'Batch', type: 'text', isRequired: true },
-        { name: 'kode', label: 'Kode', type: 'text', isRequired: true },
-        { name: 'produk', label: 'Produk', type: 'text', isRequired: true },
-        { name: 'kategori', label: 'Kategori', type: 'dropdown', options: [], isRequired: true },
-        { name: 'sub_kategori', label: 'Sub Kategori', type: 'dropdown', options: [] },
-        { name: 'cabang', label: 'Cabang', type: 'dropdown', options: [], isRequired: true },
-        { name: 'deskripsi', label: 'Deskripsi', type: 'text' },
-        { name: 'is_active', label: 'Status', type: 'switch' }
-    ];
+    const fieldAdd = [
+        {
+            label: "Produk",
+            name: "produk",
+            type: "dropdown",
+        },
+        {
+            label: "Foto Item",
+            name: "foto",
+            helperText: "Foto berformat JPG, JPEG, atau PNG.",
+            type: "photoInput",
+        },
+        {
+            label: "Berat (gram)",
+            name: "berat",
+            type: "number",
+        },
+        {
+            label: "Karat",
+            name: "berat",
+            type: "number",
+        },
+        {
+            label: "No Seri (Opsional)",
+            name: "berat",
+            type: "number",
+        },
+        {
+            label: "Cabang",
+            name: "berat",
+            type: "dropdown",
+        },
+        {
+            label: "Bank Keluar",
+            name: "bank_keluar",
+            type: "dropdown",
+        },
+    ]
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-        if (formError[name]) {
-            setFormError(prev => ({ ...prev, [name]: "" }));
-        }
-    };
+    const columns = [
+        { header: 'Barcode', accessor: 'barcode' },
+        { header: 'Produk', accessor: 'produk' },
+        { header: 'Berat', accessor: 'Berat' },
+        { header: 'Karat', accessor: 'karat' },
+        { header: 'No Seri', accessor: 'no_seri' },
+        { header: 'Modal', accessor: 'cabang' },
+        { header: "Jual", accessor: "jual" },
+       { header: "Cabang", accessor: "cabang" },
+        { header: "Bank Keluar", accessor: "bank_keluar" },
+        {header: 'Aksi', accessor: 'aksi', render: (row) => (
+            <button className="btn-secondary p-2 rounded-lg flex items-center justify-center gap-2"><TrashIcon size={20} /></button>
+        )}
+    ]
 
-    const handleSubmit = () => {
-        const newErrors = {};
-        if (!formData.tanggal) newErrors.tanggal = "Tanggal wajib diisi";
-        if (!formData.batch) newErrors.batch = "Batch wajib diisi";
-        if (!formData.kode) newErrors.kode = "Kode wajib diisi";
-        if (!formData.produk) newErrors.produk = "Produk wajib diisi";
-        if (!formData.kategori) newErrors.kategori = "Kategori wajib diisi";
-        if (!formData.cabang) newErrors.cabang = "Cabang wajib diisi";
-
-        if (Object.keys(newErrors).length > 0) {
-            setFormError(newErrors);
-            showAlert('error', 'Gagal', 'Lengkapi data yang wajib diisi');
-            return;
-        }
-
-        console.log(formData);
-        showAlert('success', 'Berhasil', 'Data pembelian berhasil disimpan');
-        setCurentState('main');
-    };
 
     return (
-        <div>test</div>
+        <div className="flex flex-col">
+            <HeaderSection
+                title="Tambah Pembelian"
+                description="Lengkapi informasi pembelian dan detail item inventory."
+            />
+
+            <div className="flex justify-between mb-4 gap-x-2 ">
+                <div className="flew flex-col p-6 w-2/5 bg-white rounded-lg">
+                    <p className="text-lg font-medium text-gray-750">Item Baru</p>
+                    <p className="text-sm text-gray-500">Isi detail, barcode auto-generated</p>
+
+                    <div className="flex flex-col mt-6">
+                        <InputGroup fields={fieldAdd} />
+                    </div>
+                    <button className="btn-primary mt-6 p-2 w-full rounded-lg flex items-center justify-center gap-2"><PlusCircleIcon size={20} /> Simpan</button>
+                </div>
+                <div className="w-3/5 flex flex-col p-6 bg-white rounded-lg">
+                    <div className="flex w-full justify-between">
+                        <div className="flex flex-col">
+                            <p className="text-lg font-medium text-gray-750">Batch Pembelian (7 item)</p>
+                            <p className="text-sm text-gray-500">Periksa item sebelum disimpan</p>
+                        </div>
+                        <button className="btn-primary p-2 rounded-lg flex items-center justify-center gap-2"><FloppyDiskIcon size={20} /> Simpan Batch</button>
+                    </div>
+                   <div className="mt-6">
+                     <Table
+                        columns={columns}
+                        data={listData}
+                        total={listData.length}
+                        pagination={false}
+                    />
+                   </div>
+                </div>
+            </div>
+
+        </div>
     );
 };
 
