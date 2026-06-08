@@ -214,7 +214,7 @@ const MasterProduk = () => {
                 onClick={() => handleOpenModal('add')}
                 textButton="Tambah Produk"
             />
-            <div className="w-3/6">
+            <div className="w-full lg:w-3/6">
                 <InputGroup
                     fields={searchFields}
                     formData={search}

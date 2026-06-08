@@ -1,142 +1,112 @@
 import { useEffect, useState } from "react";
-import { PlusCircleIcon, EyeIcon, PencilSimpleLineIcon } from "@phosphor-icons/react";
+import { PlusCircle, Eye, X, Printer } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import InputGroup from "../../../components/FormElement/InputGroup";
 import Table from "../../../components/Table/Table";
 import LoadingStore from "../../../Store/LoadingStore";
-import FooterActionBar from "../../../components/FooterActionBar";
 
 const Main = ({ setCurentState }) => {
     const [paramFetch, setParamFetch] = useState({
         data: [{}],
         current_page: 1,
-        total: 2,
+        total: 15,
         per_page: 10,
     });
 
     const setLoading = LoadingStore((state) => state.setLoading);
-    const [selectedRows, setSelectedRows] = useState([]);
-    const [selectedData, setSelectedData] = useState(null);
 
     const [search, setSearch] = useState({
         search: '',
         status: null,
-        kategori: null,
-        cabang: null,
     });
 
-
-        const handleSelectAll = (e) => {
-            if (e.target.checked) {
-                const allIds = paramFetch.data.map(item => item.id);
-                setSelectedRows(allIds);
-            } else {
-                setSelectedRows([]);
-            }
-        };
-
-        const handleSelectRow = (id) => {
-            setSelectedRows(prev =>
-                prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]
-            );
-        };
-
-        const handleBulkApprove = () => {
-            showAlert('success', 'Berhasil', `${selectedRows.length} data pembelian berhasil disetujui`);
-            setSelectedRows([]);
-        };
-
-        const handleBulkReject = () => {
-            showAlert('success', 'Berhasil', `${selectedRows.length} data pembelian berhasil ditolak`);
-            setSelectedRows([]);
-        };
-
-
+    // Filter yang disesuaikan dengan gambar
     const searchFields = [
-        { name: 'search', label: 'Cari Produk', type: 'text' },
-        { name: 'status', label: 'Pilih Status', type: 'dropdown', options: [] },
-        { name: 'kategori', label: 'Pilih Kategori', type: 'dropdown', options: [] },
-        { name: 'cabang', label: 'Pilih Cabang', type: 'dropdown', options: [] }
+        { name: 'search', label: '', placeholder: 'Cari transaksi..', type: 'text' },
+        { name: 'status', label: '', placeholder: 'Pilih status', type: 'dropdown', options: [] }
     ];
 
     const columns = [
-          {
-            header: (
-                <input
-                    type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
-                    onChange={handleSelectAll}
-                    checked={selectedRows.length === paramFetch.data.length && paramFetch.data.length > 0}
-                />
-            ),
-            accessor: 'checkbox',
-            render: (row) => (
-                <input
-                    type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
-                    checked={selectedRows.includes(row.id)}
-                    onChange={() => handleSelectRow(row.id)}
-                />
-            )
-        },
         { header: 'Tanggal', accessor: 'tanggal' },
-        { header: 'No. Nota', accessor: 'no_nota' },
-        { header: 'Supplier', accessor: 'supplier' },
-        { header: 'Cabang', accessor: 'cabang' },
-        { header: 'Total Item', accessor: 'total_item' },
-        { header: 'Total Harga', accessor: 'total_harga' },
+        { header: 'Order ID', accessor: 'order_id' },
+        { header: 'Customer', accessor: 'customer' },
+        { header: 'Item Produk', accessor: 'item_produk' },
         {
             header: 'Status',
             accessor: 'status',
             render: (row) => {
-                const isSelesai = row.status === 'Selesai';
+                let badgeClass = '';
+                // Menentukan warna badge berdasarkan status
+                switch (row.status) {
+                    case 'Selesai':
+                        badgeClass = 'bg-success-50 text-success-700 border-success-200';
+                        break;
+                    case 'Approval':
+                        badgeClass = 'bg-warning-50 text-warning-700 border-warning-200';
+                        break;
+                    case 'Ditolak':
+                        badgeClass = 'bg-error-50 text-error-700 border-error-200'; // Asumsi class error untuk merah
+                        break;
+                    case 'Cetak Kwitansi':
+                        badgeClass = 'bg-info-50 text-info-700 border-info-200';
+                        break;
+                    default:
+                        badgeClass = 'bg-gray-50 text-gray-700 border-gray-200';
+                }
+
                 return (
-                    <span className={`px-3 py-1 rounded-md text-xs font-medium border ${isSelesai
-                        ? 'bg-success-50 text-success-700 border-success-200'
-                        : 'bg-warning-50 text-warning-700 border-warning-200'
-                        }`}>
+                    <span className={`px-3 py-1 rounded-md text-xs font-medium border ${badgeClass}`}>
                         {row.status}
                     </span>
                 );
             }
         },
+        { header: 'Nominal', accessor: 'nominal' },
+        { header: 'Pembayaran', accessor: 'pembayaran' },
+        { header: 'User', accessor: 'user' },
         {
             header: 'Aksi',
             accessor: 'aksi',
             render: (row) => (
                 <div className="flex items-center gap-2">
-                    <button
-                        className="p-1.5 btn-outline text-info-500 hover:bg-info-50 rounded-md transition-colors"
-                    >
-                        <EyeIcon size={20} />
+                    {/* Render tombol X (Reject/Cancel) untuk status tertentu */}
+                    {(row.status === 'Cetak Kwitansi' || row.status === 'Approval') && (
+                        <button className="p-1.5 btn-outline border border-error-200 text-error-500 hover:bg-error-50 rounded-md transition-colors">
+                            <X size={20} />
+                        </button>
+                    )}
+
+                    {/* Tombol View selalu ada */}
+                    <button className="p-1.5 btn-outline border border-info-200 text-info-500 hover:bg-info-50 rounded-md transition-colors">
+                        <Eye size={20} />
                     </button>
-                    <button
-                        className="p-1.5 btn-outline !border-primary-500 hover:bg-warning-50 rounded-md transition-colors"
-                    >
-                        <PencilSimpleLineIcon size={20} />
-                    </button>
+
+                    {/* Render tombol Print khusus status Cetak Kwitansi */}
+                    {row.status === 'Cetak Kwitansi' && (
+                        <button className="p-1.5 btn-outline border border-primary-500 text-primary-500 hover:bg-primary-50 rounded-md transition-colors">
+                            <Printer size={20} />
+                        </button>
+                    )}
                 </div>
             )
         }
     ];
 
-
-
     return (
         <div className="flex flex-col gap-6 w-full">
             <HeaderSection
-                title="Pembelian"
-                description="Catat dan kelola pembelian barang sebelum masuk ke inventory aktif."
-                icon={PlusCircleIcon}
+                title="Transaksi"
+                description="Manage and track all customer orders."
+                icon={PlusCircle}
                 onClick={() => setCurentState('form')}
-                textButton="Tambah Pembelian"
+                textButton="Transaksi Baru"
             />
 
-            <div className="w-full xl:w-4/6">
+            <div className="w-full xl:w-2/6"> {/* Dibuat lebih kecil menyesuaikan porsi 2 field di gambar */}
                 <InputGroup
                     fields={searchFields}
                     formData={search}
-                    cols='4'
+                    cols='2' // Mengubah layout jadi 2 kolom (Cari & Status)
                     onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
                 />
             </div>
@@ -148,22 +118,6 @@ const Main = ({ setCurentState }) => {
                 currentPage={paramFetch.current_page}
                 pageSize={paramFetch.per_page}
             />
-
-            <div className="w-3/6 relative z-60">
-                <FooterActionBar
-                    selectedCount={selectedRows.length}
-                    onClearSelection={() => setSelectedRows([])}
-                    secondaryText="Tolak"
-                    secondaryType="danger"
-                    // secondaryIcon={<XIcon size={16} weight="bold" />}
-                    onSecondaryClick={handleBulkReject}
-                    primaryText="Setujui"
-                    primaryType="primary"
-                    // primaryIcon={<CheckIcon size={16} weight="bold" />}
-                    onPrimaryClick={handleBulkApprove}
-                />
-            </div>
-
         </div>
     );
 }

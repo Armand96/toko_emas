@@ -146,7 +146,7 @@ const MasterKategori = () => {
     return (
         <div className="flex flex-col gap-6 w-full">
             <HeaderSection title="Master Kategori" description="Kelola daftar kategori dan sub-kategori produk." icon={PlusCircleIcon} onClick={() => handleOpenModal('add')} textButton="Tambah Kategori" />
-            <div className="w-1/3">
+            <div className="w-full lg:w-1/3">
                 <InputGroup fields={[{ name: 'category_name', label: 'Cari Kategori', type: 'text', placeholder: 'Ketik nama kategori...' }]} formData={search} cols='1' onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })} />
             </div>
             <Table columns={columns} data={paramFetch.data} onPageChange={onChangePage} onPageSizeChange={onChangePageSize} total={paramFetch.total} page={paramFetch.current_page} pageSize={paramFetch.per_page} />

@@ -8,6 +8,7 @@ import Branch from "../pages/administrator/Branch/Page";
 import SettingStore from "../pages/administrator/Store/Page";
 import { Approval } from "./approval";
 import MasterBank from "../pages/administrator/MasterBank/Page";
+import Penjualan from "../pages/Penjualan/Page";
 
 const router = createBrowserRouter([
     {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
               {
                 path: "/administrator/setting",
                 element: <SettingStore />
+            },
+              {
+                path: "/penjualan",
+                element: <Penjualan />
             },
             ...Inventory,
             ...Ui,
