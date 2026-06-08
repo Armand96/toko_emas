@@ -86,8 +86,8 @@ export default function Modal({
                 isView
                     ? "Detail Informasi Cabang"
                     : formData?.id
-                      ? "Edit Informasi Cabang"
-                      : "Tambah Cabang Baru"
+                        ? "Edit Informasi Cabang"
+                        : "Tambah Cabang Baru"
             }
             confirmTextButton="Simpan Perubahan"
             cancelTextButton={isView ? "Tutup" : "Batal"}

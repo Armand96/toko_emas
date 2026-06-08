@@ -84,7 +84,8 @@ const sidebarData = [
     items: [
       { id: "user", label: "User", icon: UsersIcon, link: "/administrator/user" },
       { id: "cabang", label: "Cabang", icon: StorefrontIcon, link: "/administrator/cabang" },
-      { id: "setting", label: "Setting", icon: GearIcon, link: "/administrator/setting" }
+      { id: "setting", label: "Setting", icon: GearIcon, link: "/administrator/setting" },
+            { id: "MasterBank", label: "Master Bank", icon: GearIcon, link: "/administrator/master-bank" }
     ]
   }
 ];

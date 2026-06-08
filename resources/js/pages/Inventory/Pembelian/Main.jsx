@@ -4,16 +4,19 @@ import HeaderSection from "../../../components/HeaderSection";
 import InputGroup from "../../../components/FormElement/InputGroup";
 import Table from "../../../components/Table/Table";
 import LoadingStore from "../../../Store/LoadingStore";
+import FooterActionBar from "../../../components/FooterActionBar";
 
 const Main = ({ setCurentState }) => {
     const [paramFetch, setParamFetch] = useState({
-        data: [],
+        data: [{}],
         current_page: 1,
         total: 2,
         per_page: 10,
     });
 
     const setLoading = LoadingStore((state) => state.setLoading);
+    const [selectedRows, setSelectedRows] = useState([]);
+    const [selectedData, setSelectedData] = useState(null);
 
     const [search, setSearch] = useState({
         search: '',
@@ -23,6 +26,30 @@ const Main = ({ setCurentState }) => {
     });
 
 
+        const handleSelectAll = (e) => {
+            if (e.target.checked) {
+                const allIds = paramFetch.data.map(item => item.id);
+                setSelectedRows(allIds);
+            } else {
+                setSelectedRows([]);
+            }
+        };
+
+        const handleSelectRow = (id) => {
+            setSelectedRows(prev =>
+                prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]
+            );
+        };
+
+        const handleBulkApprove = () => {
+            showAlert('success', 'Berhasil', `${selectedRows.length} data pembelian berhasil disetujui`);
+            setSelectedRows([]);
+        };
+
+        const handleBulkReject = () => {
+            showAlert('success', 'Berhasil', `${selectedRows.length} data pembelian berhasil ditolak`);
+            setSelectedRows([]);
+        };
 
 
     const searchFields = [
@@ -33,6 +60,25 @@ const Main = ({ setCurentState }) => {
     ];
 
     const columns = [
+          {
+            header: (
+                <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                    onChange={handleSelectAll}
+                    checked={selectedRows.length === paramFetch.data.length && paramFetch.data.length > 0}
+                />
+            ),
+            accessor: 'checkbox',
+            render: (row) => (
+                <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                    checked={selectedRows.includes(row.id)}
+                    onChange={() => handleSelectRow(row.id)}
+                />
+            )
+        },
         { header: 'Tanggal', accessor: 'tanggal' },
         { header: 'No. Nota', accessor: 'no_nota' },
         { header: 'Supplier', accessor: 'supplier' },
@@ -74,6 +120,8 @@ const Main = ({ setCurentState }) => {
         }
     ];
 
+
+
     return (
         <div className="flex flex-col gap-6 w-full">
             <HeaderSection
@@ -100,6 +148,21 @@ const Main = ({ setCurentState }) => {
                 currentPage={paramFetch.current_page}
                 pageSize={paramFetch.per_page}
             />
+
+            <div className="w-3/6 relative z-60">
+                <FooterActionBar
+                    selectedCount={selectedRows.length}
+                    onClearSelection={() => setSelectedRows([])}
+                    secondaryText="Tolak"
+                    secondaryType="danger"
+                    // secondaryIcon={<XIcon size={16} weight="bold" />}
+                    onSecondaryClick={handleBulkReject}
+                    primaryText="Setujui"
+                    primaryType="primary"
+                    // primaryIcon={<CheckIcon size={16} weight="bold" />}
+                    onPrimaryClick={handleBulkApprove}
+                />
+            </div>
 
         </div>
     );

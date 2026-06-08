@@ -10,6 +10,18 @@ const HelperFunctions = {
             formattedData = [{ value: '', label: 'Pilih' }, ...formattedData];
         }
         return formattedData;
+    },
+    formatDropdownWithCode: (data = [], valueKey = 'id', labelCode = 'code', labelKey = 'name', isNull = false) => {
+        if (!Array.isArray(data)) return [];
+        let formattedData = data.map(item => ({
+            value: item[valueKey],
+            label: `${item[labelCode]} - ${item[labelKey]}`,
+            details: item,
+        }));
+        if (isNull) {
+            formattedData = [{ value: '', label: 'Pilih' }, ...formattedData];
+        }
+        return formattedData;
     }
 };
 

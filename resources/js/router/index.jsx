@@ -7,7 +7,7 @@ import Layout from "../components/layout/Layout";
 import Branch from "../pages/administrator/Branch/Page";
 import SettingStore from "../pages/administrator/Store/Page";
 import { Approval } from "./approval";
-
+import MasterBank from "../pages/administrator/MasterBank/Page";
 
 const router = createBrowserRouter([
     {
@@ -20,6 +20,10 @@ const router = createBrowserRouter([
             {
                 path: "/administrator/cabang",
                 element: <Branch />
+            },
+                {
+                path: "/administrator/master-bank",
+                element: <MasterBank />
             },
               {
                 path: "/administrator/setting",

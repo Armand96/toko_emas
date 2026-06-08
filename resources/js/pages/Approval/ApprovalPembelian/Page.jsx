@@ -24,7 +24,7 @@ const ApprovalPembelian = () => {
         ],
         page: 1,
         total: 3,
-        pageSize: 10,
+        per_page: 10,
     });
 
     const [search, setSearch] = useState("");

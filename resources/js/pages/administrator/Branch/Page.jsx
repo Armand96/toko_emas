@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { PlusCircleIcon, PencilSimpleLineIcon, TrashIcon, EyeIcon } from "@phosphor-icons/react";
+import { PlusCircleIcon, PencilSimpleLineIcon, TrashIcon, EyeIcon, BankIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
@@ -7,6 +7,7 @@ import InputGroup from '../../../components/FormElement/InputGroup';
 import { showAlert } from '../../../utils/showAlert';
 import LoadingStore from '../../../Store/LoadingStore';
 import BranchApis from '../../../Services/Branch.apis';
+import ModalBank from './ModalBank';
 
 const Branch = () => {
     const [paramFetch, setParamFetch] = useState({
@@ -34,6 +35,8 @@ const Branch = () => {
     const [formData, setFormData] = useState({});
     const [formError, setFormError] = useState({});
     const [isView, setIsView] = useState(false);
+    const [showModalBank, setShowModalBank] = useState(false);
+
 
 
     const fetchData = async (page = 1, pageSize = 10, branch_name = '', status = '') => {
@@ -73,6 +76,10 @@ const Branch = () => {
         } else if (mode === 'view') {
             setFormData(record);
             setIsView(true);
+        }else if (mode === 'bank') {
+            setFormData(record);
+            setShowModalBank(true);
+            return
         }
         setIsModalOpen(true);
     };
@@ -179,9 +186,15 @@ const Branch = () => {
             accessor: 'aksi',
             render: (row) => (
                 <div className="flex items-center gap-2">
+                       <button
+                        onClick={() => handleOpenModal('bank', row)}
+                        className="p-1.5 btn-outline !border-primary-500 text-info-500 hover:bg-info-50 rounded-md transition-colors"
+                    >
+                        <BankIcon size={20} />
+                    </button>
                     <button
                         onClick={() => handleOpenModal('view', row)}
-                        className="p-1.5 btn-outline text-info-500 hover:bg-info-50 rounded-md transition-colors"
+                        className="p-1.5 btn-outline !border-primary-500 text-info-500 hover:bg-info-50 rounded-md transition-colors"
                     >
                         <EyeIcon size={20} />
                     </button>
@@ -243,6 +256,12 @@ const Branch = () => {
                 onChange={handleChange}
                 formError={formError}
                 isView={isView}
+            />
+
+            <ModalBank
+                formData={formData}
+                isOpen={showModalBank}
+                onClose={() => setShowModalBank(false)}
             />
         </div>
     );

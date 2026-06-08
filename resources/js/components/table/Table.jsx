@@ -7,6 +7,7 @@ const Table = ({
   page = 1,
   pageSize = 10,
   total = 0,
+  paginate = true,
   onPageChange,
   onPageSizeChange,
   onSort,
@@ -158,7 +159,8 @@ const Table = ({
 
     </div>
 
-     <div className="flex flex-col md:flex-row items-center justify-between p-4 gap-4 bg-transparent">
+  {
+    paginate &&    <div className="flex flex-col md:flex-row items-center justify-between p-4 gap-4 bg-transparent">
         <div className="flex items-center text-sm text-gray-500">
           Showing <span className="font-semibold text-gray-900 mx-1">{startEntry}</span> -
           <span className="font-semibold text-gray-900 mx-1">{endEntry}</span> of
@@ -215,6 +217,7 @@ const Table = ({
           </div>
         </div>
       </div>
+  }
 
   </div>
   );
