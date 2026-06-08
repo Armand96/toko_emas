@@ -25,10 +25,6 @@ const Main = ({ setCurentState }) => {
 
 
 
-    useEffect(() => {
-        console.log('test');
-    }, []);
-
     const searchFields = [
         { name: 'search', label: 'Cari Produk', type: 'text' },
         { name: 'status', label: 'Pilih Status', type: 'dropdown', options: [] },
@@ -104,6 +100,7 @@ const Main = ({ setCurentState }) => {
                 currentPage={paramFetch.current_page}
                 pageSize={paramFetch.per_page}
             />
+
         </div>
     );
 }

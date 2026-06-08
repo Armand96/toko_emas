@@ -41,6 +41,7 @@ const sidebarData = [
         icon: CheckSquareOffsetIcon,
         subItems: [
           { label: "Transaksi", link: "/approval/transaksi" },
+                    { label: "Pembelian", link: "/approval/pembelian" },
           { label: "Transfer", link: "/approval/transfer" }
         ]
       },
