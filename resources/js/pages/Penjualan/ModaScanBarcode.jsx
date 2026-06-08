@@ -1,58 +1,76 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MagnifyingGlass } from "@phosphor-icons/react";
-import { BrowserMultiFormatReader, NotFoundException } from "@zxing/browser";
 import ModalCustom from "../../components/modalCustom";
+import { BrowserMultiFormatReader } from "@zxing/browser";
+import { NotFoundException } from "@zxing/library";
 
 const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
     const [manualInput, setManualInput] = useState("");
     const [error, setError] = useState(null);
     const videoRef = useRef(null);
     const readerRef = useRef(null);
+    const streamRef = useRef(null); // simpan stream kamera
 
     useEffect(() => {
         if (!isOpen) {
-            // Stop scanner saat modal ditutup
             stopScanner();
             return;
         }
 
-        startScanner();
+        const timeout = setTimeout(() => {
+            startScanner();
+        }, 300);
 
-        return () => stopScanner();
+        return () => {
+            clearTimeout(timeout);
+            stopScanner();
+        };
     }, [isOpen]);
 
     const startScanner = async () => {
         try {
             setError(null);
+
+            if (!videoRef.current) {
+                setError("Video element belum siap.");
+                return;
+            }
+
             readerRef.current = new BrowserMultiFormatReader();
 
-            // Ambil daftar kamera, prioritaskan kamera belakang
             const devices = await BrowserMultiFormatReader.listVideoInputDevices();
-            const backCamera = devices.find(d =>
-                d.label.toLowerCase().includes("back") ||
-                d.label.toLowerCase().includes("belakang") ||
-                d.label.toLowerCase().includes("environment")
-            ) || devices[devices.length - 1]; // fallback ke kamera terakhir (biasanya belakang)
 
-            if (!backCamera) {
+            if (!devices || devices.length === 0) {
                 setError("Tidak ada kamera ditemukan.");
                 return;
             }
 
-            await readerRef.current.decodeFromVideoDevice(
+            const backCamera =
+                devices.find((d) =>
+                    /back|belakang|environment|rear/i.test(d.label)
+                ) || devices[devices.length - 1];
+
+            const controls = await readerRef.current.decodeFromVideoDevice(
                 backCamera.deviceId,
                 videoRef.current,
                 (result, err) => {
                     if (result) {
+                        console.log("testttt", result.getText())
                         onScanSuccess(result.getText());
                         stopScanner();
+                        onClose();
                     }
-                    // Abaikan NotFoundException — itu normal (frame tanpa barcode)
                     if (err && !(err instanceof NotFoundException)) {
                         console.error("Scan error:", err);
                     }
                 }
             );
+
+            // Simpan stream dari video element setelah scanner jalan
+            if (videoRef.current?.srcObject) {
+                streamRef.current = videoRef.current.srcObject;
+            }
+
         } catch (e) {
             console.error(e);
             setError("Gagal mengakses kamera. Pastikan izin kamera sudah diberikan.");
@@ -60,9 +78,23 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
     };
 
     const stopScanner = () => {
+        // 1. Stop semua track dari stream — ini yang matikan lampu kamera
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach((track) => track.stop());
+            streamRef.current = null;
+        }
+
+        // 2. Reset reader zxing
         if (readerRef.current) {
-            readerRef.current.reset();
+            try {
+                readerRef.current.reset();
+            } catch (_) {}
             readerRef.current = null;
+        }
+
+        // 3. Bersihkan srcObject dari video element
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
         }
     };
 
@@ -70,6 +102,7 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
         if (manualInput.trim()) {
             onScanSuccess(manualInput.trim());
             setManualInput("");
+            onClose();
         }
     };
 
@@ -87,7 +120,6 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
                         ref={videoRef}
                         className="w-full object-cover aspect-video"
                     />
-                    {/* Garis scan animasi */}
                     <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse -translate-y-1/2" />
                 </div>
 
@@ -102,7 +134,6 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
                     </span>
                 </p>
 
-                {/* Input Manual */}
                 <div className="mt-6 flex gap-2 w-full max-w-sm">
                     <input
                         type="text"
