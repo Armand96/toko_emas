@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MagnifyingGlass } from "@phosphor-icons/react";
+import { MagnifyingGlass, MagnifyingGlassIcon } from "@phosphor-icons/react";
 import ModalCustom from "../../components/modalCustom";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { NotFoundException } from "@zxing/library";
@@ -147,7 +147,7 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
                         onClick={handleManualSubmit}
                         className="bg-primary-500 text-white p-2 rounded-md hover:bg-primary-600 transition-colors"
                     >
-                        <MagnifyingGlass size={20} />
+                        <MagnifyingGlassIcon size={20} />
                     </button>
                 </div>
             </div>
