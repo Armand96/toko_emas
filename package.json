@@ -27,6 +27,7 @@
     "dependencies": {
         "@phosphor-icons/react": "^2.1.10",
         "@vitejs/plugin-react": "^6.0.2",
+        "@zxing/browser": "^0.2.0",
         "axios": "^1.16.1",
         "js-cookie": "^3.0.8",
         "react-debounce": "^1.0.2",

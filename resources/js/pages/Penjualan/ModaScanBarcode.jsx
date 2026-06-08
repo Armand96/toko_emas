@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MagnifyingGlass } from "@phosphor-icons/react";
-import { BrowserMultiFormatReader, NotFoundException } from "@zxing/browser";
+import { BrowserMultiFormatReader } from "@zxing/browser";
 import ModalCustom from "../../components/modalCustom";
 
 const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
