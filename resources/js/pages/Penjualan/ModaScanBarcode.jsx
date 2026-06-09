@@ -133,23 +133,6 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
                         Pastikan pencahayaan cukup dan kamera fokus.
                     </span>
                 </p>
-
-                <div className="mt-6 flex gap-2 w-full max-w-sm">
-                    <input
-                        type="text"
-                        value={manualInput}
-                        onChange={(e) => setManualInput(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleManualSubmit()}
-                        placeholder="Atau ketik ID produk..."
-                        className="flex-1 text-sm border border-gray-300 rounded-md py-2 px-3 focus:ring-primary-500 outline-none"
-                    />
-                    <button
-                        onClick={handleManualSubmit}
-                        className="bg-primary-500 text-white p-2 rounded-md hover:bg-primary-600 transition-colors"
-                    >
-                        <MagnifyingGlassIcon size={20} />
-                    </button>
-                </div>
             </div>
         </ModalCustom>
     );

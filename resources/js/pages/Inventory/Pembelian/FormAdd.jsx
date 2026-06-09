@@ -75,7 +75,6 @@ const Form = ({ setCurentState }) => {
         )}
     ]
 
-
     return (
         <div className="flex flex-col">
             <HeaderSection

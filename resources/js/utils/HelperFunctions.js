@@ -22,6 +22,13 @@ const HelperFunctions = {
             formattedData = [{ value: '', label: 'Pilih' }, ...formattedData];
         }
         return formattedData;
+    },
+    formatCurrency: (price) => {
+         return new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0
+        }).format(price);
     }
 };
 

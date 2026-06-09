@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Tag, TrendUp, CheckCircle, BarcodeIcon } from '@phosphor-icons/react';
+import { Tag, TrendUp, CheckCircle, BarcodeIcon, CheckCircleIcon } from '@phosphor-icons/react';
 import ModalCustom from '../../../components/modalCustom';
 import InputGroup from '../../../components/FormElement/InputGroup';
+import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
 
 export default function Modal({
     isOpen,
@@ -168,7 +169,7 @@ export default function Modal({
                     </div>
                 </div>
 
-                <div className="border border-neutral-200 rounded-lg p-5 flex flex-col gap-4">
+                {/* <div className="border border-neutral-200 rounded-lg p-5 flex flex-col gap-4">
                     <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
                         <div className="w-1 h-4 bg-info-500 rounded-full"></div>
                         <h3 className="font-bold text-neutral-900">Approval</h3>
@@ -180,8 +181,15 @@ export default function Modal({
                             <span className="text-neutral-400 font-normal ml-2">• {data?.tanggal_disetujui || '21 Mei 2026, 12:00'}</span>
                         </div>
                     </div>
-                </div>
+                </div> */}
 
+                <ApprovalStatusCard
+                    Icon={CheckCircleIcon}
+                    iconColor="text-success-500"
+                    statusText="Disetujui oleh"
+                    pic={data?.disetujui_oleh || 'Owner'}
+                    date={data?.tanggal_disetujui || '21 Mei 2026, 12:00'}
+                />
                 {mode === 'approve' && (
                     <div className="flex flex-col gap-4 pt-4 border-t border-neutral-200 mt-2">
                         <InputGroup cols="1" fields={formFields} formData={formData} onChange={handleChange} />
