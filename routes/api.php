@@ -7,6 +7,7 @@ use App\Http\Controllers\MCategoryController;
 use App\Http\Controllers\MCustomerController;
 use App\Http\Controllers\MProductController;
 use App\Http\Controllers\StoreSettingController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::apiResource('branches', MBranchController::class);
@@ -17,3 +18,4 @@ Route::apiResource('banks', MBankController::class);
 Route::apiResource('bankCabangs', BankCabangController::class);
 Route::apiResource('customers', MCustomerController::class);
 Route::apiResource('storeSettings', StoreSettingController::class);
+Route::apiResource('users', UserController::class);
