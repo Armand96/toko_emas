@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Model;
+
+#[Fillable([
+    'batch',
+    'product_id',
+    'category_id',
+    'subcategory_id',
+    'branch_id',
+    'status',
+    'bank_id',
+    'barcode',
+    'berat',
+    'karat',
+    'modal',
+    'jual',
+])]
+class Pembelian extends Model
+{
+    //
+
+    public function product()
+    {
+        return $this->belongsTo(MProduct::class, 'product_id', 'id');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(MCategory::class, 'category_id', 'id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(MBranch::class, 'branch_id', 'id');
+    }
+
+    public function bank()
+    {
+        return $this->belongsTo(MBank::class, 'bank_id', 'id');
+    }
+}

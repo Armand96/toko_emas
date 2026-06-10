@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\ApiResponse;
+// use App\Helpers\ApiResponse;
 use App\Models\Inventory;
 use Illuminate\Http\Request;
-use InventoryStatus;
+// use InventoryStatus;
 
 class InventoryController extends Controller
 {
@@ -38,61 +38,8 @@ class InventoryController extends Controller
         return response()->json($inventories);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function pembelian()
     {
-        return ApiResponse::error('route not found', null, 404);
+
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validated();
-
-        try {
-            $validated['status'] = InventoryStatus::;
-            $inventory = Inventory::create($validated);
-
-            return ApiResponse::success($inventory, "Success create branch", 201);
-        } catch (\Throwable $th) {
-            return ApiResponse::error($th->getMessage(), $th, 500);
-        }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Inventory $inventory)
-    {
-        return ApiResponse::success($inventory, "Success");
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Inventory $inventory)
-    {
-        return ApiResponse::error('route not found', null, 404);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Inventory $inventory)
-    {
-        return ApiResponse::error('route not found', null, 404);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Inventory $inventory)
-    {
-        return ApiResponse::error('route not found', null, 404);
-    }
-
 }
