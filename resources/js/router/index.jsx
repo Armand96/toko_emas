@@ -9,6 +9,7 @@ import SettingStore from "../pages/administrator/Store/Page";
 import { Approval } from "./approval";
 import MasterBank from "../pages/administrator/MasterBank/Page";
 import Penjualan from "../pages/Penjualan/Page";
+import MasterUser from "../pages/administrator/user/Page";
 
 const router = createBrowserRouter([
     {
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
               {
                 path: "/administrator/setting",
                 element: <SettingStore />
+            },
+                {
+                path: "/administrator/users",
+                element: <MasterUser />
             },
               {
                 path: "/penjualan",

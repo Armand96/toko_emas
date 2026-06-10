@@ -18,7 +18,16 @@ const InventoryApis = {
     },
     PutProducts: (id, body) => {
         return Apis.Put(`api/products/${id}`, body, );
-    }
+    },
+      GetPembelian: (params) => {
+        return Apis.Get(`api/pembelian${params}`).then(({ data }) => data);
+    },
+      PostPembelian: (body) => {
+        return Apis.Post(`api/pembelian`, body,);
+    },
+     updatePembelian: ( body) => {
+        return Apis.Post(`api/update-pembelian`, body, );
+    },
 }
 
 export default InventoryApis;

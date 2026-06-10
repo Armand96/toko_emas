@@ -53,7 +53,7 @@ const sidebarData = [
            { label: "Master Kategori", link: "/inventory/master-kategori" },
           { label: "Master Produk", link: "/inventory/master-produk" },
           { label: "Pembelian", link: "/inventory/pembelian" },
-          { label: "Item Inventory", link: "/inventory/item-inventory" },
+          { label: "Item Inventory", link: "/inventory/inventory" },
           { label: "Pengeluaran Item", link: "/inventory/pengeluaran-item" },
           { label: "Transfer", link: "/inventory/transfer" },
           { label: "Stock Opname", link: "/inventory/stock-opname" }
@@ -82,7 +82,7 @@ const sidebarData = [
   {
     group: "Administrator",
     items: [
-      { id: "user", label: "User", icon: UsersIcon, link: "/administrator/user" },
+      { id: "user", label: "User", icon: UsersIcon, link: "/administrator/users" },
       { id: "cabang", label: "Cabang", icon: StorefrontIcon, link: "/administrator/cabang" },
       { id: "setting", label: "Setting", icon: GearIcon, link: "/administrator/setting" },
             { id: "MasterBank", label: "Master Bank", icon: GearIcon, link: "/administrator/master-bank" }

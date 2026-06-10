@@ -1,7 +1,7 @@
 
 const HeaderSection = ({ title, description, icon: Icon, onClick, textButton }) => {
   return (
-    <div className="flex items-center justify-between p-4">
+    <div className="flex flex-col lg:flex-row gap-y-3 lg:items-center justify-between p-4">
       <div className="flex flex-col gap-0.5">
         <span className="text-[24px] font-semibold text-gray-950">{title}</span>
         <span className="text-[13px] text-gray-500">{description}</span>

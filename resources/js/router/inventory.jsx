@@ -1,6 +1,8 @@
+import MasterInventory from "../pages/Inventory/Inventory/Page";
 import MasterKategori from "../pages/Inventory/MasterKategori/Page";
 import MasterProduk from "../pages/Inventory/MasterProduk/Page";
 import Pembelian from "../pages/Inventory/Pembelian/Page";
+import TransferInventory from "../pages/Inventory/transfer/Page";
 
 
 export const Inventory = [
@@ -15,5 +17,13 @@ export const Inventory = [
       {
         path: "/inventory/pembelian",
         element: <Pembelian />,
+    },
+      {
+        path: "/inventory/inventory",
+        element: <MasterInventory />,
+    },
+      {
+        path: "/inventory/transfer",
+        element: <TransferInventory />,
     },
 ]
