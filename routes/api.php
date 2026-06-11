@@ -21,6 +21,7 @@ Route::apiResource('customers', MCustomerController::class);
 Route::apiResource('storeSettings', StoreSettingController::class);
 Route::apiResource('users', UserController::class);
 
+Route::get('pembelian/{pembelian}', [PembelianController::class, 'single']);
 Route::get('pembelian', [PembelianController::class, 'index']);
 Route::post('pembelian', [PembelianController::class, 'pembelian']);
 Route::post('update-pembelian', [PembelianController::class, 'changeApproval']);

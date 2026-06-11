@@ -33,7 +33,7 @@ class BankCabangController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $bankes = $query->paginate($perPage);
+        $bankes = $query->with(['branch','bank'])->paginate($perPage);
 
         return response()->json($bankes);
     }
@@ -67,7 +67,7 @@ class BankCabangController extends Controller
      */
     public function show(BankCabang $bankCabang)
     {
-        return ApiResponse::success($bankCabang, "Success");
+        return ApiResponse::success($bankCabang->load(['branch','bank']), "Success");
     }
 
     /**

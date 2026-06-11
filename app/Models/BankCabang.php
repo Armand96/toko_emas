@@ -16,5 +16,13 @@ use Illuminate\Database\Eloquent\Model;
 #[Hidden(['created_at', 'updated_at'])]
 class BankCabang extends Model
 {
-    //
+    public function branch()
+    {
+        return $this->belongsTo(MBranch::class, 'branch_id', 'id');
+    }
+
+    public function bank()
+    {
+        return $this->belongsTo(MBank::class, 'bank_id', 'id');
+    }
 }
