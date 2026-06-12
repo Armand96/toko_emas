@@ -4,7 +4,9 @@ const ApprovalStatusCard = ({
     statusText,
     pic,
     date,
-    status
+    status,
+    reasonLabel,
+    reason
 }) => {
     return (
         <div className="border border-neutral-200 rounded-lg p-5 flex flex-col gap-4">
@@ -19,6 +21,12 @@ const ApprovalStatusCard = ({
                     <span className="text-neutral-400 font-normal ml-2">• {date}</span>
                 </div>
             </div>
+            {reason && (
+                <div className="rounded-lg border border-danger-200 bg-danger-50 px-4 py-3 text-sm text-danger-700">
+                    {reasonLabel && <span className="font-medium">{reasonLabel}: </span>}
+                    {reason}
+                </div>
+            )}
         </div>
     );
 };

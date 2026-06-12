@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Scan, X, CaretRight, MagnifyingGlass } from "@phosphor-icons/react";
+import { ScanIcon, XIcon, CaretRightIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../components/HeaderSection";
 import ModalScanBarcode from "./ModaScanBarcode"; // Sesuaikan path
 import HelperFunctions from "../../utils/HelperFunctions";
@@ -57,7 +57,7 @@ const FormAdd = ({ setCurentState }) => {
             name: 'Kalung Italy Rantai',
             specs: '5g • 18K',
             price: 19500000,
-            image: 'https://via.placeholder.com/40/FDF3E7/D97706?text=K'
+            image: null
         }
     ]);
 
@@ -112,7 +112,7 @@ const FormAdd = ({ setCurentState }) => {
     }, [selectedMember, customerType, customerData.nama, paymentMethod]);
 
     return (
-        <div className="flex flex-col gap-6 w-full pb-20">
+        <div className="flex flex-col gap-6 w-full pb-6">
             <HeaderSection
                 title="Input Penjualan"
                 description="Masukkan detail transaksi penjualan dan pilih item yang akan dijual."
@@ -193,7 +193,7 @@ const FormAdd = ({ setCurentState }) => {
                                         }}
                                         onFocus={() => setIsSearching(true)}
                                     />
-                                    <MagnifyingGlass size={20} className="text-gray-400" />
+                                    <MagnifyingGlassIcon size={20} className="text-gray-400" />
                                 </div>
 
                                 {isSearching && (
@@ -254,7 +254,7 @@ const FormAdd = ({ setCurentState }) => {
                         onClick={() => setIsScanModalOpen(true)}
                         className="flex flex-1 items-center justify-center gap-2 py-2.5 border border-primary-500 text-primary-600 rounded-lg font-medium hover:bg-primary-50 transition-colors"
                     >
-                        <Scan size={20} />
+                        <ScanIcon size={20} />
                         Scan Barcode
                     </button>
                     <span className="text-gray-400 text-sm">atau</span>
@@ -265,7 +265,7 @@ const FormAdd = ({ setCurentState }) => {
                             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none cursor-pointer pr-10"
                             readOnly
                         />
-                        <CaretRight size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <CaretRightIcon size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" />
                     </div>
                 </div>
 
@@ -277,7 +277,11 @@ const FormAdd = ({ setCurentState }) => {
                                 <div className="px-3 py-1 bg-gray-100 rounded text-xs font-medium text-gray-500 border border-gray-200">
                                     {item.id}
                                 </div>
-                                <img src={item.image} alt={item.name} className="w-10 h-10 rounded-md object-cover border border-gray-200" />
+                                {item.image ? (
+                                    <img src={item.image} alt={item.name} className="w-10 h-10 rounded-md object-cover border border-gray-200" />
+                                ) : (
+                                    <div className="w-10 h-10 rounded-md bg-amber-100/50 border border-gray-200 flex items-center justify-center text-[10px] text-amber-700">Img</div>
+                                )}
                                 <div className="flex flex-col">
                                     <span className="text-sm font-semibold text-gray-800">{item.name}</span>
                                     <span className="text-xs text-gray-500">{item.specs}</span>
@@ -289,7 +293,7 @@ const FormAdd = ({ setCurentState }) => {
                                     onClick={() => handleRemoveItem(item.id)}
                                     className="p-1.5 text-error-500 hover:bg-error-50 rounded-md transition-colors"
                                 >
-                                    <X size={18} />
+                                    <XIcon size={18} />
                                 </button>
                             </div>
                         </div>
@@ -335,6 +339,28 @@ const FormAdd = ({ setCurentState }) => {
                             Transfer
                         </button>
                     </div>
+
+                    {/* --- UANG DIBAYAR & KEMBALIAN (HANYA MUNCUL JIKA TUNAI) --- */}
+                    {paymentMethod === 'tunai' && (
+                        <div className="grid grid-cols-2 gap-4 mt-2">
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-sm font-medium text-gray-700">Uang Dibayar<span className="text-error-500">*</span></label>
+                                <input
+                                    type="number"
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                                    value={uangDibayar}
+                                    onChange={(e) => setUangDibayar(Number(e.target.value))}
+                                    placeholder="Rp 0"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-sm font-medium text-gray-700">Kembalian</label>
+                                <div className="w-full border border-gray-200 rounded-lg px-3 py-2.5 bg-gray-50 text-gray-800 font-medium">
+                                    {HelperFunctions.formatCurrency(kembalian > 0 ? kembalian : 0)}
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* --- PILIHAN REKENING & NAMA PENGIRIM (HANYA MUNCUL JIKA TRANSFER) --- */}
                     {paymentMethod === 'transfer' && (
@@ -395,20 +421,22 @@ const FormAdd = ({ setCurentState }) => {
                     )}
                 </div>
 
-                <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
-                    <button
-                        onClick={() => setCurentState('main')}
-                        className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                    >
-                        Batal
-                    </button>
-                    <button
-                        className={`px-6 py-2 rounded-lg font-medium text-white transition-colors ${subTotal > 0 ? 'bg-primary-500 hover:bg-primary-600' : 'bg-gray-300 cursor-not-allowed'}`}
-                        disabled={subTotal === 0}
-                    >
-                        Ajukan Transaksi Penjualan
-                    </button>
-                </div>
+            </div>
+
+            {/* Action Buttons (inline di paling bawah konten) */}
+            <div className="flex items-center justify-between">
+                <button
+                    onClick={() => setCurentState('main')}
+                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                >
+                    Batal
+                </button>
+                <button
+                    className={`px-6 py-2 rounded-lg font-medium text-white transition-colors ${subTotal > 0 ? 'bg-primary-500 hover:bg-primary-600' : 'bg-gray-300 cursor-not-allowed'}`}
+                    disabled={subTotal === 0}
+                >
+                    Ajukan Transaksi Penjualan
+                </button>
             </div>
 
             {/* Panggil ModalScanBarcode */}

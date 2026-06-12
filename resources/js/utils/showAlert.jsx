@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import AlertModal from '../components/alertModal';
+import AlertModal from '../components/AlertModal';
 
 export function showAlert(options) {
   const container = document.createElement('div');

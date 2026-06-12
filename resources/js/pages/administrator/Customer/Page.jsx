@@ -2,16 +2,14 @@ import { useState, useEffect } from 'react';
 import { UserPlusIcon, PencilSimpleLineIcon, EyeIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
-import ModalUser from "./Modal";
 import InputGroup from '../../../components/FormElement/InputGroup';
 import { showAlert } from '../../../utils/showAlert';
-import UsersApis from "../../../Services/User.apis";
-import BranchApis from "../../../Services/Branch.apis";
-import HelperFunctions from '../../../utils/HelperFunctions';
+import CustomerApis from "../../../Services/Customer.apis";
 import LoadingStore from '../../../Store/LoadingStore';
 import { useDebounce } from 'use-debounce';
+import ModalCustomer from './Modal';
 
-const MasterUser = () => {
+const MasterCustomer = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
     const [paramFetch, setParamFetch] = useState({ data: [], page: 1, total: 0, pageSize: 10 });
     const [search, setSearch] = useState({ name: '' });
@@ -20,24 +18,17 @@ const MasterUser = () => {
     const [formError, setFormError] = useState({});
     const [isView, setIsView] = useState(false);
     const [firstLoading, setFirstLoading] = useState(false);
-    const [branchOptions, setBranchOptions] = useState([]);
-    const [roleOptions, setRoleOptions] = useState([
-        { value: "1", label: "1"}
-    ]);
     const [searchBounce] = useDebounce(search, 500);
     const [requiredFields] = useState([
-        { name: 'name', error_message: 'Nama lengkap wajib diisi' },
-        { name: 'username', error_message: 'Username wajib diisi' },
-        { name: 'email', error_message: 'Email wajib diisi' },
-        { name: 'branch_id', error_message: 'Cabang/penempatan wajib diisi' },
-        { name: 'role_id', error_message: 'Role wajib diisi' },
-        { name: 'password', error_message: 'Password wajib diisi' },
+        { name: 'customer_name', error_message: 'Nama lengkap wajib diisi' },
+        { name: 'phone_number', error_message: 'No HP wajib diisi' },
+        { name: 'address', error_message: 'Alamat wajib diisi' },
     ]);
 
     const fetchData = async (page = 1, pageSize = 10, name = '') => {
         setLoading(true);
         try {
-            const res = await UsersApis.GetUser(`?page=${page}&limit=${pageSize}${name ? `&name=${name}` : ''}`);
+            const res = await CustomerApis.GetCustomer(`?page=${page}&limit=${pageSize}${name ? `&name=${name}` : ''}`);
             setParamFetch(res);
             setFirstLoading(true);
         } catch (error) {
@@ -47,24 +38,8 @@ const MasterUser = () => {
         }
     };
 
-    const fetchOptions = async () => {
-        try {
-            const [branches, roles] = await Promise.all([
-                BranchApis.GetBranch(''),
-                // UsersApis.GetRoles(),
-            ]);
-            setBranchOptions(HelperFunctions.formatDropdown(branches?.data || [], 'id', 'branch_name'));
-            // setRoleOptions(HelperFunctions.formatDropdown(roles?.data || [], 'id', 'role_name'));
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    console.log(branchOptions)
-
     useEffect(() => {
         fetchData();
-        fetchOptions();
     }, []);
 
     useEffect(() => {
@@ -118,19 +93,15 @@ const MasterUser = () => {
         setLoading(true);
         try {
             const body = new FormData();
-            body.append('name', submitData.name);
-            body.append('username', submitData.username);
-            body.append('email', submitData.email);
-            body.append('branch_id', submitData.branch_id);
-            body.append('role_id', submitData.role_id);
+            body.append('customer_name', submitData.customer_name);
+            body.append('phone_number', submitData.phone_number);
+            body.append('address', submitData.address);
             body.append('is_active', submitData.is_active ? 1 : 0);
-            if (submitData.phone) body.append('phone', submitData.phone);
-            if (!submitData.id) body.append('password', submitData.password);
             if (submitData.id) body.append('id', submitData.id);
 
             await submitData?.id
-                ? UsersApis.PutUser(submitData.id, body)
-                : UsersApis.PostUser(body);
+                ? CustomerApis.PutCustomer(submitData.id, body)
+                : CustomerApis.PostCustomer(body);
 
             setTimeout(() => {
                 showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
@@ -146,22 +117,12 @@ const MasterUser = () => {
     };
 
     const columns = [
-        { header: 'Nama Lengkap', accessor: 'name' },
-        { header: 'Username', accessor: 'username' },
+        { header: 'Nama Lengkap', accessor: 'customer_name' },
+        { header: 'No HP', accessor: 'phone_number' },
         {
-            header: 'Cabang',
-            accessor: 'branch_id',
-            render: (row) => branchOptions.find(b => b.value === row.branch_id)?.label ?? '-'
-        },
-        {
-            header: 'Role',
-            accessor: 'role_id',
-            render: (row) => roleOptions.find(r => r.value === row.role_id)?.label ?? '-'
-        },
-        {
-            header: 'Last Login',
-            accessor: 'last_login',
-            render: (row) => row.last_login ?? '-'
+            header: 'Alamat',
+            accessor: 'address',
+            render: (row) => row.address ?? '-'
         },
         {
             header: 'Status',
@@ -205,19 +166,19 @@ const MasterUser = () => {
     return (
         <div className="flex flex-col gap-6 w-full">
             <HeaderSection
-                title="User Management"
-                description="Kelola data pengguna untuk akses ke sistem."
+                title="Customer"
+                description="Kelola data pelanggan untuk mendukung proses transaksi penjualan dan layanan pelanggan."
                 icon={UserPlusIcon}
                 onClick={() => handleOpenModal('add')}
-                textButton="Tambah User"
+                textButton="Tambah Customer"
             />
             <div className="w-full lg:w-1/3">
                 <InputGroup
                     fields={[{
                         name: 'name',
-                        label: 'Cari Nama',
+                        label: 'Cari Customer',
                         type: 'text',
-                        placeholder: 'Cari nama...'
+                        placeholder: 'Cari...'
                     }]}
                     formData={search}
                     cols='1'
@@ -233,7 +194,7 @@ const MasterUser = () => {
                 page={paramFetch.current_page}
                 pageSize={paramFetch.per_page}
             />
-            <ModalUser
+            <ModalCustomer
                 isOpen={showModalAdd}
                 onClose={handleCloseModal}
                 onSubmit={handleSubmit}
@@ -241,11 +202,9 @@ const MasterUser = () => {
                 onChange={handleChange}
                 formError={formError}
                 isView={isView}
-                branchOptions={branchOptions}
-                roleOptions={roleOptions}
             />
         </div>
     );
 };
 
-export default MasterUser;
+export default MasterCustomer;

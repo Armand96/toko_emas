@@ -21,7 +21,6 @@ import LoadingStore from "../../../Store/LoadingStore";
 import InventoryApis from "../../../Services/Inventory.apis";
 import BranchApis from "../../../Services/Branch.apis";
 import BankApis from "../../../Services/Bank.apis";
-// import BankApis from "../../../Services/Bank.apis"; // TODO: sesuaikan dengan service bank kamu
 
 const emptyItem = {
     product_id: null,
@@ -66,16 +65,12 @@ const FormPembelian = ({ setCurentState }) => {
                 BranchApis.GetBranch(""),
             ]);
 
-            // Pastikan GetProducts mengembalikan category_id & subcategory_id di tiap item,
-            // karena nilainya dibaca dari `details` saat produk dipilih.
             setProductOptions(
                 HelperFunctions.formatDropdown(products?.data || [], "id", "product_name")
             );
             setBranchOptions(
                 HelperFunctions.formatDropdown(branches?.data || [], "id", "branch_name")
             );
-
-            // TODO: aktifkan saat API bank tersedia
         } catch (error) {
             console.error(error);
         }
@@ -88,7 +83,6 @@ const FormPembelian = ({ setCurentState }) => {
     const handleChange = (e) => {
         const { name, value } = e.target;
 
-        // Foto: ambil File object dari input file (atau null saat dihapus)
         if (name === "foto") {
             const file = e.target.files ? e.target.files[0] : value;
             setItem((prev) => ({ ...prev, foto: file ?? null }));
@@ -97,12 +91,18 @@ const FormPembelian = ({ setCurentState }) => {
 
         if(name === "branch_id"){
             BankApis.GetBankBranch(`?branch_id=${value}`).then((res) => {
-            setBankOptions(HelperFunctions.formatDropdown(res?.data || [], "id", "bank_name"));
+            setBankOptions(HelperFunctions.formatDropdownWithCode(res?.data || [], "id", "nama_pemilik", "nomor_rekening"));
 
             })
         }
 
-        // Produk: auto-isi category_id & subcategory_id dari details produk master
+        if (name === "modal" || name === "jual") {
+            const raw = HelperFunctions.unformatNumberInput(value);
+            setItem((prev) => ({ ...prev, [name]: raw }));
+            if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+            return;
+        }
+
         if (name === "product_id") {
             const found = productOptions.find((p) => p.value === value);
             const d = found?.details || {};
@@ -172,7 +172,6 @@ const FormPembelian = ({ setCurentState }) => {
                 karat: Number(b.karat),
                 modal: Number(b.modal),
                 jual: Number(b.jual),
-                // no_seri: b.no_seri || null, // aktifkan jika backend menerima
             })),
         };
 
@@ -341,8 +340,8 @@ const FormPembelian = ({ setCurentState }) => {
                             <Input
                                 label="Harga Modal"
                                 name="modal"
-                                type="number"
-                                value={item.modal}
+                                type="text"
+                                value={HelperFunctions.formatNumberInput(item.modal)}
                                 placeholder="Rp 0"
                                 isRequired
                                 error={errors.modal}
@@ -351,8 +350,8 @@ const FormPembelian = ({ setCurentState }) => {
                             <Input
                                 label="Harga Jual"
                                 name="jual"
-                                type="number"
-                                value={item.jual}
+                                type="text"
+                                value={HelperFunctions.formatNumberInput(item.jual)}
                                 placeholder="Rp 0"
                                 isRequired
                                 error={errors.jual}

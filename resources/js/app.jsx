@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import '../css/app.css'
-import Layout from './components/layout/Layout'
+import Layout from './components/Layout/Layout'
 import { RouterProvider } from 'react-router'
 import router from './router'
 

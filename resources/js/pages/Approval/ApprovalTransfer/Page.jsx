@@ -2,12 +2,10 @@ import { useMemo, useState } from 'react';
 import { EyeIcon, CheckSquareOffsetIcon, MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
-import ModalDetailPenjualan from "./Modal";
+import ModalDetailTransfer from "./Modal";
 import { showAlert } from '../../../utils/showAlert';
-import HelperFunctions from "../../../utils/HelperFunctions";
 
 const STATUS_OPTIONS = ['Approval', 'Disetujui', 'Ditolak', 'Dibatalkan'];
-const CABANG_OPTIONS = ['BLOK M 1', 'BLOK M 2'];
 
 const STATUS_STYLE = {
     'Approval': 'bg-warning-50 text-warning-600 border-warning-200',
@@ -17,24 +15,38 @@ const STATUS_STYLE = {
 };
 
 const DUMMY_DATA = [
-    { id: 1, tanggal: '10/10/2025', order_id: 'ORD-2605015', customer: { nama: 'Sofia Martinez' }, item_produk: 'Cincin Flower 5gr', nominal: 18000000, pembayaran: 'Tunai', user: 'YanuarKasir P.', cabang: 'BLOK M 1', status: 'Approval' },
-    { id: 2, tanggal: '10/10/2025', order_id: 'ORD-2605014', customer: { nama: 'Yuki Tanaka' }, item_produk: 'Cincin Flower 5gr', nominal: 19000000, pembayaran: 'Transfer', user: 'YanuarKasir P.', cabang: 'BLOK M 1', status: 'Approval' },
-    { id: 3, tanggal: '10/10/2025', order_id: 'ORD-2605013', customer: { nama: 'Marcus Chen' }, item_produk: 'Cincin Flower 5gr', nominal: 19000000, pembayaran: 'Transfer', user: 'YanuarKasir P.', cabang: 'BLOK M 1', status: 'Approval' },
-    { id: 4, tanggal: '10/10/2025', order_id: 'ORD-2605012', customer: { nama: 'Chloe Dubois' }, item_produk: 'Cincin Flower 5gr', nominal: 19000000, pembayaran: 'Tunai', user: 'IndahKasir2', cabang: 'BLOK M 1', status: 'Approval' },
-    { id: 5, tanggal: '10/10/2025', order_id: 'ORD-2605011', customer: { nama: 'James Wilson' }, item_produk: 'Cincin Flower 5gr', nominal: 19000000, pembayaran: 'Tunai', user: 'RomaKasir1', cabang: 'BLOK M 2', status: 'Approval' },
-    { id: 6, tanggal: '10/10/2025', order_id: 'ORD-2605010', customer: { nama: 'Oliver Schmidt' }, item_produk: 'Cincin Flower 5gr', nominal: 20000000, pembayaran: 'Tunai', user: 'RomaKasir1', cabang: 'BLOK M 2', status: 'Approval' },
+    { id: 1, tanggal: '10/10/2025', kode: 'TRF-2605015', item_produk: 'Cincin Flower 5gr 20K, Cincin Flower 2gr 20K, Ci...', cabang_asal: 'BLOK M 1', cabang_tujuan: 'BLOK M 2', status: 'Approval' },
+    { id: 2, tanggal: '10/10/2025', kode: 'TRF-2605014', item_produk: 'Cincin Flower 5gr 20K', cabang_asal: 'BLOK M 1', cabang_tujuan: 'BLOK M 1', status: 'Approval' },
+    { id: 3, tanggal: '10/10/2025', kode: 'TRF-2605013', item_produk: 'Cincin Flower 5gr 20K', cabang_asal: 'BLOK M 2', cabang_tujuan: 'BLOK M 1', status: 'Disetujui' },
+    { id: 4, tanggal: '10/10/2025', kode: 'TRF-2605012', item_produk: 'Cincin Flower 5gr 20K', cabang_asal: 'BLOK M 2', cabang_tujuan: 'BLOK M 1', status: 'Ditolak' },
 ];
 
-const ApprovalPenjualan = () => {
-    const [filter, setFilter] = useState({ search: '', status: '', cabang: '' });
+const ApprovalTransfer = () => {
+    const [filter, setFilter] = useState({ search: '', status: '' });
     const [page, setPage] = useState(1);
     const perPage = 10;
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedData, setSelectedData] = useState(null);
 
-    const handleOpenModal = (data) => {
-        setSelectedData(data);
+    const handleOpenModal = (row) => {
+        setSelectedData({
+            ...row,
+            diajukan_oleh: 'Dianita Admin',
+            pic_approval: 'Owner',
+            tanggal_pengajuan: '21 Mei 2026, 12:00',
+            tanggal_approval: '21 Mei 2026, 12:00',
+            catatan: 'Pindah tempat',
+            alasan: row.status === 'Ditolak'
+                ? 'Karat tidak sesuai dengan dokumen pembelian. Mohon periksa kembali karat pada item.'
+                : row.status === 'Dibatalkan'
+                ? 'Salah input.'
+                : null,
+            items: [
+                { kode: 'GLD0100000', image: null, nama: 'Kalung Italy Rantai', berat: '5g', karat: '18K', harga_jual: 19500000 },
+                { kode: 'GLD0100000', image: null, nama: 'Gelang Flower', berat: '8g', karat: '20K', harga_jual: 19500000 },
+            ],
+        });
         setIsModalOpen(true);
     };
 
@@ -43,29 +55,25 @@ const ApprovalPenjualan = () => {
         setSelectedData(null);
     };
 
-    const handleResetFilter = () => setFilter({ search: '', status: '', cabang: '' });
-    const hasActiveFilter = filter.search || filter.status || filter.cabang;
+    const handleResetFilter = () => setFilter({ search: '', status: '' });
+    const hasActiveFilter = filter.search || filter.status;
 
     const filteredData = useMemo(() => {
         return DUMMY_DATA.filter((row) => {
             const matchSearch = !filter.search
-                || row.order_id.toLowerCase().includes(filter.search.toLowerCase())
-                || row.customer.nama.toLowerCase().includes(filter.search.toLowerCase());
+                || row.kode.toLowerCase().includes(filter.search.toLowerCase())
+                || row.item_produk.toLowerCase().includes(filter.search.toLowerCase());
             const matchStatus = !filter.status || row.status === filter.status;
-            const matchCabang = !filter.cabang || row.cabang === filter.cabang;
-            return matchSearch && matchStatus && matchCabang;
+            return matchSearch && matchStatus;
         });
     }, [filter]);
 
     const columns = [
         { header: 'Tanggal', accessor: 'tanggal', sortable: true },
-        { header: 'Order ID', accessor: 'order_id', sortable: true },
-        { header: 'Customer', accessor: (row) => row.customer.nama, sortable: true },
+        { header: 'Kode', accessor: 'kode', sortable: true },
         { header: 'Item Produk', accessor: 'item_produk' },
-        { header: 'Nominal', accessor: 'nominal', render: (row) => HelperFunctions.formatCurrency(row.nominal) },
-        { header: 'Pembayaran', accessor: 'pembayaran', sortable: true },
-        { header: 'User', accessor: 'user' },
-        { header: 'Cabang', accessor: 'cabang' },
+        { header: 'Cabang Asal', accessor: 'cabang_asal', sortable: true },
+        { header: 'Cabang Tujuan', accessor: 'cabang_tujuan', sortable: true },
         {
             header: 'Status',
             accessor: 'status',
@@ -93,8 +101,8 @@ const ApprovalPenjualan = () => {
     return (
         <div className="flex flex-col gap-6">
             <HeaderSection
-                title="Approval Penjualan"
-                description="Verifikasi detail transaksi penjualan sebelum menyetujui proses transaksi."
+                title="Approval Transfer Item"
+                description="Verifikasi detail item dan tujuan cabang sebelum menyetujui proses transfer inventory."
                 icon={CheckSquareOffsetIcon}
             />
 
@@ -110,25 +118,14 @@ const ApprovalPenjualan = () => {
                         className="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
                     />
                 </div>
-
                 <select
                     value={filter.status}
                     onChange={(e) => setFilter({ ...filter, status: e.target.value })}
                     className="py-2 px-3 border border-neutral-200 rounded-lg text-sm text-neutral-600 focus:outline-none focus:ring-1 focus:ring-primary-500 min-w-[140px]"
                 >
-                    <option value="">Pilih status</option>
+                    <option value="">Approval</option>
                     {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
-
-                <select
-                    value={filter.cabang}
-                    onChange={(e) => setFilter({ ...filter, cabang: e.target.value })}
-                    className="py-2 px-3 border border-neutral-200 rounded-lg text-sm text-neutral-600 focus:outline-none focus:ring-1 focus:ring-primary-500 min-w-[140px]"
-                >
-                    <option value="">Pilih cabang</option>
-                    {CABANG_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-
                 {hasActiveFilter && (
                     <button
                         onClick={handleResetFilter}
@@ -148,15 +145,15 @@ const ApprovalPenjualan = () => {
                 onPageChange={setPage}
             />
 
-            <ModalDetailPenjualan
+            <ModalDetailTransfer
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSubmitApprove={() => { showAlert('success', 'Berhasil', 'Disetujui'); handleCloseModal(); }}
-                onSubmitReject={() => { showAlert('success', 'Berhasil', 'Ditolak'); handleCloseModal(); }}
+                onSubmitApprove={() => { showAlert('success', 'Berhasil', 'Transfer disetujui'); handleCloseModal(); }}
+                onSubmitReject={() => { showAlert('success', 'Berhasil', 'Transfer ditolak'); handleCloseModal(); }}
                 data={selectedData}
             />
         </div>
     );
 };
 
-export default ApprovalPenjualan;
+export default ApprovalTransfer;

@@ -1,6 +1,13 @@
-import { Clock, TimerIcon } from '@phosphor-icons/react';
+import { TimerIcon, CheckCircleIcon, XCircleIcon } from '@phosphor-icons/react';
 import ModalCustom from '../../../components/modalCustom';
 import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
+
+const APPROVAL_VIEW = {
+    'Approval': { Icon: TimerIcon, iconColor: 'text-warning-500', statusText: 'Menunggu Approval oleh' },
+    'Disetujui': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh' },
+    'Ditolak': { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Ditolak oleh' },
+    'Dibatalkan': { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Dibatalkan oleh' },
+};
 
 export default function ModalDetailPenjualan({
     isOpen,
@@ -18,12 +25,18 @@ export default function ModalDetailPenjualan({
         }).format(number);
     };
 
+    // Footer aksi hanya tampil saat transaksi masih menunggu approval
+    const isPending = data?.status === 'Approval';
+    const approvalView = APPROVAL_VIEW[data?.status] || APPROVAL_VIEW['Approval'];
+    const customerBadge = data?.customer?.type || (data?.customer?.id ? 'Member Terdaftar' : 'Customer Baru');
+
     return (
         <ModalCustom
             title="Detail Penjualan"
             isOpen={isOpen}
             onClose={onClose}
             width="max-w-3xl"
+            footer={isPending}
             customFooter={
                 <div className="flex justify-between items-center p-4 border-t border-neutral-200">
                     <button
@@ -57,7 +70,7 @@ export default function ModalDetailPenjualan({
                             <h3 className="font-bold text-neutral-900">Data Customer</h3>
                         </div>
                         <span className="px-3 py-1 bg-neutral-100 text-neutral-600 text-xs font-medium rounded-md">
-                            Member Terdaftar
+                            {customerBadge}
                         </span>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -161,12 +174,14 @@ export default function ModalDetailPenjualan({
                 </div> */}
 
                 <ApprovalStatusCard
-                    Icon={TimerIcon}
-                    iconColor={"text-[#CE9400]"}
-                    statusText={"Menunggu Approval oleh"}
-                    pic={"Owner"}
-                    date="21 Mei 2026, 12:00"
                     status="Approval"
+                    Icon={approvalView.Icon}
+                    iconColor={approvalView.iconColor}
+                    statusText={approvalView.statusText}
+                    pic={data?.approval_by || 'Owner'}
+                    date={data?.approval_date || '21 Mei 2026, 12:00'}
+                    reasonLabel={data?.status === 'Ditolak' ? 'Alasan Penolakan' : 'Alasan Pembatalan'}
+                    reason={data?.reason}
                 />
             </div>
         </ModalCustom>
