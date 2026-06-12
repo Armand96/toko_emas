@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BankCabangController;
+use App\Http\Controllers\EnumController;
 use App\Http\Controllers\MBankController;
 use App\Http\Controllers\MBranchController;
 use App\Http\Controllers\MCategoryController;
@@ -21,6 +22,11 @@ Route::apiResource('customers', MCustomerController::class);
 Route::apiResource('storeSettings', StoreSettingController::class);
 Route::apiResource('users', UserController::class);
 
+Route::get('pembelian/{pembelian}', [PembelianController::class, 'single']);
 Route::get('pembelian', [PembelianController::class, 'index']);
 Route::post('pembelian', [PembelianController::class, 'pembelian']);
 Route::post('update-pembelian', [PembelianController::class, 'changeApproval']);
+
+Route::prefix('enum')->group(function() {
+    Route::get('pembelian-status', [EnumController::class, 'pembelianStatus']);
+});

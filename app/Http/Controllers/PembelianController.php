@@ -39,6 +39,16 @@ class PembelianController extends Controller
         return response()->json($pembelians);
     }
 
+    public function single(Pembelian $pembelian)
+    {
+        return ApiResponse::success($pembelian->load([
+            'product',
+            'category',
+            'branch',
+            'bank'
+        ]), "OK", 200);
+    }
+
     public function pembelian(PembelianRequest $request)
     {
         $validated = $request->validated();

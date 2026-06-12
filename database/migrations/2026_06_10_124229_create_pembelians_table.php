@@ -21,10 +21,10 @@ return new class extends Migration
             $table->bigInteger('bank_id', false, true);
             $table->enum('status', ['APPROVAL', 'DISETUJUI', 'DITOLAK', 'DIBATALKAN']);
             $table->string('barcode');
-            $table->integer('berat');
-            $table->decimal('karat');
-            $table->decimal('modal');
-            $table->decimal('jual');
+            $table->float('berat');
+            $table->integer('karat');
+            $table->decimal('modal', 16, 2);
+            $table->decimal('jual', 16, 2);
             $table->timestamps();
         });
     }
