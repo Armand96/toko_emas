@@ -28,6 +28,7 @@ class MCustomerRequest extends FormRequest
             'customer_name' => 'required|string',
             'address' => 'required|string',
             'phone_number' => 'required|string',
+            'is_active' => 'nullable|boolean',
         ];
     }
 

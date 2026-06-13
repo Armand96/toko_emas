@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('customer_name', 150);
             $table->string('address');
             $table->string('phone_number');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

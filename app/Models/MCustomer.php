@@ -10,6 +10,7 @@ class MCustomer extends Model
         'customer_name',
         'address',
         'phone_number',
+        'is_active'
     ];
 
     protected $hidden = [
