@@ -155,15 +155,16 @@ class PembelianController extends Controller
                 );
                 // dd($validated['images'][$index]);
                 // Upload new image
-                $image = $validated['images'][$index];
+                $image = $request->file('images')[$index];
 
-                $imageName = "pembelian_" . $value . "_" . date('Y-m-d H:i:s') . "." . $image->getClientOriginalExtension();
+                $imageName = "pembelian_" . $value . "_" . date('Y-m-d') . "." . $image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
                     $imageName,
                     'public'
                 );
+
 
                 $dataInsert['image_path'] = 'images/' . $imageName;
 
@@ -189,14 +190,14 @@ class PembelianController extends Controller
 
             return ApiResponse::success([], 'Success Upload Image', 200);
         } catch (\Throwable $th) {
-            foreach ($imagePath as $key => $value) {
-                if ($value['image_path'] != null && Storage::disk('public')->exists($value['image_path'])) {
-                    Storage::disk('public')->delete($value['image_path']);
-                }
-                if ($value['thumb_path'] != null && Storage::disk('public')->exists($value['thumb_path'])) {
-                    Storage::disk('public')->delete($value['thumb_path']);
-                }
-            }
+            // foreach ($imagePath as $key => $value) {
+            //     if ($value['image_path'] != null && Storage::disk('public')->exists($value['image_path'])) {
+            //         Storage::disk('public')->delete($value['image_path']);
+            //     }
+            //     if ($value['thumb_path'] != null && Storage::disk('public')->exists($value['thumb_path'])) {
+            //         Storage::disk('public')->delete($value['thumb_path']);
+            //     }
+            // }
 
             DB::rollBack();
             return ApiResponse::error($th->getMessage(), $th, 500);
