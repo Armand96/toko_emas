@@ -144,10 +144,12 @@ const MasterProduk = () => {
             body.append('category_id', formData?.sub_category || formData.category);
 
             await formData?.id ? InventoryApis.PutProducts(formData.id, body) : InventoryApis.PostProducts(body);
-            showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
-            handleCloseModal();
-            setLoading(false)
-            fetchData();
+            setTimeout(() => {
+                showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
+                handleCloseModal();
+                setLoading(false)
+                fetchData();
+            }, 1000)
         } catch (error) {
             showAlert({ title: 'Gagal', message: 'Gagal menyimpan data', icon: 'error' });
         } finally {

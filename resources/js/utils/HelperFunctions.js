@@ -39,6 +39,18 @@ const HelperFunctions = {
         }
         return formattedData;
     },
+    formatDropdownBank: (data = [], valueKey = 'id', isNull = false) => {
+        if (!Array.isArray(data)) return [];
+        let formattedData = data.map(item => ({
+            value: item[valueKey],
+            label: `${item.bank?.bank_name ?? '-'} - ${item.nomor_rekening ?? '-'} - ${item.nama_pemilik ?? '-'}`,
+            details: item,
+        }));
+        if (isNull) {
+            formattedData = [{ value: '', label: 'Pilih' }, ...formattedData];
+        }
+        return formattedData;
+    },
     formatCurrency: (price) => {
          return new Intl.NumberFormat("id-ID", {
             style: "currency",

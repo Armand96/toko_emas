@@ -5,6 +5,7 @@ import { useDebounce } from "use-debounce";
 import HeaderSection from "../../../components/HeaderSection";
 import InputGroup from "../../../components/FormElement/InputGroup";
 import Table from "../../../components/Table/Table";
+import ModalView from "./modalView";
 
 import HelperFunctions from "../../../utils/HelperFunctions";
 import LoadingStore from "../../../Store/LoadingStore";
@@ -24,6 +25,9 @@ const MainPembelian = ({ setCurentState }) => {
     const [search, setSearch] = useState({ search: "" });
     const [searchBounce] = useDebounce(search, 500);
     const [firstLoading, setFirstLoading] = useState(false);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedData, setSelectedData] = useState(null);
 
     const fetchData = async (page = 1, pageSize = 10, keyword = "") => {
         setLoading(true);
@@ -127,7 +131,10 @@ const MainPembelian = ({ setCurentState }) => {
             render: (row) => (
                 <div className="flex items-center gap-2">
                     <button
-                        onClick={() => setCurentState && setCurentState("view", row)}
+                        onClick={() => {
+                            setSelectedData(row);
+                            setIsModalOpen(true);
+                        }}
                         className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
                     >
                         <EyeIcon size={20} />
@@ -187,6 +194,15 @@ const MainPembelian = ({ setCurentState }) => {
                 pageSize={paramFetch.per_page}
                 onPageChange={onChangePage}
                 onPageSizeChange={onChangePageSize}
+            />
+
+            <ModalView
+                isOpen={isModalOpen}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setSelectedData(null);
+                }}
+                data={selectedData}
             />
         </div>
     );
