@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { EyeIcon, PencilSimpleIcon } from '@phosphor-icons/react';
-import Table from '../../components/table/table';
+import Table from '../../components/Table/Table';
 
 const DUMMY_DB = Array.from({ length: 45 }).map((_, index) => ({
   id: index + 1,

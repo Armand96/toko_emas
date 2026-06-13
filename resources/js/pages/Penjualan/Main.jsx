@@ -6,13 +6,14 @@ import Table from "../../components/Table/Table";
 import LoadingStore from "../../Store/LoadingStore";
 import FooterActionBar from "../../components/FooterActionBar";
 import ModalViewPenjualan from "./ModalView"; // Pastikan path ini sesuai
+import HelperFunctions from "../../utils/HelperFunctions";
 
 const Main = ({ setCurentState }) => {
     const [paramFetch, setParamFetch] = useState({
         data: [
             // Dummy data agar tabel tidak kosong dan bisa ditest
-            { id: 1, tanggal: '21 Mei 2026', no_nota: 'ORD-2605015', supplier: '-', cabang: 'Pusat', total_item: 2, total_harga: 39000000, status: 'Menunggu Approval' },
-            { id: 2, tanggal: '20 Mei 2026', no_nota: 'ORD-2605014', supplier: '-', cabang: 'Pusat', total_item: 1, total_harga: 5000000, status: 'Selesai' }
+            { id: 1, tanggal: '21 Mei 2026', no_nota: 'ORD-2605015', customer: 'Siti Aminah', cabang: 'Pusat', total_item: 2, total_harga: 39000000, status: 'Menunggu Approval' },
+            { id: 2, tanggal: '20 Mei 2026', no_nota: 'ORD-2605014', customer: 'Budi Santoso', cabang: 'Pusat', total_item: 1, total_harga: 5000000, status: 'Selesai' }
         ],
         current_page: 1,
         total: 2,
@@ -94,9 +95,12 @@ const Main = ({ setCurentState }) => {
                 tanggal: row.tanggal || "21 Mei 2026, 12:00"
             },
             approval: {
-                status: row.status || "Menunggu Approval",
-                role: "Owner",
-                tanggal: row.tanggal || "21 Mei 2026, 12:00"
+                // 'Menunggu Approval' | 'Disetujui' | 'Dibatalkan'
+                status: row.status === 'Selesai' ? 'Disetujui' : (row.status || 'Menunggu Approval'),
+                role: row.status === 'Dibatalkan' ? 'Admin Cabang' : 'Owner',
+                tanggal: row.tanggal || "21 Mei 2026, 12:00",
+                // Khusus status 'Dibatalkan' — tampilkan alasannya
+                reason: row.status === 'Dibatalkan' ? 'Salah input.' : null
             }
         };
 
@@ -133,20 +137,23 @@ const Main = ({ setCurentState }) => {
         },
         { header: 'Tanggal', accessor: 'tanggal' },
         { header: 'Order ID', accessor: 'no_nota' },
-        { header: 'Supplier', accessor: 'supplier' },
+        { header: 'Customer', accessor: 'customer' },
         { header: 'Cabang', accessor: 'cabang' },
         { header: 'Total Item', accessor: 'total_item' },
-        { header: 'Total Harga', accessor: 'total_harga' },
+        { header: 'Total Harga', accessor: 'total_harga', render: (row) => HelperFunctions.formatCurrency(row.total_harga) },
         {
             header: 'Status',
             accessor: 'status',
             render: (row) => {
-                const isSelesai = row.status === 'Selesai';
+                const statusStyle = {
+                    'Selesai': 'bg-success-50 text-success-700 border-success-200',
+                    'Disetujui': 'bg-success-50 text-success-700 border-success-200',
+                    'Menunggu Approval': 'bg-warning-50 text-warning-700 border-warning-200',
+                    'Ditolak': 'bg-danger-50 text-danger-700 border-danger-200',
+                    'Dibatalkan': 'bg-danger-50 text-danger-700 border-danger-200',
+                };
                 return (
-                    <span className={`px-3 py-1 rounded-md text-xs font-medium border ${isSelesai
-                        ? 'bg-success-50 text-success-700 border-success-200'
-                        : 'bg-warning-50 text-warning-700 border-warning-200'
-                        }`}>
+                    <span className={`px-3 py-1 rounded-md text-xs font-medium border ${statusStyle[row.status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
                         {row.status}
                     </span>
                 );
@@ -179,11 +186,11 @@ const Main = ({ setCurentState }) => {
     return (
         <div className="flex flex-col gap-6 w-full relative">
             <HeaderSection
-                title="Pembelian"
-                description="Catat dan kelola pembelian barang sebelum masuk ke inventory aktif."
+                title="Penjualan"
+                description="Catat dan kelola transaksi penjualan barang."
                 icon={PlusCircleIcon}
                 onClick={() => setCurentState('form')}
-                textButton="Tambah Pembelian"
+                textButton="Tambah Penjualan"
             />
 
             <div className="w-full xl:w-4/6">
@@ -203,20 +210,16 @@ const Main = ({ setCurentState }) => {
                 pageSize={paramFetch.per_page}
             />
 
-            {selectedRows.length > 0 && (
-                <div className="w-3/6 fixed bottom-6 left-1/2 -translate-x-1/2 z-[60]">
-                    <FooterActionBar
-                        selectedCount={selectedRows.length}
-                        onClearSelection={() => setSelectedRows([])}
-                        secondaryText="Tolak"
-                        secondaryType="danger"
-                        onSecondaryClick={handleBulkReject}
-                        primaryText="Setujui"
-                        primaryType="primary"
-                        onPrimaryClick={handleBulkApprove}
-                    />
-                </div>
-            )}
+            <FooterActionBar
+                selectedCount={selectedRows.length}
+                onClearSelection={() => setSelectedRows([])}
+                secondaryText="Tolak"
+                secondaryType="danger"
+                onSecondaryClick={handleBulkReject}
+                primaryText="Setujui"
+                primaryType="primary"
+                onPrimaryClick={handleBulkApprove}
+            />
 
             {/* Render Modal View di sini */}
             <ModalViewPenjualan

@@ -53,7 +53,7 @@ export default function AlertModal({ title, isAutoClose, message, icon, confirmT
           {icon === 'waiting' && <img src={WaitingIcon} alt="waiting" className="w-[60px] h-[60px] mx-auto" />}
           <h2 className="text-lg text-center font-bold">{title}</h2>
           <div className="text-[#5A5A66] mx-auto text-center">{message}</div>
-          {textarea && <TextArea placeholder={placeholder} onChange={(e) => setValue(e)} value={value} />}
+          {textarea && <TextArea placeholder={placeholder} onChange={(e) => setValue(e.target.value)} value={value} />}
         </div>
         {(confirmText || cancelText) && (
           <div className="flex justify-center mt-6 space-x-2">

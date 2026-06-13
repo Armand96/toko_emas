@@ -3,7 +3,7 @@ import { PencilSimple, PencilSimpleIcon } from "@phosphor-icons/react";
 import ModalSettingStore from "./Modal";
 import HeaderSection from '../../../components/HeaderSection';
 import NullState from '../../../assets/images/setting_store.svg'
-import StoreApis from '../../../Services/Store.Apis';
+import StoreApis from '../../../Services/Store.apis';
 import LoadingStore from '../../../Store/LoadingStore';
 
 const SettingStore = () => {
