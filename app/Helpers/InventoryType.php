@@ -2,8 +2,8 @@
 
 namespace App\Helpers;
 
-enum InventoryType
+enum InventoryType: string
 {
-    case IN;
-    case OUT;
+    case IN = 'IN';
+    case OUT = 'OUT';
 }

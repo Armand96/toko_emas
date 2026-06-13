@@ -25,6 +25,7 @@ Route::apiResource('users', UserController::class);
 Route::get('pembelian/{pembelian}', [PembelianController::class, 'single']);
 Route::get('pembelian', [PembelianController::class, 'index']);
 Route::post('pembelian', [PembelianController::class, 'pembelian']);
+Route::post('pembelian-image', [PembelianController::class, 'pembelianImage']);
 Route::post('update-pembelian', [PembelianController::class, 'changeApproval']);
 
 Route::prefix('enum')->group(function() {

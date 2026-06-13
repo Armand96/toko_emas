@@ -2,9 +2,9 @@
 
 namespace App\Helpers;
 
-enum ApprovalStatus
+enum ApprovalStatus: string
 {
-    case APPROVAL;
-    case APPROVED;
-    case REJECT;
+    case APPROVAL = 'APPROVAL';
+    case APPROVED = 'APPROVED';
+    case REJECT = 'REJECT';
 }

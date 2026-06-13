@@ -2,10 +2,10 @@
 
 namespace App\Helpers;
 
-enum InventoryStatus
+enum InventoryStatus: string
 {
-    case AVAILABLE;
-    case TRANSIT;
-    case SOLD;
-    case REPAIR;
+    case AVAILABLE = 'AVAILABLE';
+    case TRANSIT = 'TRANSIT';
+    case SOLD = 'SOLD';
+    case REPAIR = 'REPAIR';
 }

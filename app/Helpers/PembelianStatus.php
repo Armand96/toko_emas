@@ -2,10 +2,10 @@
 
 namespace App\Helpers;
 
-enum PembelianStatus
+enum PembelianStatus: string
 {
-    case APPROVAL;
-    case DISETUJUI;
-    case DITOLAK;
-    case DIBATALKAN;
+    case APPROVAL = 'APPROVAL';
+    case DISETUJUI = 'DISETUJUI';
+    case DITOLAK = 'DITOLAK';
+    case DIBATALKAN = 'DIBATALKAN';
 }

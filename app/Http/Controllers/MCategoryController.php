@@ -121,12 +121,12 @@ class MCategoryController extends Controller
 
                 // Delete old files
                 if ($category->image_path != null && Storage::disk('public')->exists($category->image_path)) {
-                Storage::disk('public')->delete($category->image_path);
-            }
+                    Storage::disk('public')->delete($category->image_path);
+                }
+                if ($category->thumb_path != null && Storage::disk('public')->exists($category->thumb_path)) {
+                    Storage::disk('public')->delete($category->thumb_path);
+                }
 
-            if ($category->thumb_path != null && Storage::disk('public')->exists($category->thumb_path)) {
-                Storage::disk('public')->delete($category->thumb_path);
-            }
 
                 // Upload new image
                 $image = $request->file('image');

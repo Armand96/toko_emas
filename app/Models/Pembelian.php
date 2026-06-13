@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Model;
     'product_id',
     'category_id',
     'subcategory_id',
+    'image_path',
+    'thumb_path',
     'branch_id',
     'status',
     'bank_id',

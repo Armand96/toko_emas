@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
 use App\Helpers\PembelianStatus;
+use App\Http\Requests\PembelianImageRequest;
 use App\Http\Requests\PembelianRequest;
 use App\Http\Requests\UpdateStatusPembelianRequest;
 use App\Models\Pembelian;
 use App\Models\PembelianBatch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
 
 class PembelianController extends Controller
 {
@@ -59,18 +63,23 @@ class PembelianController extends Controller
 
             $batch = PembelianBatch::create();
             $dateNow = date('Y-m-d H:i:s');
+            $result = [];
 
             foreach ($validated['data'] as $index => $value) {
                 $validated['data'][$index]['status'] = PembelianStatus::APPROVAL;
                 $validated['data'][$index]['batch'] = $batch->id;
                 $validated['data'][$index]['created_at'] = $dateNow;
+
+                $tempInsert = Pembelian::create($validated['data'][$index]);
+                array_push($result, $tempInsert);
             }
 
-            Pembelian::insert($validated['data']);
+            // $result = Pembelian::insert($validated['data']);
             DB::commit();
 
-            return ApiResponse::success([], "Sukses buat pembelian", 201);
+            return ApiResponse::success($result, "Sukses buat pembelian", 201);
         } catch (\Throwable $th) {
+            Log::error($th);
             DB::rollBack();
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
@@ -98,6 +107,71 @@ class PembelianController extends Controller
 
             return ApiResponse::success([], "Sukses update status pembelian", 201);
         } catch (\Throwable $th) {
+            DB::rollBack();
+            return ApiResponse::error($th->getMessage(), $th, 500);
+        }
+    }
+
+    public function pembelianImage(PembelianImageRequest $request)
+    {
+        $validated = $request->validated();
+
+        DB::beginTransaction();
+        $imagePath = [];
+
+        try {
+            $ids = explode(",", $validated['pembelian_ids']);
+
+            foreach ($ids as $index => $value) {
+                $dataInsert = array(
+                    'image_path' => "",
+                    'thumb_path' => ""
+                );
+                // dd($validated['images'][$index]);
+                // Upload new image
+                $image = $validated['images'][$index];
+
+                $imageName = "pembelian_" . $value . "_" . date('Y-m-d H:i:s') . "." . $image->getClientOriginalExtension();
+
+                $image->storeAs(
+                    'images',
+                    $imageName,
+                    'public'
+                );
+
+                $dataInsert['image_path'] = 'images/' . $imageName;
+
+                $dataInsert['thumb_path'] = 'thumbs/' . $imageName;
+
+                // Generate thumbnail
+                $thumb = Image::decode($image)
+                    ->scale(height: 200);
+
+                Storage::disk('public')->put(
+                    $dataInsert['thumb_path'],
+                    $thumb->encodeUsingFileExtension(
+                        $image->getClientOriginalExtension(),
+                        quality: 70
+                    )
+                );
+                array_push($imagePath, $dataInsert);
+
+                Pembelian::where('id', $value)->update($dataInsert);
+            }
+
+            DB::commit();
+
+            return ApiResponse::success([], 'Success Upload Image', 200);
+        } catch (\Throwable $th) {
+            foreach ($imagePath as $key => $value) {
+                if ($value['image_path'] != null && Storage::disk('public')->exists($value['image_path'])) {
+                    Storage::disk('public')->delete($value['image_path']);
+                }
+                if ($value['thumb_path'] != null && Storage::disk('public')->exists($value['thumb_path'])) {
+                    Storage::disk('public')->delete($value['thumb_path']);
+                }
+            }
+
             DB::rollBack();
             return ApiResponse::error($th->getMessage(), $th, 500);
         }

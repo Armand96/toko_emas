@@ -20,6 +20,8 @@ return new class extends Migration
             $table->bigInteger('branch_id', false, true);
             $table->bigInteger('bank_id', false, true);
             $table->enum('status', ['APPROVAL', 'DISETUJUI', 'DITOLAK', 'DIBATALKAN']);
+            $table->string('image_path')->nullable();
+            $table->string('thumb_path')->nullable();
             $table->string('barcode');
             $table->float('berat');
             $table->integer('karat');
