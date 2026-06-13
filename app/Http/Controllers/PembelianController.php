@@ -96,7 +96,8 @@ class PembelianController extends Controller
             // $dateNow = date('Y-m-d H:i:s');
 
             Pembelian::whereIn('id', $validated['pembelian_ids'])->where('status', PembelianStatus::APPROVAL)->update([
-                'status' => $validated['status']
+                'status' => $validated['status'],
+                'note' => $validated['note']
             ]);
 
             if ($validated['status'] == PembelianStatus::DISETUJUI) {

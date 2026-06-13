@@ -27,6 +27,7 @@ return new class extends Migration
             $table->integer('karat');
             $table->decimal('modal', 16, 2);
             $table->decimal('jual', 16, 2);
+            $table->string('note')->nullable();
             $table->timestamps();
         });
     }

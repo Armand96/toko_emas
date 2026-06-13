@@ -26,6 +26,7 @@ class UpdateStatusPembelianRequest extends FormRequest
     {
         return [
             'status' => 'required|string',
+            'note' => 'nullable|string',
             'pembelian_ids' => 'required|array'
         ];
     }

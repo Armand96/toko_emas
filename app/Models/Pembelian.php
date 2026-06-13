@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
     'karat',
     'modal',
     'jual',
+    'note',
 ])]
 class Pembelian extends Model
 {
