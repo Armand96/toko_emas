@@ -177,7 +177,27 @@ const FormPembelian = ({ setCurentState }) => {
 
         setLoading(true);
         try {
-            await InventoryApis.PostPembelian(payload);
+            const res = await InventoryApis.PostPembelian(payload);
+            const created = res?.data?.data || [];
+
+            const itemsWithFoto = batch
+                .map((b, index) => ({ foto: b.foto, id: created[index]?.id }))
+                .filter((b) => b.foto && b.id);
+
+            if (itemsWithFoto.length > 0) {
+                const pembelianIds = itemsWithFoto.map((b) => b.id).join(",");
+                const fotos = itemsWithFoto.map((b) => b.foto);
+
+                const formData = new FormData();
+                formData.append("pembelian_ids", pembelianIds);
+
+                for (let i = 0; i < fotos.length; i++) {
+                    formData.append("images[]", fotos[i]);
+                }
+
+                await InventoryApis.PostPembelianImage(formData);
+            }
+
             showAlert({
                 title: "Berhasil",
                 message: "Pembelian berhasil disimpan",

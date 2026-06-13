@@ -28,6 +28,11 @@ const InventoryApis = {
      updatePembelian: ( body) => {
         return Apis.Post(`api/update-pembelian`, body, );
     },
+    PostPembelianImage: (body) => {
+        return Apis.Post(`api/pembelian-image`, body, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+    },
 }
 
 export default InventoryApis;
