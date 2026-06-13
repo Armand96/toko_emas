@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
+use App\Helpers\InventoryStatus;
 use App\Helpers\PembelianStatus;
 use App\Http\Requests\PembelianImageRequest;
 use App\Http\Requests\PembelianRequest;
 use App\Http\Requests\UpdateStatusPembelianRequest;
+use App\Models\Inventory;
 use App\Models\Pembelian;
 use App\Models\PembelianBatch;
 use Illuminate\Http\Request;
@@ -97,11 +99,34 @@ class PembelianController extends Controller
 
             Pembelian::whereIn('id', $validated['pembelian_ids'])->where('status', PembelianStatus::APPROVAL)->update([
                 'status' => $validated['status'],
-                'note' => $validated['note']
+                'note' => isset($validated['note']) ? $validated['note'] : null
             ]);
 
-            if ($validated['status'] == PembelianStatus::DISETUJUI) {
-                // to do insert into inventory
+            $status = PembelianStatus::from($validated['status']);
+            if ($status == PembelianStatus::DISETUJUI) {
+                $dataPembelian = Pembelian::whereIn('id', $validated['pembelian_ids'])->get();
+                $batchInsert = [];
+                $dateNow = date('Y-m-d');
+
+                foreach ($dataPembelian as $idx => $value) {
+                    array_push($batchInsert, array(
+                        'product_id' => $value->product_id,
+                        'category_id' => $value->category_id,
+                        'subcategory_id' => $value->subcategory_id,
+                        'branch_id' => $value->branch_id,
+                        'barcode' => $value->barcode,
+                        'berat' => $value->berat,
+                        'karat' => $value->karat,
+                        'modal' => $value->modal,
+                        'jual' => $value->jual,
+                        'image_path' => $value->image_path,
+                        'thumb_path' => $value->thumb_path,
+                        'created_at' => $dateNow,
+                        'status' => InventoryStatus::AVAILABLE
+                    ));
+                }
+
+                if (count($batchInsert) > 0) Inventory::insert($batchInsert);
             }
 
             DB::commit();

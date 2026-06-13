@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 // use App\Helpers\ApiResponse;
+
+use App\Helpers\ApiResponse;
 use App\Models\Inventory;
 use Illuminate\Http\Request;
 // use InventoryStatus;
@@ -38,8 +40,8 @@ class InventoryController extends Controller
         return response()->json($inventories);
     }
 
-    public function pembelian()
+    public function single(Inventory $inventory)
     {
-
+        return ApiResponse::success($inventory->load(['product', 'branch', 'category', 'subcategory']), "OK", 200);
     }
 }

@@ -9,13 +9,17 @@ class Inventory extends Model
     protected $fillable = [
         'product_id',
         'category_id',
+        'subcategory_id',
         'branch_id',
+        'barcode',
         'berat',
         'karat',
         'modal',
         'jual',
-        'approval_id',
-        'status_inventory'
+        'image_path',
+        'thumb_path',
+        'status',
+        'note',
     ];
 
     protected $hidden = [
@@ -36,5 +40,10 @@ class Inventory extends Model
     public function category()
     {
         return $this->belongsTo(MCategory::class, 'category_id', 'id');
+    }
+
+    public function subCategory()
+    {
+        return $this->belongsTo(MCategory::class, 'subcategory_id', 'id');
     }
 }
