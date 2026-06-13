@@ -9,8 +9,7 @@ class TSalesDetail extends Model
     protected $fillable = [
         'sales_id',
         'product_id',
-        'harga',
-        'qty',
+        'price',
         'inventory_id',
     ];
 
@@ -22,6 +21,11 @@ class TSalesDetail extends Model
     public function product()
     {
         return $this->belongsTo(MProduct::class, 'product_id', 'id');
+    }
+
+    public function inventory()
+    {
+        return $this->belongsTo(Inventory::class, 'inventory_id', 'inventory_id');
     }
 
     public function header()

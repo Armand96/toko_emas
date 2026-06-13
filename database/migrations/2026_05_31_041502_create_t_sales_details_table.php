@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('sales_id', false, true);
             $table->bigInteger('product_id', false, true);
-            $table->decimal('harga');
-            $table->bigInteger('qty', false, true);
-            $table->bigInteger('inventory_id');
+            $table->decimal('price', 16, 2);
+            // $table->bigInteger('qty', false, true);
+            $table->string('inventory_id');
             $table->timestamps();
         });
     }
