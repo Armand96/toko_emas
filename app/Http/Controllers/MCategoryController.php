@@ -27,6 +27,12 @@ class MCategoryController extends Controller
         if ($request->has('parent_id') && $request->parent_id != "") {
             $query->where('parent_id', $request->parent_id);
         }
+        if($request->has('has_subcategory') && $request->has_subcategory > 0) {
+            $query->has('subcategories');
+        }
+        if($request->has('has_parent') && $request->has_parent > 0) {
+            $query->has('parent');
+        }
         // if ($request->has('is_active') && $request->is_active != "") {
         //     $query->where('is_active', $request->is_active);
         // }
