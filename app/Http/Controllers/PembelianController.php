@@ -9,6 +9,7 @@ use App\Http\Requests\PembelianImageRequest;
 use App\Http\Requests\PembelianRequest;
 use App\Http\Requests\UpdateStatusPembelianRequest;
 use App\Models\Inventory;
+use App\Models\MProduct;
 use App\Models\Pembelian;
 use App\Models\PembelianBatch;
 use Illuminate\Http\Request;
@@ -105,11 +106,15 @@ class PembelianController extends Controller
             $status = PembelianStatus::from($validated['status']);
             if ($status == PembelianStatus::DISETUJUI) {
                 $dataPembelian = Pembelian::whereIn('id', $validated['pembelian_ids'])->get();
-                $batchInsert = [];
+                // $batchInsert = [];
                 $dateNow = date('Y-m-d');
 
                 foreach ($dataPembelian as $idx => $value) {
-                    array_push($batchInsert, array(
+
+                    $data = Inventory::where('product_id', $value->product_id)->count();
+
+                    Inventory::create(array(
+                        'inventory_id' => $value->barcode . "-" . str_pad($data+1, 4, "0", STR_PAD_LEFT),
                         'product_id' => $value->product_id,
                         'category_id' => $value->category_id,
                         'subcategory_id' => $value->subcategory_id,
@@ -126,7 +131,7 @@ class PembelianController extends Controller
                     ));
                 }
 
-                if (count($batchInsert) > 0) Inventory::insert($batchInsert);
+                // if (count($batchInsert) > 0) Inventory::insert($batchInsert);
             }
 
             DB::commit();
@@ -190,14 +195,14 @@ class PembelianController extends Controller
 
             return ApiResponse::success([], 'Success Upload Image', 200);
         } catch (\Throwable $th) {
-            // foreach ($imagePath as $key => $value) {
-            //     if ($value['image_path'] != null && Storage::disk('public')->exists($value['image_path'])) {
-            //         Storage::disk('public')->delete($value['image_path']);
-            //     }
-            //     if ($value['thumb_path'] != null && Storage::disk('public')->exists($value['thumb_path'])) {
-            //         Storage::disk('public')->delete($value['thumb_path']);
-            //     }
-            // }
+            foreach ($imagePath as $key => $value) {
+                if ($value['image_path'] != null && Storage::disk('public')->exists($value['image_path'])) {
+                    Storage::disk('public')->delete($value['image_path']);
+                }
+                if ($value['thumb_path'] != null && Storage::disk('public')->exists($value['thumb_path'])) {
+                    Storage::disk('public')->delete($value['thumb_path']);
+                }
+            }
 
             DB::rollBack();
             return ApiResponse::error($th->getMessage(), $th, 500);

@@ -10,6 +10,7 @@ use App\Http\Controllers\MCustomerController;
 use App\Http\Controllers\MProductController;
 use App\Http\Controllers\PembelianController;
 use App\Http\Controllers\StoreSettingController;
+use App\Http\Controllers\TSalesController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +32,11 @@ Route::post('update-pembelian', [PembelianController::class, 'changeApproval']);
 
 Route::get('inventory/{inventory}', [InventoryController::class, 'single']);
 Route::get('inventory', [InventoryController::class, 'index']);
+
+Route::get('sales/{sales}', [TSalesController::class, 'single']);
+Route::get('sales', [TSalesController::class, 'index']);
+Route::post('sales', [TSalesController::class, 'createTrx']);
+Route::put('sales', [TSalesController::class, 'changeApproval']);
 
 Route::prefix('enum')->group(function() {
     Route::get('pembelian-status', [EnumController::class, 'pembelianStatus']);
