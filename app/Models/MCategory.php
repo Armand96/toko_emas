@@ -18,4 +18,22 @@ class MCategory extends Model
         'created_at',
         'updated_at'
     ];
+
+    public function subcategories()
+    {
+        return $this->hasMany(
+            MCategory::class,
+            'parent_id',
+            'id'
+        );
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(
+            MCategory::class,
+            'parent_id',
+            'id'
+        );
+    }
 }
