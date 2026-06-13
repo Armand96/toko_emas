@@ -29,6 +29,7 @@ Route::post('pembelian', [PembelianController::class, 'pembelian']);
 Route::post('pembelian-image', [PembelianController::class, 'pembelianImage']);
 Route::post('update-pembelian', [PembelianController::class, 'changeApproval']);
 
+Route::get('inventory/{inventory}', [InventoryController::class, 'single']);
 Route::get('inventory', [InventoryController::class, 'index']);
 
 Route::prefix('enum')->group(function() {
