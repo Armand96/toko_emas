@@ -100,12 +100,13 @@ const ApprovalPembelian = () => {
         );
     };
 
-    const updateStatus = async (ids, status) => {
+    const updateStatus = async (ids, status, note = null) => {
         setLoading(true);
         try {
             await InventoryApis.updatePembelian({
                 status,
                 pembelian_ids: ids,
+                note,
             });
             setSelectedRows([]);
             handleCloseModal();
@@ -154,7 +155,7 @@ const ApprovalPembelian = () => {
             cancelText: 'Batal',
         }).then((res) => {
             if (res.confirmed) {
-                updateStatus(ids, 'DITOLAK');
+                updateStatus(ids, 'DITOLAK', res.value);
             }
         });
     };
