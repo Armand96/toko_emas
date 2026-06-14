@@ -35,22 +35,15 @@ export default function Modal({
         });
     }, []);
 
-    useEffect(() => {
-
-        if(formData?.category) {
-            InventoryApis.GetCategories(`?parent_id=${formData.category}&limit=1000`).then(res => {
-                setSubCategoriesOptions(HelperFunctions.formatDropdown(res.data, 'id', 'category_name', ));
-            })
-        }
-    }, [formData]);
-
 
     const handleOnChange = (e) => {
         const { name, value, type } = e.target;
         console.log('Field changed:', name, value);
         if(name === 'category') {
+              InventoryApis.GetCategories(`?parent_id=${value}&limit=1000`).then(res => {
+                setSubCategoriesOptions(HelperFunctions.formatDropdown(res.data, 'id', 'category_name', ));
+            })
             onChange({ target: { name: 'sub_category', value: '' }});
-            setSubCategoriesOptions([]);
             onChange({ target: { name, value, type } });
         }else{
             onChange({ target: { name, value, type } });

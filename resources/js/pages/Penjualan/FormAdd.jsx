@@ -1,17 +1,19 @@
 import { useState, useMemo, useRef, useEffect } from "react";
+import { useDebounce } from "use-debounce";
 import { ScanIcon, XIcon, CaretRightIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../components/HeaderSection";
-import ModalScanBarcode from "./ModaScanBarcode"; // Sesuaikan path
+import ModalScanBarcode from "./ModaScanBarcode";
 import HelperFunctions from "../../utils/HelperFunctions";
-
-// --- Dummy Data Member ---
-const DUMMY_MEMBERS = [
-    { id: 'MBR-0001', nama: 'Rohmatun Putri', hp: '08123456789', alamat: 'Jl. Merdeka Timur No. 24, Cempaka Putih, Jakarta Pusat' },
-    { id: 'MBR-0002', nama: 'Siti Aminah', hp: '082145678901', alamat: 'Jl. Merdeka Timur No. 24, Cempaka Putih, Jakarta Pusat' },
-    { id: 'MBR-0003', nama: 'Budi Santoso', hp: '085311223344', alamat: 'Jl. Mawar No. 5, Bandung' },
-];
+import LoadingStore from "../../Store/LoadingStore";
+import { showAlert } from "../../utils/showAlert";
+import CustomerApis from "../../Services/Customer.apis";
+import InventoryApis from "../../Services/Inventory.apis";
+import BankApis from "../../Services/Bank.apis";
+import PenjualanApis from "../../Services/Penjualan.apis";
 
 const FormAdd = ({ setCurentState }) => {
+    const setLoading = LoadingStore((state) => state.setLoading);
+
     // State Tab Customer
     const [customerType, setCustomerType] = useState('baru'); // 'baru' | 'terdaftar'
 
@@ -24,20 +26,18 @@ const FormAdd = ({ setCurentState }) => {
 
     // State Member Terdaftar (Search & Suggestion)
     const [searchQuery, setSearchQuery] = useState("");
+    const [searchQueryBounce] = useDebounce(searchQuery, 500);
+    const [memberOptions, setMemberOptions] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
     const [selectedMember, setSelectedMember] = useState(null);
     const searchRef = useRef(null);
 
-    // Filter member berdasarkan input (nama, id, atau hp)
-    const filteredMembers = useMemo(() => {
-        if (!searchQuery) return DUMMY_MEMBERS;
-        const lowerQuery = searchQuery.toLowerCase();
-        return DUMMY_MEMBERS.filter(member =>
-            member.nama.toLowerCase().includes(lowerQuery) ||
-            member.id.toLowerCase().includes(lowerQuery) ||
-            member.hp.includes(lowerQuery)
-        );
-    }, [searchQuery]);
+    useEffect(() => {
+        if (customerType !== 'terdaftar') return;
+        CustomerApis.GetCustomer(`?customer_name=${searchQueryBounce}&per_page=20`)
+            .then((res) => setMemberOptions(res?.data || []))
+            .catch((err) => console.error(err));
+    }, [searchQueryBounce, customerType]);
 
     // Handle klik di luar untuk menutup dropdown suggestion
     useEffect(() => {
@@ -51,65 +51,218 @@ const FormAdd = ({ setCurentState }) => {
     }, []);
 
     // State Keranjang Penjualan
-    const [cartItems, setCartItems] = useState([
-        {
-            id: 'GLD0100000',
-            name: 'Kalung Italy Rantai',
-            specs: '5g • 18K',
-            price: 19500000,
-            image: null
-        }
-    ]);
+    const [cartItems, setCartItems] = useState([]);
+
+    // State Pilih Item (dropdown)
+    const [inventoryOptions, setInventoryOptions] = useState([]);
+    const [productOptions, setProductOptions] = useState([]);
+
+    useEffect(() => {
+        InventoryApis.GetInventory(`?status=AVAILABLE&per_page=10000000`)
+            .then((res) => setInventoryOptions(res?.data || []))
+            .catch((err) => console.error(err));
+
+        InventoryApis.GetProducts(`?per_page=10000000`)
+            .then((res) => setProductOptions(res?.data || []))
+            .catch((err) => console.error(err));
+    }, []);
+
+    const getProductName = (productId) => {
+        const product = productOptions.find((p) => p.id === productId);
+        return product?.product_name ?? 'Produk';
+    };
 
     // State Pembayaran
     const [paymentMethod, setPaymentMethod] = useState('tunai');
-    const [selectedBank, setSelectedBank] = useState('bca'); // State untuk bank transfer
-    const [namaPengirim, setNamaPengirim] = useState(''); // State untuk nama pengirim transfer
+    const [bankOptions, setBankOptions] = useState([]);
+    const [selectedBankId, setSelectedBankId] = useState(null);
+    const [namaPengirim, setNamaPengirim] = useState('');
+    const [rekeningPengirim, setRekeningPengirim] = useState('');
 
-    const [uangDibayar, setUangDibayar] = useState(39000000);
+    useEffect(() => {
+        if (paymentMethod === 'transfer') {
+            BankApis.GetBankBranch(`?per_page=10000000`)
+                .then((res) => setBankOptions(res?.data || []))
+                .catch((err) => console.error(err));
+        }
+    }, [paymentMethod]);
+
+    const [uangDibayar, setUangDibayar] = useState(0);
     const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
-    const subTotal = useMemo(() => cartItems.reduce((sum, item) => sum + item.price, 0), [cartItems]);
+    const subTotal = useMemo(() => cartItems.reduce((sum, item) => sum + Number(item.price || 0), 0), [cartItems]);
     const kembalian = useMemo(() => (uangDibayar || 0) - subTotal, [uangDibayar, subTotal]);
 
-    const formatRp = (number) => {
-        return new Intl.NumberFormat("id-ID", {
-            style: "currency",
-            currency: "IDR",
-            minimumFractionDigits: 0
-        }).format(number);
+    const isFormValid = useMemo(() => {
+        if (cartItems.length === 0) return false;
+
+        if (customerType === 'baru') {
+            if (!customerData.nama || !customerData.hp || !customerData.alamat) return false;
+        } else if (!selectedMember) {
+            return false;
+        }
+
+        if (paymentMethod === 'tunai') {
+            if (!uangDibayar || uangDibayar < subTotal) return false;
+        } else {
+            if (!selectedBankId || !namaPengirim || !rekeningPengirim) return false;
+        }
+
+        return true;
+    }, [cartItems, customerType, customerData, selectedMember, paymentMethod, uangDibayar, subTotal, selectedBankId, namaPengirim, rekeningPengirim]);
+
+    const mapInventoryToCartItem = (inv) => ({
+        inventory_id: inv.inventory_id,
+        product_id: inv.product_id,
+        name: getProductName(inv.product_id),
+        specs: `${inv.berat ? `${inv.berat}g` : ''}${inv.karat ? ` • ${inv.karat}K` : ''}`,
+        price: Number(inv.jual || 0),
+        image: HelperFunctions.getStorageUrl(inv.thumb_path),
+    });
+
+    const handleSelectItem = (e) => {
+        const inventoryId = e.target.value;
+        if (!inventoryId) return;
+
+        if (cartItems.some((item) => item.inventory_id === inventoryId)) {
+            showAlert({ icon: 'warning', title: 'Perhatian', message: 'Produk ini sudah ada di keranjang!' });
+            return;
+        }
+
+        const found = inventoryOptions.find((inv) => inv.inventory_id === inventoryId);
+        if (!found) return;
+
+        setCartItems((prev) => [...prev, mapInventoryToCartItem(found)]);
     };
+
+    const itemDropdownOptions = useMemo(() => {
+        return inventoryOptions
+            .filter((inv) => !cartItems.some((item) => item.inventory_id === inv.inventory_id))
+            .map((inv) => ({
+                value: inv.inventory_id,
+                label: `${inv.inventory_id} - ${getProductName(inv.product_id)} (${inv.berat ?? '-'}g • ${inv.karat ?? '-'}K)`,
+            }));
+    }, [inventoryOptions, cartItems, productOptions]);
 
     const handleRemoveItem = (idToRemove) => {
-        setCartItems(cartItems.filter(item => item.id !== idToRemove));
+        setCartItems(cartItems.filter(item => item.inventory_id !== idToRemove));
     };
 
-    const handleScanSuccess = (decodedText) => {
-        console.log(`Barcode Scanned: ${decodedText}`);
-        if (cartItems.some(item => item.id === decodedText)) {
-            alert('Produk ini sudah ada di keranjang!');
+    const handleScanSuccess = async (decodedText) => {
+        if (cartItems.some(item => item.inventory_id === decodedText)) {
+            showAlert({ icon: 'warning', title: 'Perhatian', message: 'Produk ini sudah ada di keranjang!' });
             setIsScanModalOpen(false);
             return;
         }
-        const newProduct = {
-            id: decodedText,
-            name: 'Produk Hasil Scan',
-            specs: 'Unknown specs',
-            price: 5000000,
-            image: 'https://via.placeholder.com/40/FDF3E7/D97706?text=S'
-        };
-        setCartItems([...cartItems, newProduct]);
-        setIsScanModalOpen(false);
+
+        const found = inventoryOptions.find((inv) => inv.inventory_id === decodedText || inv.barcode === decodedText);
+        if (found) {
+            setCartItems((prev) => [...prev, mapInventoryToCartItem(found)]);
+            setIsScanModalOpen(false);
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const res = await InventoryApis.GetInventory(`?search=${decodedText}&status=AVAILABLE&per_page=10`);
+            const match = (res?.data || []).find((inv) => inv.inventory_id === decodedText || inv.barcode === decodedText);
+            if (match) {
+                setCartItems((prev) => [...prev, mapInventoryToCartItem(match)]);
+            } else {
+                showAlert({ icon: 'error', title: 'Tidak Ditemukan', message: `Item dengan kode ${decodedText} tidak ditemukan di inventory.` });
+            }
+        } catch (error) {
+            console.error(error);
+            showAlert({ icon: 'error', title: 'Gagal', message: 'Gagal mencari item di inventory.' });
+        } finally {
+            setLoading(false);
+            setIsScanModalOpen(false);
+        }
     };
 
     // Auto-fill nama pengirim jika pilih member terdaftar
     useEffect(() => {
         if (selectedMember && paymentMethod === 'transfer') {
-            setNamaPengirim(selectedMember.nama);
+            setNamaPengirim(selectedMember.customer_name);
         } else if (customerType === 'baru' && paymentMethod === 'transfer') {
             setNamaPengirim(customerData.nama);
         }
     }, [selectedMember, customerType, customerData.nama, paymentMethod]);
+
+    const handleSubmit = async () => {
+        if (cartItems.length === 0) {
+            showAlert({ icon: 'warning', title: 'Perhatian', message: 'Keranjang penjualan masih kosong.' });
+            return;
+        }
+
+        if (customerType === 'baru' && (!customerData.nama || !customerData.hp || !customerData.alamat)) {
+            showAlert({ icon: 'warning', title: 'Perhatian', message: 'Lengkapi data customer baru.' });
+            return;
+        }
+
+        if (customerType === 'terdaftar' && !selectedMember) {
+            showAlert({ icon: 'warning', title: 'Perhatian', message: 'Pilih customer terdaftar.' });
+            return;
+        }
+
+        if (paymentMethod === 'tunai' && (!uangDibayar || uangDibayar < subTotal)) {
+            showAlert({ icon: 'warning', title: 'Perhatian', message: 'Uang dibayar belum diisi atau kurang dari total.' });
+            return;
+        }
+
+        if (paymentMethod === 'transfer' && (!selectedBankId || !namaPengirim || !rekeningPengirim)) {
+            showAlert({ icon: 'warning', title: 'Perhatian', message: 'Lengkapi data transfer.' });
+            return;
+        }
+
+        setSubmitting(true);
+        setLoading(true);
+        try {
+            let customerId = selectedMember?.id;
+
+            if (customerType === 'baru') {
+                const customerRes = await CustomerApis.PostCustomer({
+                    customer_name: customerData.nama,
+                    phone_number: customerData.hp,
+                    address: customerData.alamat,
+                });
+                customerId = customerRes?.data?.data?.id;
+            }
+
+            const payload = {
+                customer_id: customerId,
+                user_id: 1,
+                branch_id: 1,
+                payment_type: paymentMethod === 'tunai' ? 'TUNAI' : 'TRANSFER',
+                item: cartItems.map((item) => ({
+                    inventory_id: item.inventory_id,
+                    product_id: item.product_id,
+                    price: item.price,
+                })),
+            };
+
+            if (paymentMethod === 'tunai') {
+                payload.nominal_paid = uangDibayar;
+                payload.exchange = kembalian > 0 ? kembalian : 0;
+            } else {
+                payload.receiver_bank_id = selectedBankId;
+                payload.sender_bank_name = namaPengirim;
+                payload.sender_rekening = rekeningPengirim;
+            }
+
+            await PenjualanApis.PostPenjualan(payload);
+
+            showAlert({ icon: 'success', isAutoClose: false, title: 'Berhasil', message: 'Transaksi penjualan berhasil diajukan.' });
+            setCurentState('main');
+        } catch (error) {
+            console.error(error);
+            showAlert({ icon: 'error', title: 'Gagal', message: error?.response?.data?.message || 'Gagal mengajukan transaksi penjualan.' });
+        } finally {
+            setSubmitting(false);
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="flex flex-col gap-6 w-full pb-6">
@@ -185,7 +338,7 @@ const FormAdd = ({ setCurentState }) => {
                                     <input
                                         type="text"
                                         className="w-full outline-none text-sm bg-transparent"
-                                        placeholder="Cari nama / no. HP / kode member"
+                                        placeholder="Cari nama / no. HP customer"
                                         value={searchQuery}
                                         onChange={(e) => {
                                             setSearchQuery(e.target.value);
@@ -198,8 +351,8 @@ const FormAdd = ({ setCurentState }) => {
 
                                 {isSearching && (
                                     <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                        {filteredMembers.length > 0 ? (
-                                            filteredMembers.map(member => (
+                                        {memberOptions.length > 0 ? (
+                                            memberOptions.map(member => (
                                                 <div
                                                     key={member.id}
                                                     className="px-4 py-3 hover:bg-primary-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
@@ -209,8 +362,8 @@ const FormAdd = ({ setCurentState }) => {
                                                         setIsSearching(false);
                                                     }}
                                                 >
-                                                    <div className="font-semibold text-sm text-gray-800">{member.nama}</div>
-                                                    <div className="text-xs text-gray-500 mt-0.5">{member.id} • {member.hp}</div>
+                                                    <div className="font-semibold text-sm text-gray-800">{member.customer_name}</div>
+                                                    <div className="text-xs text-gray-500 mt-0.5">{member.phone_number}</div>
                                                 </div>
                                             ))
                                         ) : (
@@ -222,12 +375,9 @@ const FormAdd = ({ setCurentState }) => {
                         ) : (
                             <div className="flex items-center justify-between p-3.5 border border-gray-200 rounded-lg bg-white shadow-sm">
                                 <div className="flex items-center gap-4">
-                                    <div className="px-3 py-1.5 bg-gray-50 text-gray-500 border border-gray-200 rounded-md text-sm font-medium">
-                                        {selectedMember.id}
-                                    </div>
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-gray-800">{selectedMember.nama}</span>
-                                        <span className="text-xs text-gray-500 mt-0.5">{selectedMember.hp} • {selectedMember.alamat}</span>
+                                        <span className="text-sm font-bold text-gray-800">{selectedMember.customer_name}</span>
+                                        <span className="text-xs text-gray-500 mt-0.5">{selectedMember.phone_number} • {selectedMember.address}</span>
                                     </div>
                                 </div>
                                 <button
@@ -259,23 +409,27 @@ const FormAdd = ({ setCurentState }) => {
                     </button>
                     <span className="text-gray-400 text-sm">atau</span>
                     <div className="flex-1 relative">
-                        <input
-                            type="text"
-                            placeholder="Pilih item.."
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none cursor-pointer pr-10"
-                            readOnly
-                        />
-                        <CaretRightIcon size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <select
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none cursor-pointer pr-10 appearance-none bg-white"
+                            value=""
+                            onChange={handleSelectItem}
+                        >
+                            <option value="">Pilih item..</option>
+                            {itemDropdownOptions.map((opt) => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                        </select>
+                        <CaretRightIcon size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     </div>
                 </div>
 
                 {/* List Items */}
                 <div className="flex flex-col gap-3">
                     {cartItems.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50/50">
+                        <div key={item.inventory_id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50/50">
                             <div className="flex items-center gap-4">
                                 <div className="px-3 py-1 bg-gray-100 rounded text-xs font-medium text-gray-500 border border-gray-200">
-                                    {item.id}
+                                    {item.inventory_id}
                                 </div>
                                 {item.image ? (
                                     <img src={item.image} alt={item.name} className="w-10 h-10 rounded-md object-cover border border-gray-200" />
@@ -288,9 +442,9 @@ const FormAdd = ({ setCurentState }) => {
                                 </div>
                             </div>
                             <div className="flex items-center gap-6">
-                                <span className="font-semibold text-gray-800">{formatRp(item.price)}</span>
+                                <span className="font-semibold text-gray-800">{HelperFunctions.formatCurrency(item.price)}</span>
                                 <button
-                                    onClick={() => handleRemoveItem(item.id)}
+                                    onClick={() => handleRemoveItem(item.inventory_id)}
                                     className="p-1.5 text-error-500 hover:bg-error-50 rounded-md transition-colors"
                                 >
                                     <XIcon size={18} />
@@ -346,10 +500,10 @@ const FormAdd = ({ setCurentState }) => {
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-sm font-medium text-gray-700">Uang Dibayar<span className="text-error-500">*</span></label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                                    value={uangDibayar}
-                                    onChange={(e) => setUangDibayar(Number(e.target.value))}
+                                    value={HelperFunctions.formatNumberInput(uangDibayar)}
+                                    onChange={(e) => setUangDibayar(Number(HelperFunctions.unformatNumberInput(e.target.value)))}
                                     placeholder="Rp 0"
                                 />
                             </div>
@@ -365,57 +519,57 @@ const FormAdd = ({ setCurentState }) => {
                     {/* --- PILIHAN REKENING & NAMA PENGIRIM (HANYA MUNCUL JIKA TRANSFER) --- */}
                     {paymentMethod === 'transfer' && (
                         <div className="flex flex-col gap-4 mt-2">
-                            {/* Pilihan Bank */}
-                            <div className="grid grid-cols-2 gap-4">
-                                {/* Card BCA */}
-                                <div
-                                    onClick={() => setSelectedBank('bca')}
-                                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                                        selectedBank === 'bca'
-                                            ? 'border-primary-500 bg-primary-50/50'
-                                            : 'border-gray-200 bg-white hover:bg-gray-50'
-                                    }`}
-                                >
-                                    {/* Logo Tiruan BCA (Menggunakan CSS) */}
-                                    <div className="w-10 h-10 bg-[#005EAA] rounded-md flex items-center justify-center text-white font-extrabold italic text-sm shadow-sm flex-shrink-0">
-                                        BCA
-                                    </div>
-                                    <div className="flex flex-col overflow-hidden">
-                                        <span className="text-sm font-bold text-gray-900 truncate">ABDULLOH ISMAIL</span>
-                                        <span className="text-[11px] font-medium text-gray-500 mt-0.5 truncate">122378561274 • BANK CENTRAL ASIA</span>
-                                    </div>
-                                </div>
-
-                                {/* Card BNI */}
-                                <div
-                                    onClick={() => setSelectedBank('bni')}
-                                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                                        selectedBank === 'bni'
-                                            ? 'border-primary-500 bg-primary-50/50'
-                                            : 'border-gray-200 bg-white hover:bg-gray-50'
-                                    }`}
-                                >
-                                    {/* Logo Tiruan BNI (Menggunakan CSS) */}
-                                    <div className="w-10 h-10 bg-[#F05A28] rounded-md flex items-center justify-center text-white font-extrabold italic text-sm shadow-sm flex-shrink-0">
-                                        BNI
-                                    </div>
-                                    <div className="flex flex-col overflow-hidden">
-                                        <span className="text-sm font-bold text-gray-900 truncate">ABDULLOH ISMAIL</span>
-                                        <span className="text-[11px] font-medium text-gray-500 mt-0.5 truncate">122378561274 • BANK NEGARA INDONESIA</span>
-                                    </div>
+                            {/* Pilihan Rekening Tujuan */}
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-sm font-medium text-gray-900">Rekening Tujuan<span className="text-error-500">*</span></label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {bankOptions.map((bc) => (
+                                        <div
+                                            key={bc.id}
+                                            onClick={() => setSelectedBankId(bc.id)}
+                                            className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                                                selectedBankId === bc.id
+                                                    ? 'border-primary-500 bg-primary-50/50'
+                                                    : 'border-gray-200 bg-white hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            <div className="w-10 h-10 bg-neutral-500 rounded-md flex items-center justify-center text-white font-extrabold italic text-sm shadow-sm flex-shrink-0">
+                                                {bc.bank?.bank_code ?? bc.bank?.bank_name?.slice(0, 3)?.toUpperCase() ?? '-'}
+                                            </div>
+                                            <div className="flex flex-col overflow-hidden">
+                                                <span className="text-sm font-bold text-gray-900 truncate">{bc.nama_pemilik}</span>
+                                                <span className="text-[11px] font-medium text-gray-500 mt-0.5 truncate">{bc.nomor_rekening} • {bc.bank?.bank_name}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {bankOptions.length === 0 && (
+                                        <p className="text-sm text-gray-500 col-span-2">Tidak ada rekening tersedia.</p>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Input Nama Pengirim */}
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-sm font-medium text-gray-900">Nama Pengirim<span className="text-error-500">*</span></label>
-                                <input
-                                    type="text"
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                                    value={namaPengirim}
-                                    onChange={(e) => setNamaPengirim(e.target.value)}
-                                    placeholder="Masukkan nama pengirim"
-                                />
+                            {/* Input Nama & Rekening Pengirim */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-sm font-medium text-gray-900">Nama Pengirim<span className="text-error-500">*</span></label>
+                                    <input
+                                        type="text"
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                                        value={namaPengirim}
+                                        onChange={(e) => setNamaPengirim(e.target.value)}
+                                        placeholder="Masukkan nama pengirim"
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-sm font-medium text-gray-900">No. Rekening Pengirim<span className="text-error-500">*</span></label>
+                                    <input
+                                        type="text"
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                                        value={rekeningPengirim}
+                                        onChange={(e) => setRekeningPengirim(e.target.value)}
+                                        placeholder="Masukkan no. rekening pengirim"
+                                    />
+                                </div>
                             </div>
                         </div>
                     )}
@@ -432,8 +586,9 @@ const FormAdd = ({ setCurentState }) => {
                     Batal
                 </button>
                 <button
-                    className={`px-6 py-2 rounded-lg font-medium text-white transition-colors ${subTotal > 0 ? 'bg-primary-500 hover:bg-primary-600' : 'bg-gray-300 cursor-not-allowed'}`}
-                    disabled={subTotal === 0}
+                    onClick={handleSubmit}
+                    className={`px-6 py-2 rounded-lg font-medium text-white transition-colors ${isFormValid && !submitting ? 'bg-primary-500 hover:bg-primary-600' : 'bg-gray-300 cursor-not-allowed'}`}
+                    disabled={!isFormValid || submitting}
                 >
                     Ajukan Transaksi Penjualan
                 </button>

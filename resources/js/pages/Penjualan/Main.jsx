@@ -1,170 +1,191 @@
 import { useEffect, useState } from "react";
-import { PlusCircleIcon, EyeIcon, PencilSimpleLineIcon } from "@phosphor-icons/react";
+import { useDebounce } from "use-debounce";
+import dayjs from "dayjs";
+import { PlusCircleIcon, EyeIcon, XIcon, PrinterIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../components/HeaderSection";
 import InputGroup from "../../components/FormElement/InputGroup";
 import Table from "../../components/Table/Table";
 import LoadingStore from "../../Store/LoadingStore";
-import FooterActionBar from "../../components/FooterActionBar";
-import ModalViewPenjualan from "./ModalView"; // Pastikan path ini sesuai
+import ModalViewPenjualan from "./ModalView";
 import HelperFunctions from "../../utils/HelperFunctions";
+import PenjualanApis from "../../Services/Penjualan.apis";
+import { showAlert } from "../../utils/showAlert";
+
+const STATUS_OPTIONS = [
+    { value: 'APPROVAL', label: 'Approval' },
+    { value: 'CETAK KWITANSI', label: 'Cetak Kwitansi' },
+    { value: 'SELESAI', label: 'Selesai' },
+    { value: 'DITOLAK', label: 'Ditolak' },
+];
+
+const STATUS_STYLE = {
+    'SELESAI': 'bg-success-50 text-success-700 border-success-200',
+    'CETAK KWITANSI': 'bg-info-50 text-info-700 border-info-200',
+    'APPROVAL': 'bg-warning-50 text-warning-700 border-warning-200',
+    'DITOLAK': 'bg-danger-50 text-danger-700 border-danger-200',
+};
+
+const STATUS_LABEL = {
+    'SELESAI': 'Selesai',
+    'CETAK KWITANSI': 'Cetak Kwitansi',
+    'APPROVAL': 'Approval',
+    'DITOLAK': 'Ditolak',
+};
 
 const Main = ({ setCurentState }) => {
+    const setLoading = LoadingStore((state) => state.setLoading);
+
     const [paramFetch, setParamFetch] = useState({
-        data: [
-            // Dummy data agar tabel tidak kosong dan bisa ditest
-            { id: 1, tanggal: '21 Mei 2026', no_nota: 'ORD-2605015', customer: 'Siti Aminah', cabang: 'Pusat', total_item: 2, total_harga: 39000000, status: 'Menunggu Approval' },
-            { id: 2, tanggal: '20 Mei 2026', no_nota: 'ORD-2605014', customer: 'Budi Santoso', cabang: 'Pusat', total_item: 1, total_harga: 5000000, status: 'Selesai' }
-        ],
+        data: [],
         current_page: 1,
-        total: 2,
+        total: 0,
         per_page: 10,
     });
 
-    const setLoading = LoadingStore((state) => state.setLoading);
-    const [selectedRows, setSelectedRows] = useState([]);
+    const [search, setSearch] = useState({
+        search: '',
+        status: '',
+    });
+    const [searchBounce] = useDebounce(search, 500);
+    const [firstLoading, setFirstLoading] = useState(false);
 
-    // --- State untuk Modal View ---
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [selectedData, setSelectedData] = useState(null);
 
-    const [search, setSearch] = useState({
-        search: '',
-        status: null,
-        kategori: null,
-        cabang: null,
-    });
+    const fetchData = async (page = 1, pageSize = 10, filters = {}) => {
+        setLoading(true);
+        try {
+            const params = new URLSearchParams({
+                page,
+                per_page: pageSize,
+            });
+            if (filters.search) params.append('order_id', filters.search);
+            if (filters.status) params.append('status', filters.status);
 
-    const handleSelectAll = (e) => {
-        if (e.target.checked) {
-            const allIds = paramFetch.data.map(item => item.id);
-            setSelectedRows(allIds);
-        } else {
-            setSelectedRows([]);
+            const res = await PenjualanApis.GetPenjualan(`?${params.toString()}`);
+            setParamFetch(res);
+            setFirstLoading(true);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleSelectRow = (id) => {
-        setSelectedRows(prev =>
-            prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]
-        );
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        if (firstLoading) {
+            fetchData(1, paramFetch.per_page, searchBounce);
+        }
+    }, [searchBounce]);
+
+    const handleViewTransaction = async (row) => {
+        setLoading(true);
+        try {
+            const res = await PenjualanApis.GetPenjualanDetail(row.id);
+            setSelectedData(res?.data || null);
+            setIsViewModalOpen(true);
+        } catch (error) {
+            console.error(error);
+            showAlert({
+                icon: 'error',
+                title: 'Gagal',
+                message: 'Gagal memuat detail transaksi',
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleBulkApprove = () => {
-        alert(`${selectedRows.length} data berhasil disetujui`); // Diganti alert sementara jika showAlert tidak diimport
-        setSelectedRows([]);
-    };
-
-    const handleBulkReject = () => {
-        alert(`${selectedRows.length} data berhasil ditolak`);
-        setSelectedRows([]);
-    };
-
-    // --- Fungsi Buka Modal View ---
-    const handleViewTransaction = (row) => {
-        // Karena data dari tabel (row) biasanya belum lengkap,
-        // Anda nantinya perlu melakukan Fetch API detail transaksi di sini berdasarkan row.id
-
-        // Untuk sekarang, kita format dummy data yang struktur objectnya
-        // sesuai dengan kebutuhan props 'data' di ModalViewPenjualan
-        const detailData = {
-            customer: {
-                type: "Member Terdaftar",
-                id: "MBR-0002",
-                nama: "Siti Aminah",
-                hp: "082145678901",
-                alamat: "Jl. Merdeka Timur No. 24, Cempaka Putih, Jakarta Pusat"
-            },
-            cart: [
-                { id: "GLD0100000", name: "Kalung Italy Rantai", specs: "5g • 18K", price: 19500000, image: "https://via.placeholder.com/40/FDF3E7/D97706?text=K" },
-                { id: "GLD0100001", name: "Gelang Flower", specs: "8g • 20K", price: 19500000, image: "https://via.placeholder.com/40/FDF3E7/D97706?text=G" }
-            ],
-            payment: {
-                method: "Transfer",
-                subTotal: row.total_harga || 39000000,
-                total: row.total_harga || 39000000,
-                uangDibayar: 0,
-                kembalian: 0,
-                bank: "BCA",
-                rekeningName: "ABDULLOH ISMAIL",
-                rekeningNumber: "122378561274",
-                pengirim: "SITI AMINAH"
-            },
-            meta: {
-                orderId: row.no_nota || "ORD-2605015",
-                diajukanOleh: "Dianita Admin",
-                tanggal: row.tanggal || "21 Mei 2026, 12:00"
-            },
-            approval: {
-                // 'Menunggu Approval' | 'Disetujui' | 'Dibatalkan'
-                status: row.status === 'Selesai' ? 'Disetujui' : (row.status || 'Menunggu Approval'),
-                role: row.status === 'Dibatalkan' ? 'Admin Cabang' : 'Owner',
-                tanggal: row.tanggal || "21 Mei 2026, 12:00",
-                // Khusus status 'Dibatalkan' — tampilkan alasannya
-                reason: row.status === 'Dibatalkan' ? 'Salah input.' : null
+    const handleCancel = (row) => {
+        showAlert({
+            icon: 'warning',
+            isAutoClose: false,
+            title: 'Tolak Transaksi Penjualan',
+            message: `Apakah Anda yakin ingin menolak transaksi ${row.order_id}?`,
+            confirmText: 'Ya, Tolak',
+            cancelText: 'Batal',
+        }).then((res) => {
+            if (res.confirmed) {
+                PenjualanApis.PutPenjualanApproval({
+                    sales_ids: [row.id],
+                    status: 'DITOLAK',
+                }).then(() => {
+                    fetchData(paramFetch.current_page, paramFetch.per_page, searchBounce);
+                    showAlert({
+                        icon: 'success',
+                        isAutoClose: false,
+                        title: 'Berhasil',
+                        message: 'Transaksi telah ditolak',
+                    });
+                }).catch((error) => {
+                    console.error(error);
+                    showAlert({
+                        icon: 'error',
+                        title: 'Gagal',
+                        message: 'Gagal menolak transaksi',
+                    });
+                });
             }
-        };
+        });
+    };
 
-        setSelectedData(detailData);
-        setIsViewModalOpen(true);
+    const handlePrint = (row) => {
+        window.open(`/penjualan/print/${row.id}`, '_blank');
     };
 
     const searchFields = [
-        { name: 'search', label: 'Cari Produk', type: 'text' },
-        { name: 'status', label: 'Pilih Status', type: 'dropdown', options: [] },
-        { name: 'kategori', label: 'Pilih Kategori', type: 'dropdown', options: [] },
-        { name: 'cabang', label: 'Pilih Cabang', type: 'dropdown', options: [] }
+        { name: 'search', label: '', type: 'text', placeholder: 'Cari transaksi..' },
+        { name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: STATUS_OPTIONS },
     ];
 
     const columns = [
         {
-            header: (
-                <input
-                    type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
-                    onChange={handleSelectAll}
-                    checked={selectedRows.length === paramFetch.data.length && paramFetch.data.length > 0}
-                />
-            ),
-            accessor: 'checkbox',
-            render: (row) => (
-                <input
-                    type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
-                    checked={selectedRows.includes(row.id)}
-                    onChange={() => handleSelectRow(row.id)}
-                />
-            )
+            header: 'Tanggal',
+            accessor: 'created_at',
+            render: (row) => row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY') : '-',
         },
-        { header: 'Tanggal', accessor: 'tanggal' },
-        { header: 'Order ID', accessor: 'no_nota' },
-        { header: 'Customer', accessor: 'customer' },
-        { header: 'Cabang', accessor: 'cabang' },
-        { header: 'Total Item', accessor: 'total_item' },
-        { header: 'Total Harga', accessor: 'total_harga', render: (row) => HelperFunctions.formatCurrency(row.total_harga) },
+        { header: 'Order ID', accessor: 'order_id' },
+        { header: 'Customer', accessor: 'customer', render: (row) => row.customer?.customer_name ?? '-' },
+        {
+            header: 'Item Produk',
+            accessor: 'details',
+            render: (row) => {
+                const items = row.details || [];
+                if (items.length === 0) return '-';
+                const names = items.map((d) => d.product?.product_name).filter(Boolean);
+                return names.join(', ');
+            },
+        },
         {
             header: 'Status',
-            accessor: 'status',
-            render: (row) => {
-                const statusStyle = {
-                    'Selesai': 'bg-success-50 text-success-700 border-success-200',
-                    'Disetujui': 'bg-success-50 text-success-700 border-success-200',
-                    'Menunggu Approval': 'bg-warning-50 text-warning-700 border-warning-200',
-                    'Ditolak': 'bg-danger-50 text-danger-700 border-danger-200',
-                    'Dibatalkan': 'bg-danger-50 text-danger-700 border-danger-200',
-                };
-                return (
-                    <span className={`px-3 py-1 rounded-md text-xs font-medium border ${statusStyle[row.status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                        {row.status}
-                    </span>
-                );
-            }
+            accessor: 'approval_status',
+            render: (row) => (
+                <span className={`px-3 py-1 rounded-md text-xs font-medium border ${STATUS_STYLE[row.approval_status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                    {STATUS_LABEL[row.approval_status] || row.approval_status}
+                </span>
+            ),
         },
+        { header: 'Nominal', accessor: 'grand_total', render: (row) => HelperFunctions.formatCurrency(row.grand_total || 0) },
+        { header: 'Pembayaran', accessor: 'payment_type', render: (row) => row.payment_type === 'TUNAI' ? 'Tunai' : 'Transfer' },
+        { header: 'User', accessor: 'user', render: (row) => row.user?.name ?? '-' },
         {
             header: 'Aksi',
             accessor: 'aksi',
             render: (row) => (
                 <div className="flex items-center gap-2">
-                    {/* Event onClick dipasang di sini */}
+                    {row.approval_status === 'APPROVAL' && (
+                        <button
+                            onClick={() => handleCancel(row)}
+                            className="p-1.5 btn-outline !text-danger-500 !border-danger-500 hover:bg-danger-50 rounded-md transition-colors"
+                            title="Tolak"
+                        >
+                            <XIcon size={20} />
+                        </button>
+                    )}
                     <button
                         onClick={() => handleViewTransaction(row)}
                         className="p-1.5 btn-outline text-info-500 hover:bg-info-50 rounded-md transition-colors"
@@ -172,32 +193,41 @@ const Main = ({ setCurentState }) => {
                     >
                         <EyeIcon size={20} />
                     </button>
-                    <button
-                        className="p-1.5 btn-outline !border-primary-500 hover:bg-warning-50 rounded-md transition-colors"
-                        title="Edit Data"
-                    >
-                        <PencilSimpleLineIcon size={20} />
-                    </button>
+                    {row.approval_status === 'CETAK KWITANSI' && (
+                        <button
+                            onClick={() => handlePrint(row)}
+                            className="p-1.5 btn-outline text-primary-500 hover:bg-primary-50 rounded-md transition-colors"
+                            title="Cetak Kwitansi"
+                        >
+                            <PrinterIcon size={20} />
+                        </button>
+                    )}
                 </div>
-            )
-        }
+            ),
+        },
     ];
+
+    const onChangePage = (page) =>
+        fetchData(page, paramFetch.per_page, searchBounce);
+
+    const onChangePageSize = (pageSize) =>
+        fetchData(1, pageSize, searchBounce);
 
     return (
         <div className="flex flex-col gap-6 w-full relative">
             <HeaderSection
                 title="Penjualan"
-                description="Catat dan kelola transaksi penjualan barang."
+                description="Catat dan kelola transaksi penjualan barang kepada pelanggan."
                 icon={PlusCircleIcon}
                 onClick={() => setCurentState('form')}
-                textButton="Tambah Penjualan"
+                textButton="Transaksi Baru"
             />
 
-            <div className="w-full xl:w-4/6">
+            <div className="w-full xl:w-2/5">
                 <InputGroup
                     fields={searchFields}
                     formData={search}
-                    cols='4'
+                    cols='2'
                     onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
                 />
             </div>
@@ -206,25 +236,18 @@ const Main = ({ setCurentState }) => {
                 columns={columns}
                 data={paramFetch.data}
                 total={paramFetch.total}
-                currentPage={paramFetch.current_page}
+                page={paramFetch.current_page}
                 pageSize={paramFetch.per_page}
+                onPageChange={onChangePage}
+                onPageSizeChange={onChangePageSize}
             />
 
-            <FooterActionBar
-                selectedCount={selectedRows.length}
-                onClearSelection={() => setSelectedRows([])}
-                secondaryText="Tolak"
-                secondaryType="danger"
-                onSecondaryClick={handleBulkReject}
-                primaryText="Setujui"
-                primaryType="primary"
-                onPrimaryClick={handleBulkApprove}
-            />
-
-            {/* Render Modal View di sini */}
             <ModalViewPenjualan
                 isOpen={isViewModalOpen}
-                onClose={() => setIsViewModalOpen(false)}
+                onClose={() => {
+                    setIsViewModalOpen(false);
+                    setSelectedData(null);
+                }}
                 data={selectedData}
             />
         </div>

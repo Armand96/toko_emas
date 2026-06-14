@@ -1,7 +1,13 @@
 import { generateBarcode } from "./barcode";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.example.com";
+
 const HelperFunctions = {
     generateBarcode,
+    getStorageUrl: (path) => {
+        if (!path) return null;
+        return `${BASE_URL.replace(/\/$/, '')}/storage/${path}`;
+    },
     /**
      * Buka tab baru ke halaman cetak barcode.
      * Dipakai di Pembelian (batch baru) & Item Inventory (item existing).
@@ -32,6 +38,18 @@ const HelperFunctions = {
         let formattedData = data.map(item => ({
             value: item[valueKey],
             label: `${item[labelCode]} - ${item[labelKey]}`,
+            details: item,
+        }));
+        if (isNull) {
+            formattedData = [{ value: '', label: 'Pilih' }, ...formattedData];
+        }
+        return formattedData;
+    },
+    formatDropdownBank: (data = [], valueKey = 'id', isNull = false) => {
+        if (!Array.isArray(data)) return [];
+        let formattedData = data.map(item => ({
+            value: item[valueKey],
+            label: `${item.bank?.bank_name ?? '-'} - ${item.nomor_rekening ?? '-'} - ${item.nama_pemilik ?? '-'}`,
             details: item,
         }));
         if (isNull) {

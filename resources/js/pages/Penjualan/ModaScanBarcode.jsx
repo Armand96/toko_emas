@@ -10,6 +10,7 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
     const videoRef = useRef(null);
     const readerRef = useRef(null);
     const streamRef = useRef(null); // simpan stream kamera
+    const controlsRef = useRef(null); // simpan controls hasil decodeFromVideoDevice
 
     useEffect(() => {
         if (!isOpen) {
@@ -55,7 +56,6 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
                 videoRef.current,
                 (result, err) => {
                     if (result) {
-                        console.log("testttt", result.getText())
                         onScanSuccess(result.getText());
                         stopScanner();
                         onClose();
@@ -65,6 +65,8 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
                     }
                 }
             );
+
+            controlsRef.current = controls;
 
             // Simpan stream dari video element setelah scanner jalan
             if (videoRef.current?.srcObject) {
@@ -78,13 +80,21 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
     };
 
     const stopScanner = () => {
-        // 1. Stop semua track dari stream — ini yang matikan lampu kamera
+        // 1. Hentikan loop decode zxing & lepas stream kamera via controls
+        if (controlsRef.current) {
+            try {
+                controlsRef.current.stop();
+            } catch (_) {}
+            controlsRef.current = null;
+        }
+
+        // 2. Stop semua track dari stream — ini yang matikan lampu kamera
         if (streamRef.current) {
             streamRef.current.getTracks().forEach((track) => track.stop());
             streamRef.current = null;
         }
 
-        // 2. Reset reader zxing
+        // 3. Reset reader zxing
         if (readerRef.current) {
             try {
                 readerRef.current.reset();
@@ -92,7 +102,7 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
             readerRef.current = null;
         }
 
-        // 3. Bersihkan srcObject dari video element
+        // 4. Bersihkan srcObject dari video element
         if (videoRef.current) {
             videoRef.current.srcObject = null;
         }

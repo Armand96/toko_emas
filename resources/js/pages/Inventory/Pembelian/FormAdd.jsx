@@ -35,6 +35,7 @@ const emptyItem = {
     jual: "",
     foto: null,
     _produk_label: "",
+    _produk_barcode: "",
 };
 
 const requiredItem = [
@@ -61,8 +62,8 @@ const FormPembelian = ({ setCurentState }) => {
     const fetchOptions = async () => {
         try {
             const [products, branches,] = await Promise.all([
-                InventoryApis.GetProducts(""),
-                BranchApis.GetBranch(""),
+                InventoryApis.GetProducts("?per_page=10000000"),
+                BranchApis.GetBranch("?per_page=10000000"),
             ]);
 
             setProductOptions(
@@ -91,7 +92,7 @@ const FormPembelian = ({ setCurentState }) => {
 
         if(name === "branch_id"){
             BankApis.GetBankBranch(`?branch_id=${value}`).then((res) => {
-            setBankOptions(HelperFunctions.formatDropdownWithCode(res?.data || [], "id", "nama_pemilik", "nomor_rekening"));
+            setBankOptions(HelperFunctions.formatDropdownBank(res?.data || []));
 
             })
         }
@@ -112,6 +113,7 @@ const FormPembelian = ({ setCurentState }) => {
                 category_id: d.category_id ?? null,
                 subcategory_id: d.subcategory_id ?? null,
                 _produk_label: found?.label ?? "",
+                _produk_barcode: d.barcode ?? "",
             }));
             setErrors((prev) => ({ ...prev, product_id: "" }));
             return;
@@ -134,8 +136,9 @@ const FormPembelian = ({ setCurentState }) => {
     const handleAddToBatch = () => {
         if (!validateItem()) return;
 
-        const prefix = item._produk_label || "ITM";
-        const barcode = generateBarcode(prefix, batch.length);
+        const productBarcode = item._produk_barcode || "ITM";
+        const seq = batch.filter((b) => b._produk_barcode === item._produk_barcode).length;
+        const barcode = generateBarcode(productBarcode, seq);
 
         setBatch((prev) => [
             ...prev,

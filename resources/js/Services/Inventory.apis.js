@@ -33,6 +33,9 @@ const InventoryApis = {
             headers: { "Content-Type": "multipart/form-data" },
         });
     },
+    GetInventory: (params) => {
+        return Apis.Get(`api/inventory${params}`).then(({ data }) => data);
+    },
 }
 
 export default InventoryApis;
