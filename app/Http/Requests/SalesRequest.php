@@ -32,7 +32,7 @@ class SalesRequest extends FormRequest
             'nominal_paid' => ['nullable', 'numeric'],
             'exchange' => ['nullable', 'numeric'],
             'sender_rekening' => ['nullable', 'string'],
-            'sender_bank_name' => ['nullable', 'numeric'],
+            'sender_bank_name' => ['nullable', 'string'],
             'sender_bank_id' => ['nullable', 'numeric'],
             'receiver_bank_id' => ['nullable', 'numeric'],
 
