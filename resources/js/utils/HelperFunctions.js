@@ -1,7 +1,13 @@
 import { generateBarcode } from "./barcode";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.example.com";
+
 const HelperFunctions = {
     generateBarcode,
+    getStorageUrl: (path) => {
+        if (!path) return null;
+        return `${BASE_URL.replace(/\/$/, '')}/storage/${path}`;
+    },
     /**
      * Buka tab baru ke halaman cetak barcode.
      * Dipakai di Pembelian (batch baru) & Item Inventory (item existing).
