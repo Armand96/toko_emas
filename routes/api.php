@@ -36,7 +36,7 @@ Route::get('inventory', [InventoryController::class, 'index']);
 Route::get('sales/{sales}', [TSalesController::class, 'single']);
 Route::get('sales', [TSalesController::class, 'index']);
 Route::post('sales', [TSalesController::class, 'createTrx']);
-Route::put('sales', [TSalesController::class, 'changeApproval']);
+Route::put('update-sales', [TSalesController::class, 'changeApproval']);
 
 Route::prefix('enum')->group(function() {
     Route::get('pembelian-status', [EnumController::class, 'pembelianStatus']);

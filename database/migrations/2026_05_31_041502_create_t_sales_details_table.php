@@ -17,7 +17,7 @@ return new class extends Migration
             $table->bigInteger('product_id', false, true);
             $table->decimal('price', 16, 2);
             // $table->bigInteger('qty', false, true);
-            $table->string('inventory_id');
+            $table->string('inventory_code', 50);
             $table->timestamps();
         });
     }

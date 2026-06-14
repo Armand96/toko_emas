@@ -114,7 +114,7 @@ class PembelianController extends Controller
                     $data = Inventory::where('product_id', $value->product_id)->count();
 
                     Inventory::create(array(
-                        'inventory_id' => $value->barcode . "-" . str_pad($data+1, 4, "0", STR_PAD_LEFT),
+                        'inventory_code' => $value->barcode . "-" . str_pad($data+1, 4, "0", STR_PAD_LEFT),
                         'product_id' => $value->product_id,
                         'category_id' => $value->category_id,
                         'subcategory_id' => $value->subcategory_id,
