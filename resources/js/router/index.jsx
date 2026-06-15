@@ -11,7 +11,9 @@ import Penjualan from "../pages/Penjualan/Page";
 import MasterUser from "../pages/administrator/user/Page";
 import MasterSupplier from "../pages/administrator/Supplier/Page";
 import MasterCustomer from "../pages/administrator/Customer/Page";
+import MasterCategoryFinance from "../pages/administrator/MasterCategoryFinance/Page";
 import PrintBarcode from "../pages/Inventory/Inventory/PrintBarcode";
+import PrintKwitansi from "../pages/Penjualan/PrintKwitansi";
 import Finance from "../pages/Finance/Page";
 
 const router = createBrowserRouter([
@@ -22,6 +24,10 @@ const router = createBrowserRouter([
     {
         path: "/inventory/print-barcode",
         element: <PrintBarcode />,
+    },
+    {
+        path: "/penjualan/print-kwitansi",
+        element: <PrintKwitansi />,
     },
     {
         element: <Layout />,
@@ -49,6 +55,10 @@ const router = createBrowserRouter([
             {
                 path: "/administrator/customer",
                 element: <MasterCustomer />
+            },
+            {
+                path: "/administrator/master-category-finance",
+                element: <MasterCategoryFinance />
             },
               {
                 path: "/penjualan",

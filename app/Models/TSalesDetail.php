@@ -10,7 +10,7 @@ class TSalesDetail extends Model
         'sales_id',
         'product_id',
         'price',
-        'inventory_id',
+        'inventory_code',
     ];
 
     protected $hidden = [
@@ -25,11 +25,11 @@ class TSalesDetail extends Model
 
     public function inventory()
     {
-        return $this->belongsTo(Inventory::class, 'inventory_id', 'inventory_id');
+        return $this->belongsTo(Inventory::class, 'inventory_code', 'inventory_code');
     }
 
     public function header()
     {
-        return $this->belongsTo(MProduct::class, 'sales_id', 'id');
+        return $this->belongsTo(TSales::class, 'sales_id', 'id');
     }
 }

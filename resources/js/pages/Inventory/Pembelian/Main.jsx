@@ -5,6 +5,7 @@ import { useDebounce } from "use-debounce";
 import HeaderSection from "../../../components/HeaderSection";
 import InputGroup from "../../../components/FormElement/InputGroup";
 import Table from "../../../components/Table/Table";
+import FooterActionBar from "../../../components/FooterActionBar";
 import ModalView from "./modalView";
 
 import HelperFunctions from "../../../utils/HelperFunctions";
@@ -28,6 +29,7 @@ const MainPembelian = ({ setCurentState }) => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedData, setSelectedData] = useState(null);
+    const [selectedRows, setSelectedRows] = useState([]);
 
     const fetchData = async (page = 1, pageSize = 10, keyword = "") => {
         setLoading(true);
@@ -55,6 +57,10 @@ const MainPembelian = ({ setCurentState }) => {
     }, [searchBounce]);
 
     const handleCancel = (evt) => {
+        confirmCancel([evt.id]);
+    }
+
+    const confirmCancel = (ids) => {
         showAlert({
             icon: 'warning',
             isAutoClose: false,
@@ -66,9 +72,10 @@ const MainPembelian = ({ setCurentState }) => {
             if (res.confirmed) {
                 InventoryApis.updatePembelian({
                     status: "DIBATALKAN",
-                    pembelian_ids: [evt.id]
+                    pembelian_ids: ids
                 }).then((res) => {
-                    fetchData();
+                    setSelectedRows([]);
+                    fetchData(paramFetch.current_page, paramFetch.per_page, search.search);
                     showAlert({
                         icon: 'success',
                         isAutoClose: false,
@@ -80,7 +87,50 @@ const MainPembelian = ({ setCurentState }) => {
         })
     }
 
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            const cancellableIds = paramFetch.data
+                .filter(item => item.status === 'APPROVAL')
+                .map(item => item.id);
+            setSelectedRows(cancellableIds);
+        } else {
+            setSelectedRows([]);
+        }
+    };
+
+    const handleSelectRow = (id) => {
+        setSelectedRows(prev =>
+            prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]
+        );
+    };
+
+    const handleBulkCancel = () => {
+        confirmCancel(selectedRows);
+    };
+
     const columns = [
+        {
+            header: (
+                <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                    onChange={handleSelectAll}
+                    checked={
+                        selectedRows.length > 0 &&
+                        selectedRows.length === paramFetch.data.filter(item => item.status === 'APPROVAL').length
+                    }
+                />
+            ),
+            accessor: 'checkbox',
+            render: (row) => row.status === 'APPROVAL' ? (
+                <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                    checked={selectedRows.includes(row.id)}
+                    onChange={() => handleSelectRow(row.id)}
+                />
+            ) : null
+        },
         { header: "Tanggal", accessor: "tanggal", render: (row) => row.tanggal ?? dayjs(row.created_at).format("DD/MM/YYYY") ?? "-" },
         { header: "Batch", accessor: "batch" },
         { header: "Kode", accessor: "barcode", },
@@ -159,7 +209,7 @@ const MainPembelian = ({ setCurentState }) => {
         fetchData(1, pageSize, search.search);
 
     return (
-        <div className="flex flex-col gap-6 w-full">
+        <div className={`flex flex-col gap-6 w-full relative min-h-full ${selectedRows.length > 0 ? 'pb-24 lg:pb-28' : ''}`}>
             <HeaderSection
                 title="Pembelian"
                 description="Kelola data pembelian dan item inventory."
@@ -204,6 +254,16 @@ const MainPembelian = ({ setCurentState }) => {
                 }}
                 data={selectedData}
             />
+
+            <div className="w-3/6 relative z-60">
+                <FooterActionBar
+                    selectedCount={selectedRows.length}
+                    onClearSelection={() => setSelectedRows([])}
+                    primaryText="Batalkan Pengajuan"
+                    primaryType="danger"
+                    onPrimaryClick={handleBulkCancel}
+                />
+            </div>
         </div>
     );
 };

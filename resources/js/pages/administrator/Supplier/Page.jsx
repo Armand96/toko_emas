@@ -12,7 +12,7 @@ import ModalSupplier from './Modal';
 const MasterSupplier = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
     const [paramFetch, setParamFetch] = useState({ data: [], page: 1, total: 0, pageSize: 10 });
-    const [search, setSearch] = useState({ name: '' });
+    const [search, setSearch] = useState({ supplier_name: '' });
     const [showModalAdd, setShowModalAdd] = useState(false);
     const [formData, setFormData] = useState({});
     const [formError, setFormError] = useState({});
@@ -20,15 +20,15 @@ const MasterSupplier = () => {
     const [firstLoading, setFirstLoading] = useState(false);
     const [searchBounce] = useDebounce(search, 500);
     const [requiredFields] = useState([
-        { name: 'customer_name', error_message: 'Nama lengkap wajib diisi' },
+        { name: 'supplier_name', error_message: 'Nama supplier wajib diisi' },
         { name: 'phone_number', error_message: 'No HP wajib diisi' },
         { name: 'address', error_message: 'Alamat wajib diisi' },
     ]);
 
-    const fetchData = async (page = 1, pageSize = 10, name = '') => {
+    const fetchData = async (page = 1, pageSize = 10, supplier_name = '') => {
         setLoading(true);
         try {
-            const res = await SupplierApis.GetSupplier(`?page=${page}&limit=${pageSize}${name ? `&name=${name}` : ''}`);
+            const res = await SupplierApis.GetSupplier(`?page=${page}&limit=${pageSize}${supplier_name ? `&supplier_name=${supplier_name}` : ''}`);
             setParamFetch(res);
             setFirstLoading(true);
         } catch (error) {
@@ -44,7 +44,7 @@ const MasterSupplier = () => {
 
     useEffect(() => {
         if (firstLoading) {
-            fetchData(1, paramFetch.pageSize, search.name);
+            fetchData(1, paramFetch.pageSize, search.supplier_name);
         }
     }, [searchBounce]);
 
@@ -93,15 +93,15 @@ const MasterSupplier = () => {
         setLoading(true);
         try {
             const body = new FormData();
-            body.append('customer_name', submitData.customer_name);
+            body.append('supplier_name', submitData.supplier_name);
             body.append('phone_number', submitData.phone_number);
             body.append('address', submitData.address);
             body.append('is_active', submitData.is_active ? 1 : 0);
             if (submitData.id) body.append('id', submitData.id);
 
             await submitData?.id
-                ? CustomerApis.PutCustomer(submitData.id, body)
-                : CustomerApis.PostCustomer(body);
+                ? SupplierApis.PutSupplier(submitData.id, body)
+                : SupplierApis.PostSupplier(body);
 
             setTimeout(() => {
                 showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
@@ -117,7 +117,7 @@ const MasterSupplier = () => {
     };
 
     const columns = [
-        { header: 'Nama Lengkap', accessor: 'customer_name' },
+        { header: 'Nama Supplier', accessor: 'supplier_name' },
         { header: 'No HP', accessor: 'phone_number' },
         {
             header: 'Alamat',
@@ -156,11 +156,11 @@ const MasterSupplier = () => {
     ];
 
     const onChangePage = (page) => {
-        fetchData(page, paramFetch.pageSize, search.name);
+        fetchData(page, paramFetch.pageSize, search.supplier_name);
     };
 
     const onChangePageSize = (pageSize) => {
-        fetchData(1, pageSize, search.name);
+        fetchData(1, pageSize, search.supplier_name);
     };
 
     return (
@@ -175,7 +175,7 @@ const MasterSupplier = () => {
             <div className="w-full lg:w-1/3">
                 <InputGroup
                     fields={[{
-                        name: 'name',
+                        name: 'supplier_name',
                         label: 'Cari Supplier',
                         type: 'text',
                         placeholder: 'Cari...'

@@ -6,10 +6,10 @@
  * @param {number} seq            - urutan item dengan kode produk yang sama (mulai 0)
  */
 export const generateBarcode = (productBarcode = "ITM", seq = 0) => {
-    const base = (productBarcode || "ITM").trim().toUpperCase() || "ITM";
-    const seqStr = String(seq + 1).padStart(3, "0"); // 001, 002, ...
+    // const base = (productBarcode || "ITM").trim().toUpperCase() || "ITM";
+    // const seqStr = String(seq + 1).padStart(3, "0"); // 001, 002, ...
 
-    return `${base}-${seqStr}`;
+    return `${productBarcode}`;
 };
 
 export default generateBarcode;

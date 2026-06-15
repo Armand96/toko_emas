@@ -113,7 +113,7 @@ const FormAdd = ({ setCurentState }) => {
     }, [cartItems, customerType, customerData, selectedMember, paymentMethod, uangDibayar, subTotal, selectedBankId, namaPengirim, rekeningPengirim]);
 
     const mapInventoryToCartItem = (inv) => ({
-        inventory_id: inv.inventory_id,
+        inventory_code: inv.inventory_code,
         product_id: inv.product_id,
         name: getProductName(inv.product_id),
         specs: `${inv.berat ? `${inv.berat}g` : ''}${inv.karat ? ` • ${inv.karat}K` : ''}`,
@@ -125,12 +125,12 @@ const FormAdd = ({ setCurentState }) => {
         const inventoryId = e.target.value;
         if (!inventoryId) return;
 
-        if (cartItems.some((item) => item.inventory_id === inventoryId)) {
+        if (cartItems.some((item) => item.inventory_code === inventoryId)) {
             showAlert({ icon: 'warning', title: 'Perhatian', message: 'Produk ini sudah ada di keranjang!' });
             return;
         }
 
-        const found = inventoryOptions.find((inv) => inv.inventory_id === inventoryId);
+        const found = inventoryOptions.find((inv) => inv.inventory_code === inventoryId);
         if (!found) return;
 
         setCartItems((prev) => [...prev, mapInventoryToCartItem(found)]);
@@ -138,25 +138,25 @@ const FormAdd = ({ setCurentState }) => {
 
     const itemDropdownOptions = useMemo(() => {
         return inventoryOptions
-            .filter((inv) => !cartItems.some((item) => item.inventory_id === inv.inventory_id))
+            .filter((inv) => !cartItems.some((item) => item.inventory_code === inv.inventory_code))
             .map((inv) => ({
-                value: inv.inventory_id,
-                label: `${inv.inventory_id} - ${getProductName(inv.product_id)} (${inv.berat ?? '-'}g • ${inv.karat ?? '-'}K)`,
+                value: inv.inventory_code,
+                label: `${inv.inventory_code} - ${getProductName(inv.product_id)} (${inv.berat ?? '-'}g • ${inv.karat ?? '-'}K)`,
             }));
     }, [inventoryOptions, cartItems, productOptions]);
 
     const handleRemoveItem = (idToRemove) => {
-        setCartItems(cartItems.filter(item => item.inventory_id !== idToRemove));
+        setCartItems(cartItems.filter(item => item.inventory_code !== idToRemove));
     };
 
     const handleScanSuccess = async (decodedText) => {
-        if (cartItems.some(item => item.inventory_id === decodedText)) {
+        if (cartItems.some(item => item.inventory_code === decodedText)) {
             showAlert({ icon: 'warning', title: 'Perhatian', message: 'Produk ini sudah ada di keranjang!' });
             setIsScanModalOpen(false);
             return;
         }
 
-        const found = inventoryOptions.find((inv) => inv.inventory_id === decodedText || inv.barcode === decodedText);
+        const found = inventoryOptions.find((inv) => inv.inventory_code === decodedText || inv.barcode === decodedText);
         if (found) {
             setCartItems((prev) => [...prev, mapInventoryToCartItem(found)]);
             setIsScanModalOpen(false);
@@ -166,7 +166,7 @@ const FormAdd = ({ setCurentState }) => {
         setLoading(true);
         try {
             const res = await InventoryApis.GetInventory(`?search=${decodedText}&status=AVAILABLE&per_page=10`);
-            const match = (res?.data || []).find((inv) => inv.inventory_id === decodedText || inv.barcode === decodedText);
+            const match = (res?.data || []).find((inv) => inv.inventory_code === decodedText || inv.barcode === decodedText);
             if (match) {
                 setCartItems((prev) => [...prev, mapInventoryToCartItem(match)]);
             } else {
@@ -236,7 +236,7 @@ const FormAdd = ({ setCurentState }) => {
                 branch_id: 1,
                 payment_type: paymentMethod === 'tunai' ? 'TUNAI' : 'TRANSFER',
                 item: cartItems.map((item) => ({
-                    inventory_id: item.inventory_id,
+                    inventory_code: item.inventory_code,
                     product_id: item.product_id,
                     price: item.price,
                 })),
@@ -426,10 +426,10 @@ const FormAdd = ({ setCurentState }) => {
                 {/* List Items */}
                 <div className="flex flex-col gap-3">
                     {cartItems.map((item) => (
-                        <div key={item.inventory_id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50/50">
+                        <div key={item.inventory_code} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50/50">
                             <div className="flex items-center gap-4">
                                 <div className="px-3 py-1 bg-gray-100 rounded text-xs font-medium text-gray-500 border border-gray-200">
-                                    {item.inventory_id}
+                                    {item.inventory_code}
                                 </div>
                                 {item.image ? (
                                     <img src={item.image} alt={item.name} className="w-10 h-10 rounded-md object-cover border border-gray-200" />
@@ -444,7 +444,7 @@ const FormAdd = ({ setCurentState }) => {
                             <div className="flex items-center gap-6">
                                 <span className="font-semibold text-gray-800">{HelperFunctions.formatCurrency(item.price)}</span>
                                 <button
-                                    onClick={() => handleRemoveItem(item.inventory_id)}
+                                    onClick={() => handleRemoveItem(item.inventory_code)}
                                     className="p-1.5 text-error-500 hover:bg-error-50 rounded-md transition-colors"
                                 >
                                     <XIcon size={18} />

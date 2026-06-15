@@ -19,7 +19,7 @@ const MasterProduk = () => {
     });
     const setLoading = LoadingStore((state) => state.setLoading);
     const [requiredFields, setRequiredFields] = useState([
-        { name: 'barcode', error_message: 'Kode produk wajib diisi' },
+        // { name: 'barcode', error_message: 'Kode produk wajib diisi' },
         // { name: 'is_active', error_message: 'Status produk wajib diisi' },
         { name: 'product_name', error_message: 'Nama produk wajib diisi' },
         { name: 'category', error_message: 'Kategori wajib diisi' },

@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class SalesRequest extends FormRequest
+class UpdateStatusSalesRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,22 +25,9 @@ class SalesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id' => ['required', 'integer'],
-            'user_id' => ['required', 'integer'],
-            'branch_id' => ['required', 'integer'],
-            'payment_type' => ['required', 'string'],
-            'nominal_paid' => ['nullable', 'numeric'],
-            'exchange' => ['nullable', 'numeric'],
-            'sender_rekening' => ['nullable', 'string'],
-            'sender_bank_name' => ['nullable', 'string'],
-            'sender_bank_id' => ['nullable', 'numeric'],
-            'receiver_bank_id' => ['nullable', 'numeric'],
-
-            'item' => ['required', 'array', 'min:1'],
-
-            'item.*.inventory_code' => ['required', 'string'],
-            'item.*.product_id' => ['required', 'integer'],
-            'item.*.price' => ['required', 'numeric'],
+            'status' => 'required|string',
+            'note' => 'nullable|string',
+            'penjualan_id' => 'required|integer'
         ];
     }
 

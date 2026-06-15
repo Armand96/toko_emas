@@ -21,6 +21,7 @@ class TSales extends Model
         'approval_status',
         'nominal_paid',
         'exchange',
+        'note',
     ];
 
     public function user()

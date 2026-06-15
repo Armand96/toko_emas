@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
 use App\Http\Requests\MProductRequest;
+use App\Models\MCategory;
 use App\Models\MProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -90,6 +91,9 @@ class MProductController extends Controller
                 );
             }
 
+            $countData = MProduct::where('category_id', $validated['category_id'])->count();
+            $category = MCategory::find($validated['category_id']);
+            $validated['barcode'] = $category->category_code . "-" . str_pad($countData+1, 5, "0", STR_PAD_LEFT);
 
             $product = MProduct::create($validated);
 
@@ -176,18 +180,19 @@ class MProductController extends Controller
      */
     public function destroy(MProduct $product)
     {
-        try {
-            $product->delete();
-            if ($product->image_path != null && Storage::disk('public')->exists($product->image_path)) {
-                Storage::disk('public')->delete($product->image_path);
-            }
+        return ApiResponse::error('route not found', null, 404);
+        // try {
+        //     $product->delete();
+        //     if ($product->image_path != null && Storage::disk('public')->exists($product->image_path)) {
+        //         Storage::disk('public')->delete($product->image_path);
+        //     }
 
-            if ($product->thumb_path != null && Storage::disk('public')->exists($product->thumb_path)) {
-                Storage::disk('public')->delete($product->thumb_path);
-            }
-            return ApiResponse::success($product, "Product deleted", 200);
-        } catch (\Throwable $th) {
-            return ApiResponse::error($th->getMessage(), $th, 500);
-        }
+        //     if ($product->thumb_path != null && Storage::disk('public')->exists($product->thumb_path)) {
+        //         Storage::disk('public')->delete($product->thumb_path);
+        //     }
+        //     return ApiResponse::success($product, "Product deleted", 200);
+        // } catch (\Throwable $th) {
+        //     return ApiResponse::error($th->getMessage(), $th, 500);
+        // }
     }
 }

@@ -2,12 +2,15 @@
 
 use App\Http\Controllers\BankCabangController;
 use App\Http\Controllers\EnumController;
+use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\MBankController;
 use App\Http\Controllers\MBranchController;
 use App\Http\Controllers\MCategoryController;
+use App\Http\Controllers\MCategoryFinanceController;
 use App\Http\Controllers\MCustomerController;
 use App\Http\Controllers\MProductController;
+use App\Http\Controllers\MSupplierController;
 use App\Http\Controllers\PembelianController;
 use App\Http\Controllers\StoreSettingController;
 use App\Http\Controllers\TSalesController;
@@ -23,6 +26,9 @@ Route::apiResource('bankCabangs', BankCabangController::class);
 Route::apiResource('customers', MCustomerController::class);
 Route::apiResource('storeSettings', StoreSettingController::class);
 Route::apiResource('users', UserController::class);
+Route::apiResource('suppliers', MSupplierController::class);
+Route::apiResource('categoryFinance', MCategoryFinanceController::class);
+Route::apiResource('finances', FinanceController::class);
 
 Route::get('pembelian/{pembelian}', [PembelianController::class, 'single']);
 Route::get('pembelian', [PembelianController::class, 'index']);
@@ -36,7 +42,7 @@ Route::get('inventory', [InventoryController::class, 'index']);
 Route::get('sales/{sales}', [TSalesController::class, 'single']);
 Route::get('sales', [TSalesController::class, 'index']);
 Route::post('sales', [TSalesController::class, 'createTrx']);
-Route::put('sales', [TSalesController::class, 'changeApproval']);
+Route::put('update-sales', [TSalesController::class, 'changeApproval']);
 
 Route::prefix('enum')->group(function() {
     Route::get('pembelian-status', [EnumController::class, 'pembelianStatus']);

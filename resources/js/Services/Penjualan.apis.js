@@ -11,7 +11,7 @@ const PenjualanApis = {
         return Apis.Post(`api/sales`, body);
     },
     PutPenjualanApproval: (body) => {
-        return Apis.Put(`api/sales`, body);
+        return Apis.Put(`api/update-sales`, body);
     },
 }
 

@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('inventories', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('pembelian_id', false, true);
             $table->bigInteger('product_id', false, true);
             $table->bigInteger('category_id', false, true);
             $table->bigInteger('subcategory_id', false, true);
             $table->bigInteger('branch_id', false, true);
+            $table->string('inventory_code', 50);
             $table->string('barcode');
             $table->float('berat');
             $table->integer('karat');

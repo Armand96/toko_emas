@@ -26,7 +26,8 @@ return new class extends Migration
             $table->string('sender_rekening', 100)->nullable(true);
             $table->bigInteger('sender_bank_id', false, true)->nullable(true);
             $table->bigInteger('receiver_bank_id', false, true)->nullable(true);
-            $table->enum('approval_status', ['APPROVAL', 'CETAK KWITANSI', 'DITOLAK', 'SELESAI']);
+            $table->enum('approval_status', ['DISETUJUI', 'DIBATALKAN', 'APPROVAL', 'CETAK KWITANSI', 'DITOLAK', 'SELESAI']);
+            $table->string('note')->nullable();
             $table->timestamps();
         });
     }

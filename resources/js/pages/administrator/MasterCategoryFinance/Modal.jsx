@@ -1,17 +1,8 @@
 import ModalCustom from "../../../components/modalCustom";
 import InputGroup from "../../../components/FormElement/InputGroup";
 
-export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, formError, isView, parentOptions }) {
+export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, formError, isView }) {
     const fieldsModal = [
-        {
-            label: "Kategori Utama (Opsional)",
-            name: "parent_id",
-            type: "dropdown",
-            placeholder: "Pilih jika ini sub-kategori",
-            options: parentOptions,
-            isRequired: false,
-            isDisable: isView
-        },
         {
             label: "Nama Kategori",
             name: "category_name",
@@ -20,30 +11,12 @@ export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, f
             isRequired: !isView,
             isDisable: isView
         },
-          {
-            label: "Kode Kategori",
-            name: "category_code",
-            type: "text",
-            placeholder: "Masukkan Kode Kategori",
-            isRequired: !isView,
-            isDisable: isView
-        },
-           {
-            label: "Deskripsi",
-            name: "description",
-            type: "text",
-            placeholder: "Masukkan deskripsi",
-            isRequired: !isView,
-            isDisable: isView
-        },
         {
-            label: "Deskripsi",
-            name: "description",
-            type: "textArea",
-            placeholder: "Masukkan deskripsi",
-            isRequired: false,
-            isDisable: isView
-        }
+            label: "Status",
+            name: "is_active",
+            type: "checkbox",
+            isDisable: isView,
+        },
     ];
 
     const disableButton = () => {

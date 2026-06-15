@@ -102,7 +102,7 @@ const ModalViewPenjualan = ({ isOpen, onClose, data }) => {
                             <div key={index} className="flex items-center justify-between p-3 border border-neutral-200 rounded-lg bg-white">
                                 <div className="flex items-center gap-4">
                                     <span className="px-3 py-1 bg-neutral-50 rounded text-xs font-medium text-neutral-500 border border-neutral-200">
-                                        {item.inventory_id}
+                                        {item.inventory_code}
                                     </span>
                                     {item.inventory?.thumb_path ? (
                                         <img src={HelperFunctions.getStorageUrl(item.inventory.thumb_path)} alt={item.product?.product_name} className="w-10 h-10 rounded-md object-cover border border-neutral-200" />
@@ -192,7 +192,7 @@ const ModalViewPenjualan = ({ isOpen, onClose, data }) => {
                     pic={branch?.branch_name ?? '-'}
                     date={data.updated_at ? dayjs(data.updated_at).format('DD MMMM YYYY, HH:mm') : '-'}
                     reasonLabel="Alasan Penolakan"
-                    reason={approval_status === 'DITOLAK' ? data.reject_reason : null}
+                    reason={approval_status === 'DITOLAK' ? data.note : null}
                 />
             </div>
         </ModalCustom>

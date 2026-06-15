@@ -13,6 +13,7 @@ import { showAlert } from "../../utils/showAlert";
 
 const STATUS_OPTIONS = [
     { value: 'APPROVAL', label: 'Approval' },
+    { value: 'DISETUJUI', label: 'Disetujui' },
     { value: 'CETAK KWITANSI', label: 'Cetak Kwitansi' },
     { value: 'SELESAI', label: 'Selesai' },
     { value: 'DITOLAK', label: 'Ditolak' },
@@ -20,6 +21,7 @@ const STATUS_OPTIONS = [
 
 const STATUS_STYLE = {
     'SELESAI': 'bg-success-50 text-success-700 border-success-200',
+    'DISETUJUI': 'bg-success-50 text-success-700 border-success-200',
     'CETAK KWITANSI': 'bg-info-50 text-info-700 border-info-200',
     'APPROVAL': 'bg-warning-50 text-warning-700 border-warning-200',
     'DITOLAK': 'bg-danger-50 text-danger-700 border-danger-200',
@@ -27,6 +29,7 @@ const STATUS_STYLE = {
 
 const STATUS_LABEL = {
     'SELESAI': 'Selesai',
+    'DISETUJUI': 'Disetujui',
     'CETAK KWITANSI': 'Cetak Kwitansi',
     'APPROVAL': 'Approval',
     'DITOLAK': 'Ditolak',
@@ -86,7 +89,11 @@ const Main = ({ setCurentState }) => {
         setLoading(true);
         try {
             const res = await PenjualanApis.GetPenjualanDetail(row.id);
-            setSelectedData(res?.data || null);
+            const detail = res?.data || null;
+            if (detail) {
+                detail.details = await HelperFunctions.enrichSalesDetails(detail.details);
+            }
+            setSelectedData(detail);
             setIsViewModalOpen(true);
         } catch (error) {
             console.error(error);
@@ -111,7 +118,7 @@ const Main = ({ setCurentState }) => {
         }).then((res) => {
             if (res.confirmed) {
                 PenjualanApis.PutPenjualanApproval({
-                    sales_ids: [row.id],
+                    penjualan_id: row.id,
                     status: 'DITOLAK',
                 }).then(() => {
                     fetchData(paramFetch.current_page, paramFetch.per_page, searchBounce);
@@ -133,8 +140,38 @@ const Main = ({ setCurentState }) => {
         });
     };
 
-    const handlePrint = (row) => {
-        window.open(`/penjualan/print/${row.id}`, '_blank');
+    const handlePrint = async (row) => {
+        setLoading(true);
+        try {
+            const res = await PenjualanApis.GetPenjualanDetail(row.id);
+            const detail = res?.data || row;
+            detail.details = await HelperFunctions.enrichSalesDetails(detail.details);
+
+            sessionStorage.setItem('print_kwitansi_data', JSON.stringify(detail));
+            window.open('/penjualan/print-kwitansi', '_blank');
+
+            await PenjualanApis.PutPenjualanApproval({
+                penjualan_id: row.id,
+                status: 'SELESAI',
+            });
+
+            fetchData(paramFetch.current_page, paramFetch.per_page, searchBounce);
+            showAlert({
+                icon: 'success',
+                isAutoClose: true,
+                title: 'Berhasil',
+                message: 'Kwitansi telah dicetak dan transaksi dinyatakan selesai',
+            });
+        } catch (error) {
+            console.error(error);
+            showAlert({
+                icon: 'error',
+                title: 'Gagal',
+                message: 'Gagal mencetak kwitansi',
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     const searchFields = [
@@ -193,7 +230,7 @@ const Main = ({ setCurentState }) => {
                     >
                         <EyeIcon size={20} />
                     </button>
-                    {row.approval_status === 'CETAK KWITANSI' && (
+                    {(row.approval_status === 'DISETUJUI' || row.approval_status === 'CETAK KWITANSI') && (
                         <button
                             onClick={() => handlePrint(row)}
                             className="p-1.5 btn-outline text-primary-500 hover:bg-primary-50 rounded-md transition-colors"

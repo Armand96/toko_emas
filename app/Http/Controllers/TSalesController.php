@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
+use App\Helpers\InventoryStatus;
 use App\Helpers\SalesStatus;
 use App\Http\Requests\SalesRequest;
+use App\Http\Requests\UpdateStatusSalesRequest;
+use App\Models\Inventory;
 use App\Models\TSales;
 use App\Models\TSalesDetail;
 use Illuminate\Http\Request;
@@ -22,8 +25,8 @@ class TSalesController extends Controller
         if ($request->has('customer_name') && $request->customer_name != "") {
             $query->where('customer.customer_name', 'like', '%' . $request->customer_name . '%');
         }
-        if ($request->has('status') && $request->status != "") {
-            $query->where('status', $request->status);
+        if ($request->has('approval_status') && $request->status != "") {
+            $query->where('approval_status', $request->status);
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
@@ -44,10 +47,10 @@ class TSalesController extends Controller
         DB::beginTransaction();
 
         try {
-            $orderId = 'ORD-'.date('Ymd')."-";
-            $counter = TSales::where('order_id', 'like', $orderId."%")->count();
+            $orderId = 'ORD-' . date('Ymd') . "-";
+            $counter = TSales::where('order_id', 'like', $orderId . "%")->count();
             $counter++;
-            $orderId = $orderId.str_pad($counter, 4, "0", STR_PAD_LEFT);
+            $orderId = $orderId . str_pad($counter, 4, "0", STR_PAD_LEFT);
 
             $hdrSales = array(
                 'order_id' => $orderId,
@@ -76,7 +79,7 @@ class TSalesController extends Controller
                     'sales_id' => $hdrData->id,
                     'product_id' => $value['product_id'],
                     'price' => $value['price'],
-                    'inventory_id' => $value['inventory_id'],
+                    'inventory_code' => $value['inventory_code'],
                     'created_at' => $dateNow
                 );
 
@@ -99,8 +102,34 @@ class TSalesController extends Controller
         }
     }
 
-    public function changeApproval()
+    public function changeApproval(UpdateStatusSalesRequest $request)
     {
+        $validated = $request->validated();
 
+        DB::beginTransaction();
+
+        try {
+
+            // $dateNow = date('Y-m-d H:i:s');
+            $status = SalesStatus::from($validated['status']);
+            TSales::where('id', $validated['penjualan_id'])->where('approval_status', SalesStatus::APPROVAL)->update([
+                'approval_status' => $status,
+                'note' => isset($validated['note']) ? $validated['note'] : null
+            ]);
+
+            if ($status == SalesStatus::DISETUJUI) {
+                $products = TSalesDetail::where('sales_id', $validated['penjualan_id'])->pluck('inventory_code')->toArray();
+                $dateNow = date('Y-m-d H:i:s');
+
+                Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::SOLD, 'updated_at' => $dateNow));
+            }
+
+            DB::commit();
+
+            return ApiResponse::success([], "Sukses update status pembelian", 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return ApiResponse::error($th->getMessage(), $th, 500);
+        }
     }
 }
