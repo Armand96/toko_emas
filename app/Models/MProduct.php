@@ -21,4 +21,14 @@ class MProduct extends Model
         'created_at',
         'updated_at'
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(MCategory::class, 'category_id', 'id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(MBranch::class, 'branch_id', 'id');
+    }
 }

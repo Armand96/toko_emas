@@ -12,6 +12,7 @@ use App\Http\Controllers\MCustomerController;
 use App\Http\Controllers\MProductController;
 use App\Http\Controllers\MSupplierController;
 use App\Http\Controllers\PembelianController;
+use App\Http\Controllers\RemoveItemController;
 use App\Http\Controllers\StoreSettingController;
 use App\Http\Controllers\TSalesController;
 use App\Http\Controllers\UserController;
@@ -43,6 +44,11 @@ Route::get('sales/{sales}', [TSalesController::class, 'single']);
 Route::get('sales', [TSalesController::class, 'index']);
 Route::post('sales', [TSalesController::class, 'createTrx']);
 Route::put('update-sales', [TSalesController::class, 'changeApproval']);
+
+Route::get('remove-item/{removeItem}', [RemoveItemController::class, 'single']);
+Route::get('remove-item', [RemoveItemController::class, 'index']);
+Route::post('remove-item', [RemoveItemController::class, 'createRemoveItem']);
+Route::put('update-remove-item', [RemoveItemController::class, 'changeApproval']);
 
 Route::prefix('enum')->group(function() {
     Route::get('pembelian-status', [EnumController::class, 'pembelianStatus']);

@@ -30,7 +30,7 @@ class TSalesController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $sales = $query->with(['customer', 'user'])->paginate($perPage);
+        $sales = $query->with(['customer', 'user', 'details', 'branch'])->paginate($perPage);
 
         return response()->json($sales);
     }

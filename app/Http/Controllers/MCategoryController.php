@@ -38,7 +38,7 @@ class MCategoryController extends Controller
         // }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $categories = $query->paginate($perPage);
+        $categories = $query->with(['subcategory', 'parent'])->paginate($perPage);
 
         return response()->json($categories);
     }

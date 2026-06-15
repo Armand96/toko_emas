@@ -8,4 +8,5 @@ enum InventoryStatus: string
     case TRANSIT = 'TRANSIT';
     case SOLD = 'SOLD';
     case REPAIR = 'REPAIR';
+    case LOST = 'LOST';
 }
