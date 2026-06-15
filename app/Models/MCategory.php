@@ -29,6 +29,15 @@ class MCategory extends Model
         );
     }
 
+    public function subcategory()
+    {
+        return $this->hasOne(
+            MCategory::class,
+            'parent_id',
+            'id'
+        );
+    }
+
     public function parent()
     {
         return $this->belongsTo(
