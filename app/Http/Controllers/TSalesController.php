@@ -25,8 +25,8 @@ class TSalesController extends Controller
         if ($request->has('customer_name') && $request->customer_name != "") {
             $query->where('customer.customer_name', 'like', '%' . $request->customer_name . '%');
         }
-        if ($request->has('status') && $request->status != "") {
-            $query->where('status', $request->status);
+        if ($request->has('approval_status') && $request->status != "") {
+            $query->where('approval_status', $request->status);
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
