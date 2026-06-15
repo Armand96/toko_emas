@@ -6,6 +6,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\MBankController;
 use App\Http\Controllers\MBranchController;
 use App\Http\Controllers\MCategoryController;
+use App\Http\Controllers\MCategoryFinanceController;
 use App\Http\Controllers\MCustomerController;
 use App\Http\Controllers\MProductController;
 use App\Http\Controllers\MSupplierController;
@@ -25,6 +26,7 @@ Route::apiResource('customers', MCustomerController::class);
 Route::apiResource('storeSettings', StoreSettingController::class);
 Route::apiResource('users', UserController::class);
 Route::apiResource('suppliers', MSupplierController::class);
+Route::apiResource('categoryFinance', MCategoryFinanceController::class);
 
 Route::get('pembelian/{pembelian}', [PembelianController::class, 'single']);
 Route::get('pembelian', [PembelianController::class, 'index']);
