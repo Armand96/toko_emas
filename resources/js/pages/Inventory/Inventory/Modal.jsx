@@ -153,9 +153,9 @@ export const DetailItemModal = ({ isOpen, onClose, item }) => {
             size="md"
             footer={false}
         >
-            <div className="flex flex-col sm:flex-row gap-x-6 gap-y-4">
+            <div className="flex flex-col sm:flex-row gap-x-6 gap-y-4 min-w-0">
                 {/* ============ KOLOM KIRI: Foto & Barcode ============ */}
-                <div className="w-full sm:w-64 flex flex-col gap-2 flex-shrink-0">
+                <div className="w-full sm:w-64 flex flex-col gap-2 flex-shrink-0 min-w-0">
                     <img
                         src={item.image}
                         alt={item.produk}
@@ -163,7 +163,7 @@ export const DetailItemModal = ({ isOpen, onClose, item }) => {
                         onError={(e) => { e.target.style.display = "none"; }}
                     />
                     <div className="w-full border border-gray-200 rounded-lg p-2 overflow-hidden flex justify-center">
-                        <Barcode value={item.kode} width={0.7} height={32} fontSize={9} margin={0} />
+                        <Barcode value={item.kode} width={0.7} height={32} fontSize={9} margin={0} renderer="svg" style={{ maxWidth: "100%", height: "auto" }} />
                     </div>
                     <button
                         type="button"
@@ -252,12 +252,12 @@ export const EditItemModal = ({ isOpen, onClose, formData, errors = {}, onChange
             cancelTextButton="Batal"
             handleOnSubmit={onSubmit}
         >
-            <div className="flex flex-col sm:flex-row gap-x-6 gap-y-4">
+            <div className="flex flex-col sm:flex-row gap-x-6 gap-y-4 min-w-0">
                 {/* ============ KOLOM KIRI: Foto & Barcode ============ */}
-                <div className="w-full sm:w-44 flex flex-col gap-2 flex-shrink-0">
+                <div className="w-full sm:w-44 flex flex-col gap-2 flex-shrink-0 min-w-0">
                     <PhotoUploadBox name="foto" value={formData.foto} onChange={onChange} />
                     <div className="w-full border border-gray-200 rounded-lg p-2 overflow-hidden flex justify-center">
-                        <Barcode value={formData.kode} width={0.7} height={32} fontSize={9} margin={0} />
+                        <Barcode value={formData.kode} width={0.7} height={32} fontSize={9} margin={0} renderer="svg" style={{ maxWidth: "100%", height: "auto" }} />
                     </div>
                 </div>
 
