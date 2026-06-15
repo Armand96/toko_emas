@@ -59,8 +59,7 @@ export default function Modal({
             name: "barcode",
             type: "text",
             placeholder: "Masukkan kode produk",
-            isRequired: !isView,
-            isDisable: isView || formData?.id,
+            isDisable: true,
         },
         {
             label: "Nama Produk",

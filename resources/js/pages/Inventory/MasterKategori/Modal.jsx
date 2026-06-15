@@ -20,6 +20,14 @@ export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, f
             isRequired: !isView,
             isDisable: isView
         },
+          {
+            label: "Kode Kategori",
+            name: "category_code",
+            type: "text",
+            placeholder: "Masukkan Kode Kategori",
+            isRequired: !isView,
+            isDisable: isView
+        },
            {
             label: "Deskripsi",
             name: "description",

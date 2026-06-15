@@ -21,6 +21,7 @@ import LoadingStore from "../../../Store/LoadingStore";
 import InventoryApis from "../../../Services/Inventory.apis";
 import BranchApis from "../../../Services/Branch.apis";
 import BankApis from "../../../Services/Bank.apis";
+import SupplierApis from "../../../Services/Supplier.apis";
 
 const emptyItem = {
     product_id: null,
@@ -28,6 +29,7 @@ const emptyItem = {
     subcategory_id: null,
     branch_id: null,
     bank_id: null,
+    supplier_id: null,
     berat: "",
     karat: "",
     no_seri: "",
@@ -46,6 +48,7 @@ const requiredItem = [
     ["jual", "Harga jual wajib diisi"],
     ["branch_id", "Cabang wajib dipilih"],
     ["bank_id", "Bank keluar wajib dipilih"],
+    ["supplier_id", "Supplier wajib dipilih"],
 ];
 
 const FormPembelian = ({ setCurentState }) => {
@@ -58,12 +61,14 @@ const FormPembelian = ({ setCurentState }) => {
     const [productOptions, setProductOptions] = useState([]);
     const [branchOptions, setBranchOptions] = useState([]);
     const [bankOptions, setBankOptions] = useState([{value: "1", label: "test"}]);
+    const [supplierOptions, setSupplierOptions] = useState([]);
 
     const fetchOptions = async () => {
         try {
-            const [products, branches,] = await Promise.all([
+            const [products, branches, suppliers] = await Promise.all([
                 InventoryApis.GetProducts("?per_page=10000000"),
                 BranchApis.GetBranch("?per_page=10000000"),
+                SupplierApis.GetSupplier("?per_page=10000000"),
             ]);
 
             setProductOptions(
@@ -71,6 +76,9 @@ const FormPembelian = ({ setCurentState }) => {
             );
             setBranchOptions(
                 HelperFunctions.formatDropdown(branches?.data || [], "id", "branch_name")
+            );
+            setSupplierOptions(
+                HelperFunctions.formatDropdown(suppliers?.data || [], "id", "supplier_name")
             );
         } catch (error) {
             console.error(error);
@@ -86,6 +94,15 @@ const FormPembelian = ({ setCurentState }) => {
 
         if (name === "foto") {
             const file = e.target.files ? e.target.files[0] : value;
+            const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
+            if (file && !allowedTypes.includes(file.type)) {
+                showAlert({
+                    title: "Format tidak didukung",
+                    message: "Foto harus berformat JPG, JPEG, PNG, atau GIF",
+                    type: "warning",
+                });
+                return;
+            }
             setItem((prev) => ({ ...prev, foto: file ?? null }));
             return;
         }
@@ -170,6 +187,7 @@ const FormPembelian = ({ setCurentState }) => {
                 category_id: Number(b.category_id),
                 subcategory_id: Number(b.subcategory_id),
                 bank_id: Number(b.bank_id),
+                supplier_id: Number(b.supplier_id),
                 barcode: b.barcode,
                 berat: Number(b.berat),
                 karat: Number(b.karat),
@@ -258,6 +276,12 @@ const FormPembelian = ({ setCurentState }) => {
             render: (row) => HelperFunctions.formatCurrency(row.jual || 0),
         },
         {
+            header: "Supplier",
+            accessor: "supplier_id",
+            render: (row) =>
+                supplierOptions.find((s) => s.value === row.supplier_id)?.label || "-",
+        },
+        {
             header: "Cabang",
             accessor: "branch_id",
             render: (row) =>
@@ -323,7 +347,8 @@ const FormPembelian = ({ setCurentState }) => {
                             label="Foto Item"
                             name="foto"
                             value={item.foto}
-                            helperText="Foto berformat JPG, JPEG, atau PNG."
+                            helperText="Foto berformat JPG, JPEG, PNG, atau GIF."
+                            accept="image/jpeg,image/png,image/gif"
                             onChange={handleChange}
                         />
 
@@ -381,6 +406,17 @@ const FormPembelian = ({ setCurentState }) => {
                                 onChange={handleChange}
                             />
                         </div>
+
+                        <Dropdown
+                            label="Supplier"
+                            name="supplier_id"
+                            value={item.supplier_id}
+                            options={supplierOptions}
+                            placeholder="Pilih supplier"
+                            isRequired
+                            error={errors.supplier_id}
+                            onChange={handleChange}
+                        />
 
                         <Dropdown
                             label="Cabang"

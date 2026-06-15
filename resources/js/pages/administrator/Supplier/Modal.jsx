@@ -14,10 +14,10 @@ export default function ModalSupplier({
 
     const fieldsModal = [
         {
-            label: "Nama",
-            name: "customer_name",
+            label: "Nama Supplier",
+            name: "supplier_name",
             type: "text",
-            placeholder: "Masukkan nama lengkap",
+            placeholder: "Masukkan nama supplier",
             isRequired: !isView,
             isDisable: isView,
         },
@@ -47,7 +47,7 @@ export default function ModalSupplier({
 
     const disableButton = () => {
         if (isView) return true;
-        const required = ['customer_name', 'phone_number', 'address'];
+        const required = ['supplier_name', 'phone_number', 'address'];
         const hasEmpty = required.some(f => !formData?.[f]);
         if (hasEmpty) return true;
         return formError && Object.values(formError).some(e => e);
@@ -55,7 +55,7 @@ export default function ModalSupplier({
 
     return (
         <ModalCustom
-            title={isView ? "Detail Customer" : isEdit ? "Edit Customer" : "Tambah Customer"}
+            title={isView ? "Detail Supplier" : isEdit ? "Edit Supplier" : "Tambah Supplier"}
             confirmTextButton={isView ? "Tutup" : isEdit ? "Simpan Perubahan" : "Tambah"}
             cancelTextButton={isView ? "Tutup" : "Batal"}
             handleOnSubmit={() => onSubmit(formData)}
