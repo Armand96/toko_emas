@@ -39,7 +39,7 @@ class MProductRequest extends FormRequest
             'is_active' => 'nullable|boolean',
             'image_path' => 'nullable|string',
             'thumb_path' => 'nullable|string',
-            'barcode' => 'nullable|string',
+            // 'barcode' => 'nullable|string',
             'image' => $imageRules,
         ];
     }

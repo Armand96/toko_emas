@@ -8,6 +8,7 @@ class MCategory extends Model
 {
     protected $fillable = [
         'category_name',
+        'category_code',
         'description',
         'parent_id',
         'image_path',

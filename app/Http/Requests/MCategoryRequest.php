@@ -33,6 +33,7 @@ class MCategoryRequest extends FormRequest
 
         return [
             'category_name' => 'required|string',
+            'category_code' => 'required|string',
             'description' => 'required|string',
             'parent_id' => 'nullable|numeric',
             'image' => $imageRules,

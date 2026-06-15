@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
 use App\Http\Requests\MProductRequest;
+use App\Models\MCategory;
 use App\Models\MProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -90,6 +91,9 @@ class MProductController extends Controller
                 );
             }
 
+            $countData = MProduct::where('category_id', $validated['category_id'])->count();
+            $category = MCategory::find($validated['category_id']);
+            $validated['barcode'] = $category->category_code . "-" . str_pad($countData+1, 5, "0", STR_PAD_LEFT);
 
             $product = MProduct::create($validated);
 
