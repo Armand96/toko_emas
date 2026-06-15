@@ -11,6 +11,7 @@ class Inventory extends Model
         'product_id',
         'category_id',
         'subcategory_id',
+        'pembelian_id',
         'branch_id',
         'barcode',
         'berat',

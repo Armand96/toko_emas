@@ -176,18 +176,19 @@ class MProductController extends Controller
      */
     public function destroy(MProduct $product)
     {
-        try {
-            $product->delete();
-            if ($product->image_path != null && Storage::disk('public')->exists($product->image_path)) {
-                Storage::disk('public')->delete($product->image_path);
-            }
+        return ApiResponse::error('route not found', null, 404);
+        // try {
+        //     $product->delete();
+        //     if ($product->image_path != null && Storage::disk('public')->exists($product->image_path)) {
+        //         Storage::disk('public')->delete($product->image_path);
+        //     }
 
-            if ($product->thumb_path != null && Storage::disk('public')->exists($product->thumb_path)) {
-                Storage::disk('public')->delete($product->thumb_path);
-            }
-            return ApiResponse::success($product, "Product deleted", 200);
-        } catch (\Throwable $th) {
-            return ApiResponse::error($th->getMessage(), $th, 500);
-        }
+        //     if ($product->thumb_path != null && Storage::disk('public')->exists($product->thumb_path)) {
+        //         Storage::disk('public')->delete($product->thumb_path);
+        //     }
+        //     return ApiResponse::success($product, "Product deleted", 200);
+        // } catch (\Throwable $th) {
+        //     return ApiResponse::error($th->getMessage(), $th, 500);
+        // }
     }
 }

@@ -115,6 +115,7 @@ class PembelianController extends Controller
 
                     Inventory::create(array(
                         'inventory_code' => $value->barcode . "-" . str_pad($data+1, 4, "0", STR_PAD_LEFT),
+                        'pembelian_id' => $value->id,
                         'product_id' => $value->product_id,
                         'category_id' => $value->category_id,
                         'subcategory_id' => $value->subcategory_id,
@@ -132,6 +133,7 @@ class PembelianController extends Controller
                 }
 
                 // if (count($batchInsert) > 0) Inventory::insert($batchInsert);
+                // TO DO INSERT KE FINANCE
             }
 
             DB::commit();

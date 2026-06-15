@@ -19,6 +19,7 @@ return new class extends Migration
             $table->bigInteger('subcategory_id', false, true);
             $table->bigInteger('branch_id', false, true);
             $table->bigInteger('bank_id', false, true);
+            $table->bigInteger('supplier_id', false, true);
             $table->enum('status', ['APPROVAL', 'DISETUJUI', 'DITOLAK', 'DIBATALKAN']);
             $table->string('image_path')->nullable();
             $table->string('thumb_path')->nullable();
