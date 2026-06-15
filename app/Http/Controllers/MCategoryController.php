@@ -175,20 +175,21 @@ class MCategoryController extends Controller
      */
     public function destroy(MCategory $category)
     {
-        try {
-            $category->delete();
+        // try {
+        //     $category->delete();
 
-            if ($category->image_path != null && Storage::disk('public')->exists($category->image_path)) {
-                Storage::disk('public')->delete($category->image_path);
-            }
+        //     if ($category->image_path != null && Storage::disk('public')->exists($category->image_path)) {
+        //         Storage::disk('public')->delete($category->image_path);
+        //     }
 
-            if ($category->thumb_path != null && Storage::disk('public')->exists($category->thumb_path)) {
-                Storage::disk('public')->delete($category->thumb_path);
-            }
+        //     if ($category->thumb_path != null && Storage::disk('public')->exists($category->thumb_path)) {
+        //         Storage::disk('public')->delete($category->thumb_path);
+        //     }
 
-            return ApiResponse::success($category, "Category deleted", 200);
-        } catch (\Throwable $th) {
-            return ApiResponse::error($th->getMessage(), $th, 500);
-        }
+        //     return ApiResponse::success($category, "Category deleted", 200);
+        // } catch (\Throwable $th) {
+        //     return ApiResponse::error($th->getMessage(), $th, 500);
+        // }
+        return ApiResponse::error('route not found', null, 404);
     }
 }

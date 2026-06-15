@@ -14,9 +14,13 @@ return new class extends Migration
         Schema::create('finances', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('branch_id', false, true);
+            $table->bigInteger('category_finance_id', false, true);
+            $table->bigInteger('bank_cabang_id', false, true);
             $table->enum('type', ['CASH IN', 'CASH OUT']);
             $table->enum('payment_method', ['CASH', 'TRANSFER']);
-            // $table->
+            $table->decimal('nominal', 16, 2)->default(9);
+            $table->string('note');
+            $table->string('attachment');
             $table->timestamps();
         });
     }
