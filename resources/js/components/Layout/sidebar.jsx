@@ -87,7 +87,8 @@ const sidebarData = [
       { id: "setting", label: "Setting", icon: GearIcon, link: "/administrator/setting" },
             { id: "MasterBank", label: "Master Bank", icon: GearIcon, link: "/administrator/master-bank" },
             { id: "MasterSupplier", label: "Master Supplier", icon: GearIcon, link: "/administrator/supplier" },
-            { id: "MasterCustomer", label: "Master Customer", icon: GearIcon, link: "/administrator/customer" }
+            { id: "MasterCustomer", label: "Master Customer", icon: GearIcon, link: "/administrator/customer" },
+            { id: "MasterCategoryFinance", label: "Master Kategori Finance", icon: GearIcon, link: "/administrator/master-category-finance" }
     ]
   }
 ];

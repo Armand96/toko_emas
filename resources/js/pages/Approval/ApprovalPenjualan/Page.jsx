@@ -1,41 +1,106 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useDebounce } from 'use-debounce';
 import { EyeIcon, CheckSquareOffsetIcon, MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react";
+import dayjs from "dayjs";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import ModalDetailPenjualan from "./Modal";
 import { showAlert } from '../../../utils/showAlert';
 import HelperFunctions from "../../../utils/HelperFunctions";
+import LoadingStore from "../../../Store/LoadingStore";
+import PenjualanApis from "../../../Services/Penjualan.apis";
 
-const STATUS_OPTIONS = ['Approval', 'Disetujui', 'Ditolak', 'Dibatalkan'];
 const CABANG_OPTIONS = ['BLOK M 1', 'BLOK M 2'];
 
 const STATUS_STYLE = {
-    'Approval': 'bg-warning-50 text-warning-600 border-warning-200',
-    'Disetujui': 'bg-success-50 text-success-700 border-success-200',
-    'Ditolak': 'bg-danger-50 text-danger-600 border-danger-200',
-    'Dibatalkan': 'bg-danger-50 text-danger-600 border-danger-200',
+    'APPROVAL': 'bg-warning-50 text-warning-600 border-warning-200',
+    'DISETUJUI': 'bg-success-50 text-success-700 border-success-200',
+    'CETAK KWITANSI': 'bg-info-50 text-info-700 border-info-200',
+    'SELESAI': 'bg-success-50 text-success-700 border-success-200',
+    'DITOLAK': 'bg-danger-50 text-danger-600 border-danger-200',
+    'DIBATALKAN': 'bg-danger-50 text-danger-600 border-danger-200',
 };
 
-const DUMMY_DATA = [
-    { id: 1, tanggal: '10/10/2025', order_id: 'ORD-2605015', customer: { nama: 'Sofia Martinez' }, item_produk: 'Cincin Flower 5gr', nominal: 18000000, pembayaran: 'Tunai', user: 'YanuarKasir P.', cabang: 'BLOK M 1', status: 'Approval' },
-    { id: 2, tanggal: '10/10/2025', order_id: 'ORD-2605014', customer: { nama: 'Yuki Tanaka' }, item_produk: 'Cincin Flower 5gr', nominal: 19000000, pembayaran: 'Transfer', user: 'YanuarKasir P.', cabang: 'BLOK M 1', status: 'Approval' },
-    { id: 3, tanggal: '10/10/2025', order_id: 'ORD-2605013', customer: { nama: 'Marcus Chen' }, item_produk: 'Cincin Flower 5gr', nominal: 19000000, pembayaran: 'Transfer', user: 'YanuarKasir P.', cabang: 'BLOK M 1', status: 'Approval' },
-    { id: 4, tanggal: '10/10/2025', order_id: 'ORD-2605012', customer: { nama: 'Chloe Dubois' }, item_produk: 'Cincin Flower 5gr', nominal: 19000000, pembayaran: 'Tunai', user: 'IndahKasir2', cabang: 'BLOK M 1', status: 'Approval' },
-    { id: 5, tanggal: '10/10/2025', order_id: 'ORD-2605011', customer: { nama: 'James Wilson' }, item_produk: 'Cincin Flower 5gr', nominal: 19000000, pembayaran: 'Tunai', user: 'RomaKasir1', cabang: 'BLOK M 2', status: 'Approval' },
-    { id: 6, tanggal: '10/10/2025', order_id: 'ORD-2605010', customer: { nama: 'Oliver Schmidt' }, item_produk: 'Cincin Flower 5gr', nominal: 20000000, pembayaran: 'Tunai', user: 'RomaKasir1', cabang: 'BLOK M 2', status: 'Approval' },
-];
+const STATUS_LABEL = {
+    'APPROVAL': 'Approval',
+    'DISETUJUI': 'Disetujui',
+    'CETAK KWITANSI': 'Cetak Kwitansi',
+    'SELESAI': 'Selesai',
+    'DITOLAK': 'Ditolak',
+    'DIBATALKAN': 'Dibatalkan',
+};
 
 const ApprovalPenjualan = () => {
-    const [filter, setFilter] = useState({ search: '', status: '', cabang: '' });
-    const [page, setPage] = useState(1);
-    const perPage = 10;
+    const setLoading = LoadingStore((state) => state.setLoading);
+
+    const [paramFetch, setParamFetch] = useState({
+        data: [],
+        current_page: 1,
+        total: 0,
+        per_page: 10,
+    });
+
+    const [filter, setFilter] = useState({ search: '', cabang: '' });
+    const [filterBounce] = useDebounce(filter, 500);
+    const [firstLoading, setFirstLoading] = useState(false);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedData, setSelectedData] = useState(null);
 
-    const handleOpenModal = (data) => {
-        setSelectedData(data);
-        setIsModalOpen(true);
+    const fetchData = async (page = 1, pageSize = 10, params = {}) => {
+        setLoading(true);
+        try {
+            const query = new URLSearchParams({
+                page,
+                per_page: pageSize,
+                status: 'APPROVAL',
+            });
+            if (params.search) query.append('order_id', params.search);
+
+            const res = await PenjualanApis.GetPenjualan(`?${query.toString()}`);
+            setParamFetch(res);
+            setFirstLoading(true);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        if (firstLoading) {
+            fetchData(1, paramFetch.per_page, filterBounce);
+        }
+    }, [filterBounce]);
+
+    const handleResetFilter = () => setFilter({ search: '', cabang: '' });
+    const hasActiveFilter = filter.search || filter.cabang;
+
+    const filteredData = (paramFetch.data || []).filter((row) => {
+        const matchCabang = !filter.cabang || row.branch?.branch_name === filter.cabang;
+        return matchCabang;
+    });
+
+    const handleOpenModal = async (row) => {
+        setLoading(true);
+        try {
+            const res = await PenjualanApis.GetPenjualanDetail(row.id);
+            const detail = res?.data || null;
+            if (detail) {
+                detail.details = await HelperFunctions.enrichSalesDetails(detail.details);
+            }
+            setSelectedData(detail);
+            setIsModalOpen(true);
+        } catch (error) {
+            console.error(error);
+            showAlert({ icon: 'error', title: 'Gagal', message: 'Gagal memuat detail transaksi' });
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleCloseModal = () => {
@@ -43,35 +108,103 @@ const ApprovalPenjualan = () => {
         setSelectedData(null);
     };
 
-    const handleResetFilter = () => setFilter({ search: '', status: '', cabang: '' });
-    const hasActiveFilter = filter.search || filter.status || filter.cabang;
+    const updateStatus = async (id, status, note = null) => {
+        setLoading(true);
+        try {
+            await PenjualanApis.PutPenjualanApproval({
+                penjualan_id: id,
+                status,
+                note,
+            });
+            handleCloseModal();
+            fetchData(paramFetch.current_page, paramFetch.per_page, filterBounce);
 
-    const filteredData = useMemo(() => {
-        return DUMMY_DATA.filter((row) => {
-            const matchSearch = !filter.search
-                || row.order_id.toLowerCase().includes(filter.search.toLowerCase())
-                || row.customer.nama.toLowerCase().includes(filter.search.toLowerCase());
-            const matchStatus = !filter.status || row.status === filter.status;
-            const matchCabang = !filter.cabang || row.cabang === filter.cabang;
-            return matchSearch && matchStatus && matchCabang;
+            showAlert({
+                icon: status === 'DISETUJUI' ? 'success' : 'error',
+                isAutoClose: true,
+                title: status === 'DISETUJUI' ? 'Berhasil Disetujui' : 'Berhasil Ditolak',
+                message: status === 'DISETUJUI'
+                    ? 'Transaksi penjualan telah dicatat dan stok inventory telah diperbarui.'
+                    : 'Transaksi penjualan telah ditolak dan tidak akan diproses lebih lanjut.',
+            });
+        } catch (error) {
+            console.error(error);
+            showAlert({ icon: 'error', title: 'Gagal', message: 'Terjadi kesalahan saat memproses data' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const confirmApprove = (id) => {
+        showAlert({
+            icon: 'success',
+            isAutoClose: false,
+            title: 'Setujui Penjualan',
+            message: 'Transaksi akan dicatat ke dalam sistem dan stok inventory akan diperbarui sesuai item yang terjual.',
+            confirmText: 'Setujui',
+            cancelText: 'Batal',
+        }).then((res) => {
+            if (res.confirmed) {
+                updateStatus(id, 'DISETUJUI');
+            }
         });
-    }, [filter]);
+    };
+
+    const confirmReject = (id) => {
+        showAlert({
+            icon: 'error',
+            isAutoClose: false,
+            title: 'Tolak Penjualan',
+            message: 'Anda akan menolak transaksi penjualan ini.',
+            textarea: true,
+            placeholder: 'Masukkan alasan penolakan',
+            confirmText: 'Tolak',
+            cancelText: 'Batal',
+        }).then((res) => {
+            if (res.confirmed) {
+                updateStatus(id, 'DITOLAK', res.value);
+            }
+        });
+    };
+
+    const handleApprove = () => {
+        if (!selectedData) return;
+        confirmApprove(selectedData.id);
+    };
+
+    const handleReject = () => {
+        if (!selectedData) return;
+        confirmReject(selectedData.id);
+    };
 
     const columns = [
-        { header: 'Tanggal', accessor: 'tanggal', sortable: true },
-        { header: 'Order ID', accessor: 'order_id', sortable: true },
-        { header: 'Customer', accessor: (row) => row.customer.nama, sortable: true },
-        { header: 'Item Produk', accessor: 'item_produk' },
-        { header: 'Nominal', accessor: 'nominal', render: (row) => HelperFunctions.formatCurrency(row.nominal) },
-        { header: 'Pembayaran', accessor: 'pembayaran', sortable: true },
-        { header: 'User', accessor: 'user' },
-        { header: 'Cabang', accessor: 'cabang' },
+        {
+            header: 'Tanggal',
+            accessor: 'created_at',
+            render: (row) => row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY') : '-',
+        },
+        { header: 'Order ID', accessor: 'order_id' },
+        { header: 'Customer', accessor: 'customer', render: (row) => row.customer?.customer_name ?? '-' },
+        {
+            header: 'Item Produk',
+            accessor: 'details',
+            render: (row) => {
+                const items = row.details || [];
+                if (items.length === 0) return '-';
+                const names = items.map((d) => d.product?.product_name).filter(Boolean);
+                return names.join(', ');
+            },
+        },
+        { header: 'Nominal', accessor: 'grand_total', render: (row) => HelperFunctions.formatCurrency(row.grand_total || 0) },
+        { header: 'Pembayaran', accessor: 'payment_type', render: (row) => row.payment_type === 'TUNAI' ? 'Tunai' : 'Transfer' },
+        { header: 'User', accessor: 'user', render: (row) => row.user?.name ?? '-' },
+        { header: 'Cabang', accessor: 'branch', render: (row) => row.branch?.branch_name ?? '-' },
         {
             header: 'Status',
-            accessor: 'status',
+            accessor: 'approval_status',
             render: (row) => (
-                <span className={`px-3 py-1 rounded-md text-xs font-medium border ${STATUS_STYLE[row.status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                    {row.status}
+                <span className={`px-3 py-1 rounded-md text-xs font-medium border ${STATUS_STYLE[row.approval_status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                    {STATUS_LABEL[row.approval_status] || row.approval_status}
                 </span>
             )
         },
@@ -112,15 +245,6 @@ const ApprovalPenjualan = () => {
                 </div>
 
                 <select
-                    value={filter.status}
-                    onChange={(e) => setFilter({ ...filter, status: e.target.value })}
-                    className="py-2 px-3 border border-neutral-200 rounded-lg text-sm text-neutral-600 focus:outline-none focus:ring-1 focus:ring-primary-500 min-w-[140px]"
-                >
-                    <option value="">Pilih status</option>
-                    {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-
-                <select
                     value={filter.cabang}
                     onChange={(e) => setFilter({ ...filter, cabang: e.target.value })}
                     className="py-2 px-3 border border-neutral-200 rounded-lg text-sm text-neutral-600 focus:outline-none focus:ring-1 focus:ring-primary-500 min-w-[140px]"
@@ -142,17 +266,18 @@ const ApprovalPenjualan = () => {
             <Table
                 columns={columns}
                 data={filteredData}
-                page={page}
-                pageSize={perPage}
-                totalData={filteredData.length}
-                onPageChange={setPage}
+                page={paramFetch.current_page}
+                pageSize={paramFetch.per_page}
+                total={paramFetch.total}
+                onPageChange={(page) => fetchData(page, paramFetch.per_page, filterBounce)}
+                onPageSizeChange={(pageSize) => fetchData(1, pageSize, filterBounce)}
             />
 
             <ModalDetailPenjualan
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSubmitApprove={() => { showAlert('success', 'Berhasil', 'Disetujui'); handleCloseModal(); }}
-                onSubmitReject={() => { showAlert('success', 'Berhasil', 'Ditolak'); handleCloseModal(); }}
+                onSubmitApprove={handleApprove}
+                onSubmitReject={handleReject}
                 data={selectedData}
             />
         </div>

@@ -1,4 +1,5 @@
 import { generateBarcode } from "./barcode";
+import InventoryApis from "../Services/Inventory.apis";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.example.com";
 
@@ -71,7 +72,35 @@ const HelperFunctions = {
     },
     unformatNumberInput: (value) => {
         return String(value ?? '').replace(/\D/g, '');
-    }
+    },
+    /**
+     * Endpoint sales detail (api/sales/{id}) tidak eager-load relasi
+     * details.product & details.inventory, sehingga product_name/thumb_path
+     * kosong. Lengkapi data tersebut dari api/products & api/inventory.
+     */
+    enrichSalesDetails: async (details = []) => {
+        if (!Array.isArray(details) || details.length === 0) return details;
+
+        try {
+            const [productsRes, inventoryRes] = await Promise.all([
+                InventoryApis.GetProducts(`?per_page=10000000`),
+                InventoryApis.GetInventory(`?per_page=10000000`),
+            ]);
+
+            const products = productsRes?.data || [];
+            const inventories = inventoryRes?.data || [];
+
+            return details.map((item) => {
+                const product = item.product || products.find((p) => p.id === item.product_id);
+                const inventory = item.inventory || inventories.find((inv) => inv.inventory_code === item.inventory_code);
+
+                return { ...item, product, inventory };
+            });
+        } catch (error) {
+            console.error(error);
+            return details;
+        }
+    },
 };
 
 export default HelperFunctions;
