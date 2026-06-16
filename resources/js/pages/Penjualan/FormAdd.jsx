@@ -30,14 +30,25 @@ const FormAdd = ({ setCurentState }) => {
     const [memberOptions, setMemberOptions] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
     const [selectedMember, setSelectedMember] = useState(null);
+    const [memberFirstLoading, setMemberFirstLoading] = useState(false);
     const searchRef = useRef(null);
 
     useEffect(() => {
-        if (customerType !== 'terdaftar') return;
+        if (customerType !== 'terdaftar' || memberFirstLoading) return;
+        CustomerApis.GetCustomer(`?customer_name=${searchQueryBounce}&per_page=20`)
+            .then((res) => {
+                setMemberOptions(res?.data || []);
+                setMemberFirstLoading(true);
+            })
+            .catch((err) => console.error(err));
+    }, [customerType, memberFirstLoading]);
+
+    useEffect(() => {
+        if (!memberFirstLoading) return;
         CustomerApis.GetCustomer(`?customer_name=${searchQueryBounce}&per_page=20`)
             .then((res) => setMemberOptions(res?.data || []))
             .catch((err) => console.error(err));
-    }, [searchQueryBounce, customerType]);
+    }, [searchQueryBounce]);
 
     // Handle klik di luar untuk menutup dropdown suggestion
     useEffect(() => {

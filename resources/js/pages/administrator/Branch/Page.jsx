@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useDebounce } from 'use-debounce';
 import { PlusCircleIcon, PencilSimpleLineIcon, TrashIcon, EyeIcon, BankIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
@@ -30,6 +31,7 @@ const Branch = () => {
         search: '',
         status: null,
     })
+    const [searchBounce] = useDebounce(search, 500);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({});
@@ -57,6 +59,12 @@ const Branch = () => {
         setLoading(true);
         fetchData();
     }, []);
+
+    useEffect(() => {
+        if (firstLoading) {
+            fetchData(1, paramFetch.pageSize, search.search, search.status);
+        }
+    }, [searchBounce]);
 
     const handlePaginate = (page) => {
         fetchData(page, paramFetch.pageSize, search.search, search.status);

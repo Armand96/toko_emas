@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { PlusCircleIcon, EyeIcon, XIcon } from "@phosphor-icons/react";
+import { PlusCircleIcon, EyeIcon, XIcon, PrinterIcon } from "@phosphor-icons/react";
 import { useDebounce } from "use-debounce";
 
 import HeaderSection from "../../../components/HeaderSection";
@@ -195,6 +195,15 @@ const MainPembelian = ({ setCurentState }) => {
                             className="p-1.5 btn-outline !text-danger-500 !border-danger-500 hover:bg-info-50 rounded-md cursor-pointer"
                         >
                             <XIcon size={20} />
+                        </button>
+                    }
+                    {
+                        row?.status === "DISETUJUI" && <button
+                            onClick={() => HelperFunctions.printBarcode(row.barcode, { label: row.product?.product_name ?? row.product?.name })}
+                            className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
+                            title="Cetak Barcode"
+                        >
+                            <PrinterIcon size={20} />
                         </button>
                     }
                 </div>

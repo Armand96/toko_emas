@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useDebounce } from 'use-debounce';
 import { PlusCircleIcon, PencilSimpleLineIcon, TrashIcon, EyeIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
@@ -29,7 +30,9 @@ const MasterProduk = () => {
     const [search, setSearch] = useState({
         search: '',
         status: null,
+        cabang: null,
     });
+    const [searchBounce] = useDebounce(search, 500);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({});
@@ -53,11 +56,11 @@ const MasterProduk = () => {
     };
 
     const handlePaginate = (page) => {
-        fetchData(page, paramFetch.pageSize, search.product_name, search.category_id, search.branch_id);
+        fetchData(page, paramFetch.pageSize, search.search, search.status, search.cabang);
     };
 
     const handleRow = (pageSize) => {
-        fetchData(1, pageSize, search.product_name, search.category_id, search.branch_id);
+        fetchData(1, pageSize, search.search, search.status, search.cabang);
     };
 
     const handleOpenModal = (mode, record = null) => {
@@ -93,6 +96,12 @@ const MasterProduk = () => {
             setLoading(false);
         });
     }, []);
+
+    useEffect(() => {
+        if (firstLoading) {
+            fetchData(1, paramFetch.pageSize, search.search, search.status, search.cabang);
+        }
+    }, [searchBounce]);
 
     const handleCloseModal = () => {
         setIsModalOpen(false);

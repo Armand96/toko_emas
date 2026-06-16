@@ -1,4 +1,4 @@
-import { TrendUpIcon, TrendDownIcon, BarcodeIcon, CheckCircleIcon, XCircleIcon, ClockIcon } from '@phosphor-icons/react';
+import { TrendUpIcon, TrendDownIcon, BarcodeIcon, CheckCircleIcon, XCircleIcon, ClockIcon, PrinterIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 import ModalCustom from '../../../components/modalCustom';
 import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
@@ -29,31 +29,50 @@ export default function Modal({
             isOpen={isOpen}
             onClose={onClose}
             width="max-w-3xl"
-            footer={mode === 'approve' && data?.status === 'APPROVAL'}
+            footer={(mode === 'approve' && data?.status === 'APPROVAL') || data?.status === 'DISETUJUI'}
             customFooter={
-                <div className="flex justify-end gap-3 px-6 py-4">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="btn-outline px-4 rounded-lg py-2"
-                    >
-                        Batal
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onSubmitReject}
-                        className="btn-danger flex items-center gap-2 rounded-lg py-2 px-4"
-                    >
-                        <XCircleIcon size={18} weight="bold" /> Tolak
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onSubmitApprove}
-                        className="btn-primary flex items-center gap-2 rounded-lg py-2 px-4"
-                    >
-                        <CheckCircleIcon size={18} weight="bold" /> Setujui
-                    </button>
-                </div>
+                data?.status === 'DISETUJUI' ? (
+                    <div className="flex justify-end gap-3 px-6 py-4">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="btn-outline px-4 rounded-lg py-2"
+                        >
+                            Tutup
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => HelperFunctions.printBarcode(data?.barcode, { label: data?.product?.product_name })}
+                            className="btn-primary flex items-center gap-2 rounded-lg py-2 px-4"
+                        >
+                            <PrinterIcon size={18} weight="bold" /> Cetak Barcode
+                        </button>
+                    </div>
+                ) : (
+                    <div className="flex justify-end gap-3 px-6 py-4">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="btn-outline px-4 rounded-lg py-2"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onSubmitReject}
+                            className="btn-danger flex items-center gap-2 rounded-lg py-2 px-4"
+                        >
+                            <XCircleIcon size={18} weight="bold" /> Tolak
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onSubmitApprove}
+                            className="btn-primary flex items-center gap-2 rounded-lg py-2 px-4"
+                        >
+                            <CheckCircleIcon size={18} weight="bold" /> Setujui
+                        </button>
+                    </div>
+                )
             }
         >
             <div className="flex flex-col gap-4">

@@ -32,6 +32,7 @@
         "axios": "^1.16.1",
         "dayjs": "^1.11.21",
         "js-cookie": "^3.0.8",
+        "qrcode.react": "^4.2.0",
         "react-barcode": "^1.6.1",
         "react-debounce": "^1.0.2",
         "react-modal": "^3.16.3",

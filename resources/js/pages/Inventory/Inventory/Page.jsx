@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useDebounce } from "use-debounce";
 import { EyeIcon, PencilSimpleLineIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
@@ -32,6 +33,8 @@ const MasterInventory = () => {
     const [paramFetch, setParamFetch] = useState({ data: [], current_page: 1, total: 0, per_page: 10 });
     const [search, setSearch]         = useState({ kode: "" });
     const [filter, setFilter]         = useState({ status: "", kategori: "" });
+    const [firstLoading, setFirstLoading] = useState(false);
+    const [searchBounce] = useDebounce(search, 500);
 
     const [productOptions, setProductOptions]   = useState([]);
     const [branchOptions, setBranchOptions]     = useState([]);
@@ -88,6 +91,7 @@ const MasterInventory = () => {
 
             const res = await InventoryApis.GetInventory(params);
             setParamFetch(res);
+            setFirstLoading(true);
         } catch (error) {
             console.error(error);
         } finally {
@@ -117,7 +121,6 @@ const MasterInventory = () => {
     const handleSearchChange = (e) => {
         const { name, value } = e.target;
         setSearch(prev => ({ ...prev, [name]: value }));
-        fetchData(1, paramFetch.per_page, value, filter.status, filter.kategori);
     };
 
     const handleFilterChange = (e) => {
@@ -126,6 +129,12 @@ const MasterInventory = () => {
         setFilter(newFilter);
         fetchData(1, paramFetch.per_page, search.kode, newFilter.status, newFilter.kategori);
     };
+
+    useEffect(() => {
+        if (firstLoading) {
+            fetchData(1, paramFetch.per_page, search.kode, filter.status, filter.kategori);
+        }
+    }, [searchBounce]);
 
     const onChangePage     = (page)     => fetchData(page, paramFetch.per_page, search.kode, filter.status, filter.kategori);
     const onChangePageSize = (pageSize) => fetchData(1,    pageSize,            search.kode, filter.status, filter.kategori);
