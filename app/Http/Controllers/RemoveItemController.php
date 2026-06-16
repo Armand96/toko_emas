@@ -118,6 +118,8 @@ class RemoveItemController extends Controller
                 $removeItemData = RemoveItem::find($validated['remove_id']);
                 $jenis = RemoveItemJenis::from($removeItemData->jenis);
                 Inventory::whereIn('inventory_code', $products)->update(array('status' => $jenis == RemoveItemJenis::HILANG ? InventoryStatus::LOST : InventoryStatus::REPAIR, 'updated_at' => $dateNow));
+            } elseif ($status == RemoveItemStatus::RETURN) {
+                Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow));
             }
 
             DB::commit();
