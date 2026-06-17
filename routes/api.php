@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('login', [UserController::class, 'login']);
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk lepas auth sementara
     Route::apiResource('branches', MBranchController::class);
     Route::apiResource('settings-store', StoreSettingController::class);
     Route::apiResource('products', MProductController::class);
@@ -56,7 +56,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('update-remove-item', [RemoveItemController::class, 'changeApproval']);
 
     Route::get('logout', [UserController::class, 'logout']);
-});
+}); // comment ini untuk lepas auth sementara
 
 Route::prefix('enum')->group(function () {
     Route::get('pembelian-status', [EnumController::class, 'pembelianStatus']);
