@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
+use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -85,7 +87,7 @@ class UserController extends Controller
         $validated = $request->validated();
 
         try {
-            if(isset($validated['password']) && $validated['password'] != "") $validated['password'] = Hash::make($validated['password']);
+            if (isset($validated['password']) && $validated['password'] != "") $validated['password'] = Hash::make($validated['password']);
             $user->update($validated);
 
             return ApiResponse::success($user, "Success update user", 201);
@@ -100,5 +102,43 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         return ApiResponse::error('route not found', null, 404);
+    }
+
+    public function login(LoginRequest $request)
+    {
+        if (! Auth::attempt([
+            'username' => $request->username,
+            'password' => $request->password,
+        ])) {
+            return ApiResponse::error(
+                'Invalid credentials',
+                null,
+                401
+            );
+        }
+
+        $user = Auth::user();
+
+        $user->token = $user
+            ->createToken('react-app')
+            ->plainTextToken;
+
+        return ApiResponse::success([
+            'user' => $user,
+            // 'token' => $token,
+        ], 'OK', 200);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()
+            ->tokens()
+            ->delete();
+
+        return ApiResponse::success(
+            [],
+            'Logged out from all devices',
+            200
+        );
     }
 }

@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -34,5 +35,15 @@ class DatabaseSeeder extends Seeder
             INSERT INTO `m_category_finances` (`id`, `category_name`, `is_active`, `created_at`, `updated_at`) VALUES (3, 'Penjualan', 1, NULL, NULL);
             INSERT INTO `bank_cabangs` (`id`, `branch_id`, `bank_id`, `nomor_rekening`, `nama_pemilik`, `is_active`, `created_at`, `updated_at`) VALUES (1, 1, 1, '00338227', 'Jono', 1, '2026-06-15 06:24:12', '2026-06-15 06:24:12');
         ");
+
+        User::create(array(
+            'username' => 'tokoemas',
+            'name' => 'tokoemas',
+            'branch_id' => 1,
+            'role_id' => 1,
+            'is_active' => true,
+            'email' => 'tokoemas@mail.com',
+            'password' => Hash::make('tokoemas')
+        ));
     }
 }
