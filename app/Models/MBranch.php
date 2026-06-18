@@ -19,4 +19,9 @@ class MBranch extends Model
         'created_at',
         'updated_at'
     ];
+
+    public function bankcabang()
+    {
+        return $this->hasOne(BankCabang::class, 'bank_id', 'id');
+    }
 }

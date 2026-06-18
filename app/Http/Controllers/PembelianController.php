@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
+use App\Helpers\FinancePaymentMethod;
+use App\Helpers\FinanceType;
 use App\Helpers\InventoryStatus;
 use App\Helpers\PembelianStatus;
 use App\Http\Requests\PembelianImageRequest;
 use App\Http\Requests\PembelianRequest;
 use App\Http\Requests\UpdateStatusPembelianRequest;
+use App\Models\Finance;
 use App\Models\Inventory;
+use App\Models\MCategoryFinance;
 use App\Models\MProduct;
 use App\Models\Pembelian;
 use App\Models\PembelianBatch;
@@ -114,7 +118,7 @@ class PembelianController extends Controller
                     $data = Inventory::where('product_id', $value->product_id)->count();
 
                     Inventory::create(array(
-                        'inventory_code' => $value->barcode . "-" . str_pad($data+1, 4, "0", STR_PAD_LEFT),
+                        'inventory_code' => $value->barcode . "-" . str_pad($data + 1, 4, "0", STR_PAD_LEFT),
                         'pembelian_id' => $value->id,
                         'product_id' => $value->product_id,
                         'category_id' => $value->category_id,
@@ -134,6 +138,15 @@ class PembelianController extends Controller
 
                 // if (count($batchInsert) > 0) Inventory::insert($batchInsert);
                 // TO DO INSERT KE FINANCE
+                $categoryFinance = MCategoryFinance::where('category_name', 'like', '%Penjualan%')->first();
+                Finance::create(array(
+                    'branch_id' => $value->branch_id,
+                    'category_finance_id' => $categoryFinance->id,
+                    'bank_cabang_id' => $value->bank_id,
+                    'type' => FinanceType::CASHOUT,
+                    'payment_method' => FinancePaymentMethod::TRANSFER,
+                    'nominal' => $value->modal
+                ));
             }
 
             DB::commit();

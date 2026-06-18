@@ -8,4 +8,5 @@ enum RemoveItemStatus: string
     case DISETUJUI = 'DISETUJUI';
     case DITOLAK = 'DITOLAK';
     case DIBATALKAN = 'DIBATALKAN';
+    case RETURN = 'RETURN';
 }

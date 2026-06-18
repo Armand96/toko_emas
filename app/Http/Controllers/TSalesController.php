@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
+use App\Helpers\FinancePaymentMethod;
+use App\Helpers\FinanceType;
 use App\Helpers\InventoryStatus;
+use App\Helpers\SalesPaymentMethod;
 use App\Helpers\SalesStatus;
 use App\Http\Requests\SalesRequest;
 use App\Http\Requests\UpdateStatusSalesRequest;
+use App\Models\Finance;
 use App\Models\Inventory;
+use App\Models\MCategoryFinance;
 use App\Models\TSales;
 use App\Models\TSalesDetail;
 use Illuminate\Http\Request;
@@ -112,7 +117,8 @@ class TSalesController extends Controller
 
             // $dateNow = date('Y-m-d H:i:s');
             $status = SalesStatus::from($validated['status']);
-            TSales::where('id', $validated['penjualan_id'])->where('approval_status', SalesStatus::APPROVAL)->update([
+            $data = TSales::where('id', $validated['penjualan_id'])->with(['branch.bankcabang'])->where('approval_status', SalesStatus::APPROVAL)->first();
+            $data->update([
                 'approval_status' => $status,
                 'note' => isset($validated['note']) ? $validated['note'] : null
             ]);
@@ -122,6 +128,17 @@ class TSalesController extends Controller
                 $dateNow = date('Y-m-d H:i:s');
 
                 Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::SOLD, 'updated_at' => $dateNow));
+
+                $salesPaymentMethod = SalesPaymentMethod::from($data->payment_type);
+                $categoryFinance = MCategoryFinance::where('category_name', 'like', '%Pembelian%')->first();
+                Finance::create(array(
+                    'branch_id' => $data->branch_id,
+                    'category_finance_id' => $categoryFinance->id,
+                    'bank_cabang_id' => $salesPaymentMethod == SalesPaymentMethod::TUNAI ? 0 : $data->branch->bankcabang->id,
+                    'type' => FinanceType::CASHIN,
+                    'payment_method' => $salesPaymentMethod == SalesPaymentMethod::TUNAI ? FinancePaymentMethod::CASH : FinancePaymentMethod::TRANSFER,
+                    'nominal' => $data->grand_total
+                ));
             }
 
             DB::commit();

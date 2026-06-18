@@ -19,8 +19,8 @@ return new class extends Migration
             $table->enum('type', ['CASH IN', 'CASH OUT']);
             $table->enum('payment_method', ['CASH', 'TRANSFER']);
             $table->decimal('nominal', 16, 2)->default(9);
-            $table->string('note');
-            $table->string('attachment');
+            $table->string('note')->nullable();
+            $table->string('attachment')->nullable();
             $table->timestamps();
         });
     }
