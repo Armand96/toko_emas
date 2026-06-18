@@ -138,11 +138,13 @@ const RiwayatItem = ({ item }) => {
 export const DetailItemModal = ({ isOpen, onClose, item }) => {
     if (!item) return null;
 
+    console.log(item)
+
     const margin = (item.jual || 0) - (item.modal || 0);
     const marginPct = item.modal ? ((margin / item.modal) * 100).toFixed(1) : 0;
 
     const handlePrintBarcode = () => {
-        HelperFunctions.printBarcode(item.kode, { label: item.produk });
+        HelperFunctions.printBarcode(item.inventory_code, { label: item.produk });
     };
 
     return (
@@ -163,7 +165,7 @@ export const DetailItemModal = ({ isOpen, onClose, item }) => {
                         onError={(e) => { e.target.style.display = "none"; }}
                     />
                     <div className="w-full border border-gray-200 rounded-lg p-2 overflow-hidden flex justify-center">
-                        <Barcode value={item.kode} width={0.7} height={32} fontSize={9} margin={0} renderer="svg" style={{ maxWidth: "100%", height: "auto" }} />
+                        <Barcode value={item.inventory_code} width={0.7} height={32} fontSize={9} margin={0} renderer="svg" style={{ maxWidth: "100%", height: "auto" }} />
                     </div>
                     <button
                         type="button"
@@ -257,7 +259,7 @@ export const EditItemModal = ({ isOpen, onClose, formData, errors = {}, onChange
                 <div className="w-full sm:w-44 flex flex-col gap-2 flex-shrink-0 min-w-0">
                     <PhotoUploadBox name="foto" value={formData.foto} onChange={onChange} />
                     <div className="w-full border border-gray-200 rounded-lg p-2 overflow-hidden flex justify-center">
-                        <Barcode value={formData.kode} width={0.7} height={32} fontSize={9} margin={0} renderer="svg" style={{ maxWidth: "100%", height: "auto" }} />
+                        <Barcode value={formData.inventory_code} width={0.7} height={32} fontSize={9} margin={0} renderer="svg" style={{ maxWidth: "100%", height: "auto" }} />
                     </div>
                 </div>
 

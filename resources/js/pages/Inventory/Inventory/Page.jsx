@@ -61,7 +61,8 @@ const MasterInventory = () => {
 
         return {
             id: row.id,
-            kode: row.barcode,
+            kode: row.inventory_code,
+            inventory_code: row.inventory_code,
             produk: product?.product_name || "-",
             kategori: parentCategory?.category_name || "-",
             sub_kategori: isSubCategory ? category?.category_name : "",
@@ -140,7 +141,7 @@ const MasterInventory = () => {
     const onChangePageSize = (pageSize) => fetchData(1,    pageSize,            search.kode, filter.status, filter.kategori);
 
     const handleViewDetail = (row) => {
-        setSelectedItem(mapInventory(row));
+        setSelectedItem({...mapInventory(row), ...row});
         setShowDetailModal(true);
     };
 
@@ -210,7 +211,7 @@ const MasterInventory = () => {
             header: "Kode",
             accessor: "barcode",
             render: (row) => (
-                <span className="text-gray-700 text-sm">{row.barcode}</span>
+                <span className="text-gray-700 text-sm">{row.inventory_code}</span>
             ),
         },
         {
