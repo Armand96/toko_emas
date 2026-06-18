@@ -1,6 +1,7 @@
 import Cookies from 'js-cookie';
 import authConfig from '../utils/authConfig';
 import Apis from '../utils/Apis';
+import AuthStore from '../Store/AuthStore';
 
 const AuthService = {
     login: async (username, password) => {
@@ -12,6 +13,7 @@ const AuthService = {
 
         Cookies.set(authConfig.tokenKey, token, authConfig.cookieOptions);
         Cookies.set(authConfig.userKey, JSON.stringify(user), authConfig.cookieOptions);
+        AuthStore.getState().setAuth(user, token);
 
         return user;
     },
@@ -20,24 +22,12 @@ const AuthService = {
         try {
             await Apis.Get('api/logout');
         } catch (_) {
-            // ignore error — clear local state regardless
+            // ignore — clear local state regardless
         }
         Cookies.remove(authConfig.tokenKey);
         Cookies.remove(authConfig.userKey);
+        AuthStore.getState().clearAuth();
     },
-
-    getToken: () => Cookies.get(authConfig.tokenKey),
-
-    getUser: () => {
-        try {
-            const raw = Cookies.get(authConfig.userKey);
-            return raw ? JSON.parse(raw) : null;
-        } catch {
-            return null;
-        }
-    },
-
-    isAuthenticated: () => !!Cookies.get(authConfig.tokenKey),
 };
 
 export default AuthService;

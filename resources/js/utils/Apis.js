@@ -1,7 +1,7 @@
-// Apis.js
 import axios from "axios";
 import Cookies from "js-cookie";
 import authConfig from "./authConfig";
+import AuthStore from "../Store/AuthStore";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.example.com";
 
@@ -11,22 +11,10 @@ const client = axios.create({
   headers: { "Content-Type": "application/json", Accept: "application/json" },
 });
 
-// ── TOKEN ────────────────────────────────────────────────────
-const Token = {
-  get: () => Cookies.get(authConfig.tokenKey),
-  set: (access) => {
-    Cookies.set(authConfig.tokenKey, access, authConfig.cookieOptions);
-  },
-  clear: () => {
-    Cookies.remove(authConfig.tokenKey);
-    Cookies.remove(authConfig.userKey);
-  },
-};
-
 // ── INTERCEPTORS ─────────────────────────────────────────────
 client.interceptors.request.use((config) => {
-  const token = Token.get();
-  if (token  && !config.noAuth ) config.headers.Authorization = `Bearer ${token}`;
+  const token = AuthStore.getState().token;
+  if (token && !config.noAuth) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
@@ -35,7 +23,9 @@ client.interceptors.response.use(
   (error) => {
     const isLoginRequest = error.config?.url?.includes('api/login');
     if (error.response?.status === 401 && !isLoginRequest) {
-      Token.clear();
+      Cookies.remove(authConfig.tokenKey);
+      Cookies.remove(authConfig.userKey);
+      AuthStore.getState().clearAuth();
       window.location.href = "/login";
     }
     return Promise.reject(error);

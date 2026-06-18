@@ -2,13 +2,14 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ListIcon, CaretDownIcon, MagnifyingGlassIcon, SignOutIcon } from "@phosphor-icons/react";
 import AuthService from "../../Services/Auth.apis";
+import AuthStore from "../../Store/AuthStore";
 import { showAlert } from "../../utils/showAlert";
 
 const Navbar = ({ setIsOpen }) => {
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const user = AuthService.getUser();
+  const user = AuthStore((state) => state.user);
   const initials = user?.name
     ? user.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
     : 'U';

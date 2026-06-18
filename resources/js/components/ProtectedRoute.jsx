@@ -1,10 +1,9 @@
 import { Navigate, Outlet } from 'react-router';
-import AuthService from '../Services/Auth.apis';
+import AuthStore from '../Store/AuthStore';
 
 const ProtectedRoute = () => {
-    if (!AuthService.isAuthenticated()) {
-        return <Navigate to="/login" replace />;
-    }
+    const token = AuthStore((state) => state.token);
+    if (!token) return <Navigate to="/login" replace />;
     return <Outlet />;
 };
 
