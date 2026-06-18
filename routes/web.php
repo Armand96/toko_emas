@@ -27,9 +27,7 @@ use App\Http\Controllers\MBranchController;
 // Route::prefix('api')->middleware(['api'])->group(function () {
 //     Route::resource('branches', MBranchController::class);
 // });
-Route::get('/login', function() {
-    return "";
-})->name('login');
+
 Route::get('/{any}', function () {
     return view('app');
 })->where('any', '.*');

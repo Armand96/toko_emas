@@ -4,6 +4,7 @@ import MasterProduk from "../pages/Inventory/MasterProduk/Page";
 import Pembelian from "../pages/Inventory/Pembelian/Page";
 import TransferInventory from "../pages/Inventory/transfer/Page";
 import RemoveInventory from "../pages/Inventory/Remove/Page";
+import InRepairInventory from "../pages/Inventory/InRepair/Page";
 
 
 export const Inventory = [
@@ -30,5 +31,9 @@ export const Inventory = [
       {
         path: "/inventory/remove",
         element: <RemoveInventory />,
+    },
+      {
+        path: "/inventory/in-repair",
+        element: <InRepairInventory />,
     },
 ]

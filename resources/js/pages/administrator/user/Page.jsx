@@ -139,7 +139,7 @@ const MasterUser = () => {
                 fetchData();
             }, 500);
         } catch (error) {
-            showAlert({ title: 'Gagal', message: 'Gagal menyimpan data', type: 'danger' });
+            showAlert({ title: 'Gagal', message: 'Gagal menyimpan data', icon: 'error' });
         } finally {
             setLoading(false);
         }

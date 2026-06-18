@@ -148,8 +148,8 @@ const ApprovalTransfer = () => {
             <ModalDetailTransfer
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSubmitApprove={() => { showAlert('success', 'Berhasil', 'Transfer disetujui'); handleCloseModal(); }}
-                onSubmitReject={() => { showAlert('success', 'Berhasil', 'Transfer ditolak'); handleCloseModal(); }}
+                onSubmitApprove={() => { showAlert({ icon: 'success', title: 'Berhasil', message: 'Transfer disetujui' }); handleCloseModal(); }}
+                onSubmitReject={() => { showAlert({ icon: 'success', title: 'Berhasil', message: 'Transfer ditolak' }); handleCloseModal(); }}
                 data={selectedData}
             />
         </div>

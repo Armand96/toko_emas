@@ -36,6 +36,18 @@ const InventoryApis = {
     GetInventory: (params) => {
         return Apis.Get(`api/inventory${params}`).then(({ data }) => data);
     },
+    GetRemoveItem: (params) => {
+        return Apis.Get(`api/remove-item${params}`).then(({ data }) => data);
+    },
+    GetRemoveItemSingle: (id) => {
+        return Apis.Get(`api/remove-item/${id}`).then(({ data }) => data);
+    },
+    PostRemoveItem: (body) => {
+        return Apis.Post(`api/remove-item`, body);
+    },
+    UpdateRemoveItem: (body) => {
+        return Apis.Put(`api/update-remove-item`, body);
+    },
 }
 
 export default InventoryApis;

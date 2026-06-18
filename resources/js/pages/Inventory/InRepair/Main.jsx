@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
-import { PlusCircleIcon, EyeIcon, XIcon } from "@phosphor-icons/react";
+import { EyeIcon, ArrowCounterClockwiseIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
-import ModalDetailRemove from './ModalView';
+import ModalDetailRemove from "../Remove/ModalView";
 import InventoryApis from "../../../Services/Inventory.apis";
-import { showAlert } from "../../../utils/showAlert";
 import HelperFunctions from "../../../utils/HelperFunctions";
+import { showAlert } from "../../../utils/showAlert";
 
-const Main = ({ setCurentState }) => {
-    const [filterData, setFilterData] = useState({ search: '', status: '', cabang: '' });
+const Main = () => {
+    const [filterData, setFilterData] = useState({ search: '' });
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -27,38 +27,40 @@ const Main = ({ setCurentState }) => {
             const params = new URLSearchParams();
             params.append('page', page);
             params.append('per_page', pageSize);
+            params.append('jenis', 'REPAIR');
+            params.append('status', 'DISETUJUI');
             if (filters.search) params.append('code', filters.search);
-            if (filters.status) params.append('status', filters.status);
-            if (filters.cabang) params.append('branch_id', filters.cabang);
 
             const res = await InventoryApis.GetRemoveItem(`?${params.toString()}`);
             const raw = res?.data || [];
             const meta = res?.meta || res;
 
-            const rows = raw.map((item) => {
-                const productNames = (item.details || [])
-                    .map((d) => {
-                        const p = d.product;
-                        return p ? `${p.name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ?? ''}` : d.inventory_code;
-                    })
-                    .join(', ');
+            const rows = [];
+            for (const item of raw) {
+                const details = item.details || [];
+                for (const d of details) {
+                    const createdAt = new Date(item.created_at);
+                    const now = new Date();
+                    const diffDays = Math.floor((now - createdAt) / (1000 * 60 * 60 * 24));
 
-                return {
-                    id: item.id,
-                    tanggal: item.created_at
-                        ? new Date(item.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })
-                        : '-',
-                    kode: item.code,
-                    item_produk: productNames || '-',
-                    cabang: item.branch?.name || '-',
-                    jenis: item.jenis === 'HILANG' ? 'Hilang' : item.jenis === 'REPAIR' ? 'Repair' : item.jenis,
-                    status: (() => {
-                        const map = { APPROVAL: 'Approval', DISETUJUI: 'Disetujui', DITOLAK: 'Ditolak', DIBATALKAN: 'Dibatalkan', RETURN: 'Return' };
-                        return map[item.status] || item.status;
-                    })(),
-                    _raw: item,
-                };
-            });
+                    rows.push({
+                        id: item.id,
+                        detail_id: d.id,
+                        inventory_code: d.inventory_code,
+                        kode: d.inventory_code,
+                        produk: d.product?.name || '-',
+                        berat: d.inventory?.berat ? `${d.inventory.berat}g` : '-',
+                        karat: d.inventory?.karat || '-',
+                        tanggal_repair: createdAt.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+                        lama_repair: `${diffDays} Hari`,
+                        cabang: item.branch?.name || '-',
+                        status: 'Repair',
+                        image: d.inventory?.image_path ? HelperFunctions.getStorageUrl(d.inventory.image_path) : null,
+                        _raw: item,
+                        _detail: d,
+                    });
+                }
+            }
 
             setParamFetch({
                 data: rows,
@@ -74,7 +76,7 @@ const Main = ({ setCurentState }) => {
     }, []);
 
     useEffect(() => {
-        fetchData(paramFetch.page, paramFetch.pageSize, filterData);
+        fetchData(1, paramFetch.pageSize, filterData);
     }, []);
 
     const handleFilterChange = (e) => {
@@ -100,108 +102,97 @@ const Main = ({ setCurentState }) => {
                 harga_jual: d.inventory?.jual || 0,
             }));
 
-            const statusMap = { APPROVAL: 'Approval', DISETUJUI: 'Disetujui', DITOLAK: 'Ditolak', DIBATALKAN: 'Dibatalkan', RETURN: 'Return' };
-            const jenisMap = { HILANG: 'Hilang', REPAIR: 'Repair' };
-
             setSelectedDetail({
                 id: item.id,
                 kode_transaksi: item.code,
-                jenis: jenisMap[item.jenis] || item.jenis,
+                jenis: 'Repair',
                 catatan: item.note || '-',
                 diajukan_oleh: item.created_by_user?.name || item.user?.name || '-',
                 pic_approval: item.approved_by_user?.name || '-',
                 tanggal_approval: item.updated_at
                     ? new Date(item.updated_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                     : '-',
-                status: statusMap[item.status] || item.status,
-                alasan: item.note_approval || null,
+                status: 'Disetujui',
+                alasan: null,
                 items,
             });
             setIsModalOpen(true);
         } catch (err) {
             console.error(err);
-            // fallback to row data
-            setSelectedDetail(row);
-            setIsModalOpen(true);
         }
     };
 
-    const handleCancel = async (row) => {
+    const handleReturn = async (row) => {
         const { confirmed } = await showAlert({
-            title: 'Batalkan Remove Item',
-            message: `Apakah Anda yakin ingin membatalkan ${row.kode}?`,
+            title: 'Kembalikan ke Inventory',
+            message: 'Apakah Anda yakin ingin mengembalikan item ini ke inventory aktif?',
             icon: 'warning',
-            confirmText: 'Ya, Batalkan',
-            cancelText: 'Tidak',
+            confirmText: 'Kembalikan',
+            cancelText: 'Batal',
         });
         if (!confirmed) return;
 
         try {
-            await InventoryApis.UpdateRemoveItem({ status: 'DIBATALKAN', note: null, remove_id: row.id });
-            await showAlert({ title: 'Berhasil', message: 'Remove item berhasil dibatalkan.', icon: 'success', confirmText: 'OK' });
+            await InventoryApis.UpdateRemoveItem({ status: 'RETURN', note: null, remove_id: row.id });
+            await showAlert({ title: 'Berhasil Dikembalikan', message: 'Item telah dikembalikan ke inventory aktif!', icon: 'success', confirmText: 'OK' });
             fetchData(paramFetch.page, paramFetch.pageSize, filterData);
         } catch (err) {
             console.error(err);
-            showAlert({ title: 'Gagal', message: 'Terjadi kesalahan saat membatalkan.', icon: 'error', confirmText: 'OK' });
+            const msg = err?.response?.data?.message || 'Terjadi kesalahan saat mengembalikan item.';
+            showAlert({ title: 'Gagal', message: msg, icon: 'error', confirmText: 'OK' });
         }
     };
 
     const filterFields = [
-        { name: 'search', type: 'text', placeholder: 'Cari kode/nama/berat/karat...', deskSpan: 2 },
-        {
-            name: 'status', type: 'dropdown', placeholder: 'Pilih status', deskSpan: 1,
-            options: [
-                { label: 'Disetujui', value: 'DISETUJUI' },
-                { label: 'Approval', value: 'APPROVAL' },
-                { label: 'Ditolak', value: 'DITOLAK' },
-                { label: 'Dibatalkan', value: 'DIBATALKAN' },
-            ],
-        },
-        {
-            name: 'cabang', type: 'dropdown', placeholder: 'Pilih cabang', deskSpan: 1,
-            options: [],
-        },
+        { name: 'search', type: 'text', placeholder: 'Cari produk...', deskSpan: 2 },
     ];
 
     const columns = [
-        { header: 'Tanggal Out', accessor: 'tanggal', sortable: true },
         { header: 'Kode', accessor: 'kode', sortable: true },
-        { header: 'Item Produk', accessor: 'item_produk', sortable: true },
-        { header: 'Cabang', accessor: 'cabang', sortable: true },
-        { header: 'Jenis', accessor: 'jenis', sortable: true },
         {
-            header: 'Status', accessor: 'status', sortable: true,
-            render: (row) => {
-                let badgeClass = 'bg-gray-50 text-gray-700 border-gray-200';
-                if (row.status === 'Disetujui') badgeClass = 'bg-success-50 text-success-700 border-success-200';
-                else if (row.status === 'Approval') badgeClass = 'bg-warning-50 text-warning-700 border-warning-200';
-                else if (row.status === 'Ditolak' || row.status === 'Dibatalkan') badgeClass = 'bg-danger-50 text-danger-700 border-danger-200';
-                return (
-                    <span className={`px-3 py-1 rounded-md text-xs font-medium border ${badgeClass}`}>
-                        {row.status}
-                    </span>
-                );
-            }
+            header: 'Produk', accessor: 'produk', sortable: true,
+            render: (row) => (
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-amber-50 rounded-md flex items-center justify-center overflow-hidden border border-gray-100 flex-shrink-0">
+                        {row.image
+                            ? <img src={row.image} alt={row.produk} className="w-full h-full object-cover" />
+                            : <span className="text-[10px] text-amber-600">Img</span>
+                        }
+                    </div>
+                    <span className="text-sm font-medium text-gray-800">{row.produk}</span>
+                </div>
+            )
+        },
+        { header: 'Berat', accessor: 'berat', sortable: true },
+        { header: 'Karat', accessor: 'karat', sortable: true },
+        { header: 'Tanggal Repair', accessor: 'tanggal_repair', sortable: true },
+        { header: 'Lama Repair', accessor: 'lama_repair', sortable: false },
+        { header: 'Cabang', accessor: 'cabang', sortable: true },
+        {
+            header: 'Status', accessor: 'status', sortable: false,
+            render: () => (
+                <span className="px-3 py-1 rounded-md text-xs font-medium border bg-warning-50 text-warning-700 border-warning-200">
+                    Repair
+                </span>
+            )
         },
         {
             header: 'Aksi', accessor: 'aksi',
             render: (row) => (
                 <div className="flex items-center gap-2">
-                    {row.status === 'Approval' && (
-                        <button
-                            onClick={() => handleCancel(row)}
-                            className="p-1.5 text-danger-500 hover:bg-danger-50 border border-danger-200 rounded-md transition-colors cursor-pointer"
-                            title="Batalkan"
-                        >
-                            <XIcon size={16} weight="bold" />
-                        </button>
-                    )}
                     <button
                         onClick={() => handleViewDetail(row)}
                         className="p-1.5 text-primary-500 hover:bg-primary-50 border border-primary-200 rounded-md transition-colors cursor-pointer"
                         title="Lihat Detail"
                     >
                         <EyeIcon size={16} weight="bold" />
+                    </button>
+                    <button
+                        onClick={() => handleReturn(row)}
+                        className="p-1.5 text-success-600 hover:bg-success-50 border border-success-200 rounded-md transition-colors cursor-pointer"
+                        title="Kembalikan ke Inventory"
+                    >
+                        <ArrowCounterClockwiseIcon size={16} weight="bold" />
                     </button>
                 </div>
             )
@@ -211,20 +202,17 @@ const Main = ({ setCurentState }) => {
     return (
         <div className="w-full h-full flex flex-col gap-6 bg-gray-50/50 p-6">
             <HeaderSection
-                title="Remove Item"
-                description="Kelola proses barang keluar dari ready stock berdasarkan jenis transaksi."
-                icon={PlusCircleIcon}
-                textButton="Remove Item"
-                onClick={() => setCurentState('form')}
+                title="Item Repair"
+                description="Kelola item inventory yang sedang dalam proses perbaikan dan kembalikan ke inventory aktif setelah repair selesai."
             />
-            <div className="w-full md:w-3/4 xl:w-2/3">
+            <div className="w-full md:w-1/2">
                 <div className="flex items-end gap-3">
                     <div className="flex-1">
                         <InputGroup
                             fields={filterFields}
                             formData={filterData}
                             onChange={handleFilterChange}
-                            cols="4"
+                            cols="2"
                         />
                     </div>
                     <button

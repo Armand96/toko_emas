@@ -9,7 +9,7 @@ import BlockIcon from '../assets/images/modal_icon/block_icon.svg';
 import WaitingIcon from '../assets/images/modal_icon/waiting_icon.svg';
 import TextArea from './FormElement/SingleElement/TextArea';
 
-export default function AlertModal({ title, isAutoClose, message, icon, confirmText, cancelText, onClose, handleCancel, handleConfirm, classNameCustom = '', isDisable = false, textarea, placeholder }) {
+export default function AlertModal({ title, isAutoClose, message, icon, confirmText, cancelText, onClose, handleCancel, handleConfirm, classNameCustom = '', isDisable = false, textarea, placeholder, portalContainer }) {
   const [show, setShow] = useState(false);
   const [value, setValue] = useState('');
 
@@ -80,6 +80,6 @@ export default function AlertModal({ title, isAutoClose, message, icon, confirmT
         )}
       </div>
     </div>,
-    document.body,
+    portalContainer || document.body,
   );
 }

@@ -1,11 +1,9 @@
 // Apis.js
 import axios from "axios";
 import Cookies from "js-cookie";
+import authConfig from "./authConfig";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.example.com";
-const TOKEN_KEY = import.meta.env.VITE_TOKEN_KEY || "access_token";
-const REFRESH_KEY = import.meta.env.VITE_REFRESH_KEY || "refresh_token";
-
 
 const client = axios.create({
   baseURL: BASE_URL,
@@ -15,15 +13,13 @@ const client = axios.create({
 
 // ── TOKEN ────────────────────────────────────────────────────
 const Token = {
-  get: () => Cookies.get(TOKEN_KEY),
-  getRefresh: () => Cookies.get(REFRESH_KEY),
-  set: (access, refresh) => {
-    Cookies.set(TOKEN_KEY, access, { expires: 1, secure: true, sameSite: "Strict" });
-    if (refresh) Cookies.set(REFRESH_KEY, refresh, { expires: 7, secure: true, sameSite: "Strict" });
+  get: () => Cookies.get(authConfig.tokenKey),
+  set: (access) => {
+    Cookies.set(authConfig.tokenKey, access, authConfig.cookieOptions);
   },
   clear: () => {
-    Cookies.remove(TOKEN_KEY);
-    Cookies.remove(REFRESH_KEY);
+    Cookies.remove(authConfig.tokenKey);
+    Cookies.remove(authConfig.userKey);
   },
 };
 
@@ -34,48 +30,14 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
-let isRefreshing = false;
-let queue = [];
-
 client.interceptors.response.use(
   (res) => res,
-  async (error) => {
-    const original = error.config;
-
-    if (error.response?.status === 401 && !original._retry) {
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => queue.push({ resolve, reject }))
-          .then((token) => {
-            original.headers.Authorization = `Bearer ${token}`;
-            return client(original);
-          });
-      }
-
-      original._retry = true;
-      isRefreshing = true;
-
-      try {
-        const { data } = await axios.post(`${BASE_URL}/auth/refresh`, {
-          refresh_token: Token.getRefresh(),
-        });
-
-        Token.set(data.access_token, data.refresh_token);
-        client.defaults.headers.common.Authorization = `Bearer ${data.access_token}`;
-        queue.forEach((p) => p.resolve(data.access_token));
-        queue = [];
-        original.headers.Authorization = `Bearer ${data.access_token}`;
-        return client(original);
-      } catch (err) {
-        queue.forEach((p) => p.reject(err));
-        queue = [];
-        Token.clear();
-        window.location.href = "/login";
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
-      }
+  (error) => {
+    const isLoginRequest = error.config?.url?.includes('api/login');
+    if (error.response?.status === 401 && !isLoginRequest) {
+      Token.clear();
+      window.location.href = "/login";
     }
-
     return Promise.reject(error);
   }
 );
@@ -134,8 +96,8 @@ const Apis = {
     return { success: true };
   },
 
-  setToken: (access, refresh) => {
-    Token.set(access, refresh);
+  setToken: (access) => {
+    Token.set(access);
     client.defaults.headers.common.Authorization = `Bearer ${access}`;
   },
 

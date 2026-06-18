@@ -1,8 +1,31 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { ListIcon, CaretDownIcon, MagnifyingGlassIcon, SignOutIcon } from "@phosphor-icons/react";
+import AuthService from "../../Services/Auth.apis";
+import { showAlert } from "../../utils/showAlert";
 
 const Navbar = ({ setIsOpen }) => {
+  const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const user = AuthService.getUser();
+  const initials = user?.name
+    ? user.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
+    : 'U';
+
+  const handleLogout = async () => {
+    const { confirmed } = await showAlert({
+      title: 'Keluar dari Sistem',
+      message: 'Apakah Anda yakin ingin keluar?',
+      icon: 'warning',
+      confirmText: 'Keluar',
+      cancelText: 'Batal',
+    });
+    if (!confirmed) return;
+
+    await AuthService.logout();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <header className="h-16 bg-neutral-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 z-30 shrink-0">
@@ -19,13 +42,13 @@ const Navbar = ({ setIsOpen }) => {
           onClick={() => setIsProfileOpen(!isProfileOpen)}
         >
           <div className="w-8 h-8 rounded-full bg-info-50 text-info-600 flex items-center justify-center font-bold text-xs border border-info-200">
-            AJ
+            {initials}
           </div>
           <div className="hidden md:block text-left">
             <p className="text-sm font-semibold text-neutral-black leading-none">
-              Alexander Johnatha...
+              {user?.name || 'User'}
             </p>
-            <p className="text-xs text-gray-500 mt-1">Owner</p>
+            <p className="text-xs text-gray-500 mt-1">{user?.role || '-'}</p>
           </div>
           <CaretDownIcon size={16} className="text-gray-500 hidden md:block" />
         </button>
@@ -34,20 +57,23 @@ const Navbar = ({ setIsOpen }) => {
           <div className="absolute right-0 mt-2 w-64 bg-neutral-white border border-gray-200 rounded-md shadow-lg py-1 z-50">
             <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-info-50 text-info-600 flex items-center justify-center font-bold text-sm shrink-0 border border-info-200">
-                AJ
+                {initials}
               </div>
               <div className="overflow-hidden">
                 <p className="text-sm font-semibold text-neutral-black truncate">
-                  Alexander Johnathan Faturah...
+                  {user?.name || 'User'}
                 </p>
-                <p className="text-xs text-gray-500">Penaksir</p>
+                <p className="text-xs text-gray-500">{user?.username || '-'}</p>
               </div>
             </div>
             <button className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors cursor-pointer">
               <MagnifyingGlassIcon size={18} />
               Ubah Password
             </button>
-            <button className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors cursor-pointer">
+            <button
+              onClick={handleLogout}
+              className="w-full text-left px-4 py-2.5 text-sm text-danger-600 hover:bg-danger-50 flex items-center gap-3 transition-colors cursor-pointer"
+            >
               <SignOutIcon size={18} />
               Log Out
             </button>

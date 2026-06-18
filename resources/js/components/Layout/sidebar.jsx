@@ -33,7 +33,7 @@ const sidebarData = [
         id: "dashboard",
         label: "Dashboard",
         icon: SquaresFourIcon,
-        link: "/"
+        link: "/dashboard"
       },
       {
         id: "approval",
@@ -55,6 +55,7 @@ const sidebarData = [
           { label: "Pembelian", link: "/inventory/pembelian" },
           { label: "Item Inventory", link: "/inventory/inventory" },
           { label: "Remove", link: "/inventory/remove" },
+          { label: "In Repair", link: "/inventory/in-repair" },
           { label: "Transfer", link: "/inventory/transfer" },
           { label: "Stock Opname", link: "/inventory/stock-opname" }
         ]

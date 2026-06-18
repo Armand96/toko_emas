@@ -12,10 +12,18 @@ export function showAlert(options) {
       resolve({confirmed: result, value: v});
       setTimeout(() => {
         root.unmount();
-        container.remove();
+        // Tunda penghapusan container hingga setelah React selesai meng-unmount,
+        // agar tidak bentrok dengan commit/cleanup root utama (removeChild error).
+        queueMicrotask(() => {
+          try {
+            if (container.parentNode) container.parentNode.removeChild(container);
+          } catch {
+            // node sudah dilepas oleh React — abaikan
+          }
+        });
       }, 300);
     };
 
-    root.render(<AlertModal {...options} onClose={handleClose} />);
+    root.render(<AlertModal {...options} onClose={handleClose} portalContainer={container} />);
   });
 }

@@ -1,50 +1,43 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { UserIcon, LockKeyIcon } from '@phosphor-icons/react';
 import InputGroup from '../../components/FormElement/InputGroup';
 import { showAlert } from '../../utils/showAlert';
 import Logo from '../../assets/images/logo_login.png';
+import AuthService from '../../Services/Auth.apis';
 
 const Login = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    username: '',
-    password: ''
-  });
-
+  const [formData, setFormData] = useState({ username: '', password: '' });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
   const handleSubmit = async () => {
     const newErrors = {};
-
-    if (!formData.username.trim()) {
-      newErrors.username = 'Username atau Email wajib diisi';
-    }
-    if (!formData.password) {
-      newErrors.password = 'Password wajib diisi';
-    }
-
+    if (!formData.username.trim()) newErrors.username = 'Username wajib diisi';
+    if (!formData.password) newErrors.password = 'Password wajib diisi';
     setErrors(newErrors);
-
-    if (Object.keys(newErrors).length > 0) {
-      return;
-    }
+    if (Object.keys(newErrors).length > 0) return;
 
     setIsLoading(true);
-
-    setTimeout(async () => {
+    try {
+      await AuthService.login(formData.username, formData.password);
+      // Jangan setIsLoading(false) di sini — komponen akan segera unmount karena navigasi.
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message || 'Username atau password salah.';
+      showAlert({ "icon": "error" , title: 'Login Gagal', message: msg, confirmText: 'OK' });
       setIsLoading(false);
-      navigate('/table');
-    }, 1500);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') handleSubmit();
   };
 
   const formFields = [
@@ -65,12 +58,11 @@ const Login = () => {
       placeholder: '••••••••',
       isRequired: true,
       onChange: handleChange,
-    }
+    },
   ];
 
-
   return (
-    <div className="w-full min-h-screen bg-gray-50 flex justify-center items-center p-4">
+    <div className="w-full min-h-screen bg-gray-50 flex justify-center items-center p-4" onKeyDown={handleKeyDown}>
       <div className="w-full max-w-[440px] bg-neutral-white rounded-2xl border border-gray-100 p-8 shadow-sm">
         <div className="flex flex-col items-center mb-8">
           <img src={Logo} alt="Logo" className="size-[100px] mb-4" />
