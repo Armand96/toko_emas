@@ -9,7 +9,7 @@ import { showAlert } from '../../../utils/showAlert';
 import InventoryApis from '../../../Services/Inventory.apis';
 import LoadingStore from '../../../Store/LoadingStore';
 import HelperFunctions from '../../../utils/HelperFunctions';
-import BranchApis from '../../../Services/Branch.apis';
+import OptionsStore from '../../../Store/OptionsStore';
 
 const MasterProduk = () => {
     const [paramFetch, setParamFetch] = useState({
@@ -19,6 +19,8 @@ const MasterProduk = () => {
         per_page: 10,
     });
     const setLoading = LoadingStore((state) => state.setLoading);
+    const ensureCategories = OptionsStore((s) => s.ensureCategories);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const [requiredFields, setRequiredFields] = useState([
         // { name: 'barcode', error_message: 'Kode produk wajib diisi' },
         // { name: 'is_active', error_message: 'Status produk wajib diisi' },
@@ -85,11 +87,11 @@ const MasterProduk = () => {
         setLoading(true);
         fetchData();
         Promise.all([
-            InventoryApis.GetCategories('?limit=1000'),
-            BranchApis.GetBranch('?limit=1000')
-        ]).then(([categoryRes, branchRes]) => {
-            setCategoryOptions(HelperFunctions.formatDropdown(categoryRes.data, 'id', 'category_name', true));
-            setBranchOptions(HelperFunctions.formatDropdown(branchRes.data, 'id', 'branch_name', true));
+            ensureCategories(),
+            ensureBranches(),
+        ]).then(([categoryData, branchData]) => {
+            setCategoryOptions(HelperFunctions.formatDropdown(categoryData, 'id', 'category_name', true));
+            setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name', true));
         }).catch(error => {
             console.error('Error fetching options:', error);
         }).finally(() => {
@@ -153,6 +155,7 @@ const MasterProduk = () => {
             body.append('category_id', formData?.sub_category || formData.category);
 
             await formData?.id ? InventoryApis.PutProducts(formData.id, body) : InventoryApis.PostProducts(body);
+            OptionsStore.getState().invalidate('products');
             setTimeout(() => {
                 showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
                 handleCloseModal();

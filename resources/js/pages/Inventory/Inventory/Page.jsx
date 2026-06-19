@@ -7,8 +7,8 @@ import InputGroup from "../../../components/FormElement/InputGroup";
 import { DetailItemModal, EditItemModal } from "./Modal";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import InventoryApis from "../../../Services/Inventory.apis";
-import BranchApis from "../../../Services/Branch.apis";
 import LoadingStore from "../../../Store/LoadingStore";
+import OptionsStore from "../../../Store/OptionsStore";
 
 const STATUS_CONFIG = {
     Available: { bg: "bg-success-100", text: "text-success-700" },
@@ -20,8 +20,6 @@ const STATUS_CONFIG = {
 
 const STATUS_OPTIONS = ["AVAILABLE", "TRANSIT", "SOLD", "REPAIR", "LOST"]
     .map(v => ({ value: v, label: v.charAt(0) + v.slice(1).toLowerCase() }));
-
-const formatRupiah = (num) => "Rp " + Number(num || 0).toLocaleString("id-ID");
 
 const toTitleCase = (status) => {
     if (!status) return "";
@@ -48,6 +46,9 @@ const MasterInventory = () => {
     const [formErrors, setFormErrors]           = useState({});
 
     const setLoading = LoadingStore((state) => state.setLoading);
+    const ensureProducts = OptionsStore((s) => s.ensureProducts);
+    const ensureCategories = OptionsStore((s) => s.ensureCategories);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
 
     const mapInventory = (row) => {
         const product  = productOptions.find((p) => p.value === row.product_id)?.details;
@@ -103,14 +104,14 @@ const MasterInventory = () => {
     useEffect(() => {
         setLoading(true);
         Promise.all([
-            InventoryApis.GetProducts("?limit=1000"),
-            InventoryApis.GetCategories("?limit=1000"),
-            BranchApis.GetBranch("?limit=1000"),
-        ]).then(([productRes, categoryRes, branchRes]) => {
-            setProductOptions(HelperFunctions.formatDropdown(productRes.data, "id", "product_name"));
-            setCategoryOptions(HelperFunctions.formatDropdown(categoryRes.data, "id", "category_name"));
-            setBranchOptions(HelperFunctions.formatDropdown(branchRes.data, "id", "branch_name"));
-            setKategoriFilterOptions(HelperFunctions.formatDropdown(categoryRes.data, "id", "category_name"));
+            ensureProducts(),
+            ensureCategories(),
+            ensureBranches(),
+        ]).then(([productData, categoryData, branchData]) => {
+            setProductOptions(HelperFunctions.formatDropdown(productData, "id", "product_name"));
+            setCategoryOptions(HelperFunctions.formatDropdown(categoryData, "id", "category_name"));
+            setBranchOptions(HelperFunctions.formatDropdown(branchData, "id", "branch_name"));
+            setKategoriFilterOptions(HelperFunctions.formatDropdown(categoryData, "id", "category_name"));
         }).catch((error) => {
             console.error("Error fetching options:", error);
         }).finally(() => {
@@ -258,12 +259,12 @@ const MasterInventory = () => {
         {
             header: "Modal",
             accessor: "modal",
-            render: (row) => <span className="text-gray-700">{formatRupiah(row.modal)}</span>,
+            render: (row) => <span className="text-gray-700">{HelperFunctions.formatCurrency(row.modal)}</span>,
         },
         {
             header: "Jual",
             accessor: "jual",
-            render: (row) => <span className="text-gray-700">{formatRupiah(row.jual)}</span>,
+            render: (row) => <span className="text-gray-700">{HelperFunctions.formatCurrency(row.jual)}</span>,
         },
         {
             header: "Cabang",

@@ -4,7 +4,7 @@ import { TimerIcon, CheckCircleIcon, XCircleIcon, ReceiptIcon } from "@phosphor-
 import ModalCustom from "../../components/modalCustom";
 import ApprovalStatusCard from "../../components/ApprovalStatusCard";
 import HelperFunctions from "../../utils/HelperFunctions";
-import BankApis from "../../Services/Bank.apis";
+import OptionsStore from "../../Store/OptionsStore";
 
 const SectionHeader = ({ title, badge }) => (
     <div className="flex items-center justify-between">
@@ -45,12 +45,13 @@ const APPROVAL_VIEW = {
 };
 
 const ModalViewPenjualan = ({ isOpen, onClose, data }) => {
+    const ensureBanks = OptionsStore((s) => s.ensureBanks);
     const [bankCabangs, setBankCabangs] = useState([]);
 
     useEffect(() => {
         if (isOpen && data?.payment_type === 'TRANSFER') {
-            BankApis.GetBankBranch('?per_page=10000000')
-                .then((res) => setBankCabangs(res?.data || []))
+            ensureBanks()
+                .then((bankData) => setBankCabangs(bankData))
                 .catch((err) => console.error(err));
         }
     }, [isOpen, data]);

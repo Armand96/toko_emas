@@ -4,10 +4,10 @@ import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
 import HelperFunctions from '../../../utils/HelperFunctions';
 
 const APPROVAL_VIEW = {
-    'Approval': { Icon: TimerIcon, iconColor: 'text-warning-500', statusText: 'Menunggu Approval oleh', reason: null },
-    'Disetujui': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh', reason: null },
-    'Ditolak': { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Ditolak oleh', reasonLabel: 'Alasan Penolakan' },
-    'Dibatalkan': { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Dibatalkan oleh', reasonLabel: 'Alasan Pembatalan' },
+    'APPROVAL': { Icon: TimerIcon, iconColor: 'text-warning-500', statusText: 'Menunggu Approval oleh', reason: null },
+    'DISETUJUI': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh', reason: null },
+    'DITOLAK': { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Ditolak oleh', reasonLabel: 'Alasan Penolakan' },
+    'DIBATALKAN': { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Dibatalkan oleh', reasonLabel: 'Alasan Pembatalan' },
 };
 
 export default function ModalDetailTransfer({
@@ -17,9 +17,28 @@ export default function ModalDetailTransfer({
     onSubmitReject,
     data,
 }) {
-    const items = data?.items || [];
-    const isPending = data?.status === 'Approval';
-    const view = APPROVAL_VIEW[data?.status] || APPROVAL_VIEW['Approval'];
+    const details = data?.details || [];
+    const items = details.map((d) => ({
+        kode: d.inventory_code,
+        image: d.inventory?.image_path ? HelperFunctions.getStorageUrl(d.inventory.image_path) : null,
+        nama: d.product?.name || d.product?.product_name || d.inventory?.product?.name || '-',
+        berat: d.inventory?.berat ? `${d.inventory.berat}g` : '-',
+        karat: d.inventory?.karat || '-',
+        harga_jual: d.inventory?.jual || 0,
+    }));
+
+    const isPending = data?.status === 'APPROVAL';
+    const view = APPROVAL_VIEW[data?.status] || APPROVAL_VIEW['APPROVAL'];
+
+    const branchSource = data?.branch_source?.branch_name || data?.branch_source?.name || '-';
+    const branchDest = data?.branch_dest?.branch_name || data?.branch_dest?.name || '-';
+    const createdBy = data?.user?.name || '-';
+    const tanggalPengajuan = data?.created_at
+        ? new Date(data.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+        : '-';
+    const tanggalApproval = data?.updated_at
+        ? new Date(data.updated_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+        : '-';
 
     return (
         <ModalCustom
@@ -63,16 +82,16 @@ export default function ModalDetailTransfer({
                     <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                         <div className="flex flex-col gap-0.5">
                             <span className="text-xs text-gray-400">Cabang Asal</span>
-                            <span className="text-sm font-medium text-gray-900">{data?.cabang_asal || '-'}</span>
+                            <span className="text-sm font-medium text-gray-900">{branchSource}</span>
                         </div>
                         <div className="flex flex-col gap-0.5">
                             <span className="text-xs text-gray-400">Cabang Tujuan</span>
-                            <span className="text-sm font-medium text-gray-900">{data?.cabang_tujuan || '-'}</span>
+                            <span className="text-sm font-medium text-gray-900">{branchDest}</span>
                         </div>
-                        {data?.catatan && (
+                        {data?.note && (
                             <div className="col-span-2 flex flex-col gap-0.5">
                                 <span className="text-xs text-gray-400">Catatan</span>
-                                <span className="text-sm font-medium text-gray-900">{data.catatan}</span>
+                                <span className="text-sm font-medium text-gray-900">{data.note}</span>
                             </div>
                         )}
                     </div>
@@ -113,15 +132,15 @@ export default function ModalDetailTransfer({
                 <div className="flex items-center gap-4 border border-gray-200 rounded-lg px-5 py-3 text-xs">
                     <div className="flex-1">
                         <span className="text-gray-500">Kode </span>
-                        <span className="font-semibold text-gray-900">{data?.kode || '-'}</span>
+                        <span className="font-semibold text-gray-900">{data?.kode_transfer || '-'}</span>
                     </div>
                     <div className="w-px h-8 bg-gray-200"></div>
                     <div className="flex-1">
                         <span className="text-gray-500">Diajukan oleh </span>
-                        <span className="font-semibold text-gray-900">{data?.diajukan_oleh || '-'}</span>
+                        <span className="font-semibold text-gray-900">{createdBy}</span>
                     </div>
                     <div className="w-px h-8 bg-gray-200"></div>
-                    <div className="flex-1 font-semibold text-gray-900">{data?.tanggal_pengajuan || data?.tanggal || '-'}</div>
+                    <div className="flex-1 font-semibold text-gray-900">{tanggalPengajuan}</div>
                 </div>
 
                 {/* ── APPROVAL STATUS ── */}
@@ -130,10 +149,10 @@ export default function ModalDetailTransfer({
                     Icon={view.Icon}
                     iconColor={view.iconColor}
                     statusText={view.statusText}
-                    pic={data?.pic_approval || 'Owner'}
-                    date={data?.tanggal_approval || '21 Mei 2026, 12:00'}
+                    pic={data?.approved_by?.name || 'Owner'}
+                    date={tanggalApproval}
                     reasonLabel={view.reasonLabel}
-                    reason={data?.alasan}
+                    reason={data?.note_approval || null}
                 />
             </div>
         </ModalCustom>

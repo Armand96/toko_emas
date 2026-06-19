@@ -8,7 +8,7 @@ import { showAlert } from "../../utils/showAlert";
 import LoadingStore from "../../Store/LoadingStore";
 import ModalTransaksi from "./Modal";
 import FinanceApis from "../../Services/Finance.apis";
-import BranchApis from "../../Services/Branch.apis";
+import OptionsStore from "../../Store/OptionsStore";
 
 const TIPE_OPTIONS = [
     { value: 'CASH IN', label: 'Cash In' },
@@ -17,6 +17,7 @@ const TIPE_OPTIONS = [
 
 const Finance = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const [filter, setFilter] = useState({ search: '', tipe: '', cabang: '' });
     const [filterBounce] = useDebounce(filter, 500);
     const [firstLoading, setFirstLoading] = useState(false);
@@ -57,8 +58,8 @@ const Finance = () => {
 
     useEffect(() => {
         fetchData();
-        BranchApis.GetBranch(`?per_page=10000000`)
-            .then((res) => setBranchOptions(res?.data || []))
+        ensureBranches()
+            .then((data) => setBranchOptions(data))
             .catch((err) => console.error(err));
     }, []);
 

@@ -14,6 +14,7 @@ const Navbar = ({ setIsOpen }) => {
     ? user.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
     : 'U';
 
+
   const handleLogout = async () => {
     const { confirmed } = await showAlert({
       title: 'Keluar dari Sistem',

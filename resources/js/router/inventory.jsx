@@ -5,6 +5,7 @@ import Pembelian from "../pages/Inventory/Pembelian/Page";
 import TransferInventory from "../pages/Inventory/transfer/Page";
 import RemoveInventory from "../pages/Inventory/Remove/Page";
 import InRepairInventory from "../pages/Inventory/InRepair/Page";
+import StockOpnameInventory from "../pages/Inventory/StockOpname/Page";
 
 
 export const Inventory = [
@@ -35,5 +36,9 @@ export const Inventory = [
       {
         path: "/inventory/in-repair",
         element: <InRepairInventory />,
+    },
+      {
+        path: "/inventory/stock-opname",
+        element: <StockOpnameInventory />,
     },
 ]

@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useDebounce } from "use-debounce";
 import { EyeIcon, ArrowCounterClockwiseIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
@@ -7,12 +8,16 @@ import ModalDetailRemove from "../Remove/ModalView";
 import InventoryApis from "../../../Services/Inventory.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import { showAlert } from "../../../utils/showAlert";
+import OptionsStore from "../../../Store/OptionsStore";
 
 const Main = () => {
     const [filterData, setFilterData] = useState({ search: '' });
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [productMap, setProductMap] = useState({});
+
+    const ensureProducts = OptionsStore((s) => s.ensureProducts);
 
     const [paramFetch, setParamFetch] = useState({
         data: [],
@@ -20,6 +25,9 @@ const Main = () => {
         pageSize: 10,
         total: 0,
     });
+
+    const [filterBounce] = useDebounce(filterData, 500);
+    const didMount = useRef(false);
 
     const fetchData = useCallback(async (page = 1, pageSize = 10, filters = filterData) => {
         setIsLoading(true);
@@ -48,7 +56,8 @@ const Main = () => {
                         detail_id: d.id,
                         inventory_code: d.inventory_code,
                         kode: d.inventory_code,
-                        produk: d.product?.name || '-',
+                        product_id: d.product_id,
+                        produk: d.product?.name || '',
                         berat: d.inventory?.berat ? `${d.inventory.berat}g` : '-',
                         karat: d.inventory?.karat || '-',
                         tanggal_repair: createdAt.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }),
@@ -76,17 +85,27 @@ const Main = () => {
     }, []);
 
     useEffect(() => {
+        ensureProducts()
+            .then((data) => {
+                const map = {};
+                data.forEach((p) => { map[p.id] = p.product_name; });
+                setProductMap(map);
+            });
         fetchData(1, paramFetch.pageSize, filterData);
     }, []);
+
+    useEffect(() => {
+        if (!didMount.current) {
+            didMount.current = true;
+            return;
+        }
+        fetchData(1, paramFetch.pageSize, filterBounce);
+        setParamFetch(prev => ({ ...prev, page: 1 }));
+    }, [filterBounce]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilterData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleSearch = () => {
-        fetchData(1, paramFetch.pageSize, filterData);
-        setParamFetch(prev => ({ ...prev, page: 1 }));
     };
 
     const handleViewDetail = async (row) => {
@@ -96,7 +115,7 @@ const Main = () => {
             const items = (item.details || []).map((d) => ({
                 kode: d.inventory_code,
                 image: d.inventory?.image_path ? HelperFunctions.getStorageUrl(d.inventory.image_path) : null,
-                nama: d.product?.name || '-',
+                nama: d.product?.name || productMap[d.product_id] || '-',
                 berat: d.inventory?.berat ? `${d.inventory.berat}g` : '-',
                 karat: d.inventory?.karat || '-',
                 harga_jual: d.inventory?.jual || 0,
@@ -159,7 +178,7 @@ const Main = () => {
                             : <span className="text-[10px] text-amber-600">Img</span>
                         }
                     </div>
-                    <span className="text-sm font-medium text-gray-800">{row.produk}</span>
+                    <span className="text-sm font-medium text-gray-800">{productMap[row.product_id] || row.produk || '-'}</span>
                 </div>
             )
         },
@@ -206,22 +225,12 @@ const Main = () => {
                 description="Kelola item inventory yang sedang dalam proses perbaikan dan kembalikan ke inventory aktif setelah repair selesai."
             />
             <div className="w-full md:w-1/2">
-                <div className="flex items-end gap-3">
-                    <div className="flex-1">
-                        <InputGroup
-                            fields={filterFields}
-                            formData={filterData}
-                            onChange={handleFilterChange}
-                            cols="2"
-                        />
-                    </div>
-                    <button
-                        onClick={handleSearch}
-                        className="px-4 py-2.5 bg-primary-500 text-white text-sm font-medium rounded-lg hover:bg-primary-600 transition-colors cursor-pointer mb-0.5"
-                    >
-                        Cari
-                    </button>
-                </div>
+                <InputGroup
+                    fields={filterFields}
+                    formData={filterData}
+                    onChange={handleFilterChange}
+                    cols="2"
+                />
             </div>
             <Table
                 columns={columns}

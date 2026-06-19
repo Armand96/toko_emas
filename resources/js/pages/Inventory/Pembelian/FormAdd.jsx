@@ -19,9 +19,8 @@ import { generateBarcode } from "../../../utils/barcode";
 import LoadingStore from "../../../Store/LoadingStore";
 
 import InventoryApis from "../../../Services/Inventory.apis";
-import BranchApis from "../../../Services/Branch.apis";
 import BankApis from "../../../Services/Bank.apis";
-import SupplierApis from "../../../Services/Supplier.apis";
+import OptionsStore from "../../../Store/OptionsStore";
 
 const emptyItem = {
     product_id: null,
@@ -53,6 +52,9 @@ const requiredItem = [
 
 const FormPembelian = ({ setCurentState }) => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const ensureProducts = OptionsStore((s) => s.ensureProducts);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
+    const ensureSuppliers = OptionsStore((s) => s.ensureSuppliers);
 
     const [item, setItem] = useState(emptyItem);
     const [errors, setErrors] = useState({});
@@ -65,20 +67,20 @@ const FormPembelian = ({ setCurentState }) => {
 
     const fetchOptions = async () => {
         try {
-            const [products, branches, suppliers] = await Promise.all([
-                InventoryApis.GetProducts("?per_page=10000000"),
-                BranchApis.GetBranch("?per_page=10000000"),
-                SupplierApis.GetSupplier("?per_page=10000000"),
+            const [productData, branchData, supplierData] = await Promise.all([
+                ensureProducts(),
+                ensureBranches(),
+                ensureSuppliers(),
             ]);
 
             setProductOptions(
-                HelperFunctions.formatDropdown(products?.data || [], "id", "product_name")
+                HelperFunctions.formatDropdown(productData, "id", "product_name")
             );
             setBranchOptions(
-                HelperFunctions.formatDropdown(branches?.data || [], "id", "branch_name")
+                HelperFunctions.formatDropdown(branchData, "id", "branch_name")
             );
             setSupplierOptions(
-                HelperFunctions.formatDropdown(suppliers?.data || [], "id", "supplier_name")
+                HelperFunctions.formatDropdown(supplierData, "id", "supplier_name")
             );
         } catch (error) {
             console.error(error);

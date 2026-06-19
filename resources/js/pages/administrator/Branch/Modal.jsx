@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
 import ModalCustom from "../../../components/modalCustom";
 import InputGroup from "../../../components/FormElement/InputGroup";
+import HelperFunctions from "../../../utils/HelperFunctions";
+import OptionsStore from "../../../Store/OptionsStore";
 
 export default function Modal({
     isOpen,
@@ -10,6 +13,14 @@ export default function Modal({
     formError,
     isView,
 }) {
+    const ensureUsers = OptionsStore((s) => s.ensureUsers);
+    const [userOptions, setUserOptions] = useState([]);
+
+    useEffect(() => {
+        ensureUsers()
+            .then((data) => setUserOptions(HelperFunctions.formatDropdown(data, "id", "name")));
+    }, []);
+
     const fieldsModal = [
         {
             label: "Kode Cabang",
@@ -30,8 +41,9 @@ export default function Modal({
         {
             label: "PIC",
             name: "pic",
-            type: "text",
-            placeholder: "Masukkan nama PIC",
+            type: "dropdown",
+            placeholder: "Pilih PIC",
+            options: userOptions,
             isRequired: !isView,
             isDisable: isView,
         },

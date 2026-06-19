@@ -6,13 +6,14 @@ import ModalUser from "./Modal";
 import InputGroup from '../../../components/FormElement/InputGroup';
 import { showAlert } from '../../../utils/showAlert';
 import UsersApis from "../../../Services/User.apis";
-import BranchApis from "../../../Services/Branch.apis";
 import HelperFunctions from '../../../utils/HelperFunctions';
 import LoadingStore from '../../../Store/LoadingStore';
+import OptionsStore from '../../../Store/OptionsStore';
 import { useDebounce } from 'use-debounce';
 
 const MasterUser = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const [paramFetch, setParamFetch] = useState({ data: [], page: 1, total: 0, pageSize: 10 });
     const [search, setSearch] = useState({ name: '' });
     const [showModalAdd, setShowModalAdd] = useState(false);
@@ -49,12 +50,8 @@ const MasterUser = () => {
 
     const fetchOptions = async () => {
         try {
-            const [branches, roles] = await Promise.all([
-                BranchApis.GetBranch(''),
-                // UsersApis.GetRoles(),
-            ]);
-            setBranchOptions(HelperFunctions.formatDropdown(branches?.data || [], 'id', 'branch_name'));
-            // setRoleOptions(HelperFunctions.formatDropdown(roles?.data || [], 'id', 'role_name'));
+            const branchData = await ensureBranches();
+            setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name'));
         } catch (error) {
             console.error(error);
         }
@@ -131,7 +128,7 @@ const MasterUser = () => {
             await submitData?.id
                 ? UsersApis.PutUser(submitData.id, body)
                 : UsersApis.PostUser(body);
-
+            OptionsStore.getState().invalidate('users');
             setTimeout(() => {
                 showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
                 handleCloseModal();

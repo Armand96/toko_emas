@@ -7,6 +7,7 @@ import Modal from "./Modal";
 import InputGroup from '../../../components/FormElement/InputGroup';
 import { showAlert } from '../../../utils/showAlert';
 import LoadingStore from '../../../Store/LoadingStore';
+import OptionsStore from '../../../Store/OptionsStore';
 import BranchApis from '../../../Services/Branch.apis';
 import ModalBank from './ModalBank';
 
@@ -151,6 +152,7 @@ const Branch = () => {
             body.append('branch_code', submitData.branch_code);
 
             await submitData?.id ? BranchApis.PutBranch(submitData.id, body) : BranchApis.PostBranch(body);
+            OptionsStore.getState().invalidate('branches');
             setTimeout(() => {
                 fetchData();
                 handleCloseModal();

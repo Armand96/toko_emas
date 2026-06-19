@@ -3,8 +3,8 @@ import InputGroup from "../../../components/FormElement/InputGroup";
 import { useEffect, useState } from "react";
 import LoadingStore from "../../../Store/LoadingStore";
 import InventoryApis from "../../../Services/Inventory.apis";
-import BranchApis from "../../../Services/Branch.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
+import OptionsStore from "../../../Store/OptionsStore";
 
 export default function Modal({
     isOpen,
@@ -16,6 +16,8 @@ export default function Modal({
     isView,
 }) {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const ensureCategories = OptionsStore((s) => s.ensureCategories);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
         const [branchOptions, setBranchOptions] = useState([]);
         const [categoryOptions, setCategoryOptions] = useState([]);
         const [subCategoriesOptions, setSubCategoriesOptions] = useState([]);
@@ -23,11 +25,11 @@ export default function Modal({
     useEffect(() => {
         setLoading(true);
         Promise.all([
-            InventoryApis.GetCategories('?limit=1000'),
-            BranchApis.GetBranch('?limit=1000')
-        ]).then(([categoryRes, branchRes]) => {
-            setCategoryOptions(HelperFunctions.formatDropdown(categoryRes.data, 'id', 'category_name', true));
-            setBranchOptions(HelperFunctions.formatDropdown(branchRes.data, 'id', 'branch_name', true));
+            ensureCategories(),
+            ensureBranches(),
+        ]).then(([categoryData, branchData]) => {
+            setCategoryOptions(HelperFunctions.formatDropdown(categoryData, 'id', 'category_name', true));
+            setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name', true));
         }).catch(error => {
             console.error('Error fetching options:', error);
         }).finally(() => {

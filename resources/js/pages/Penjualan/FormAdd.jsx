@@ -10,9 +10,11 @@ import CustomerApis from "../../Services/Customer.apis";
 import InventoryApis from "../../Services/Inventory.apis";
 import BankApis from "../../Services/Bank.apis";
 import PenjualanApis from "../../Services/Penjualan.apis";
+import OptionsStore from "../../Store/OptionsStore";
 
 const FormAdd = ({ setCurentState }) => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const ensureProducts = OptionsStore((s) => s.ensureProducts);
 
     // State Tab Customer
     const [customerType, setCustomerType] = useState('baru'); // 'baru' | 'terdaftar'
@@ -30,25 +32,15 @@ const FormAdd = ({ setCurentState }) => {
     const [memberOptions, setMemberOptions] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
     const [selectedMember, setSelectedMember] = useState(null);
-    const [memberFirstLoading, setMemberFirstLoading] = useState(false);
     const searchRef = useRef(null);
 
+    // Ambil opsi member saat tab "terdaftar" aktif & setiap kata kunci berubah (debounced).
     useEffect(() => {
-        if (customerType !== 'terdaftar' || memberFirstLoading) return;
-        CustomerApis.GetCustomer(`?customer_name=${searchQueryBounce}&per_page=20`)
-            .then((res) => {
-                setMemberOptions(res?.data || []);
-                setMemberFirstLoading(true);
-            })
-            .catch((err) => console.error(err));
-    }, [customerType, memberFirstLoading]);
-
-    useEffect(() => {
-        if (!memberFirstLoading) return;
+        if (customerType !== 'terdaftar') return;
         CustomerApis.GetCustomer(`?customer_name=${searchQueryBounce}&per_page=20`)
             .then((res) => setMemberOptions(res?.data || []))
             .catch((err) => console.error(err));
-    }, [searchQueryBounce]);
+    }, [customerType, searchQueryBounce]);
 
     // Handle klik di luar untuk menutup dropdown suggestion
     useEffect(() => {
@@ -73,8 +65,8 @@ const FormAdd = ({ setCurentState }) => {
             .then((res) => setInventoryOptions(res?.data || []))
             .catch((err) => console.error(err));
 
-        InventoryApis.GetProducts(`?per_page=10000000`)
-            .then((res) => setProductOptions(res?.data || []))
+        ensureProducts()
+            .then((data) => setProductOptions(data))
             .catch((err) => console.error(err));
     }, []);
 

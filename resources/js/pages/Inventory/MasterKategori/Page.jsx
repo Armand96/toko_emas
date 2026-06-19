@@ -12,6 +12,7 @@ import { showAlert } from "../../../utils/showAlert";
 import InventoryApis from "../../../Services/Inventory.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import LoadingStore from "../../../Store/LoadingStore";
+import OptionsStore from "../../../Store/OptionsStore";
 import { useDebounce } from "use-debounce";
 
 const MasterKategori = () => {
@@ -112,6 +113,7 @@ const MasterKategori = () => {
             (await submitData?.id)
                 ? InventoryApis.PutCategories(submitData.id, body)
                 : InventoryApis.PostCategories(body);
+            OptionsStore.getState().invalidate('categories');
             setTimeout(() => {
                 showAlert({
                     title: "Berhasil",

@@ -6,6 +6,7 @@ import InputGroup from '../../../components/FormElement/InputGroup';
 import { showAlert } from '../../../utils/showAlert';
 import SupplierApis from "../../../Services/Supplier.apis";
 import LoadingStore from '../../../Store/LoadingStore';
+import OptionsStore from '../../../Store/OptionsStore';
 import { useDebounce } from 'use-debounce';
 import ModalSupplier from './Modal';
 
@@ -102,7 +103,7 @@ const MasterSupplier = () => {
             await submitData?.id
                 ? SupplierApis.PutSupplier(submitData.id, body)
                 : SupplierApis.PostSupplier(body);
-
+            OptionsStore.getState().invalidate('suppliers');
             setTimeout(() => {
                 showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
                 handleCloseModal();

@@ -19,14 +19,14 @@ const sidebarData = [
   {
     group: "Menu",
     items: [
-          {
+      {
         id: "UI List",
         label: "UI List",
         icon: SquaresFourIcon,
         subItems: [
           { label: "input", link: "/input" },
           { label: "table", link: "/table" },
-        { label: "Alert Modal", link: "/alert-modal" },
+          { label: "Alert Modal", link: "/alert-modal" },
         ]
       },
       {
@@ -41,7 +41,8 @@ const sidebarData = [
         icon: CheckSquareOffsetIcon,
         subItems: [
           { label: "penjualan", link: "/approval/penjualan" },
-                    { label: "Pembelian", link: "/approval/pembelian" },
+          { label: "Pembelian", link: "/approval/pembelian" },
+          { label: "Remove Item", link: "/approval/remove-item" },
           { label: "Transfer", link: "/approval/transfer" }
         ]
       },
@@ -50,7 +51,7 @@ const sidebarData = [
         label: "Inventory",
         icon: CubeIcon,
         subItems: [
-           { label: "Master Kategori", link: "/inventory/master-kategori" },
+          { label: "Master Kategori", link: "/inventory/master-kategori" },
           { label: "Master Produk", link: "/inventory/master-produk" },
           { label: "Pembelian", link: "/inventory/pembelian" },
           { label: "Item Inventory", link: "/inventory/inventory" },
@@ -86,10 +87,10 @@ const sidebarData = [
       { id: "user", label: "User", icon: UsersIcon, link: "/administrator/users" },
       { id: "cabang", label: "Cabang", icon: StorefrontIcon, link: "/administrator/cabang" },
       { id: "setting", label: "Setting", icon: GearIcon, link: "/administrator/setting" },
-            { id: "MasterBank", label: "Master Bank", icon: GearIcon, link: "/administrator/master-bank" },
-            { id: "MasterSupplier", label: "Master Supplier", icon: GearIcon, link: "/administrator/supplier" },
-            { id: "MasterCustomer", label: "Master Customer", icon: GearIcon, link: "/administrator/customer" },
-            { id: "MasterCategoryFinance", label: "Master Kategori Finance", icon: GearIcon, link: "/administrator/master-category-finance" }
+      { id: "MasterBank", label: "Master Bank", icon: GearIcon, link: "/administrator/master-bank" },
+      { id: "MasterSupplier", label: "Master Supplier", icon: GearIcon, link: "/administrator/supplier" },
+      { id: "MasterCustomer", label: "Master Customer", icon: GearIcon, link: "/administrator/customer" },
+      { id: "MasterCategoryFinance", label: "Master Kategori Finance", icon: GearIcon, link: "/administrator/master-category-finance" }
     ]
   }
 ];
@@ -106,18 +107,16 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   return (
     <>
       <div
-        className={`fixed inset-0 z-40 bg-neutral-black/50 transition-opacity lg:hidden ${
-          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
+        className={`fixed inset-0 z-40 bg-neutral-black/50 transition-opacity lg:hidden ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+          }`}
         onClick={() => setIsOpen(false)}
       />
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 bg-primary-950 text-gray-400 transition-all duration-300 ease-in-out overflow-hidden lg:static lg:shrink-0 ${
-          isOpen
+        className={`fixed inset-y-0 left-0 z-50 bg-primary-950 text-gray-400 transition-all duration-300 ease-in-out overflow-hidden lg:static lg:shrink-0 ${isOpen
             ? "translate-x-0 w-64"
             : "-translate-x-full w-64 lg:translate-x-0 lg:w-0"
-        }`}
+          }`}
       >
         <div className="w-64 h-full flex flex-col">
           <div className="flex items-center justify-between h-16 px-4 bg-primary-950 border-b border-primary-900 shrink-0">
@@ -139,9 +138,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             {sidebarData.map((section, sectionIdx) => (
               <div key={section.group}>
                 <div
-                  className={`px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider ${
-                    sectionIdx > 0 ? "mt-6" : ""
-                  }`}
+                  className={`px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider ${sectionIdx > 0 ? "mt-6" : ""
+                    }`}
                 >
                   {section.group}
                 </div>
@@ -156,11 +154,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                         <div key={item.id}>
                           <button
                             onClick={() => toggleMenu(item.id)}
-                            className={`w-full flex items-center justify-between px-4 py-2.5 transition-colors cursor-pointer ${
-                              isMenuOpen
+                            className={`w-full flex items-center justify-between px-4 py-2.5 transition-colors cursor-pointer ${isMenuOpen
                                 ? "bg-primary-900 text-neutral-white"
                                 : "hover:bg-primary-900 hover:text-neutral-white"
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center gap-3">
                               <Icon size={20} />
@@ -175,10 +172,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                                   key={subIdx}
                                   to={sub.link}
                                   className={({ isActive }) =>
-                                    `block px-11 py-2 text-sm transition-colors cursor-pointer ${
-                                      isActive
-                                        ? "text-neutral-white font-medium"
-                                        : "hover:text-neutral-white text-gray-400"
+                                    `block px-11 py-2 text-sm transition-colors cursor-pointer ${isActive
+                                      ? "text-neutral-white font-medium"
+                                      : "hover:text-neutral-white text-gray-400"
                                     }`
                                   }
                                 >
@@ -196,10 +192,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                         key={item.id}
                         to={item.link}
                         className={({ isActive }) =>
-                          `flex items-center gap-3 px-4 py-2.5 transition-colors cursor-pointer ${
-                            isActive
-                              ? "bg-primary-900 text-neutral-white"
-                              : "hover:bg-primary-900 hover:text-neutral-white text-gray-400"
+                          `flex items-center gap-3 px-4 py-2.5 transition-colors cursor-pointer ${isActive
+                            ? "bg-primary-900 text-neutral-white"
+                            : "hover:bg-primary-900 hover:text-neutral-white text-gray-400"
                           }`
                         }
                       >

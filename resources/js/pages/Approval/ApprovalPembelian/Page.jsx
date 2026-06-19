@@ -11,12 +11,14 @@ import { showAlert } from '../../../utils/showAlert';
 import InputGroup from '../../../components/FormElement/InputGroup';
 import FooterActionBar from '../../../components/FooterActionBar';
 import InventoryApis from '../../../Services/Inventory.apis';
-import BranchApis from '../../../Services/Branch.apis';
 import HelperFunctions from '../../../utils/HelperFunctions';
 import LoadingStore from '../../../Store/LoadingStore';
+import OptionsStore from '../../../Store/OptionsStore';
 
 const ApprovalPembelian = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const ensureCategories = OptionsStore((s) => s.ensureCategories);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
 
     const [paramFetch, setParamFetch] = useState({
         data: [],
@@ -57,12 +59,12 @@ const ApprovalPembelian = () => {
 
     const fetchOptions = async () => {
         try {
-            const [categories, branches] = await Promise.all([
-                InventoryApis.GetCategories('?per_page=1000'),
-                BranchApis.GetBranch('?per_page=1000'),
+            const [categoryData, branchData] = await Promise.all([
+                ensureCategories(),
+                ensureBranches(),
             ]);
-            setCategoryOptions(HelperFunctions.formatDropdown(categories?.data || [], 'id', 'category_name', true));
-            setBranchOptions(HelperFunctions.formatDropdown(branches?.data || [], 'id', 'branch_name', true));
+            setCategoryOptions(HelperFunctions.formatDropdown(categoryData, 'id', 'category_name', true));
+            setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name', true));
         } catch (error) {
             console.error(error);
         }

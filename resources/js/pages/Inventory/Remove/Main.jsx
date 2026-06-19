@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useDebounce } from "use-debounce";
 import { PlusCircleIcon, EyeIcon, XIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
@@ -7,12 +8,18 @@ import ModalDetailRemove from './ModalView';
 import InventoryApis from "../../../Services/Inventory.apis";
 import { showAlert } from "../../../utils/showAlert";
 import HelperFunctions from "../../../utils/HelperFunctions";
+import OptionsStore from "../../../Store/OptionsStore";
 
 const Main = ({ setCurentState }) => {
     const [filterData, setFilterData] = useState({ search: '', status: '', cabang: '' });
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [branchOptions, setBranchOptions] = useState([]);
+    const [productMap, setProductMap] = useState({});
+
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
+    const ensureProducts = OptionsStore((s) => s.ensureProducts);
 
     const [paramFetch, setParamFetch] = useState({
         data: [],
@@ -20,6 +27,9 @@ const Main = ({ setCurentState }) => {
         pageSize: 10,
         total: 0,
     });
+
+    const [filterBounce] = useDebounce(filterData, 500);
+    const didMount = useRef(false);
 
     const fetchData = useCallback(async (page = 1, pageSize = 10, filters = filterData) => {
         setIsLoading(true);
@@ -74,17 +84,32 @@ const Main = ({ setCurentState }) => {
     }, []);
 
     useEffect(() => {
+        ensureBranches()
+            .then((data) => setBranchOptions(HelperFunctions.formatDropdown(data, "id", "branch_name")));
+
+        // Backend tidak eager-load details.product, jadi nama produk diresolve di FE via product_id.
+        ensureProducts()
+            .then((data) => {
+                const map = {};
+                data.forEach((p) => { map[p.id] = p.product_name; });
+                setProductMap(map);
+            });
+
         fetchData(paramFetch.page, paramFetch.pageSize, filterData);
     }, []);
+
+    useEffect(() => {
+        if (!didMount.current) {
+            didMount.current = true;
+            return;
+        }
+        fetchData(1, paramFetch.pageSize, filterBounce);
+        setParamFetch(prev => ({ ...prev, page: 1 }));
+    }, [filterBounce]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilterData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleSearch = () => {
-        fetchData(1, paramFetch.pageSize, filterData);
-        setParamFetch(prev => ({ ...prev, page: 1 }));
     };
 
     const handleViewDetail = async (row) => {
@@ -94,7 +119,7 @@ const Main = ({ setCurentState }) => {
             const items = (item.details || []).map((d) => ({
                 kode: d.inventory_code,
                 image: d.inventory?.image_path ? HelperFunctions.getStorageUrl(d.inventory.image_path) : null,
-                nama: d.product?.name || '-',
+                nama: d.product?.name || productMap[d.product_id] || '-',
                 berat: d.inventory?.berat ? `${d.inventory.berat}g` : '-',
                 karat: d.inventory?.karat || '-',
                 harga_jual: d.inventory?.jual || 0,
@@ -159,14 +184,27 @@ const Main = ({ setCurentState }) => {
         },
         {
             name: 'cabang', type: 'dropdown', placeholder: 'Pilih cabang', deskSpan: 1,
-            options: [],
+            options: branchOptions,
         },
     ];
 
     const columns = [
         { header: 'Tanggal Out', accessor: 'tanggal', sortable: true },
         { header: 'Kode', accessor: 'kode', sortable: true },
-        { header: 'Item Produk', accessor: 'item_produk', sortable: true },
+        {
+            header: 'Item Produk', accessor: 'item_produk', sortable: true,
+            render: (row) => {
+                const details = row._raw?.details || [];
+                if (details.length === 0) return row.item_produk || '-';
+                const names = details
+                    .map((d) => {
+                        const name = d.product?.name || productMap[d.product_id];
+                        return name ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ?? ''}` : d.inventory_code;
+                    })
+                    .filter(Boolean);
+                return names.join(', ') || '-';
+            },
+        },
         { header: 'Cabang', accessor: 'cabang', sortable: true },
         { header: 'Jenis', accessor: 'jenis', sortable: true },
         {
@@ -218,22 +256,12 @@ const Main = ({ setCurentState }) => {
                 onClick={() => setCurentState('form')}
             />
             <div className="w-full md:w-3/4 xl:w-2/3">
-                <div className="flex items-end gap-3">
-                    <div className="flex-1">
-                        <InputGroup
-                            fields={filterFields}
-                            formData={filterData}
-                            onChange={handleFilterChange}
-                            cols="4"
-                        />
-                    </div>
-                    <button
-                        onClick={handleSearch}
-                        className="px-4 py-2.5 bg-primary-500 text-white text-sm font-medium rounded-lg hover:bg-primary-600 transition-colors cursor-pointer mb-0.5"
-                    >
-                        Cari
-                    </button>
-                </div>
+                <InputGroup
+                    fields={filterFields}
+                    formData={filterData}
+                    onChange={handleFilterChange}
+                    cols="4"
+                />
             </div>
             <Table
                 columns={columns}

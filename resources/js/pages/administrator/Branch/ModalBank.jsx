@@ -4,6 +4,7 @@ import ModalCustom from '../../../components/modalCustom';
 import Table from '../../../components/Table/Table';
 import ModalAddBank from './ModalAddBank';
 import BankApis from '../../../Services/Bank.apis';
+import OptionsStore from '../../../Store/OptionsStore';
 import { showAlert } from '../../../utils/showAlert';
 
 export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, isView }) {
@@ -39,6 +40,7 @@ export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, i
                 branch_id: formData?.id,
                 bank_id: bankData?.bank_id
             }).then(() => {
+                OptionsStore.getState().invalidate('banks');
                 BankApis.GetBankBranch(`?branch_id=${formData?.id}`).then((res) => {
                     setBanks(res?.data)
                 })
@@ -50,6 +52,7 @@ export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, i
                 branch_id: formData?.id,
                 bank_id: bankData?.bank_id
             }).then(() => {
+                OptionsStore.getState().invalidate('banks');
                 BankApis.GetBankBranch(`?branch_id=${formData?.id}`).then((res) => {
                     setBanks(res?.data)
                 })
@@ -69,9 +72,10 @@ export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, i
         }).then((res) => {
             if(res.confirmed){
                 BankApis.DeleteBank(data.id).then(() => {
-                      BankApis.GetBankBranch(`?branch_id=${formData?.id}`).then((res) => {
-                    setBanks(res?.data)
-                })
+                    OptionsStore.getState().invalidate('banks');
+                    BankApis.GetBankBranch(`?branch_id=${formData?.id}`).then((res) => {
+                        setBanks(res?.data)
+                    })
                 })
             }
         })

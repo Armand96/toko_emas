@@ -48,6 +48,18 @@ const InventoryApis = {
     UpdateRemoveItem: (body) => {
         return Apis.Put(`api/update-remove-item`, body);
     },
+    GetTransferItem: (params) => {
+        return Apis.Get(`api/transfer-item${params}`).then(({ data }) => data);
+    },
+    GetTransferItemSingle: (id) => {
+        return Apis.Get(`api/transfer-item/${id}`).then(({ data }) => data);
+    },
+    PostTransferItem: (body) => {
+        return Apis.Post(`api/transfer-item`, body);
+    },
+    UpdateTransferItem: (body) => {
+        return Apis.Put(`api/update-transfer-item`, body);
+    },
 }
 
 export default InventoryApis;

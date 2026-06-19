@@ -1,5 +1,6 @@
 import { generateBarcode } from "./barcode";
 import InventoryApis from "../Services/Inventory.apis";
+import OptionsStore from "../Store/OptionsStore";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.example.com";
 
@@ -82,12 +83,11 @@ const HelperFunctions = {
         if (!Array.isArray(details) || details.length === 0) return details;
 
         try {
-            const [productsRes, inventoryRes] = await Promise.all([
-                InventoryApis.GetProducts(`?per_page=10000000`),
+            const [products, inventoryRes] = await Promise.all([
+                OptionsStore.getState().ensureProducts(),
                 InventoryApis.GetInventory(`?per_page=10000000`),
             ]);
 
-            const products = productsRes?.data || [];
             const inventories = inventoryRes?.data || [];
 
             return details.map((item) => {

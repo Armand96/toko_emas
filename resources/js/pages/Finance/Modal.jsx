@@ -2,9 +2,8 @@ import { useEffect, useState } from 'react';
 import { PaperclipIcon, XIcon } from '@phosphor-icons/react';
 import ModalCustom from '../../components/modalCustom';
 import HelperFunctions from '../../utils/HelperFunctions';
-import BranchApis from '../../Services/Branch.apis';
-import BankApis from '../../Services/Bank.apis';
 import FinanceApis from '../../Services/Finance.apis';
+import OptionsStore from '../../Store/OptionsStore';
 
 const METODE_OPTIONS = [
     { value: 'CASH', label: 'Cash' },
@@ -35,6 +34,8 @@ const selectClass = "w-full px-3 py-2.5 bg-white border border-gray-300 rounded-
 const inputClass = "w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 disabled:bg-gray-100 disabled:cursor-not-allowed";
 
 const ModalTransaksi = ({ isOpen, onClose, mode = 'add', data = null, onSubmit }) => {
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
+    const ensureBanks = OptionsStore((s) => s.ensureBanks);
     const [form, setForm] = useState(emptyForm);
     const [branchOptions, setBranchOptions] = useState([]);
     const [bankOptions, setBankOptions] = useState([]);
@@ -45,12 +46,12 @@ const ModalTransaksi = ({ isOpen, onClose, mode = 'add', data = null, onSubmit }
     useEffect(() => {
         if (!isOpen) return;
 
-        BranchApis.GetBranch(`?per_page=10000000`)
-            .then((res) => setBranchOptions(res?.data || []))
+        ensureBranches()
+            .then((data) => setBranchOptions(data))
             .catch((err) => console.error(err));
 
-        BankApis.GetBankBranch(`?per_page=10000000`)
-            .then((res) => setBankOptions(res?.data || []))
+        ensureBanks()
+            .then((data) => setBankOptions(data))
             .catch((err) => console.error(err));
 
         FinanceApis.GetCategoryFinance(`?per_page=10000000&is_active=1`)
