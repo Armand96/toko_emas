@@ -111,8 +111,8 @@ class RemoveItemController extends Controller
                 'updated_at' => $dateNow
             ]);
 
+            $products = RemoveItemDetail::where('remove_header_id', $validated['remove_id'])->pluck('inventory_code')->toArray();
             if ($status == RemoveItemStatus::DISETUJUI) {
-                $products = RemoveItemDetail::where('remove_header_id', $validated['remove_id'])->pluck('inventory_code')->toArray();
                 $dateNow = date('Y-m-d H:i:s');
 
                 $removeItemData = RemoveItem::find($validated['remove_id']);
