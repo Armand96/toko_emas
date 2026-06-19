@@ -113,7 +113,6 @@ class RemoveItemController extends Controller
 
             $products = RemoveItemDetail::where('remove_header_id', $validated['remove_id'])->pluck('inventory_code')->toArray();
             if ($status == RemoveItemStatus::DISETUJUI) {
-                $dateNow = date('Y-m-d H:i:s');
 
                 $removeItemData = RemoveItem::find($validated['remove_id']);
                 $jenis = RemoveItemJenis::from($removeItemData->jenis);
