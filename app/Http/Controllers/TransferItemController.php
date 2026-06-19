@@ -124,7 +124,7 @@ class TransferItemController extends Controller
                 $products = TransferItemDetail::where('transfer_item_id', $validated['transfer_item_id'])->pluck('inventory_code')->toArray();
                 $dateNow = date('Y-m-d H:i:s');
 
-                Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow));
+                Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow, 'branch_id' => $data->branch_dest_id));
             }
 
             DB::commit();
