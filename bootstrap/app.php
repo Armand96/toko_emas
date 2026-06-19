@@ -28,11 +28,6 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // Validation (422)
-        $exceptions->render(function (ValidationException $e, $request) {
-            return ApiResponse::error('Validation error', $e->errors(), 422);
-        });
-
         $exceptions->render(function (
             Illuminate\Auth\AuthenticationException $e,
             Illuminate\Http\Request $request
@@ -42,6 +37,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 'message' => 'Unauthenticated',
                 'errors' => null,
             ], 401);
+        });
+
+        // Validation (422)
+        $exceptions->render(function (ValidationException $e, $request) {
+            return ApiResponse::error('Validation error', $e->errors(), 422);
         });
 
         // Model not found (404)

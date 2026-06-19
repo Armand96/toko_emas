@@ -14,6 +14,7 @@ use App\Http\Controllers\MSupplierController;
 use App\Http\Controllers\PembelianController;
 use App\Http\Controllers\RemoveItemController;
 use App\Http\Controllers\StoreSettingController;
+use App\Http\Controllers\TransferItemController;
 use App\Http\Controllers\TSalesController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -49,6 +50,11 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
     Route::get('sales', [TSalesController::class, 'index']);
     Route::post('sales', [TSalesController::class, 'createTrx']);
     Route::put('update-sales', [TSalesController::class, 'changeApproval']);
+
+    Route::get('transfer-item/{transferItem}', [TransferItemController::class, 'single']);
+    Route::get('transfer-item', [TransferItemController::class, 'index']);
+    Route::post('transfer-item', [TransferItemController::class, 'createTrx']);
+    Route::put('update-transfer-item', [TransferItemController::class, 'changeApproval']);
 
     Route::get('remove-item/{removeItem}', [RemoveItemController::class, 'single']);
     Route::get('remove-item', [RemoveItemController::class, 'index']);
