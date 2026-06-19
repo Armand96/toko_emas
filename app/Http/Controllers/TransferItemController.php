@@ -120,11 +120,13 @@ class TransferItemController extends Controller
                 'note' => isset($validated['note']) ? $validated['note'] : null
             ]);
 
-            if ($status == TransferItemStatus::DISETUJUI) {
-                $products = TransferItemDetail::where('transfer_item_id', $validated['transfer_item_id'])->pluck('inventory_code')->toArray();
-                $dateNow = date('Y-m-d H:i:s');
+            $dateNow = date('Y-m-d H:i:s');
+            $products = TransferItemDetail::where('transfer_item_id', $validated['transfer_item_id'])->pluck('inventory_code')->toArray();
 
+            if ($status == TransferItemStatus::DISETUJUI) {
                 Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow, 'branch_id' => $data->branch_dest_id));
+            } else if ($status == TransferItemStatus::DIBATALKAN) {
+                Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow));
             }
 
             DB::commit();
