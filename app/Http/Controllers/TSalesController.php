@@ -61,7 +61,7 @@ class TSalesController extends Controller
                 'order_id' => $orderId,
                 'customer_id' => $validated['customer_id'],
                 'branch_id' => $validated['branch_id'],
-                'created_by' => $validated['user_id'],
+                'created_by' => $request->user()->id,
                 'sub_total' => 0,
                 'grand_total' => 0,
                 'payment_type' => $validated['payment_type'],

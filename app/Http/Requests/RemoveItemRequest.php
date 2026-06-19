@@ -26,7 +26,7 @@ class RemoveItemRequest extends FormRequest
     {
         return [
             'branch_id' => ['required', 'integer'],
-            'user_id' => ['required', 'integer'],
+            'user_id' => ['nullable', 'integer'],
             'note' => ['nullable', 'string'],
             'jenis' => ['required', 'string'],
 

@@ -26,7 +26,7 @@ class SalesRequest extends FormRequest
     {
         return [
             'customer_id' => ['required', 'integer'],
-            'user_id' => ['required', 'integer'],
+            'user_id' => ['nullable', 'integer'],
             'branch_id' => ['required', 'integer'],
             'payment_type' => ['required', 'string'],
             'nominal_paid' => ['nullable', 'numeric'],

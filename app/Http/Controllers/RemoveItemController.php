@@ -62,7 +62,7 @@ class RemoveItemController extends Controller
             $hdrRemove = array(
                 'code' => $code,
                 'branch_id' => $validated['branch_id'],
-                'created_by' => $validated['user_id'],
+                'created_by' => $request->user()->id,
                 'note' => isset($validated['note']) ? $validated['note'] : null,
                 'jenis' => $validated['jenis'],
                 'status' => RemoveItemStatus::APPROVAL,
