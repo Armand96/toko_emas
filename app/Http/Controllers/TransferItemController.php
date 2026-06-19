@@ -42,14 +42,14 @@ class TransferItemController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $sales = $query->with(['user', 'details', 'branchSource', 'branchDest'])->paginate($perPage);
+        $sales = $query->with(['user', 'details.inventory', 'branchSource', 'branchDest'])->paginate($perPage);
 
         return response()->json($sales);
     }
 
     public function single(TransferItem $transferItem)
     {
-        return ApiResponse::success($transferItem->load(['branchSource', 'branchDest', 'details', 'user']));
+        return ApiResponse::success($transferItem->load(['branchSource', 'branchDest', 'details.inventory', 'user']));
     }
 
     public function createTrx(TransferItemRequest $request)
