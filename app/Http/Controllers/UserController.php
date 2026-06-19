@@ -104,6 +104,11 @@ class UserController extends Controller
         return ApiResponse::error('route not found', null, 404);
     }
 
+    public function profile(Request $request)
+    {
+        return ApiResponse::success($request->user(), "OK", 200);
+    }
+
     public function login(LoginRequest $request)
     {
         if (! Auth::attempt([

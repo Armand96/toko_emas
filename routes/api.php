@@ -61,6 +61,7 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
     Route::post('remove-item', [RemoveItemController::class, 'createRemoveItem']);
     Route::put('update-remove-item', [RemoveItemController::class, 'changeApproval']);
 
+    Route::get('profile', [UserController::class, 'profile']);
     Route::get('logout', [UserController::class, 'logout']);
 }); // comment ini untuk lepas auth sementara
 
