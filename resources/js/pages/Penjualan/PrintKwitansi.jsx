@@ -31,6 +31,7 @@ const PrintKwitansi = () => {
         }
     }, []);
 
+
     if (!data) {
         return (
             <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
@@ -42,7 +43,7 @@ const PrintKwitansi = () => {
     const { customer, user, details = [], branch, order_id, grand_total, created_at } = data;
 
     const tanggal = created_at ? dayjs(created_at) : dayjs();
-    const kota = branch?.city || branch?.branch_name || "-";
+    const kota = branch?.lokasi_cabang || branch?.branch_name || "-";
 
     console.log(data)
 
@@ -138,7 +139,7 @@ const PrintKwitansi = () => {
                     </thead>
                     <tbody>
                         {details.map((item, i) => (
-                            <tr key={i}>
+                            <tr key={i} >
                                 <td className="border-x border-black px-[7px] py-[5px] text-[10px] text-center align-top">1</td>
                                 <td className="border-x border-black px-[7px] py-[5px] text-[10px] text-left align-top break-words">
                                     {item.product?.product_name ?? "-"}
@@ -194,11 +195,11 @@ const PrintKwitansi = () => {
                         <div className="flex mt-1.5">
                             <div className="flex-1 text-center px-1">
                                 <span className="block text-[9px]">Ttd Customer</span>
-                                <span className="block text-[9px] text-[#666] mt-7">( {customer?.customer_name ?? "................"} )</span>
+                                <span className="block text-[9px] mt-7">( {customer?.customer_name ?? "................"} )</span>
                             </div>
                             <div className="flex-1 text-center px-1">
                                 <span className="block text-[9px]">Hormat Kami</span>
-                                <span className="block text-[9px] text-[#666] mt-7">( {user?.name ?? "................"} )</span>
+                                <span className="block text-[9px] mt-7">( {user?.name ?? "................"} )</span>
                             </div>
                         </div>
                     </div>

@@ -23,7 +23,8 @@ const Branch = () => {
     const [requiredFields, setRequiredFields] = useState([
         { name: 'branch_code', error_message: 'Kode cabang wajib diisi' },
         { name: 'branch_name', error_message: 'Nama cabang wajib diisi' },
-         { name: 'address', error_message: 'Alamat wajib diisi' },
+         { name: 'lokasi_cabang', error_message: 'Lokasi cabang wajib diisi' },
+        { name: 'address', error_message: 'Alamat wajib diisi' },
         // { name: 'is_active', error_message: 'Status wajib diisi' },
         { name: 'pic', error_message: 'PIC wajib diisi' },
         { name: 'branch_open_date', error_message: 'Tanggal buka cabang wajib diisi' }
@@ -150,6 +151,7 @@ const Branch = () => {
             body.append('branch_open_date', submitData.branch_open_date);
             body.append('is_active', submitData.is_active ? 1 : 0);
             body.append('branch_code', submitData.branch_code);
+            body.append('lokasi_cabang', submitData.lokasi_cabang);
 
             await submitData?.id ? BranchApis.PutBranch(submitData.id, body) : BranchApis.PostBranch(body);
             OptionsStore.getState().invalidate('branches');
@@ -173,6 +175,7 @@ const Branch = () => {
     const columns = [
         { header: 'Kode Cabang', accessor: 'branch_code', },
         { header: 'Nama Cabang', accessor: 'branch_name', },
+        { header: 'Lokasi Cabang', accessor: 'lokasi_cabang', },
         { header: 'Alamat', accessor: 'address', },
         { header: 'PIC', accessor: 'pic', },
         { header: 'Tanggal Buka', accessor: 'open_date', },

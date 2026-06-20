@@ -1,14 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import ModalCustom from "../../components/modalCustom";
 import { Html5Qrcode } from "html5-qrcode";
-import { FlashlightIcon } from "@phosphor-icons/react";
 
 const SCANNER_ID = "qr-scanner-region-penjualan";
 
 const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
     const [error, setError] = useState(null);
-    const [torchOn, setTorchOn] = useState(false);
-    const [torchSupported, setTorchSupported] = useState(false);
     const scannerRef = useRef(null);
     const scanningRef = useRef(false);
 
@@ -25,8 +22,6 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
             } catch (_) {}
             scannerRef.current = null;
         }
-        setTorchOn(false);
-        setTorchSupported(false);
     }, []);
 
     const startScanner = useCallback(async () => {
@@ -65,15 +60,6 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
             );
 
             scanningRef.current = true;
-
-            try {
-                const capabilities = scanner.getRunningTrackCameraCapabilities();
-                const torchFeature = capabilities.torchFeature();
-                if (torchFeature.isSupported()) {
-                    setTorchSupported(true);
-                }
-            } catch (_) {}
-
         } catch (e) {
             console.error(e);
             setError("Gagal mengakses kamera. Pastikan izin kamera sudah diberikan.");
@@ -96,21 +82,6 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
         };
     }, [isOpen]);
 
-    const toggleTorch = async () => {
-        if (!scannerRef.current || !scanningRef.current) return;
-        try {
-            const capabilities = scannerRef.current.getRunningTrackCameraCapabilities();
-            const torchFeature = capabilities.torchFeature();
-            if (torchOn) {
-                await torchFeature.disable();
-                setTorchOn(false);
-            } else {
-                await torchFeature.enable();
-                setTorchOn(true);
-            }
-        } catch (_) {}
-    };
-
     return (
         <ModalCustom
             title="Scan QR Code"
@@ -129,22 +100,6 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
                 {error && (
                     <p className="text-red-500 text-sm text-center mt-3">{error}</p>
                 )}
-
-                <div className="flex items-center gap-3 mt-4">
-                    {torchSupported && (
-                        <button
-                            onClick={toggleTorch}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                torchOn
-                                    ? 'bg-yellow-400 text-black'
-                                    : 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300'
-                            }`}
-                        >
-                            <FlashlightIcon size={20} />
-                            {torchOn ? 'Senter ON' : 'Senter'}
-                        </button>
-                    )}
-                </div>
 
                 <p className="text-gray-500 font-medium text-center mt-3 text-sm">
                     Arahkan QR Code ke kamera. <br />

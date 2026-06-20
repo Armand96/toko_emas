@@ -211,7 +211,7 @@ const MasterInventory = () => {
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
-            setSelectedRows(paramFetch.data.map(item => item.id));
+            setSelectedRows(paramFetch.data.filter(item => item.status === 'AVAILABLE').map(item => item.id));
         } else {
             setSelectedRows([]);
         }
@@ -244,18 +244,18 @@ const MasterInventory = () => {
                     type="checkbox"
                     className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
                     onChange={handleSelectAll}
-                    checked={selectedRows.length > 0 && selectedRows.length === paramFetch.data.length}
+                    checked={selectedRows.length > 0 && selectedRows.length === paramFetch.data.filter(item => item.status === 'AVAILABLE').length}
                 />
             ),
             accessor: 'checkbox',
-            render: (row) => (
+            render: (row) => row.status === 'AVAILABLE' ? (
                 <input
                     type="checkbox"
                     className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
                     checked={selectedRows.includes(row.id)}
                     onChange={() => handleSelectRow(row.id)}
                 />
-            ),
+            ) : null,
         },
         {
             header: "Kode",
