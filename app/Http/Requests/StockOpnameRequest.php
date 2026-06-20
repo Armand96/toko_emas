@@ -33,6 +33,7 @@ class StockOpnameRequest extends FormRequest
             'item.*.product_id' => ['required', 'integer'],
             'item.*.last_status' => ['required', 'string'],
             'item.*.opname_status' => ['required', 'string'],
+            'item.*.note' => ['nullable', 'string'],
         ];
     }
 

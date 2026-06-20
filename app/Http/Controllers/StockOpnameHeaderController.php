@@ -71,6 +71,7 @@ class StockOpnameHeaderController extends Controller
                     'product_id' => $value['product_id'],
                     'last_status' => $value['last_status'],
                     'opname_status' => $value['opname_status'],
+                    'note' => isset($value['note']) ? $value['note'] : null,
                     'created_at' => $dateNow
                 );
 
