@@ -27,6 +27,7 @@ class MBranchRequest extends FormRequest
         return [
             'branch_name' => 'required|string',
             'branch_code' => 'required|string',
+            'lokasi_cabang' => 'required|string',
             'address' => 'required|string',
             'pic' => 'required|numeric',
             'branch_open_date' => 'required|date',
