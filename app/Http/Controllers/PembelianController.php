@@ -45,9 +45,9 @@ class PembelianController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $pembelians = $query->with(['product', 'category', 'branch', 'bank'])->paginate($perPage);
+        $pembelians = $query->with(['product', 'category', 'branch', 'bank'])->orderBy('id', 'desc')->paginate($perPage);
 
-        return response()->orderBy('id', 'desc')->json($pembelians);
+        return response()->json($pembelians);
     }
 
     public function single(Pembelian $pembelian)
