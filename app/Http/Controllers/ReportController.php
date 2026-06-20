@@ -26,6 +26,39 @@ class ReportController extends Controller
 
     public function topCustomer()
     {
+        $customers = MCustomer::select(
+            [
+                'id',
+                'customer_name',
+                'phone_number'
+            ]
+        )
+            ->withCount('sales')
+            ->withSum('sales', 'grand_total')
+            ->withMax('sales', 'created_at')
+            ->orderByDesc('sales_sum_grand_total')
+            ->limit(10)
+            ->get();
 
+        return ApiResponse::success($customers, "OK", 200);
+    }
+
+    public function topCustomerPagination(Request $request)
+    {
+        $perPage = $request->input('per_page', 10); // Default to 10 items per page
+        $customers = MCustomer::select(
+            [
+                'id',
+                'customer_name',
+                'phone_number'
+            ]
+        )
+            ->withCount('sales')
+            ->withSum('sales', 'grand_total')
+            ->withMax('sales', 'created_at')
+            ->orderByDesc('sales_sum_grand_total')
+            ->paginate($perPage);
+
+        return response()->json($customers);
     }
 }
