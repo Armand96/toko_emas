@@ -30,7 +30,7 @@ class MSupplierController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $suppliers = $query->paginate($perPage);
+        $suppliers = $query->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($suppliers);
     }

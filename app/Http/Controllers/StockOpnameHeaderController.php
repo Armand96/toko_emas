@@ -33,7 +33,7 @@ class StockOpnameHeaderController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $opnames = $query->with(['branch'])->paginate($perPage);
+        $opnames = $query->orderBy('id', 'desc')->with(['branch'])->paginate($perPage);
 
         return response()->json($opnames);
     }

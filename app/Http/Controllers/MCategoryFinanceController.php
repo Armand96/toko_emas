@@ -24,7 +24,7 @@ class MCategoryFinanceController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $categories = $query->paginate($perPage);
+        $categories = $query->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($categories);
     }

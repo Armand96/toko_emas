@@ -37,7 +37,7 @@ class RemoveItemController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $removeItems = $query->with(['branch', 'user', 'details.inventory'])->paginate($perPage);
+        $removeItems = $query->orderBy('id', 'desc')->with(['branch', 'user', 'details.inventory'])->paginate($perPage);
 
         return response()->json($removeItems);
     }

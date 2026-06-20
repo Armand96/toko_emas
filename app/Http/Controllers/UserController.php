@@ -33,7 +33,7 @@ class UserController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $users = $query->paginate($perPage);
+        $users = $query->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($users);
     }

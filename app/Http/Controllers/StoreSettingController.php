@@ -19,7 +19,7 @@ class StoreSettingController extends Controller
     {
         $query = StoreSetting::query();
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $settings = $query->paginate($perPage);
+        $settings = $query->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($settings);
     }
