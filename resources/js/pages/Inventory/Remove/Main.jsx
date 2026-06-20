@@ -116,14 +116,28 @@ const Main = ({ setCurentState }) => {
         try {
             const res = await InventoryApis.GetRemoveItemSingle(row.id);
             const item = res?.data || res;
-            const items = (item.details || []).map((d) => ({
-                kode: d.inventory_code,
-                image: d.inventory?.image_path ? HelperFunctions.getStorageUrl(d.inventory.image_path) : null,
-                nama: d.product?.name || productMap[d.product_id] || '-',
-                berat: d.inventory?.berat ? `${d.inventory.berat}g` : '-',
-                karat: d.inventory?.karat || '-',
-                harga_jual: d.inventory?.jual || 0,
-            }));
+
+            const codes = (item.details || []).map(d => d.inventory_code).filter(Boolean);
+            let inventoryMap = {};
+            if (codes.length > 0) {
+                try {
+                    const invRes = await InventoryApis.GetInventory(`?per_page=10000000`);
+                    const allInv = invRes?.data || [];
+                    allInv.forEach(inv => { inventoryMap[inv.inventory_code] = inv; });
+                } catch (_) {}
+            }
+
+            const items = (item.details || []).map((d) => {
+                const inv = d.inventory || inventoryMap[d.inventory_code] || {};
+                return {
+                    kode: d.inventory_code,
+                    image: inv.image_path ? HelperFunctions.getStorageUrl(inv.image_path) : null,
+                    nama: d.product?.product_name || d.product?.name || productMap[d.product_id] || '-',
+                    berat: inv.berat ? `${inv.berat}g` : '-',
+                    karat: inv.karat ? `${inv.karat}K` : '-',
+                    harga_jual: inv.jual || 0,
+                };
+            });
 
             const statusMap = { APPROVAL: 'Approval', DISETUJUI: 'Disetujui', DITOLAK: 'Ditolak', DIBATALKAN: 'Dibatalkan', RETURN: 'Return' };
             const jenisMap = { HILANG: 'Hilang', REPAIR: 'Repair' };

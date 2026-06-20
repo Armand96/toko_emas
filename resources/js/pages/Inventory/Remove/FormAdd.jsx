@@ -44,7 +44,7 @@ const FormAdd = ({ setCurentState }) => {
             id: inv.id,
             inventory_code: inv.inventory_code,
             product_id: inv.product_id,
-            name: inv.product?.name || inv.inventory_code,
+            name: inv.product?.product_name || inv.product?.name || inv.inventory_code,
             weight: inv.berat ? `${inv.berat}g` : '-',
             karat: inv.karat || '-',
             price: inv.jual || 0,
@@ -189,7 +189,7 @@ const FormAdd = ({ setCurentState }) => {
                                 className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 border border-primary-500 text-primary-500 bg-white rounded-lg hover:bg-primary-50 transition-colors font-medium text-sm cursor-pointer"
                             >
                                 <ScanIcon size={20} />
-                                Scan Barcode
+                                Scan QR Code
                             </button>
 
                             <span className="text-sm text-gray-400 font-medium">atau</span>
@@ -202,7 +202,7 @@ const FormAdd = ({ setCurentState }) => {
                                     <option value="">Pilih item..</option>
                                     {inventoryOptions.map((inv) => (
                                         <option key={inv.inventory_code} value={inv.inventory_code}>
-                                            {inv.inventory_code} - {inv.product?.name || '-'} ({inv.berat}g • {inv.karat})
+                                            {inv.inventory_code} - {inv.product?.product_name || inv.product?.name || '-'} ({inv.berat ? `${inv.berat}g` : '-'} • {inv.karat ? `${inv.karat}K` : '-'})
                                         </option>
                                     ))}
                                 </select>

@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { PrinterIcon } from "@phosphor-icons/react";
 
-const QR_PX = 320; // resolusi render QR (kotak)
+const QR_PX = 320;
 
 const PrintBarcode = () => {
     const [items, setItems] = useState([]);
-    const [images, setImages] = useState({}); // index -> dataURL PNG
+    const [images, setImages] = useState({});
     const canvasRefs = useRef({});
 
     useEffect(() => {
@@ -17,11 +17,12 @@ const PrintBarcode = () => {
             const parsed = JSON.parse(raw);
             const barcodes = parsed?.barcodes || [];
             const extra = parsed?.extra || {};
+            const perItem = parsed?.items || extra?.items || null;
 
             setItems(
-                barcodes.map((code) => ({
+                barcodes.map((code, i) => ({
                     barcode: code,
-                    label: extra.label || extra.produk || "",
+                    label: perItem?.[i]?.label || extra.label || extra.produk || "",
                 }))
             );
         } catch (error) {
@@ -45,7 +46,6 @@ const PrintBarcode = () => {
     return (
         <div className="qr-print-page">
             <style>{`
-                /* ====== Layar ====== */
                 .qr-print-page {
                     min-height: 100vh;
                     background: #f3f4f6;
@@ -66,53 +66,44 @@ const PrintBarcode = () => {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    gap: 8px;
+                    gap: 0;
                 }
-                /* Label horizontal: QR kiri, teks kanan */
                 .qr-label {
                     width: 58mm;
                     box-sizing: border-box;
                     background: #fff;
-                    padding: 2mm;
+                    padding: 1.5mm 2mm;
                     display: flex;
-                    flex-direction: row;
+                    flex-direction: column;
                     align-items: center;
-                    justify-content: flex-start;
-                    gap: 2mm;
-                    border: 1px solid #e5e7eb;
+                    gap: 0.5mm;
+                    border-bottom: 1px dashed #d1d5db;
                 }
                 .qr-img {
-                    width: 12mm;
-                    height: 12mm;
+                    width: 20mm;
+                    height: 20mm;
                     aspect-ratio: 1 / 1;
                     object-fit: contain;
                     display: block;
-                    flex-shrink: 0;
                     image-rendering: pixelated;
                 }
-                .qr-text {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0.5mm;
-                    min-width: 0;
-                }
                 .qr-code {
-                    font-size: 9pt;
+                    font-size: 6pt;
                     font-weight: 600;
-                    letter-spacing: 0.3px;
                     color: #111827;
-                    line-height: 1.15;
-                    word-break: break-word;
+                    line-height: 1.1;
+                    text-align: center;
+                    word-break: break-all;
                 }
                 .qr-name {
-                    font-size: 8pt;
+                    font-size: 5.5pt;
                     color: #374151;
-                    line-height: 1.15;
+                    line-height: 1.1;
+                    text-align: center;
                     word-break: break-word;
                 }
                 .qr-source { position: absolute; left: -99999px; top: 0; }
 
-                /* ====== Cetak ====== */
                 @media print {
                     @page { size: 58mm auto; margin: 0; }
                     html, body {
@@ -132,20 +123,12 @@ const PrintBarcode = () => {
                     .qr-list { display: block; }
                     .qr-label {
                         width: 58mm;
-                        border: none;
-                        padding: 2mm 1mm;
-                        page-break-after: always;
-                        break-after: page;
-                    }
-                    .qr-label:last-child {
-                        page-break-after: auto;
-                        break-after: auto;
+                        padding: 1mm 2mm;
+                        border-bottom: 0.5px dashed #999;
                     }
                     .qr-img {
-                        width: 12mm;
-                        height: 12mm;
-                        aspect-ratio: 1 / 1;
-                        object-fit: contain;
+                        width: 20mm;
+                        height: 20mm;
                     }
                 }
             `}</style>
@@ -165,7 +148,6 @@ const PrintBarcode = () => {
                 </button>
             </div>
 
-            {/* canvas tersembunyi: sumber render QR -> PNG */}
             <div className="qr-source" aria-hidden="true">
                 {items.map((item, index) => (
                     <QRCodeCanvas
@@ -190,10 +172,8 @@ const PrintBarcode = () => {
                         {images[index] && (
                             <img src={images[index]} alt={item.barcode} className="qr-img" />
                         )}
-                        <div className="qr-text">
-                            <span className="qr-code">{item.barcode}</span>
-                            {item.label && <span className="qr-name">{item.label}</span>}
-                        </div>
+                        <span className="qr-code">{item.barcode}</span>
+                        {item.label && <span className="qr-name">{item.label}</span>}
                     </div>
                 ))}
             </div>

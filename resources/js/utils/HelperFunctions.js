@@ -19,7 +19,8 @@ const HelperFunctions = {
      */
     printBarcode: (barcodes, extra = {}) => {
         const list = Array.isArray(barcodes) ? barcodes : [barcodes];
-        const payload = { barcodes: list, extra };
+        const items = extra.items || null;
+        const payload = { barcodes: list, extra, items };
         sessionStorage.setItem("print_barcode_data", JSON.stringify(payload));
         window.open("/inventory/print-barcode", "_blank");
     },

@@ -74,8 +74,8 @@ const ApprovalTransfer = () => {
         }
     }, [filterBounce]);
 
-    const handleResetFilter = () => setFilter({ search: '', status: '' });
-    const hasActiveFilter = filter.search || filter.status;
+    const handleResetFilter = () => setFilter({ search: '', status: 'Approval' });
+    const hasActiveFilter = filter.search || (filter.status && filter.status !== 'Approval');
 
     const handleOpenModal = async (row) => {
         setLoading(true);
@@ -164,7 +164,7 @@ const ApprovalTransfer = () => {
             accessor: 'created_at',
             render: (row) => row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY') : '-',
         },
-        { header: 'Kode', accessor: 'code', render: (row) => row.kode_transfer || '-' },
+        { header: 'Kode', accessor: 'kode_transfer', render: (row) => row.kode_transfer || '-' },
         {
             header: 'Item Produk',
             accessor: 'details',
@@ -173,7 +173,7 @@ const ApprovalTransfer = () => {
                 if (items.length === 0) return '-';
                 const names = items
                     .map((d) => {
-                        const name = d.product?.name || d.product?.product_name || productMap[d.product_id];
+                        const name = productMap[d.product_id] || d.product?.product_name || d.product?.name;
                         return name ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ?? ''}` : d.inventory_code;
                     })
                     .filter(Boolean);
@@ -225,13 +225,13 @@ const ApprovalTransfer = () => {
                         value={filter.search}
                         onChange={(e) => setFilter({ ...filter, search: e.target.value })}
                         placeholder="Cari transaksi.."
-                        className="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
                     />
                 </div>
                 <select
                     value={filter.status}
                     onChange={(e) => setFilter({ ...filter, status: e.target.value })}
-                    className="py-2 px-3 border border-neutral-200 rounded-lg text-sm text-neutral-600 focus:outline-none focus:ring-1 focus:ring-primary-500 min-w-[140px]"
+                    className="py-2 px-3 border border-gray-300 rounded-lg text-sm text-neutral-600 focus:outline-none focus:ring-1 focus:ring-primary-500 min-w-[140px]"
                 >
                     <option value="">Pilih status</option>
                     {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -262,6 +262,7 @@ const ApprovalTransfer = () => {
                 onSubmitApprove={handleApprove}
                 onSubmitReject={handleReject}
                 data={selectedData}
+                productMap={productMap}
             />
         </div>
     );

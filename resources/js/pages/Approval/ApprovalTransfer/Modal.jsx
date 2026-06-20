@@ -16,16 +16,20 @@ export default function ModalDetailTransfer({
     onSubmitApprove,
     onSubmitReject,
     data,
+    productMap = {},
 }) {
     const details = data?.details || [];
-    const items = details.map((d) => ({
-        kode: d.inventory_code,
-        image: d.inventory?.image_path ? HelperFunctions.getStorageUrl(d.inventory.image_path) : null,
-        nama: d.product?.name || d.product?.product_name || d.inventory?.product?.name || '-',
-        berat: d.inventory?.berat ? `${d.inventory.berat}g` : '-',
-        karat: d.inventory?.karat || '-',
-        harga_jual: d.inventory?.jual || 0,
-    }));
+    const items = details.map((d) => {
+        const inv = d.inventory || {};
+        return {
+            kode: d.inventory_code,
+            image: inv.image_path ? HelperFunctions.getStorageUrl(inv.image_path) : null,
+            nama: productMap[d.product_id] || d.product?.product_name || d.product?.name || inv.product?.product_name || '-',
+            berat: inv.berat ? `${inv.berat}g` : '-',
+            karat: inv.karat || '-',
+            harga_jual: inv.jual || 0,
+        };
+    });
 
     const isPending = data?.status === 'APPROVAL';
     const view = APPROVAL_VIEW[data?.status] || APPROVAL_VIEW['APPROVAL'];
