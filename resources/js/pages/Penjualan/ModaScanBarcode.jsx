@@ -1,16 +1,89 @@
-import React, { useState, useRef, useEffect } from "react";
-import { MagnifyingGlass, MagnifyingGlassIcon } from "@phosphor-icons/react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import ModalCustom from "../../components/modalCustom";
-import { BrowserMultiFormatReader } from "@zxing/browser";
-import { NotFoundException } from "@zxing/library";
+import { Html5Qrcode } from "html5-qrcode";
+import { FlashlightIcon } from "@phosphor-icons/react";
+
+const SCANNER_ID = "qr-scanner-region-penjualan";
 
 const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
-    const [manualInput, setManualInput] = useState("");
     const [error, setError] = useState(null);
-    const videoRef = useRef(null);
-    const readerRef = useRef(null);
-    const streamRef = useRef(null); // simpan stream kamera
-    const controlsRef = useRef(null); // simpan controls hasil decodeFromVideoDevice
+    const [torchOn, setTorchOn] = useState(false);
+    const [torchSupported, setTorchSupported] = useState(false);
+    const scannerRef = useRef(null);
+    const scanningRef = useRef(false);
+
+    const stopScanner = useCallback(async () => {
+        if (scannerRef.current && scanningRef.current) {
+            try {
+                await scannerRef.current.stop();
+            } catch (_) {}
+            scanningRef.current = false;
+        }
+        if (scannerRef.current) {
+            try {
+                scannerRef.current.clear();
+            } catch (_) {}
+            scannerRef.current = null;
+        }
+        setTorchOn(false);
+        setTorchSupported(false);
+    }, []);
+
+    const startScanner = useCallback(async () => {
+        try {
+            setError(null);
+
+            if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+                setError("Kamera tidak bisa diakses via HTTP. Buka chrome://flags di HP, cari 'Insecure origins treated as secure', tambahkan " + window.location.origin);
+                return;
+            }
+
+            const el = document.getElementById(SCANNER_ID);
+            if (!el) return;
+
+            const scanner = new Html5Qrcode(SCANNER_ID);
+            scannerRef.current = scanner;
+
+            const devices = await Html5Qrcode.getCameras();
+            if (!devices || devices.length === 0) {
+                setError("Tidak ada kamera ditemukan.");
+                return;
+            }
+
+            const backCamera = devices.find((d) =>
+                /back|belakang|environment|rear/i.test(d.label)
+            ) || devices[devices.length - 1];
+
+            await scanner.start(
+                backCamera.id,
+                {
+                    fps: 15,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1,
+                },
+                (decodedText) => {
+                    onScanSuccess(decodedText);
+                    stopScanner();
+                    onClose();
+                },
+                () => {}
+            );
+
+            scanningRef.current = true;
+
+            try {
+                const capabilities = scanner.getRunningTrackCameraCapabilities();
+                const torchFeature = capabilities.torchFeature();
+                if (torchFeature.isSupported()) {
+                    setTorchSupported(true);
+                }
+            } catch (_) {}
+
+        } catch (e) {
+            console.error(e);
+            setError("Gagal mengakses kamera. Pastikan izin kamera sudah diberikan.");
+        }
+    }, [onScanSuccess, onClose, stopScanner]);
 
     useEffect(() => {
         if (!isOpen) {
@@ -28,117 +101,59 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
         };
     }, [isOpen]);
 
-    const startScanner = async () => {
+    const toggleTorch = async () => {
+        if (!scannerRef.current || !scanningRef.current) return;
         try {
-            setError(null);
-
-            if (!videoRef.current) {
-                setError("Video element belum siap.");
-                return;
+            const capabilities = scannerRef.current.getRunningTrackCameraCapabilities();
+            const torchFeature = capabilities.torchFeature();
+            if (torchOn) {
+                await torchFeature.disable();
+                setTorchOn(false);
+            } else {
+                await torchFeature.enable();
+                setTorchOn(true);
             }
-
-            readerRef.current = new BrowserMultiFormatReader();
-
-            const devices = await BrowserMultiFormatReader.listVideoInputDevices();
-
-            if (!devices || devices.length === 0) {
-                setError("Tidak ada kamera ditemukan.");
-                return;
-            }
-
-            const backCamera =
-                devices.find((d) =>
-                    /back|belakang|environment|rear/i.test(d.label)
-                ) || devices[devices.length - 1];
-
-            const controls = await readerRef.current.decodeFromVideoDevice(
-                backCamera.deviceId,
-                videoRef.current,
-                (result, err) => {
-                    if (result) {
-                        onScanSuccess(result.getText());
-                        stopScanner();
-                        onClose();
-                    }
-                    if (err && !(err instanceof NotFoundException)) {
-                        console.error("Scan error:", err);
-                    }
-                }
-            );
-
-            controlsRef.current = controls;
-
-            // Simpan stream dari video element setelah scanner jalan
-            if (videoRef.current?.srcObject) {
-                streamRef.current = videoRef.current.srcObject;
-            }
-
-        } catch (e) {
-            console.error(e);
-            setError("Gagal mengakses kamera. Pastikan izin kamera sudah diberikan.");
-        }
-    };
-
-    const stopScanner = () => {
-        // 1. Hentikan loop decode zxing & lepas stream kamera via controls
-        if (controlsRef.current) {
-            try {
-                controlsRef.current.stop();
-            } catch (_) {}
-            controlsRef.current = null;
-        }
-
-        // 2. Stop semua track dari stream — ini yang matikan lampu kamera
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach((track) => track.stop());
-            streamRef.current = null;
-        }
-
-        // 3. Reset reader zxing
-        if (readerRef.current) {
-            try {
-                readerRef.current.reset();
-            } catch (_) {}
-            readerRef.current = null;
-        }
-
-        // 4. Bersihkan srcObject dari video element
-        if (videoRef.current) {
-            videoRef.current.srcObject = null;
-        }
-    };
-
-    const handleManualSubmit = () => {
-        if (manualInput.trim()) {
-            onScanSuccess(manualInput.trim());
-            setManualInput("");
-            onClose();
-        }
+        } catch (_) {}
     };
 
     return (
         <ModalCustom
             title="Scan QR Code"
             isOpen={isOpen}
-            onClose={onClose}
+            onClose={() => {
+                stopScanner();
+                onClose();
+            }}
             footer={false}
         >
-            <div className="flex flex-col items-center justify-center p-6 min-h-[300px] border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
-
-                <div className="w-full max-w-sm mb-4 rounded-lg overflow-hidden bg-black flex justify-center relative">
-                    <video
-                        ref={videoRef}
-                        className="w-full object-cover aspect-square"
-                    />
+            <div className="flex flex-col items-center justify-center p-4 min-h-[300px]">
+                <div className="w-full max-w-sm rounded-lg overflow-hidden bg-black relative">
+                    <div id={SCANNER_ID} className="w-full" />
                 </div>
 
                 {error && (
-                    <p className="text-red-500 text-sm text-center mb-2">{error}</p>
+                    <p className="text-red-500 text-sm text-center mt-3">{error}</p>
                 )}
 
-                <p className="text-gray-500 font-medium text-center mt-2">
+                <div className="flex items-center gap-3 mt-4">
+                    {torchSupported && (
+                        <button
+                            onClick={toggleTorch}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                torchOn
+                                    ? 'bg-yellow-400 text-black'
+                                    : 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300'
+                            }`}
+                        >
+                            <FlashlightIcon size={20} />
+                            {torchOn ? 'Senter ON' : 'Senter'}
+                        </button>
+                    )}
+                </div>
+
+                <p className="text-gray-500 font-medium text-center mt-3 text-sm">
                     Arahkan QR Code ke kamera. <br />
-                    <span className="text-sm font-normal text-gray-400">
+                    <span className="text-xs font-normal text-gray-400">
                         Pastikan pencahayaan cukup dan kamera fokus.
                     </span>
                 </p>
