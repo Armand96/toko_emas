@@ -13,7 +13,7 @@ use App\Http\Requests\UpdateStatusPembelianRequest;
 use App\Models\Finance;
 use App\Models\Inventory;
 use App\Models\MCategoryFinance;
-use App\Models\MProduct;
+// use App\Models\MProduct;
 use App\Models\Pembelian;
 use App\Models\PembelianBatch;
 use Illuminate\Http\Request;
