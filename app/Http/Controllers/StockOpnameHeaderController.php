@@ -1,0 +1,108 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Helpers\ApiResponse;
+use App\Helpers\OpnameDetailStatus;
+use App\Helpers\OpnameHeaderStatus;
+use App\Http\Requests\StockOpnameRequest;
+use App\Models\Inventory;
+use App\Models\MBranch;
+use App\Models\StockOpnameDetail;
+use App\Models\StockOpnameHeader;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class StockOpnameHeaderController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $query = StockOpnameHeader::query();
+
+        if ($request->has('kode_sesi') && $request->kode_sesi != "") {
+            $query->where('kode_sesi', 'like', '%' . $request->kode_sesi . '%');
+        }
+        if ($request->has('branch_id') && $request->branch_id != "") {
+            $query->where('branch_id', $request->branch_id);
+        }
+        if ($request->has('status') && $request->status != "") {
+            $query->where('status', $request->status);
+        }
+
+        $perPage = $request->input('per_page', 10); // Default to 10 items per page
+        $opnames = $query->with(['branch'])->paginate($perPage);
+
+        return response()->json($opnames);
+    }
+
+    public function single(StockOpnameHeader $header)
+    {
+        return ApiResponse::success($header->load(['details.inventory', 'details.product', 'branch']), "OK", 200);
+    }
+
+    public function createOpname(StockOpnameRequest $request)
+    {
+        DB::beginTransaction();
+        $validated = $request->validated();
+
+        try {
+
+            $dataBranch = MBranch::find($validated['branch_id']);
+            $kodeSesi = 'OPN-' . $dataBranch->branch_code . '-' . date('Y') . "-" .date('m');
+            $counter = StockOpnameHeader::where('kode_sesi', 'like', $kodeSesi . "%")->count();
+            $counter++;
+            $kodeSesi = $kodeSesi . str_pad($counter, 4, "0", STR_PAD_LEFT);
+
+            $totalInventoryBranch = Inventory::where('branch_id', $dataBranch->id)->count();
+
+            $dataInsertBatch = [];
+            $itemInStock = 0;
+            $itemMissing = 0;
+            $itemExtra = 0;
+            $dateNow = date('Y-m-d H:i:s');
+
+            foreach ($validated['item'] as $key => $value) {
+                $dataTemp = array(
+                    'stockopname_header_id' => 0,
+                    'inventory_code' => $value['inventory_code'],
+                    'product_id' => $value['product_id'],
+                    'last_status' => $value['last_status'],
+                    'opname_status' => $value['opname_status'],
+                    'created_at' => $dateNow
+                );
+
+                $status = OpnameDetailStatus::from($value['opname_status']);
+                if($status == OpnameDetailStatus::EXTRA) $itemExtra++;
+                if($status == OpnameDetailStatus::INSTOCK) $itemInStock++;
+                if($status == OpnameDetailStatus::MISSING) $itemMissing++;
+
+                array_push($dataInsertBatch, $dataTemp);
+            }
+
+            $dataHeader = StockOpnameHeader::create(array(
+                'kode_sesi' => $kodeSesi,
+                'branch_id' => $validated['branch_id'],
+                'total_item' => $totalInventoryBranch,
+                'in_stock' => $itemInStock,
+                'missing' => $itemMissing,
+                'extra' => $itemExtra,
+                'status' => $itemInStock == $totalInventoryBranch ? OpnameHeaderStatus::SESUAI : OpnameHeaderStatus::SELISIH,
+            ));
+
+            foreach ($dataInsertBatch as $key => $value) {
+                $dataInsertBatch[$key]['stockopname_header_id'] = $dataHeader->id;
+            }
+
+            StockOpnameDetail::insert($dataInsertBatch);
+
+            DB::commit();
+            return ApiResponse::success([], "Success create opname", 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return ApiResponse::error($th->getMessage(), $th, 500);
+        }
+    }
+}
