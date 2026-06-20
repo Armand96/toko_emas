@@ -35,13 +35,13 @@ class InventoryController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $inventories = $query->orderBy('id', 'desc')->paginate($perPage);
+        $inventories = $query->with(['branch','product', 'category', 'subCategory'])->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($inventories);
     }
 
     public function single(Inventory $inventory)
     {
-        return ApiResponse::success($inventory->load(['product', 'branch', 'category', 'subcategory']), "OK", 200);
+        return ApiResponse::success($inventory->load(['product', 'branch', 'category', 'subCategory']), "OK", 200);
     }
 }
