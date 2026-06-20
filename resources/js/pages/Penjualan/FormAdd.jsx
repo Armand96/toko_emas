@@ -408,7 +408,7 @@ const FormAdd = ({ setCurentState }) => {
                         className="flex flex-1 items-center justify-center gap-2 py-2.5 border border-primary-500 text-primary-600 rounded-lg font-medium hover:bg-primary-50 transition-colors"
                     >
                         <ScanIcon size={20} />
-                        Scan Barcode
+                        Scan QR Code
                     </button>
                     <span className="text-gray-400 text-sm">atau</span>
                     <div className="flex-1 relative">

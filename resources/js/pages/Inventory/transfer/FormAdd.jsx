@@ -222,7 +222,7 @@ const FormAdd = ({ setCurentState }) => {
                                 className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 border border-blue-500 text-blue-500 bg-white rounded-lg hover:bg-blue-50 transition-colors font-medium text-sm cursor-pointer"
                             >
                                 <Scan size={20} />
-                                Scan Barcode
+                                Scan QR Code
                             </button>
 
                             <span className="text-sm text-gray-400 font-medium">atau</span>

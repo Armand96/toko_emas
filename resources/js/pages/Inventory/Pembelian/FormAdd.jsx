@@ -45,7 +45,7 @@ const requiredItem = [
     ["karat", "Karat wajib diisi"],
     ["modal", "Harga modal wajib diisi"],
     ["jual", "Harga jual wajib diisi"],
-    ["branch_id", "Cabang wajib dipilih"],
+    // ["branch_id", "Cabang wajib dipilih"],
     ["bank_id", "Bank keluar wajib dipilih"],
     ["supplier_id", "Supplier wajib dipilih"],
 ];
@@ -109,13 +109,6 @@ const FormPembelian = ({ setCurentState }) => {
             return;
         }
 
-        if(name === "branch_id"){
-            BankApis.GetBankBranch(`?branch_id=${value}`).then((res) => {
-            setBankOptions(HelperFunctions.formatDropdownBank(res?.data || []));
-
-            })
-        }
-
         if (name === "modal" || name === "jual") {
             const raw = HelperFunctions.unformatNumberInput(value);
             setItem((prev) => ({ ...prev, [name]: raw }));
@@ -126,15 +119,23 @@ const FormPembelian = ({ setCurentState }) => {
         if (name === "product_id") {
             const found = productOptions.find((p) => p.value === value);
             const d = found?.details || {};
+            const productBranchId = d.branch_id ?? null;
             setItem((prev) => ({
                 ...prev,
                 product_id: value,
                 category_id: d.category_id ?? null,
                 subcategory_id: d.subcategory_id ?? null,
+                branch_id: productBranchId,
+                bank_id: null,
                 _produk_label: found?.label ?? "",
                 _produk_barcode: d.barcode ?? "",
             }));
             setErrors((prev) => ({ ...prev, product_id: "" }));
+            if (productBranchId) {
+                BankApis.GetBankBranch(`?branch_id=${productBranchId}`).then((res) => {
+                    setBankOptions(HelperFunctions.formatDropdownBank(res?.data || []));
+                });
+            }
             return;
         }
 
@@ -420,7 +421,7 @@ const FormPembelian = ({ setCurentState }) => {
                             onChange={handleChange}
                         />
 
-                        <Dropdown
+                        {/* <Dropdown
                             label="Cabang"
                             name="branch_id"
                             value={item.branch_id}
@@ -429,7 +430,7 @@ const FormPembelian = ({ setCurentState }) => {
                             isRequired
                             error={errors.branch_id}
                             onChange={handleChange}
-                        />
+                        /> */}
 
                         <Dropdown
                             label="Bank Keluar"

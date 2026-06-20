@@ -107,7 +107,7 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
 
     return (
         <ModalCustom
-            title="Scan Barcode Code 128"
+            title="Scan QR Code"
             isOpen={isOpen}
             onClose={onClose}
             footer={false}
@@ -117,9 +117,8 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
                 <div className="w-full max-w-sm mb-4 rounded-lg overflow-hidden bg-black flex justify-center relative">
                     <video
                         ref={videoRef}
-                        className="w-full object-cover aspect-video"
+                        className="w-full object-cover aspect-square"
                     />
-                    <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse -translate-y-1/2" />
                 </div>
 
                 {error && (
@@ -127,7 +126,7 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
                 )}
 
                 <p className="text-gray-500 font-medium text-center mt-2">
-                    Arahkan barcode (Code 128) ke kamera. <br />
+                    Arahkan QR Code ke kamera. <br />
                     <span className="text-sm font-normal text-gray-400">
                         Pastikan pencahayaan cukup dan kamera fokus.
                     </span>

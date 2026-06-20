@@ -87,12 +87,14 @@ const MainPembelian = ({ setCurentState }) => {
         })
     }
 
+    const selectableStatuses = ['APPROVAL', 'DISETUJUI'];
+
     const handleSelectAll = (e) => {
         if (e.target.checked) {
-            const cancellableIds = paramFetch.data
-                .filter(item => item.status === 'APPROVAL')
+            const ids = paramFetch.data
+                .filter(item => selectableStatuses.includes(item.status))
                 .map(item => item.id);
-            setSelectedRows(cancellableIds);
+            setSelectedRows(ids);
         } else {
             setSelectedRows([]);
         }
@@ -104,8 +106,24 @@ const MainPembelian = ({ setCurentState }) => {
         );
     };
 
+    const selectedItems = paramFetch.data.filter(item => selectedRows.includes(item.id));
+    const hasApproval = selectedItems.some(item => item.status === 'APPROVAL');
+    const approvedItems = selectedItems.filter(item => item.status === 'DISETUJUI');
+
     const handleBulkCancel = () => {
-        confirmCancel(selectedRows);
+        const approvalIds = selectedItems.filter(item => item.status === 'APPROVAL').map(item => item.id);
+        if (approvalIds.length === 0) return;
+        confirmCancel(approvalIds);
+    };
+
+    const handleBulkPrint = () => {
+        if (approvedItems.length === 0) return;
+        const barcodes = approvedItems.map(item => item.barcode);
+        const items = approvedItems.map(item => ({
+            barcode: item.barcode,
+            label: item.product?.product_name ?? item.product?.name ?? '',
+        }));
+        HelperFunctions.printBarcode(barcodes, { items });
     };
 
     const columns = [
@@ -117,12 +135,12 @@ const MainPembelian = ({ setCurentState }) => {
                     onChange={handleSelectAll}
                     checked={
                         selectedRows.length > 0 &&
-                        selectedRows.length === paramFetch.data.filter(item => item.status === 'APPROVAL').length
+                        selectedRows.length === paramFetch.data.filter(item => selectableStatuses.includes(item.status)).length
                     }
                 />
             ),
             accessor: 'checkbox',
-            render: (row) => row.status === 'APPROVAL' ? (
+            render: (row) => selectableStatuses.includes(row.status) ? (
                 <input
                     type="checkbox"
                     className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
@@ -268,9 +286,13 @@ const MainPembelian = ({ setCurentState }) => {
                 <FooterActionBar
                     selectedCount={selectedRows.length}
                     onClearSelection={() => setSelectedRows([])}
-                    primaryText="Batalkan Pengajuan"
-                    primaryType="danger"
-                    onPrimaryClick={handleBulkCancel}
+                    primaryText={approvedItems.length > 0 ? `Cetak Barcode (${approvedItems.length})` : undefined}
+                    primaryType="primary"
+                    primaryIcon={<PrinterIcon size={16} />}
+                    onPrimaryClick={handleBulkPrint}
+                    secondaryText={hasApproval ? "Batalkan Pengajuan" : undefined}
+                    secondaryType="danger"
+                    onSecondaryClick={handleBulkCancel}
                 />
             </div>
         </div>
