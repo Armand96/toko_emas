@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 #[Fillable([
     'batch',
+    'inventory_code',
     'product_id',
     'category_id',
     'subcategory_id',
@@ -30,6 +31,11 @@ class Pembelian extends Model
     public function product()
     {
         return $this->belongsTo(MProduct::class, 'product_id', 'id');
+    }
+
+    public function inventory()
+    {
+        return $this->belongsTo(Inventory::class, 'inventory_code', 'inventory_code');
     }
 
     public function category()

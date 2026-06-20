@@ -45,7 +45,7 @@ class PembelianController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $pembelians = $query->with(['product', 'category', 'branch', 'bank'])->orderBy('id', 'desc')->paginate($perPage);
+        $pembelians = $query->with(['product', 'category', 'branch', 'bank', 'inventory'])->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($pembelians);
     }
@@ -116,6 +116,9 @@ class PembelianController extends Controller
                 foreach ($dataPembelian as $idx => $value) {
 
                     $data = Inventory::where('product_id', $value->product_id)->count();
+
+                    $value->inventory_code = $value->barcode . "-" . str_pad($data + 1, 4, "0", STR_PAD_LEFT);
+                    $value->update();
 
                     Inventory::create(array(
                         'inventory_code' => $value->barcode . "-" . str_pad($data + 1, 4, "0", STR_PAD_LEFT),

@@ -21,6 +21,7 @@ return new class extends Migration
             $table->bigInteger('bank_id', false, true);
             $table->bigInteger('supplier_id', false, true);
             $table->enum('status', ['APPROVAL', 'DISETUJUI', 'DITOLAK', 'DIBATALKAN']);
+            $table->string('inventory_code', 60)->nullable();
             $table->string('image_path')->nullable();
             $table->string('thumb_path')->nullable();
             $table->string('barcode');
