@@ -117,9 +117,9 @@ class TSalesController extends Controller
 
             // $dateNow = date('Y-m-d H:i:s');
             $status = SalesStatus::from($validated['status']);
-            $data = TSales::where('id', $validated['penjualan_id'])->with(['branch.bankcabang'])->where('approval_status', SalesStatus::APPROVAL)->first();
+            $data = TSales::where('id', $validated['penjualan_id'])->with(['branch.bankcabang'])->first();
             $data->update([
-                'approval_status' => $status,
+                'approval_status' => $validated['status'],
                 'note' => isset($validated['note']) ? $validated['note'] : null
             ]);
 
@@ -130,7 +130,7 @@ class TSalesController extends Controller
                 Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::SOLD, 'updated_at' => $dateNow));
 
                 $salesPaymentMethod = SalesPaymentMethod::from($data->payment_type);
-                $categoryFinance = MCategoryFinance::where('category_name', 'like', '%Pembelian%')->first();
+                $categoryFinance = MCategoryFinance::where('category_name', 'like', '%Penjualan%')->first();
                 Finance::create(array(
                     'branch_id' => $data->branch_id,
                     'category_finance_id' => $categoryFinance->id,
@@ -143,7 +143,7 @@ class TSalesController extends Controller
 
             DB::commit();
 
-            return ApiResponse::success([], "Sukses update status pembelian", 201);
+            return ApiResponse::success([], "Sukses update status penjualan", 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             return ApiResponse::error($th->getMessage(), $th, 500);
