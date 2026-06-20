@@ -11,10 +11,12 @@ import InventoryApis from "../../Services/Inventory.apis";
 import BankApis from "../../Services/Bank.apis";
 import PenjualanApis from "../../Services/Penjualan.apis";
 import OptionsStore from "../../Store/OptionsStore";
+import AuthStore from "../../Store/AuthStore";
 
 const FormAdd = ({ setCurentState }) => {
     const setLoading = LoadingStore((state) => state.setLoading);
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
+    const user = AuthStore((s) => s.user);
 
     // State Tab Customer
     const [customerType, setCustomerType] = useState('baru'); // 'baru' | 'terdaftar'
@@ -61,14 +63,15 @@ const FormAdd = ({ setCurentState }) => {
     const [productOptions, setProductOptions] = useState([]);
 
     useEffect(() => {
-        InventoryApis.GetInventory(`?status=AVAILABLE&per_page=10000000`)
+        const branchFilter = user?.branch_id ? `&branch_id=${user.branch_id}` : '';
+        InventoryApis.GetInventory(`?status=AVAILABLE&per_page=10000000${branchFilter}`)
             .then((res) => setInventoryOptions(res?.data || []))
             .catch((err) => console.error(err));
 
         ensureProducts()
             .then((data) => setProductOptions(data))
             .catch((err) => console.error(err));
-    }, []);
+    }, [user?.branch_id]);
 
     const getProductName = (productId) => {
         const product = productOptions.find((p) => p.id === productId);
@@ -83,12 +86,15 @@ const FormAdd = ({ setCurentState }) => {
     const [rekeningPengirim, setRekeningPengirim] = useState('');
 
     useEffect(() => {
-        if (paymentMethod === 'transfer') {
-            BankApis.GetBankBranch(`?per_page=10000000`)
-                .then((res) => setBankOptions(res?.data || []))
+        if (paymentMethod === 'transfer' && user?.branch_id) {
+            BankApis.GetBankBranch(`?per_page=10000000&branch_id=${user.branch_id}`)
+                .then((res) => {
+                    setBankOptions(res?.data || []);
+                    setSelectedBankId(null);
+                })
                 .catch((err) => console.error(err));
         }
-    }, [paymentMethod]);
+    }, [paymentMethod, user?.branch_id]);
 
     const [uangDibayar, setUangDibayar] = useState(0);
     const [isScanModalOpen, setIsScanModalOpen] = useState(false);
@@ -118,6 +124,7 @@ const FormAdd = ({ setCurentState }) => {
     const mapInventoryToCartItem = (inv) => ({
         inventory_code: inv.inventory_code,
         product_id: inv.product_id,
+        branch_id: inv.branch_id,
         name: getProductName(inv.product_id),
         specs: `${inv.berat ? `${inv.berat}g` : ''}${inv.karat ? ` • ${inv.karat}K` : ''}`,
         price: Number(inv.jual || 0),
@@ -235,8 +242,8 @@ const FormAdd = ({ setCurentState }) => {
 
             const payload = {
                 customer_id: customerId,
-                user_id: 1,
-                branch_id: 1,
+                user_id: user?.id,
+                branch_id: user?.branch_id,
                 payment_type: paymentMethod === 'tunai' ? 'TUNAI' : 'TRANSFER',
                 item: cartItems.map((item) => ({
                     inventory_code: item.inventory_code,

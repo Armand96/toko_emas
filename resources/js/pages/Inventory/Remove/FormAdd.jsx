@@ -44,7 +44,7 @@ const FormAdd = ({ setCurentState }) => {
             id: inv.id,
             inventory_code: inv.inventory_code,
             product_id: inv.product_id,
-            name: inv.product?.name || inv.inventory_code,
+            name: inv.product?.product_name || inv.product?.name || inv.inventory_code,
             weight: inv.berat ? `${inv.berat}g` : '-',
             karat: inv.karat || '-',
             price: inv.jual || 0,
@@ -202,7 +202,7 @@ const FormAdd = ({ setCurentState }) => {
                                     <option value="">Pilih item..</option>
                                     {inventoryOptions.map((inv) => (
                                         <option key={inv.inventory_code} value={inv.inventory_code}>
-                                            {inv.inventory_code} - {inv.product?.name || '-'} ({inv.berat}g • {inv.karat})
+                                            {inv.inventory_code} - {inv.product?.product_name || inv.product?.name || '-'} ({inv.berat ? `${inv.berat}g` : '-'} • {inv.karat ? `${inv.karat}K` : '-'})
                                         </option>
                                     ))}
                                 </select>

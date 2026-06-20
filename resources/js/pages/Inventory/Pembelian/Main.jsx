@@ -219,7 +219,7 @@ const MainPembelian = ({ setCurentState }) => {
                         row?.status === "DISETUJUI" && <button
                             onClick={() => HelperFunctions.printBarcode(row.barcode, { label: row.product?.product_name ?? row.product?.name })}
                             className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
-                            title="Cetak Barcode"
+                            title="Cetak QR Code"
                         >
                             <PrinterIcon size={20} />
                         </button>
@@ -286,7 +286,7 @@ const MainPembelian = ({ setCurentState }) => {
                 <FooterActionBar
                     selectedCount={selectedRows.length}
                     onClearSelection={() => setSelectedRows([])}
-                    primaryText={approvedItems.length > 0 ? `Cetak Barcode (${approvedItems.length})` : undefined}
+                    primaryText={approvedItems.length > 0 ? `Cetak QR Code (${approvedItems.length})` : undefined}
                     primaryType="primary"
                     primaryIcon={<PrinterIcon size={16} />}
                     onPrimaryClick={handleBulkPrint}

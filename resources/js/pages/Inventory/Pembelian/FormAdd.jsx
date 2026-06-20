@@ -5,7 +5,7 @@ import {
     PlusCircleIcon,
     TrashIcon,
 } from "@phosphor-icons/react";
-import Barcode from "react-barcode";
+import { QRCodeCanvas } from "qrcode.react";
 
 import HeaderSection from "../../../components/HeaderSection";
 import Dropdown from "../../../components/FormElement/SingleElement/Dropdown";
@@ -244,16 +244,13 @@ const FormPembelian = ({ setCurentState }) => {
 
     const columns = [
         {
-            header: "Barcode",
+            header: "QR Code",
             accessor: "barcode",
             render: (row) => (
-                <Barcode
-                    value={row.barcode}
-                    width={1}
-                    height={32}
-                    fontSize={10}
-                    margin={0}
-                />
+                <div className="flex flex-col items-center gap-1">
+                    <QRCodeCanvas value={row.barcode} size={48} level="M" marginSize={1} />
+                    <span className="text-[9px] text-gray-500">{row.barcode}</span>
+                </div>
             ),
         },
         {
@@ -331,7 +328,7 @@ const FormPembelian = ({ setCurentState }) => {
                 <div className="w-full lg:w-2/5 p-6 bg-white rounded-lg border border-gray-200 h-fit">
                     <p className="text-lg font-medium text-gray-900">Item Baru</p>
                     <p className="text-sm text-gray-500">
-                        Isi detail, barcode auto-generated
+                        Isi detail, QR code auto-generated
                     </p>
 
                     <div className="flex flex-col gap-4 mt-6">

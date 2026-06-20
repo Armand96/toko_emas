@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import Barcode from "react-barcode";
+import { QRCodeCanvas } from "qrcode.react";
 import { PrinterIcon, CaretDownIcon, CaretUpIcon } from "@phosphor-icons/react";
 
 import ModalCustom from "../../../components/modalCustom";
@@ -164,15 +164,16 @@ export const DetailItemModal = ({ isOpen, onClose, item }) => {
                         className="w-full h-64 rounded-lg object-cover bg-gray-100 border border-gray-200"
                         onError={(e) => { e.target.style.display = "none"; }}
                     />
-                    <div className="w-full border border-gray-200 rounded-lg p-2 overflow-hidden flex justify-center">
-                        <Barcode value={item.inventory_code} width={0.7} height={32} fontSize={9} margin={0} renderer="svg" style={{ maxWidth: "100%", height: "auto" }} />
+                    <div className="w-full border border-gray-200 rounded-lg p-3 overflow-hidden flex flex-col items-center gap-1">
+                        <QRCodeCanvas value={item.inventory_code} size={120} level="M" marginSize={1} />
+                        <span className="text-[10px] text-gray-500 font-medium">{item.inventory_code}</span>
                     </div>
                     <button
                         type="button"
                         onClick={handlePrintBarcode}
                         className="flex items-center justify-center gap-2 px-3 py-1.5 text-sm btn-outline rounded-md cursor-pointer"
                     >
-                        <PrinterIcon size={16} /> Cetak Barcode
+                        <PrinterIcon size={16} /> Cetak QR Code
                     </button>
                 </div>
 
@@ -258,8 +259,9 @@ export const EditItemModal = ({ isOpen, onClose, formData, errors = {}, onChange
                 {/* ============ KOLOM KIRI: Foto & Barcode ============ */}
                 <div className="w-full sm:w-44 flex flex-col gap-2 flex-shrink-0 min-w-0">
                     <PhotoUploadBox name="foto" value={formData.foto} onChange={onChange} />
-                    <div className="w-full border border-gray-200 rounded-lg p-2 overflow-hidden flex justify-center">
-                        <Barcode value={formData.inventory_code} width={0.7} height={32} fontSize={9} margin={0} renderer="svg" style={{ maxWidth: "100%", height: "auto" }} />
+                    <div className="w-full border border-gray-200 rounded-lg p-3 overflow-hidden flex flex-col items-center gap-1">
+                        <QRCodeCanvas value={formData.inventory_code} size={100} level="M" marginSize={1} />
+                        <span className="text-[10px] text-gray-500 font-medium">{formData.inventory_code}</span>
                     </div>
                 </div>
 

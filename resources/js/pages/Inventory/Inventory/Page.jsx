@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useDebounce } from "use-debounce";
-import { EyeIcon, PencilSimpleLineIcon } from "@phosphor-icons/react";
+import { EyeIcon, PencilSimpleLineIcon, PrinterIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
+import FooterActionBar from "../../../components/FooterActionBar";
 import { DetailItemModal, EditItemModal } from "./Modal";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import InventoryApis from "../../../Services/Inventory.apis";
@@ -44,6 +45,7 @@ const MasterInventory = () => {
     const [selectedItem, setSelectedItem]       = useState(null);
     const [formData, setFormData]               = useState(null);
     const [formErrors, setFormErrors]           = useState({});
+    const [selectedRows, setSelectedRows]       = useState([]);
 
     const setLoading = LoadingStore((state) => state.setLoading);
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
@@ -207,7 +209,54 @@ const MasterInventory = () => {
         handleCloseEdit();
     };
 
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedRows(paramFetch.data.map(item => item.id));
+        } else {
+            setSelectedRows([]);
+        }
+    };
+
+    const handleSelectRow = (id) => {
+        setSelectedRows(prev =>
+            prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]
+        );
+    };
+
+    const handleBulkPrint = () => {
+        const selected = paramFetch.data.filter(item => selectedRows.includes(item.id));
+        if (selected.length === 0) return;
+        const barcodes = selected.map(item => item.inventory_code);
+        const items = selected.map(item => {
+            const product = productOptions.find(p => p.value === item.product_id)?.details;
+            return {
+                barcode: item.inventory_code,
+                label: product?.product_name ?? '',
+            };
+        });
+        HelperFunctions.printBarcode(barcodes, { items });
+    };
+
     const columns = [
+        {
+            header: (
+                <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                    onChange={handleSelectAll}
+                    checked={selectedRows.length > 0 && selectedRows.length === paramFetch.data.length}
+                />
+            ),
+            accessor: 'checkbox',
+            render: (row) => (
+                <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                    checked={selectedRows.includes(row.id)}
+                    onChange={() => handleSelectRow(row.id)}
+                />
+            ),
+        },
         {
             header: "Kode",
             accessor: "barcode",
@@ -311,7 +360,7 @@ const MasterInventory = () => {
     ];
 
     return (
-        <div className="flex flex-col gap-6 w-full">
+        <div className={`flex flex-col gap-6 w-full ${selectedRows.length > 0 ? 'pb-24 lg:pb-28' : ''}`}>
             <HeaderSection
                 title="Item Inventory"
                 description="List item inventory untuk tracking status stok dan informasi detail setiap item."
@@ -387,6 +436,15 @@ const MasterInventory = () => {
                 onSubmit={handleSubmitEdit}
                 productOptions={productOptions}
                 branchOptions={branchOptions}
+            />
+
+            <FooterActionBar
+                selectedCount={selectedRows.length}
+                onClearSelection={() => setSelectedRows([])}
+                primaryText={selectedRows.length > 0 ? `Cetak QR Code (${selectedRows.length})` : undefined}
+                primaryType="primary"
+                primaryIcon={<PrinterIcon size={16} />}
+                onPrimaryClick={handleBulkPrint}
             />
         </div>
     );

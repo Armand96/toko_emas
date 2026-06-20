@@ -150,18 +150,20 @@ const Main = ({ setCurentState }) => {
             sessionStorage.setItem('print_kwitansi_data', JSON.stringify(detail));
             window.open('/penjualan/print-kwitansi', '_blank');
 
-            await PenjualanApis.PutPenjualanApproval({
-                penjualan_id: row.id,
-                status: 'SELESAI',
-            });
+            if (row.approval_status !== 'SELESAI') {
+                await PenjualanApis.PutPenjualanApproval({
+                    penjualan_id: row.id,
+                    status: 'SELESAI',
+                });
 
-            fetchData(paramFetch.current_page, paramFetch.per_page, searchBounce);
-            showAlert({
-                icon: 'success',
-                isAutoClose: true,
-                title: 'Berhasil',
-                message: 'Kwitansi telah dicetak dan transaksi dinyatakan selesai',
-            });
+                fetchData(paramFetch.current_page, paramFetch.per_page, searchBounce);
+                showAlert({
+                    icon: 'success',
+                    isAutoClose: true,
+                    title: 'Berhasil',
+                    message: 'Kwitansi telah dicetak dan transaksi dinyatakan selesai',
+                });
+            }
         } catch (error) {
             console.error(error);
             showAlert({

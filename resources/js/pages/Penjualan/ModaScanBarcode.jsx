@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import ModalCustom from "../../components/modalCustom";
 import { Html5Qrcode } from "html5-qrcode";
 import { FlashlightIcon } from "@phosphor-icons/react";
@@ -32,11 +32,6 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
     const startScanner = useCallback(async () => {
         try {
             setError(null);
-
-            if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-                setError("Kamera tidak bisa diakses via HTTP. Buka chrome://flags di HP, cari 'Insecure origins treated as secure', tambahkan " + window.location.origin);
-                return;
-            }
 
             const el = document.getElementById(SCANNER_ID);
             if (!el) return;
