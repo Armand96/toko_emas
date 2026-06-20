@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('branch_name', 150);
             $table->string('branch_code', 10);
             $table->string('address');
+            $table->string('lokasi_cabang');
             $table->bigInteger('pic', false, true);
             $table->date('branch_open_date');
             $table->boolean('is_active')->default(true);

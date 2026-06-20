@@ -25,6 +25,9 @@ class MBranchController extends Controller
         if ($request->has('address') && $request->address != "") {
             $query->where('address', 'like', '%' . $request->address . '%');
         }
+        if ($request->has('lokasi_cabang') && $request->lokasi_cabang != "") {
+            $query->where('lokasi_cabang', 'like', '%' . $request->lokasi_cabang . '%');
+        }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
         $branches = $query->orderBy('id', 'desc')->paginate($perPage);
