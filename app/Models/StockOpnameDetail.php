@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
     'product_id',
     'opname_status',
     'last_status',
+    'note',
 ])]
 class StockOpnameDetail extends Model
 {

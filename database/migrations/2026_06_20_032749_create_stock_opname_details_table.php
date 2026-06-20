@@ -18,6 +18,7 @@ return new class extends Migration
             $table->bigInteger('product_id', false, true);
             $table->enum('last_status', ['AVAILABLE', 'TRANSIT', 'SOLD', 'REPAIR', 'LOST']);
             $table->enum('opname_status', ['INSTOCK', 'EXTRA', 'MISSING']);
+            $table->string('note')->nullable();
             $table->timestamps();
         });
     }
