@@ -70,9 +70,11 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
 
     Route::get('roles', [RoleController::class, 'index']);
 
-    // Route::prefix('report')->group(function() {
-    //     Route::get('customer-count', [ReportController::class, 'customerCount']);
-    // });
+    Route::prefix('report')->group(function() {
+        Route::get('customer-count', [ReportController::class, 'customerCount']);
+        Route::get('top-customer', [ReportController::class, 'topCustomer']);
+        Route::get('top-customer-detail', [ReportController::class, 'topCustomerPagination']);
+    });
 
     Route::get('profile', [UserController::class, 'profile']);
     Route::get('logout', [UserController::class, 'logout']);
