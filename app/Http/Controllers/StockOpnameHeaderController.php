@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
+use App\Helpers\InventoryStatus;
 use App\Helpers\OpnameDetailStatus;
 use App\Helpers\OpnameHeaderStatus;
 use App\Http\Requests\StockOpnameRequest;
@@ -56,7 +57,7 @@ class StockOpnameHeaderController extends Controller
             $counter++;
             $kodeSesi = $kodeSesi . str_pad($counter, 4, "0", STR_PAD_LEFT);
 
-            $totalInventoryBranch = Inventory::where('branch_id', $dataBranch->id)->count();
+            $totalInventoryBranch = Inventory::where('branch_id', $dataBranch->id)->where('status', InventoryStatus::AVAILABLE)->count();
 
             $dataInsertBatch = [];
             $itemInStock = 0;
