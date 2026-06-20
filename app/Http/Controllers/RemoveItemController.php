@@ -44,7 +44,7 @@ class RemoveItemController extends Controller
 
     public function single(RemoveItem $removeItem)
     {
-        return ApiResponse::success($removeItem->load(['branch', 'user', 'details.inventory']));
+        return ApiResponse::success($removeItem->load(['branch', 'user', 'details.inventory', 'details.product']));
     }
 
     public function createRemoveItem(RemoveItemRequest $request)
@@ -113,12 +113,11 @@ class RemoveItemController extends Controller
 
             $products = RemoveItemDetail::where('remove_header_id', $validated['remove_id'])->pluck('inventory_code')->toArray();
             if ($status == RemoveItemStatus::DISETUJUI) {
-                $dateNow = date('Y-m-d H:i:s');
 
                 $removeItemData = RemoveItem::find($validated['remove_id']);
                 $jenis = RemoveItemJenis::from($removeItemData->jenis);
                 Inventory::whereIn('inventory_code', $products)->update(array('status' => $jenis == RemoveItemJenis::HILANG ? InventoryStatus::LOST : InventoryStatus::REPAIR, 'updated_at' => $dateNow));
-            } elseif ($status == RemoveItemStatus::RETURN) {
+            } elseif ($status == RemoveItemStatus::RETURN || $status == RemoveItemStatus::DIBATALKAN) {
                 Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow));
             }
 
