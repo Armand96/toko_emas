@@ -13,6 +13,8 @@ use App\Http\Controllers\MProductController;
 use App\Http\Controllers\MSupplierController;
 use App\Http\Controllers\PembelianController;
 use App\Http\Controllers\RemoveItemController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StockOpnameHeaderController;
 use App\Http\Controllers\StoreSettingController;
 use App\Http\Controllers\TransferItemController;
@@ -65,6 +67,12 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
     Route::get('stock-opname/{header}', [StockOpnameHeaderController::class, 'single']);
     Route::get('stock-opname', [StockOpnameHeaderController::class, 'index']);
     Route::post('stock-opname', [StockOpnameHeaderController::class, 'createOpname']);
+
+    Route::get('roles', [RoleController::class, 'index']);
+
+    // Route::prefix('report')->group(function() {
+    //     Route::get('customer-count', [ReportController::class, 'customerCount']);
+    // });
 
     Route::get('profile', [UserController::class, 'profile']);
     Route::get('logout', [UserController::class, 'logout']);
