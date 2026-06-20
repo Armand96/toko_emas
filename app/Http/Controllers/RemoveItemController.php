@@ -44,7 +44,7 @@ class RemoveItemController extends Controller
 
     public function single(RemoveItem $removeItem)
     {
-        return ApiResponse::success($removeItem->load(['branch', 'user', 'details.inventory']));
+        return ApiResponse::success($removeItem->load(['branch', 'user', 'details.inventory', 'details.product']));
     }
 
     public function createRemoveItem(RemoveItemRequest $request)
