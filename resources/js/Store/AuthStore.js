@@ -16,6 +16,10 @@ const AuthStore = create((set) => ({
     token: Cookies.get(authConfig.tokenKey) || null,
 
     setAuth: (user, token) => set({ user, token }),
+    setUser: (user) => {
+        Cookies.set(authConfig.userKey, JSON.stringify(user), authConfig.cookieOptions);
+        set({ user });
+    },
     clearAuth: () => set({ user: null, token: null }),
 }));
 

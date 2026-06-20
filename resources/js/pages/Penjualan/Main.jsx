@@ -196,7 +196,8 @@ const Main = ({ setCurentState }) => {
                 const items = row.details || [];
                 if (items.length === 0) return '-';
                 const names = items.map((d) => d.product?.product_name).filter(Boolean);
-                return names.join(', ');
+                if (names.length <= 3) return names.join(', ');
+                return `${names.slice(0, 3).join(', ')} +${names.length - 3} lainnya`;
             },
         },
         {
@@ -232,7 +233,7 @@ const Main = ({ setCurentState }) => {
                     >
                         <EyeIcon size={20} />
                     </button>
-                    {(row.approval_status === 'DISETUJUI' || row.approval_status === 'CETAK KWITANSI') && (
+                    {(row.approval_status === 'SELESAI' || row.approval_status === 'DISETUJUI' || row.approval_status === 'CETAK KWITANSI') && (
                         <button
                             onClick={() => handlePrint(row)}
                             className="p-1.5 btn-outline text-primary-500 hover:bg-primary-50 rounded-md transition-colors"

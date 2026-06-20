@@ -118,7 +118,7 @@ const MainPembelian = ({ setCurentState }) => {
 
     const handleBulkPrint = () => {
         if (approvedItems.length === 0) return;
-        const barcodes = approvedItems.map(item => item.barcode);
+        const barcodes = approvedItems.map(item => item.inventory_code);
         const items = approvedItems.map(item => ({
             barcode: item.barcode,
             label: item.product?.product_name ?? item.product?.name ?? '',

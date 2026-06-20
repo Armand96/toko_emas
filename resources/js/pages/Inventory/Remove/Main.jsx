@@ -121,9 +121,13 @@ const Main = ({ setCurentState }) => {
             let inventoryMap = {};
             if (codes.length > 0) {
                 try {
-                    const invRes = await InventoryApis.GetInventory(`?per_page=10000000`);
-                    const allInv = invRes?.data || [];
-                    allInv.forEach(inv => { inventoryMap[inv.inventory_code] = inv; });
+                    const results = await Promise.all(
+                        codes.map(code => InventoryApis.GetInventory(`?inventory_code=${encodeURIComponent(code)}`))
+                    );
+                    results.forEach(res => {
+                        const inv = res?.data?.[0];
+                        if (inv) inventoryMap[inv.inventory_code] = inv;
+                    });
                 } catch (_) {}
             }
 

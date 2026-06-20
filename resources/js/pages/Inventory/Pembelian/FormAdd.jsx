@@ -45,9 +45,9 @@ const requiredItem = [
     ["karat", "Karat wajib diisi"],
     ["modal", "Harga modal wajib diisi"],
     ["jual", "Harga jual wajib diisi"],
-    // ["branch_id", "Cabang wajib dipilih"],
+    ["branch_id", "Cabang wajib dipilih"],
     ["bank_id", "Bank keluar wajib dipilih"],
-    ["supplier_id", "Supplier wajib dipilih"],
+    // ["supplier_id", "Supplier wajib dipilih"],
 ];
 
 const FormPembelian = ({ setCurentState }) => {
@@ -60,9 +60,12 @@ const FormPembelian = ({ setCurentState }) => {
     const [errors, setErrors] = useState({});
     const [batch, setBatch] = useState([]);
 
+    const [selectedBranch, setSelectedBranch] = useState(null);
+
+    const [allProducts, setAllProducts] = useState([]);
     const [productOptions, setProductOptions] = useState([]);
     const [branchOptions, setBranchOptions] = useState([]);
-    const [bankOptions, setBankOptions] = useState([{value: "1", label: "test"}]);
+    const [bankOptions, setBankOptions] = useState([]);
     const [supplierOptions, setSupplierOptions] = useState([]);
 
     const fetchOptions = async () => {
@@ -73,9 +76,8 @@ const FormPembelian = ({ setCurentState }) => {
                 ensureSuppliers(),
             ]);
 
-            setProductOptions(
-                HelperFunctions.formatDropdown(productData, "id", "product_name")
-            );
+            setAllProducts(productData || []);
+            setProductOptions([]);
             setBranchOptions(
                 HelperFunctions.formatDropdown(branchData, "id", "branch_name")
             );
@@ -90,6 +92,26 @@ const FormPembelian = ({ setCurentState }) => {
     useEffect(() => {
         fetchOptions();
     }, []);
+
+    const handleBranchChange = (e) => {
+        const branchId = e.target.value;
+        setSelectedBranch(branchId);
+
+        const filtered = (allProducts || []).filter(
+            (p) => String(p.branch_id) === String(branchId)
+        );
+        setProductOptions(HelperFunctions.formatDropdown(filtered, "id", "product_name"));
+
+        setItem({ ...emptyItem, branch_id: branchId });
+        setErrors({});
+        setBankOptions([]);
+
+        if (branchId) {
+            BankApis.GetBankBranch(`?branch_id=${branchId}`).then((res) => {
+                setBankOptions(HelperFunctions.formatDropdownBank(res?.data || []));
+            });
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -119,23 +141,15 @@ const FormPembelian = ({ setCurentState }) => {
         if (name === "product_id") {
             const found = productOptions.find((p) => p.value === value);
             const d = found?.details || {};
-            const productBranchId = d.branch_id ?? null;
             setItem((prev) => ({
                 ...prev,
                 product_id: value,
                 category_id: d.category_id ?? null,
                 subcategory_id: d.subcategory_id ?? null,
-                branch_id: productBranchId,
-                bank_id: null,
                 _produk_label: found?.label ?? "",
                 _produk_barcode: d.barcode ?? "",
             }));
             setErrors((prev) => ({ ...prev, product_id: "" }));
-            if (productBranchId) {
-                BankApis.GetBankBranch(`?branch_id=${productBranchId}`).then((res) => {
-                    setBankOptions(HelperFunctions.formatDropdownBank(res?.data || []));
-                });
-            }
             return;
         }
 
@@ -165,7 +179,7 @@ const FormPembelian = ({ setCurentState }) => {
             { ...item, barcode, _rowId: Date.now() + Math.random() },
         ]);
 
-        setItem(emptyItem);
+        setItem({ ...emptyItem, branch_id: selectedBranch });
         setErrors({});
     };
 
@@ -330,12 +344,24 @@ const FormPembelian = ({ setCurentState }) => {
 
                     <div className="flex flex-col gap-4 mt-6">
                         <Dropdown
+                            label="Cabang"
+                            name="branch_id"
+                            value={selectedBranch}
+                            options={branchOptions}
+                            placeholder="Pilih cabang"
+                            isRequired
+                            error={errors.branch_id}
+                            onChange={handleBranchChange}
+                        />
+
+                        <Dropdown
                             label="Produk (master)"
                             name="product_id"
                             value={item.product_id}
                             options={productOptions}
-                            placeholder="Pilih produk"
+                            placeholder={selectedBranch ? "Pilih produk" : "Pilih cabang dulu"}
                             isRequired
+                            isDisable={!selectedBranch}
                             error={errors.product_id}
                             onChange={handleChange}
                         />
@@ -410,21 +436,10 @@ const FormPembelian = ({ setCurentState }) => {
                             value={item.supplier_id}
                             options={supplierOptions}
                             placeholder="Pilih supplier"
-                            isRequired
+                            // isRequired
                             error={errors.supplier_id}
                             onChange={handleChange}
                         />
-
-                        {/* <Dropdown
-                            label="Cabang"
-                            name="branch_id"
-                            value={item.branch_id}
-                            options={branchOptions}
-                            placeholder="Pilih cabang"
-                            isRequired
-                            error={errors.branch_id}
-                            onChange={handleChange}
-                        /> */}
 
                         <Dropdown
                             label="Bank Keluar"

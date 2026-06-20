@@ -51,7 +51,9 @@ const MasterUser = () => {
     const fetchOptions = async () => {
         try {
             const branchData = await ensureBranches();
+            const RoleData = await UsersApis.GetRole(`?limit=99999`);
             setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name'));
+            setRoleOptions(HelperFunctions.formatDropdown(RoleData?.data, 'id', 'role_name'));
         } catch (error) {
             console.error(error);
         }

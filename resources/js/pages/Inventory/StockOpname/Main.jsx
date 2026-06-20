@@ -1,38 +1,99 @@
-import { useState } from 'react';
-import { PlusCircleIcon, EyeIcon, PencilSimpleIcon } from "@phosphor-icons/react";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useDebounce } from "use-debounce";
+import { PlusCircleIcon, EyeIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
+import InventoryApis from "../../../Services/Inventory.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
-
-const DUMMY_DATA = [
-    { id: 1, tanggal: '11/05/2026', kode: 'OPN-BL1-2605-001', cabang: 'BLOK M 1', total: 500, sesuai: 500, missing: 0, extra: 0, modal: 5460000, jual: 6440000, status: 'Sesuai' },
-    { id: 2, tanggal: '10/04/2026', kode: 'OPN-BL1-2604-001', cabang: 'BLOK M 1', total: 300, sesuai: 298, missing: 2, extra: 0, modal: 5460000, jual: 6440000, status: 'Selisih' },
-    { id: 3, tanggal: '21/03/2026', kode: 'OPN-BL1-2605-001', cabang: 'BLOK M 1', total: 300, sesuai: 300, missing: 0, extra: 1, modal: 5460000, jual: 6440000, status: 'Selisih' },
-    { id: 4, tanggal: '26/02/2026', kode: 'OPN-BL1-2605-001', cabang: 'BLOK M 1', total: 290, sesuai: 290, missing: 0, extra: 0, modal: 5460000, jual: 6440000, status: 'Sesuai' },
-    { id: 5, tanggal: '01/01/2026', kode: 'OPN-BL1-2605-001', cabang: 'BLOK M 1', total: 290, sesuai: 290, missing: 0, extra: 0, modal: 5460000, jual: 6440000, status: 'Sesuai' },
-    { id: 6, tanggal: '11/12/2025', kode: 'OPN-BL1-2605-001', cabang: 'BLOK M 1', total: 280, sesuai: 280, missing: 0, extra: 0, modal: 5460000, jual: 6440000, status: 'Sesuai' },
-    { id: 7, tanggal: '11/11/2025', kode: 'OPN-BL1-2605-001', cabang: 'BLOK M 1', total: 280, sesuai: 280, missing: 0, extra: 0, modal: 5460000, jual: 6440000, status: 'Sesuai' },
-];
+import OptionsStore from "../../../Store/OptionsStore";
 
 const Main = ({ setCurentState }) => {
     const [filterData, setFilterData] = useState({ search: '', status: '', cabang: '' });
+    const [isLoading, setIsLoading] = useState(false);
+    const [branchOptions, setBranchOptions] = useState([]);
+
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
 
     const [paramFetch, setParamFetch] = useState({
-        data: DUMMY_DATA,
+        data: [],
         page: 1,
         pageSize: 10,
-        total: 15,
+        total: 0,
     });
+
+    const [filterBounce] = useDebounce(filterData, 500);
+    const didMount = useRef(false);
+
+    const fetchData = useCallback(async (page = 1, pageSize = 10, filters = filterData) => {
+        setIsLoading(true);
+        try {
+            const params = new URLSearchParams();
+            params.append('page', page);
+            params.append('per_page', pageSize);
+            if (filters.search) params.append('kode_sesi', filters.search);
+            if (filters.status) params.append('status', filters.status);
+            if (filters.cabang) params.append('branch_id', filters.cabang);
+
+            const res = await InventoryApis.GetStockOpname(`?${params.toString()}`);
+            const raw = res?.data || [];
+            const meta = res?.meta || res;
+
+            const rows = raw.map((item) => ({
+                id: item.id,
+                tanggal: item.created_at
+                    ? new Date(item.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                    : '-',
+                kode: item.kode_sesi,
+                cabang: item.branch?.branch_name || '-',
+                total: item.total_item,
+                sesuai: item.in_stock,
+                missing: item.missing,
+                extra: item.extra,
+                status: item.status === 'SESUAI' ? 'Sesuai' : 'Selisih',
+                _raw: item,
+            }));
+
+            setParamFetch({
+                data: rows,
+                page: meta?.current_page || page,
+                pageSize: meta?.per_page || pageSize,
+                total: meta?.total || rows.length,
+            });
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        ensureBranches()
+            .then((data) => setBranchOptions(HelperFunctions.formatDropdown(data, "id", "branch_name")));
+
+        fetchData(paramFetch.page, paramFetch.pageSize, filterData);
+    }, []);
+
+    useEffect(() => {
+        if (!didMount.current) {
+            didMount.current = true;
+            return;
+        }
+        fetchData(1, paramFetch.pageSize, filterBounce);
+        setParamFetch(prev => ({ ...prev, page: 1 }));
+    }, [filterBounce]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilterData(prev => ({ ...prev, [name]: value }));
-        setParamFetch(prev => ({ ...prev, page: 1 }));
+    };
+
+    const handleViewDetail = (row) => {
+        setCurentState({ view: 'detail', id: row.id });
     };
 
     const filterFields = [
-        { name: 'search', type: 'text', placeholder: 'Cari tanggal/kode sesi...', deskSpan: 2 },
+        { name: 'search', type: 'text', placeholder: 'Cari kode sesi...', deskSpan: 2 },
         {
             name: 'status', type: 'dropdown', placeholder: 'Pilih status', deskSpan: 1,
             options: [
@@ -42,9 +103,7 @@ const Main = ({ setCurentState }) => {
         },
         {
             name: 'cabang', type: 'dropdown', placeholder: 'Pilih cabang', deskSpan: 1,
-            options: [
-                { label: 'BLOK M 1', value: '1' },
-            ],
+            options: branchOptions,
         },
     ];
 
@@ -56,8 +115,6 @@ const Main = ({ setCurentState }) => {
         { header: 'Sesuai', accessor: 'sesuai', sortable: true },
         { header: 'Missing', accessor: 'missing', sortable: true },
         { header: 'Extra', accessor: 'extra', sortable: true },
-        { header: 'Modal', accessor: 'modal', sortable: true, render: (row) => HelperFunctions.formatCurrency(row.modal) },
-        { header: 'Jual', accessor: 'jual', sortable: true, render: (row) => HelperFunctions.formatCurrency(row.jual) },
         {
             header: 'Status', accessor: 'status', sortable: true,
             render: (row) => {
@@ -76,21 +133,12 @@ const Main = ({ setCurentState }) => {
             render: (row) => (
                 <div className="flex items-center gap-2">
                     <button
-                        onClick={() => setCurentState('detail')}
+                        onClick={() => handleViewDetail(row)}
                         className="p-1.5 text-primary-500 hover:bg-primary-50 border border-primary-200 rounded-md transition-colors cursor-pointer"
                         title="Lihat Detail"
                     >
                         <EyeIcon size={16} weight="bold" />
                     </button>
-                    {row.id === 1 && (
-                        <button
-                            onClick={() => setCurentState('form')}
-                            className="p-1.5 text-primary-500 hover:bg-primary-50 border border-primary-200 rounded-md transition-colors cursor-pointer"
-                            title="Lanjutkan Sesi"
-                        >
-                            <PencilSimpleIcon size={16} weight="bold" />
-                        </button>
-                    )}
                 </div>
             )
         },
@@ -103,7 +151,7 @@ const Main = ({ setCurentState }) => {
                 description="Kelola proses stock opname untuk memastikan kesesuaian stok fisik dan sistem."
                 icon={PlusCircleIcon}
                 textButton="Input Sesi Stock Opname"
-                onClick={() => setCurentState('form')}
+                onClick={() => setCurentState({ view: 'form' })}
             />
             <div className="w-full md:w-3/4 xl:w-2/3">
                 <InputGroup
@@ -119,8 +167,15 @@ const Main = ({ setCurentState }) => {
                 page={paramFetch.page}
                 pageSize={paramFetch.pageSize}
                 total={paramFetch.total}
-                onPageChange={(page) => setParamFetch(prev => ({ ...prev, page }))}
-                onPageSizeChange={(pageSize) => setParamFetch(prev => ({ ...prev, pageSize, page: 1 }))}
+                isLoading={isLoading}
+                onPageChange={(page) => {
+                    setParamFetch(prev => ({ ...prev, page }));
+                    fetchData(page, paramFetch.pageSize, filterData);
+                }}
+                onPageSizeChange={(pageSize) => {
+                    setParamFetch(prev => ({ ...prev, pageSize, page: 1 }));
+                    fetchData(1, pageSize, filterData);
+                }}
             />
         </div>
     );

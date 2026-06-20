@@ -1,18 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { ListIcon, CaretDownIcon, MagnifyingGlassIcon, SignOutIcon } from "@phosphor-icons/react";
 import AuthService from "../../Services/Auth.apis";
+import UsersStore from "../../Services/User.apis";
 import AuthStore from "../../Store/AuthStore";
+import OptionsStore from "../../Store/OptionsStore";
 import { showAlert } from "../../utils/showAlert";
 
 const Navbar = ({ setIsOpen }) => {
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [roles, setRoles] = useState([]);
+  const [branches, setBranches] = useState([]);
+
+  const ensureBranches = OptionsStore((s) => s.ensureBranches);
 
   const user = AuthStore((state) => state.user);
   const initials = user?.name
     ? user.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
     : 'U';
+
+  const roleName = roles.find((r) => r.id === user?.role_id)?.role_name || '-';
+  const branchName = branches.find((b) => b.id === user?.branch_id)?.branch_name || '-';
+
+  useEffect(() => {
+    UsersStore.GetRole('?per_page=10000000')
+      .then((res) => setRoles(res?.data || []))
+      .catch((err) => console.error(err));
+
+    ensureBranches()
+      .then((data) => setBranches(data || []))
+      .catch((err) => console.error(err));
+  }, []);
 
 
   const handleLogout = async () => {
@@ -50,7 +69,7 @@ const Navbar = ({ setIsOpen }) => {
             <p className="text-sm font-semibold text-neutral-black leading-none">
               {user?.name || 'User'}
             </p>
-            <p className="text-xs text-gray-500 mt-1">{user?.role || '-'}</p>
+            <p className="text-xs text-gray-500 mt-1">{roleName} · {branchName}</p>
           </div>
           <CaretDownIcon size={16} className="text-gray-500 hidden md:block" />
         </button>
@@ -65,7 +84,7 @@ const Navbar = ({ setIsOpen }) => {
                 <p className="text-sm font-semibold text-neutral-black truncate">
                   {user?.name || 'User'}
                 </p>
-                <p className="text-xs text-gray-500">{user?.username || '-'}</p>
+                <p className="text-xs text-gray-500 truncate">{roleName} · {branchName}</p>
               </div>
             </div>
             <button className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors cursor-pointer">

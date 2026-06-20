@@ -84,16 +84,26 @@ const HelperFunctions = {
         if (!Array.isArray(details) || details.length === 0) return details;
 
         try {
-            const [products, inventoryRes] = await Promise.all([
-                OptionsStore.getState().ensureProducts(),
-                InventoryApis.GetInventory(`?per_page=10000000`),
-            ]);
+            const products = await OptionsStore.getState().ensureProducts();
 
-            const inventories = inventoryRes?.data || [];
+            const codes = details
+                .filter(item => !item.inventory && item.inventory_code)
+                .map(item => item.inventory_code);
+
+            const inventoryMap = {};
+            if (codes.length > 0) {
+                const results = await Promise.all(
+                    codes.map(code => InventoryApis.GetInventory(`?inventory_code=${encodeURIComponent(code)}`))
+                );
+                results.forEach(res => {
+                    const inv = res?.data?.[0];
+                    if (inv) inventoryMap[inv.inventory_code] = inv;
+                });
+            }
 
             return details.map((item) => {
                 const product = item.product || products.find((p) => p.id === item.product_id);
-                const inventory = item.inventory || inventories.find((inv) => inv.inventory_code === item.inventory_code);
+                const inventory = item.inventory || inventoryMap[item.inventory_code];
 
                 return { ...item, product, inventory };
             });
