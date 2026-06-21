@@ -9,8 +9,10 @@ import InventoryApis from "../../../Services/Inventory.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import { showAlert } from "../../../utils/showAlert";
 import OptionsStore from "../../../Store/OptionsStore";
+import PermissionStore from "../../../Store/PermissionStore";
 
 const Main = () => {
+    const can = PermissionStore((s) => s.can);
     const [filterData, setFilterData] = useState({ search: '' });
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -206,13 +208,15 @@ const Main = () => {
                     >
                         <EyeIcon size={16} weight="bold" />
                     </button>
-                    <button
-                        onClick={() => handleReturn(row)}
-                        className="p-1.5 text-success-600 hover:bg-success-50 border border-success-200 rounded-md transition-colors cursor-pointer"
-                        title="Kembalikan ke Inventory"
-                    >
-                        <ArrowCounterClockwiseIcon size={16} weight="bold" />
-                    </button>
+                    {can('update', 'inventory.in_repair') && (
+                        <button
+                            onClick={() => handleReturn(row)}
+                            className="p-1.5 text-success-600 hover:bg-success-50 border border-success-200 rounded-md transition-colors cursor-pointer"
+                            title="Kembalikan ke Inventory"
+                        >
+                            <ArrowCounterClockwiseIcon size={16} weight="bold" />
+                        </button>
+                    )}
                 </div>
             )
         },

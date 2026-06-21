@@ -78,8 +78,8 @@ export default function Modal({
             <div className="flex flex-col gap-4">
                 <div className="flex gap-5">
                     <div className="w-32 h-32 bg-neutral-50 rounded-lg border border-neutral-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {data?.product?.image_path ? (
-                            <img src={`/storage/${data.product.image_path}`} alt="Foto Barang" className="w-full h-full object-cover" />
+                        {data?.image_path ? (
+                            <img src={`/storage/${data.image_path}`} alt="Foto Barang" className="w-full h-full object-cover" />
                         ) : (
                             <span className="text-xs text-neutral-400">Tidak ada foto</span>
                         )}

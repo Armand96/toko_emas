@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { NavLink } from "react-router";
 import {
   SquaresFourIcon,
@@ -14,21 +14,12 @@ import {
   CaretUpIcon,
   XIcon
 } from "@phosphor-icons/react";
+import PermissionStore from "../../Store/PermissionStore";
 
 const sidebarData = [
   {
     group: "Menu",
     items: [
-      {
-        id: "UI List",
-        label: "UI List",
-        icon: SquaresFourIcon,
-        subItems: [
-          { label: "input", link: "/input" },
-          { label: "table", link: "/table" },
-          { label: "Alert Modal", link: "/alert-modal" },
-        ]
-      },
       {
         id: "dashboard",
         label: "Dashboard",
@@ -40,7 +31,7 @@ const sidebarData = [
         label: "Approval",
         icon: CheckSquareOffsetIcon,
         subItems: [
-          { label: "penjualan", link: "/approval/penjualan" },
+          { label: "Penjualan", link: "/approval/penjualan" },
           { label: "Pembelian", link: "/approval/pembelian" },
           { label: "Remove Item", link: "/approval/remove-item" },
           { label: "Transfer", link: "/approval/transfer" }
@@ -96,13 +87,33 @@ const sidebarData = [
 ];
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
-  const [openMenus, setOpenMenus] = useState({
-
-  });
+  const [openMenus, setOpenMenus] = useState({});
+  // Subscribe ke nilai `permissions` supaya sidebar ikut re-render bila role
+  // berubah; fungsi helper di-ambil dari state yang sama agar konsisten.
+  const permissions = PermissionStore((state) => state.permissions);
+  const canSeeMenu = PermissionStore((state) => state.canSeeMenu);
+  const canSeeSubMenu = PermissionStore((state) => state.canSeeSubMenu);
 
   const toggleMenu = (id) => {
     setOpenMenus((prev) => ({ ...prev, [id]: !prev[id] }));
   };
+
+  const filteredSidebar = useMemo(() => sidebarData
+    .map((section) => ({
+      ...section,
+      items: section.items
+        .filter((item) => canSeeMenu(item.id))
+        .map((item) => {
+          if (!item.subItems) return item;
+          const filteredSubs = item.subItems.filter((sub) => canSeeSubMenu(sub.link));
+          if (filteredSubs.length === 0) return null;
+          return { ...item, subItems: filteredSubs };
+        })
+        .filter(Boolean),
+    }))
+    .filter((section) => section.items.length > 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [permissions]);
 
   return (
     <>
@@ -135,7 +146,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           </div>
 
           <div className="flex-1 overflow-y-auto py-4 scrollbar-hide">
-            {sidebarData.map((section, sectionIdx) => (
+            {filteredSidebar.map((section, sectionIdx) => (
               <div key={section.group}>
                 <div
                   className={`px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider ${sectionIdx > 0 ? "mt-6" : ""

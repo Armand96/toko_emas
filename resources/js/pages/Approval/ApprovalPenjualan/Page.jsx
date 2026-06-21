@@ -9,6 +9,7 @@ import { showAlert } from '../../../utils/showAlert';
 import HelperFunctions from "../../../utils/HelperFunctions";
 import LoadingStore from "../../../Store/LoadingStore";
 import PenjualanApis from "../../../Services/Penjualan.apis";
+import PermissionStore from "../../../Store/PermissionStore";
 
 const CABANG_OPTIONS = ['BLOK M 1', 'BLOK M 2'];
 
@@ -32,6 +33,7 @@ const STATUS_LABEL = {
 
 const ApprovalPenjualan = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const can = PermissionStore((s) => s.can);
 
     const [paramFetch, setParamFetch] = useState({
         data: [],
@@ -53,6 +55,7 @@ const ApprovalPenjualan = () => {
             const query = new URLSearchParams({
                 page,
                 per_page: pageSize,
+                approval_status: 'APPROVAL',
                 status: 'APPROVAL',
             });
             if (params.search) query.append('order_id', params.search);
@@ -276,8 +279,8 @@ const ApprovalPenjualan = () => {
             <ModalDetailPenjualan
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSubmitApprove={handleApprove}
-                onSubmitReject={handleReject}
+                onSubmitApprove={can('update', 'approval.penjualan') ? handleApprove : undefined}
+                onSubmitReject={can('update', 'approval.penjualan') ? handleReject : undefined}
                 data={selectedData}
             />
         </div>

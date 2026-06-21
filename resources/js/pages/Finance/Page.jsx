@@ -9,6 +9,7 @@ import LoadingStore from "../../Store/LoadingStore";
 import ModalTransaksi from "./Modal";
 import FinanceApis from "../../Services/Finance.apis";
 import OptionsStore from "../../Store/OptionsStore";
+import PermissionStore from "../../Store/PermissionStore";
 
 const TIPE_OPTIONS = [
     { value: 'CASH IN', label: 'Cash In' },
@@ -17,6 +18,7 @@ const TIPE_OPTIONS = [
 
 const Finance = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const can = PermissionStore((s) => s.can);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const [filter, setFilter] = useState({ search: '', tipe: '', cabang: '' });
     const [filterBounce] = useDebounce(filter, 500);
@@ -173,20 +175,24 @@ const Finance = () => {
                     >
                         <EyeIcon size={18} />
                     </button>
-                    <button
-                        onClick={() => handleOpenEdit(row)}
-                        className="p-1.5 text-primary-500 hover:bg-primary-50 border border-primary-200 rounded-md transition-colors cursor-pointer"
-                        title="Edit"
-                    >
-                        <PencilSimpleLineIcon size={18} />
-                    </button>
-                    <button
-                        onClick={() => handleDelete(row)}
-                        className="p-1.5 text-danger-500 hover:bg-danger-50 border border-danger-200 rounded-md transition-colors cursor-pointer"
-                        title="Hapus"
-                    >
-                        <TrashIcon size={18} />
-                    </button>
+                    {can('update', 'finance') && (
+                        <button
+                            onClick={() => handleOpenEdit(row)}
+                            className="p-1.5 text-primary-500 hover:bg-primary-50 border border-primary-200 rounded-md transition-colors cursor-pointer"
+                            title="Edit"
+                        >
+                            <PencilSimpleLineIcon size={18} />
+                        </button>
+                    )}
+                    {can('delete', 'finance') && (
+                        <button
+                            onClick={() => handleDelete(row)}
+                            className="p-1.5 text-danger-500 hover:bg-danger-50 border border-danger-200 rounded-md transition-colors cursor-pointer"
+                            title="Hapus"
+                        >
+                            <TrashIcon size={18} />
+                        </button>
+                    )}
                 </div>
             )
         },
@@ -202,7 +208,7 @@ const Finance = () => {
                 description="Kelola data keuangan toko."
                 icon={PlusCircleIcon}
                 textButton="Tambah Transaksi"
-                onClick={handleOpenAdd}
+                onClick={can('create', 'finance') ? handleOpenAdd : undefined}
             />
 
             {/* Filter Bar */}

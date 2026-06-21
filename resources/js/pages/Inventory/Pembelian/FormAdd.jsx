@@ -21,6 +21,8 @@ import LoadingStore from "../../../Store/LoadingStore";
 import InventoryApis from "../../../Services/Inventory.apis";
 import BankApis from "../../../Services/Bank.apis";
 import OptionsStore from "../../../Store/OptionsStore";
+import AuthStore from "../../../Store/AuthStore";
+import PermissionStore from "../../../Store/PermissionStore";
 
 const emptyItem = {
     product_id: null,
@@ -55,6 +57,11 @@ const FormPembelian = ({ setCurentState }) => {
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const ensureSuppliers = OptionsStore((s) => s.ensureSuppliers);
+
+    const user = AuthStore((s) => s.user);
+    const isKasir = PermissionStore((s) => s.isKasir);
+    // Kasir terkunci ke cabangnya sendiri; admin/owner/PIC bebas pilih cabang.
+    const lockBranch = isKasir() && !!user?.branch_id;
 
     const [item, setItem] = useState(emptyItem);
     const [errors, setErrors] = useState({});
@@ -93,11 +100,10 @@ const FormPembelian = ({ setCurentState }) => {
         fetchOptions();
     }, []);
 
-    const handleBranchChange = (e) => {
-        const branchId = e.target.value;
+    const selectBranch = (branchId, products = allProducts) => {
         setSelectedBranch(branchId);
 
-        const filtered = (allProducts || []).filter(
+        const filtered = (products || []).filter(
             (p) => String(p.branch_id) === String(branchId)
         );
         setProductOptions(HelperFunctions.formatDropdown(filtered, "id", "product_name"));
@@ -111,6 +117,17 @@ const FormPembelian = ({ setCurentState }) => {
                 setBankOptions(HelperFunctions.formatDropdownBank(res?.data || []));
             });
         }
+    };
+
+    // Kasir: cabang otomatis ikut cabang user login, tanpa perlu pilih.
+    useEffect(() => {
+        if (lockBranch && allProducts.length > 0 && !selectedBranch) {
+            selectBranch(user.branch_id);
+        }
+    }, [lockBranch, allProducts]);
+
+    const handleBranchChange = (e) => {
+        selectBranch(e.target.value);
     };
 
     const handleChange = (e) => {
@@ -343,16 +360,18 @@ const FormPembelian = ({ setCurentState }) => {
                     </p>
 
                     <div className="flex flex-col gap-4 mt-6">
-                        <Dropdown
-                            label="Cabang"
-                            name="branch_id"
-                            value={selectedBranch}
-                            options={branchOptions}
-                            placeholder="Pilih cabang"
-                            isRequired
-                            error={errors.branch_id}
-                            onChange={handleBranchChange}
-                        />
+                        {!lockBranch && (
+                            <Dropdown
+                                label="Cabang"
+                                name="branch_id"
+                                value={selectedBranch}
+                                options={branchOptions}
+                                placeholder="Pilih cabang"
+                                isRequired
+                                error={errors.branch_id}
+                                onChange={handleBranchChange}
+                            />
+                        )}
 
                         <Dropdown
                             label="Produk (master)"

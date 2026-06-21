@@ -10,8 +10,13 @@ import InventoryApis from '../../../Services/Inventory.apis';
 import LoadingStore from '../../../Store/LoadingStore';
 import HelperFunctions from '../../../utils/HelperFunctions';
 import OptionsStore from '../../../Store/OptionsStore';
+import PermissionStore from '../../../Store/PermissionStore';
+import AuthStore from '../../../Store/AuthStore';
 
 const MasterProduk = () => {
+    const can = PermissionStore((s) => s.can);
+    const isKasir = PermissionStore((s) => s.isKasir);
+    const user = AuthStore((s) => s.user);
     const [paramFetch, setParamFetch] = useState({
         data: [],
         current_page: 1,
@@ -47,7 +52,8 @@ const MasterProduk = () => {
     const fetchData = async (page = 1, pageSize = 10, product_name = '', category_id = null, branch_id = null) => {
         setLoading(true);
         try {
-            const res = await InventoryApis.GetProducts(`?page=${page}&limit=${pageSize}${product_name ? `&product_name=${product_name}` : ''}${category_id ? `&category_id=${category_id}` : ''}${branch_id ? `&branch_id=${branch_id}` : ''}`);
+            const effectiveBranch = isKasir() && user?.branch_id ? user.branch_id : branch_id;
+            const res = await InventoryApis.GetProducts(`?page=${page}&limit=${pageSize}${product_name ? `&product_name=${product_name}` : ''}${category_id ? `&category_id=${category_id}` : ''}${effectiveBranch ? `&branch_id=${effectiveBranch}` : ''}`);
             setParamFetch(res);
             setFirstLoading(true);
         } catch (error) {
@@ -202,12 +208,14 @@ const MasterProduk = () => {
                     >
                         <EyeIcon size={20} />
                     </button>
-                    <button
-                        onClick={() => handleOpenModal('edit', row)}
-                        className="p-1.5 btn-outline !border-primary-500 text-warning-500 hover:bg-warning-50 rounded-md transition-colors"
-                    >
-                        <PencilSimpleLineIcon size={20} />
-                    </button>
+                    {can('update', 'inventory.master_produk') && (
+                        <button
+                            onClick={() => handleOpenModal('edit', row)}
+                            className="p-1.5 btn-outline !border-primary-500 text-warning-500 hover:bg-warning-50 rounded-md transition-colors"
+                        >
+                            <PencilSimpleLineIcon size={20} />
+                        </button>
+                    )}
                 </div>
             )
         }
@@ -225,7 +233,7 @@ const MasterProduk = () => {
                 title="Master Produk"
                 description="Kelola daftar produk toko emas Anda secara keseluruhan."
                 icon={PlusCircleIcon}
-                onClick={() => handleOpenModal('add')}
+                onClick={can('create', 'inventory.master_produk') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah Produk"
             />
             <div className="w-full lg:w-3/6">

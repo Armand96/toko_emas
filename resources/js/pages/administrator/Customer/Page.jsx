@@ -8,9 +8,11 @@ import CustomerApis from "../../../Services/Customer.apis";
 import LoadingStore from '../../../Store/LoadingStore';
 import { useDebounce } from 'use-debounce';
 import ModalCustomer from './Modal';
+import PermissionStore from '../../../Store/PermissionStore';
 
 const MasterCustomer = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const can = PermissionStore((s) => s.can);
     const [paramFetch, setParamFetch] = useState({ data: [], page: 1, total: 0, pageSize: 10 });
     const [search, setSearch] = useState({ name: '' });
     const [showModalAdd, setShowModalAdd] = useState(false);
@@ -144,12 +146,14 @@ const MasterCustomer = () => {
                     >
                         <EyeIcon size={20} />
                     </button>
-                    <button
-                        onClick={() => handleOpenModal('edit', row)}
-                        className="p-1.5 btn-outline hover:bg-warning-50 rounded-md cursor-pointer"
-                    >
-                        <PencilSimpleLineIcon size={20} />
-                    </button>
+                    {can('update', 'administrator.customer') && (
+                        <button
+                            onClick={() => handleOpenModal('edit', row)}
+                            className="p-1.5 btn-outline hover:bg-warning-50 rounded-md cursor-pointer"
+                        >
+                            <PencilSimpleLineIcon size={20} />
+                        </button>
+                    )}
                 </div>
             )
         }
@@ -169,7 +173,7 @@ const MasterCustomer = () => {
                 title="Customer"
                 description="Kelola data pelanggan untuk mendukung proses transaksi penjualan dan layanan pelanggan."
                 icon={UserPlusIcon}
-                onClick={() => handleOpenModal('add')}
+                onClick={can('create', 'administrator.customer') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah Customer"
             />
             <div className="w-full lg:w-1/3">

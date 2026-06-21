@@ -14,9 +14,11 @@ import InventoryApis from '../../../Services/Inventory.apis';
 import HelperFunctions from '../../../utils/HelperFunctions';
 import LoadingStore from '../../../Store/LoadingStore';
 import OptionsStore from '../../../Store/OptionsStore';
+import PermissionStore from '../../../Store/PermissionStore';
 
 const ApprovalPembelian = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const can = PermissionStore((s) => s.can);
     const ensureCategories = OptionsStore((s) => s.ensureCategories);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
 
@@ -342,8 +344,8 @@ const ApprovalPembelian = () => {
             <Modal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSubmitApprove={handleApprove}
-                onSubmitReject={handleReject}
+                onSubmitApprove={can('update', 'approval.pembelian') ? handleApprove : undefined}
+                onSubmitReject={can('update', 'approval.pembelian') ? handleReject : undefined}
                 data={selectedData}
                 mode="approve"
             />
@@ -352,10 +354,10 @@ const ApprovalPembelian = () => {
                 <FooterActionBar
                     selectedCount={selectedRows.length}
                     onClearSelection={() => setSelectedRows([])}
-                    secondaryText="Tolak"
+                    secondaryText={can('update', 'approval.pembelian') ? "Tolak" : undefined}
                     secondaryType="danger"
                     onSecondaryClick={handleBulkReject}
-                    primaryText="Setujui"
+                    primaryText={can('update', 'approval.pembelian') ? "Setujui" : undefined}
                     primaryType="primary"
                     onPrimaryClick={handleBulkApprove}
                 />

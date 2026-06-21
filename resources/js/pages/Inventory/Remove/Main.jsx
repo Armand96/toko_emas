@@ -9,8 +9,13 @@ import InventoryApis from "../../../Services/Inventory.apis";
 import { showAlert } from "../../../utils/showAlert";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import OptionsStore from "../../../Store/OptionsStore";
+import PermissionStore from "../../../Store/PermissionStore";
+import AuthStore from "../../../Store/AuthStore";
 
 const Main = ({ setCurentState }) => {
+    const can = PermissionStore((s) => s.can);
+    const isKasir = PermissionStore((s) => s.isKasir);
+    const user = AuthStore((s) => s.user);
     const [filterData, setFilterData] = useState({ search: '', status: '', cabang: '' });
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,7 +44,8 @@ const Main = ({ setCurentState }) => {
             params.append('per_page', pageSize);
             if (filters.search) params.append('code', filters.search);
             if (filters.status) params.append('status', filters.status);
-            if (filters.cabang) params.append('branch_id', filters.cabang);
+            const effectiveBranch = isKasir() && user?.branch_id ? user.branch_id : filters.cabang;
+            if (effectiveBranch) params.append('branch_id', effectiveBranch);
 
             const res = await InventoryApis.GetRemoveItem(`?${params.toString()}`);
             const raw = res?.data || [];
@@ -243,7 +249,7 @@ const Main = ({ setCurentState }) => {
             header: 'Aksi', accessor: 'aksi',
             render: (row) => (
                 <div className="flex items-center gap-2">
-                    {row.status === 'Approval' && (
+                    {row.status === 'Approval' && can('delete', 'inventory.remove') && (
                         <button
                             onClick={() => handleCancel(row)}
                             className="p-1.5 text-danger-500 hover:bg-danger-50 border border-danger-200 rounded-md transition-colors cursor-pointer"
@@ -271,7 +277,7 @@ const Main = ({ setCurentState }) => {
                 description="Kelola proses barang keluar dari ready stock berdasarkan jenis transaksi."
                 icon={PlusCircleIcon}
                 textButton="Remove Item"
-                onClick={() => setCurentState('form')}
+                onClick={can('create', 'inventory.remove') ? () => setCurentState('form') : undefined}
             />
             <div className="w-full md:w-3/4 xl:w-2/3">
                 <InputGroup

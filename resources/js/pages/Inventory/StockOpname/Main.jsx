@@ -7,8 +7,10 @@ import InputGroup from "../../../components/FormElement/InputGroup";
 import InventoryApis from "../../../Services/Inventory.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import OptionsStore from "../../../Store/OptionsStore";
+import PermissionStore from "../../../Store/PermissionStore";
 
 const Main = ({ setCurentState }) => {
+    const can = PermissionStore((s) => s.can);
     const [filterData, setFilterData] = useState({ search: '', status: '', cabang: '' });
     const [isLoading, setIsLoading] = useState(false);
     const [branchOptions, setBranchOptions] = useState([]);
@@ -151,7 +153,7 @@ const Main = ({ setCurentState }) => {
                 description="Kelola proses stock opname untuk memastikan kesesuaian stok fisik dan sistem."
                 icon={PlusCircleIcon}
                 textButton="Input Sesi Stock Opname"
-                onClick={() => setCurentState({ view: 'form' })}
+                onClick={can('create', 'inventory.stock_opname') ? () => setCurentState({ view: 'form' }) : undefined}
             />
             <div className="w-full md:w-3/4 xl:w-2/3">
                 <InputGroup

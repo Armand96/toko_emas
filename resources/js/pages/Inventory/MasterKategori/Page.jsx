@@ -13,9 +13,11 @@ import InventoryApis from "../../../Services/Inventory.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import LoadingStore from "../../../Store/LoadingStore";
 import OptionsStore from "../../../Store/OptionsStore";
+import PermissionStore from "../../../Store/PermissionStore";
 import { useDebounce } from "use-debounce";
 
 const MasterKategori = () => {
+    const can = PermissionStore((s) => s.can);
     const setLoading = LoadingStore((state) => state.setLoading);
     const [paramFetch, setParamFetch] = useState({
         data: [],
@@ -161,12 +163,14 @@ const MasterKategori = () => {
                     >
                         <EyeIcon size={20} />
                     </button>
-                    <button
-                        onClick={() => handleOpenModal("edit", row)}
-                        className="p-1.5 btn-outline hover:bg-warning-50 rounded-md cursor-pointer"
-                    >
-                        <PencilSimpleLineIcon size={20} />
-                    </button>
+                    {can('update', 'inventory.master_kategori') && (
+                        <button
+                            onClick={() => handleOpenModal("edit", row)}
+                            className="p-1.5 btn-outline hover:bg-warning-50 rounded-md cursor-pointer"
+                        >
+                            <PencilSimpleLineIcon size={20} />
+                        </button>
+                    )}
                 </div>
             ),
         },
@@ -186,7 +190,7 @@ const MasterKategori = () => {
                 title="Master Kategori"
                 description="Kelola daftar kategori dan sub-kategori produk."
                 icon={PlusCircleIcon}
-                onClick={() => handleOpenModal("add")}
+                onClick={can('create', 'inventory.master_kategori') ? () => handleOpenModal("add") : undefined}
                 textButton="Tambah Kategori"
             />
             <div className="w-full lg:w-1/3">

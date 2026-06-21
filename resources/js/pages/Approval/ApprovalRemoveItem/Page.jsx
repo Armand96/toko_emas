@@ -10,11 +10,13 @@ import HelperFunctions from "../../../utils/HelperFunctions";
 import LoadingStore from "../../../Store/LoadingStore";
 import InventoryApis from "../../../Services/Inventory.apis";
 import OptionsStore from "../../../Store/OptionsStore";
+import PermissionStore from "../../../Store/PermissionStore";
 
 const JENIS_LABEL = { HILANG: 'Hilang', REPAIR: 'Repair' };
 
 const ApprovalRemoveItem = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const can = PermissionStore((s) => s.can);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
 
@@ -266,8 +268,8 @@ const ApprovalRemoveItem = () => {
             <ModalDetailRemoveItem
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSubmitApprove={handleApprove}
-                onSubmitReject={handleReject}
+                onSubmitApprove={can('update', 'approval.remove_item') ? handleApprove : undefined}
+                onSubmitReject={can('update', 'approval.remove_item') ? handleReject : undefined}
                 data={selectedData}
             />
         </div>

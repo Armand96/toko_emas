@@ -10,6 +10,7 @@ import HelperFunctions from "../../../utils/HelperFunctions";
 import LoadingStore from "../../../Store/LoadingStore";
 import InventoryApis from "../../../Services/Inventory.apis";
 import OptionsStore from "../../../Store/OptionsStore";
+import PermissionStore from "../../../Store/PermissionStore";
 
 const STATUS_OPTIONS = ['Approval', 'Disetujui', 'Ditolak', 'Dibatalkan'];
 const STATUS_API_MAP = { 'Approval': 'APPROVAL', 'Disetujui': 'DISETUJUI', 'Ditolak': 'DITOLAK', 'Dibatalkan': 'DIBATALKAN' };
@@ -24,6 +25,7 @@ const STATUS_STYLE = {
 
 const ApprovalTransfer = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const can = PermissionStore((s) => s.can);
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
 
     const [paramFetch, setParamFetch] = useState({
@@ -259,8 +261,8 @@ const ApprovalTransfer = () => {
             <ModalDetailTransfer
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSubmitApprove={handleApprove}
-                onSubmitReject={handleReject}
+                onSubmitApprove={can('update', 'approval.transfer') ? handleApprove : undefined}
+                onSubmitReject={can('update', 'approval.transfer') ? handleReject : undefined}
                 data={selectedData}
                 productMap={productMap}
             />
