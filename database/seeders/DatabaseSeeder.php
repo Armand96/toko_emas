@@ -34,6 +34,11 @@ class DatabaseSeeder extends Seeder
             INSERT INTO `m_category_finances` (`id`, `category_name`, `is_active`, `created_at`, `updated_at`) VALUES (2, 'Pembelian', 1, NULL, NULL);
             INSERT INTO `m_category_finances` (`id`, `category_name`, `is_active`, `created_at`, `updated_at`) VALUES (3, 'Penjualan', 1, NULL, NULL);
             INSERT INTO `bank_cabangs` (`id`, `branch_id`, `bank_id`, `nomor_rekening`, `nama_pemilik`, `is_active`, `created_at`, `updated_at`) VALUES (1, 1, 1, '00338227', 'Jono', 1, '2026-06-15 06:24:12', '2026-06-15 06:24:12');
+            INSERT INTO `roles` (`id`, `role_name`, `created_at`, `updated_at`) VALUES (1, 'Super Admin', NULL, NULL);
+            INSERT INTO `roles` (`id`, `role_name`, `created_at`, `updated_at`) VALUES (2, 'Owner', NULL, NULL);
+            INSERT INTO `roles` (`id`, `role_name`, `created_at`, `updated_at`) VALUES (3, 'PIC', NULL, NULL);
+            INSERT INTO `roles` (`id`, `role_name`, `created_at`, `updated_at`) VALUES (4, 'Kasir', NULL, NULL);
+
         ");
 
         User::create(array(
