@@ -118,7 +118,7 @@ const DateRange = ({ label, name, value, isRequired, onChange }) => {
                                     value={draft.start}
                                     max={draft.end || undefined}
                                     onChange={(e) => setDraft({ ...draft, start: e.target.value })}
-                                    className="w-[130px] rounded-lg border border-gray-200 px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                                    className="w-[130px] rounded-lg  text-nowrap border border-gray-200 px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                                 />
                                 <span className="text-xs text-gray-400">s.d.</span>
                                 <input
@@ -126,7 +126,7 @@ const DateRange = ({ label, name, value, isRequired, onChange }) => {
                                     value={draft.end}
                                     min={draft.start || undefined}
                                     onChange={(e) => setDraft({ ...draft, end: e.target.value })}
-                                    className="w-[130px] rounded-lg border border-gray-200 px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                                    className="w-[130px] rounded-lg  text-nowrap border border-gray-200 px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                                 />
                             </div>
                         </div>

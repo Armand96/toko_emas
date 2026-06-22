@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     WalletIcon,
     MoneyIcon,
@@ -12,97 +12,13 @@ import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
 import HelperFunctions from "../../../utils/HelperFunctions";
+import LoadingStore from "../../../Store/LoadingStore";
+import OptionsStore from "../../../Store/OptionsStore";
+import ReportApis from "../../../Services/Report.apis";
 import StatCard from "./Component/StatCard";
 import ChartCard from "./Component/ChartCard";
 import DonutChart from "./Component/DonutChart";
 import BranchAccountAccordion from "./Component/BranchAccountAccordion";
-
-/* ──────────────────────────────────────────────────────────
-   DUMMY DATA (parent) — nanti tinggal diganti hasil API
-   ────────────────────────────────────────────────────────── */
-const SUMMARY = {
-    total: 38260000,
-    kas: 18260000,
-    bank: 20000000,
-    cabang: 5,
-    per: "15 Jun 2025",
-};
-
-const makeAccounts = () => [
-    { id: 1, name: "KAS Tunai", type: "cash", subtitle: "Kas laci toko", balance: 6760000 },
-    { id: 2, name: "BCA", type: "bank", subtitle: "0312512365718", balance: 6760000 },
-    { id: 3, name: "BCA", type: "bank", subtitle: "123 999 XXX", balance: 6760000 },
-];
-
-const BRANCHES = [
-    { id: 1, name: "BLOK M 1", location: "Jakarta Pusat", accounts: makeAccounts() },
-    { id: 2, name: "BLOK M 2", location: "Jakarta Pusat", accounts: makeAccounts() },
-    { id: 3, name: "BLOK M 3", location: "Jakarta Pusat", accounts: makeAccounts() },
-];
-
-const PERIOD = {
-    saldoAwal: 0,
-    cashOut: 14220000,
-    cashIn: 22480000,
-    saldoAkhir: 8260000,
-};
-
-const CASH_IN = [
-    { label: "Penjualan", value: 16000000 },
-    { label: "Setoran Modal", value: 5000000 },
-    { label: "Lainnya", value: 1480000 },
-];
-
-const CASH_OUT = [
-    { label: "Pembelian", value: 8000000 },
-    { label: "Gaji", value: 3000000 },
-    { label: "Operasional", value: 1500000 },
-    { label: "Lainnya", value: 1720000 },
-];
-
-const DETAIL = [
-    { id: 1, tanggal: "2026-05-11 08:15", cabang: "Blok M 2", tipe: "CASH IN", kategori: "Penjualan", metode: "Tunai", bank: "", nominal: 36791000, ket: "Catatan aja" },
-    { id: 2, tanggal: "2026-05-11 08:15", cabang: "Blok M 2", tipe: "CASH IN", kategori: "Penjualan", metode: "Transfer", bank: "BCA 0312512365718", nominal: 36791000, ket: "Catatan aja" },
-    { id: 3, tanggal: "2026-05-10 14:02", cabang: "Blok M 1", tipe: "CASH OUT", kategori: "Pembelian", metode: "Transfer", bank: "BCA 2492492349", nominal: 12500000, ket: "Beli stok" },
-    { id: 4, tanggal: "2026-05-10 09:30", cabang: "Blok M 3", tipe: "CASH OUT", kategori: "Gaji", metode: "Tunai", bank: "", nominal: 5000000, ket: "Gaji karyawan" },
-    { id: 5, tanggal: "2026-05-09 16:45", cabang: "Blok M 2", tipe: "CASH IN", kategori: "Setoran Modal", metode: "Transfer", bank: "BNI 0378314234", nominal: 5000000, ket: "Setoran" },
-    { id: 6, tanggal: "2026-05-09 11:20", cabang: "Blok M 1", tipe: "CASH OUT", kategori: "Operasional", metode: "Tunai", bank: "", nominal: 850000, ket: "Listrik" },
-    { id: 7, tanggal: "2026-05-08 13:10", cabang: "Blok M 3", tipe: "CASH IN", kategori: "Penjualan", metode: "Tunai", bank: "", nominal: 9200000, ket: "-" },
-    { id: 8, tanggal: "2026-05-08 10:00", cabang: "Blok M 2", tipe: "CASH OUT", kategori: "Pembelian", metode: "Transfer", bank: "BCA 0378314234", nominal: 7400000, ket: "Beli emas" },
-    { id: 9, tanggal: "2026-05-07 15:35", cabang: "Blok M 1", tipe: "CASH IN", kategori: "Lainnya", metode: "Tunai", bank: "", nominal: 1480000, ket: "Lain-lain" },
-    { id: 10, tanggal: "2026-05-07 09:05", cabang: "Blok M 3", tipe: "CASH OUT", kategori: "Lainnya", metode: "Tunai", bank: "", nominal: 1720000, ket: "Misc" },
-    { id: 11, tanggal: "2026-05-06 12:00", cabang: "Blok M 2", tipe: "CASH IN", kategori: "Penjualan", metode: "Tunai", bank: "", nominal: 4300000, ket: "-" },
-    { id: 12, tanggal: "2026-05-06 08:40", cabang: "Blok M 1", tipe: "CASH OUT", kategori: "Operasional", metode: "Transfer", bank: "BCA 2492492349", nominal: 650000, ket: "Internet" },
-];
-
-const CABANG_OPTIONS = [
-    { value: "", label: "Semua Cabang" },
-    { value: "blok-m-1", label: "Blok M 1" },
-    { value: "blok-m-2", label: "Blok M 2" },
-    { value: "blok-m-3", label: "Blok M 3" },
-];
-
-/* Bank muncul sesuai cabang yang dipilih (cascading). */
-const BANK_BY_CABANG = {
-    "": [{ value: "", label: "Semua Bank" }, { value: "tunai", label: "Tunai" }],
-    "blok-m-1": [
-        { value: "", label: "Semua Bank" },
-        { value: "tunai", label: "Tunai" },
-        { value: "01", label: "01 - BCA (0378314234)" },
-        { value: "02", label: "02 - BCA (2492492349)" },
-    ],
-    "blok-m-2": [
-        { value: "", label: "Semua Bank" },
-        { value: "tunai", label: "Tunai" },
-        { value: "03", label: "03 - BNI (0378314234)" },
-        { value: "04", label: "04 - BCA (0378314234)" },
-    ],
-    "blok-m-3": [
-        { value: "", label: "Semua Bank" },
-        { value: "tunai", label: "Tunai" },
-        { value: "05", label: "05 - BCA (123999XXX)" },
-    ],
-};
 
 const TIPE_OPTIONS = [
     { value: "", label: "Semua Tipe" },
@@ -110,68 +26,230 @@ const TIPE_OPTIONS = [
     { value: "CASH OUT", label: "Cash Out" },
 ];
 
+const METODE_OPTIONS = [
+    { value: "", label: "Semua Metode" },
+    { value: "CASH", label: "Tunai" },
+    { value: "TRANSFER", label: "Transfer" },
+];
+
+/** Ubah [{category_name, total}] dari API jadi [{label, value}] untuk donut chart. */
+const toChartData = (arr) =>
+    Array.isArray(arr)
+        ? arr.map((c) => ({ label: c.category_name ?? "-", value: Number(c.total) || 0 }))
+        : [];
+
+/** Bentuk teks rekening dari relasi bankCabang. */
+const accountLabel = (row) => {
+    if (row.payment_method === "CASH") return "Tunai";
+    const bc = row.bankCabang ?? row.bank_cabang;
+    if (!bc) return "Transfer";
+    const bankName = bc.bank?.bank_name ?? "";
+    return [bankName, bc.nomor_rekening].filter(Boolean).join(" ") || "Transfer";
+};
+
+/**
+ * Kelompokkan hasil total-group-by-cabang menjadi struktur untuk accordion:
+ * [{ id, name, location, accounts: [{id, name, type, subtitle, balance}] }]
+ */
+const buildBranches = (rows) => {
+    if (!Array.isArray(rows)) return [];
+    const map = new Map();
+    rows.forEach((row) => {
+        const branch = row.branch;
+        if (!branch) return;
+        if (!map.has(branch.id)) {
+            map.set(branch.id, {
+                id: branch.id,
+                name: branch.branch_name ?? "-",
+                location: branch.branch_code ?? "",
+                accounts: [],
+            });
+        }
+        const bc = row.bankCabang ?? row.bank_cabang;
+        const isCash = !row.bank_cabang_id || !bc;
+        map.get(branch.id).accounts.push({
+            id: bc?.id ?? `cash-${branch.id}`,
+            name: isCash ? "KAS Tunai" : bc.bank?.bank_name ?? "Bank",
+            type: isCash ? "cash" : "bank",
+            subtitle: isCash ? "Kas laci toko" : bc.nomor_rekening ?? "-",
+            balance: Number(row.balance) || 0,
+        });
+    });
+    return Array.from(map.values());
+};
+
 const ReportFinance = () => {
+    const setLoading = LoadingStore((s) => s.setLoading);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
+
     const [filter, setFilter] = useState({
-        dateRange: { mode: "range", start: "2026-06-01", end: "2026-06-15" },
+        dateRange: { mode: "all", start: "", end: "" },
         cabang: "",
-        bank: "",
+        metode: "",
         tipe: "",
     });
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
 
-    const bankOptions = BANK_BY_CABANG[filter.cabang] || BANK_BY_CABANG[""];
+    const [branchOptions, setBranchOptions] = useState([{ value: "", label: "Semua Cabang" }]);
+
+    // KPI total (semua cabang) + accordion saldo per cabang
+    const [totals, setTotals] = useState({ total_all: 0, total_cash: 0, total_transfer: 0 });
+    const [branches, setBranches] = useState([]);
+
+    // Ringkasan periode + donut
+    const [period, setPeriod] = useState({ opening_balance: 0, cash_in: 0, cash_out: 0, closing_balance: 0 });
+    const [cashIn, setCashIn] = useState([]);
+    const [cashOut, setCashOut] = useState([]);
+
+    // Tabel detail (paginated)
+    const [detail, setDetail] = useState({ data: [], current_page: 1, total: 0, per_page: 10 });
+    const [firstLoaded, setFirstLoaded] = useState(false);
+
+    /* Susun query param dari filter aktif (dipakai summary & detail). */
+    const buildParams = (extra = {}) => {
+        const q = new URLSearchParams();
+        const { mode, start, end } = filter.dateRange || {};
+        if (mode !== "all" && start && end) {
+            // end_date dijadikan akhir hari supaya transaksi di tanggal "end"
+            // ikut terhitung (backend pakai whereBetween created_at).
+            q.append("start_date", `${start} 00:00:00`);
+            q.append("end_date", `${end} 23:59:59`);
+        }
+        if (filter.cabang) q.append("branch_id", filter.cabang);
+        if (filter.metode) q.append("payment_method", filter.metode);
+        Object.entries(extra).forEach(([k, v]) => {
+            if (v !== "" && v !== undefined && v !== null) q.append(k, v);
+        });
+        return q;
+    };
+
+    /* ── KPI total + saldo per cabang (sekali di awal, tidak terpengaruh filter) ── */
+    useEffect(() => {
+        (async () => {
+            setLoading(true);
+            try {
+                const [count, grouped, branchList] = await Promise.all([
+                    ReportApis.GetFinanceTotalCount(),
+                    ReportApis.GetFinanceGroupByCabang(),
+                    ensureBranches(),
+                ]);
+                setTotals({
+                    total_all: Number(count?.total_all) || 0,
+                    total_cash: Number(count?.total_cash) || 0,
+                    total_transfer: Number(count?.total_transfer) || 0,
+                });
+                setBranches(buildBranches(grouped));
+                setBranchOptions([
+                    { value: "", label: "Semua Cabang" },
+                    ...HelperFunctions.formatDropdown(branchList, "id", "branch_name"),
+                ]);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        })();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    /* ── Ringkasan periode + donut (refetch saat filter berubah) ── */
+    const fetchSummary = async () => {
+        setLoading(true);
+        try {
+            const res = await ReportApis.GetFinanceSummary(`?${buildParams().toString()}`);
+            const s = res?.summary ?? {};
+            setPeriod({
+                opening_balance: Number(s.opening_balance) || 0,
+                cash_in: Number(s.cash_in) || 0,
+                cash_out: Number(s.cash_out) || 0,
+                closing_balance: Number(s.closing_balance) || 0,
+            });
+            setCashIn(toChartData(res?.cash_in_category));
+            setCashOut(toChartData(res?.cash_out_category));
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /* ── Tabel detail (paginated, refetch saat filter berubah) ── */
+    const fetchDetail = async (page = 1, perPage = 10) => {
+        setLoading(true);
+        try {
+            const params = buildParams({ page, per_page: perPage, type: filter.tipe });
+            const res = await ReportApis.GetFinanceDetail(`?${params.toString()}`);
+            setDetail({
+                data: Array.isArray(res?.data) ? res.data : [],
+                current_page: res?.current_page ?? 1,
+                total: res?.total ?? 0,
+                per_page: res?.per_page ?? perPage,
+            });
+            setFirstLoaded(true);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchSummary();
+        fetchDetail(1, detail.per_page);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filter.dateRange, filter.cabang, filter.metode, filter.tipe]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        // reset bank saat cabang berubah supaya tidak menyisakan pilihan tak valid
-        if (name === "cabang") {
-            setFilter((prev) => ({ ...prev, cabang: value, bank: "" }));
-            return;
-        }
         setFilter((prev) => ({ ...prev, [name]: value }));
     };
 
-    const filteredDetail = useMemo(() => {
-        return DETAIL.filter((d) => (filter.tipe ? d.tipe === filter.tipe : true));
-    }, [filter.tipe]);
-
-    const pagedDetail = useMemo(() => {
-        const start = (page - 1) * pageSize;
-        return filteredDetail.slice(start, start + pageSize);
-    }, [filteredDetail, page, pageSize]);
+    const periodLabel = useMemo(() => {
+        const { mode, start, end } = filter.dateRange || {};
+        if (mode === "all" || !start || !end) return "semua periode";
+        return `${start} s/d ${end}`;
+    }, [filter.dateRange]);
 
     const detailColumns = [
         {
-            header: "Tanggal", accessor: "tanggal", sortable: true,
-            render: (row) => new Date(row.tanggal).toLocaleString("id-ID", { dateStyle: "short", timeStyle: "short" }),
+            header: "Tanggal", accessor: "created_at", sortable: true,
+            render: (row) => row.created_at
+                ? new Date(row.created_at).toLocaleString("id-ID", { dateStyle: "short", timeStyle: "short" })
+                : "-",
         },
-        { header: "Cabang", accessor: "cabang" },
+        { header: "Cabang", accessor: "branch", render: (row) => row.branch?.branch_name ?? "-" },
         {
-            header: "Tipe", accessor: "tipe",
+            header: "Tipe", accessor: "type",
             render: (row) => (
-                <span className={`rounded-md border px-2.5 py-1 text-xs font-medium ${row.tipe === "CASH IN"
+                <span className={`rounded-md border px-2.5 py-1 text-xs font-medium ${row.type === "CASH IN"
                     ? "border-success-200 bg-success-50 text-success-700"
                     : "border-danger-200 bg-danger-50 text-danger-700"}`}>
-                    {row.tipe === "CASH IN" ? "Cash In" : "Cash Out"}
+                    {row.type === "CASH IN" ? "Cash In" : "Cash Out"}
                 </span>
             ),
         },
-        { header: "Kategori", accessor: "kategori" },
-        { header: "Metode Bayar", accessor: "metode" },
+        { header: "Kategori", accessor: "category", render: (row) => row.category?.category_name ?? "-" },
         {
-            header: "Bank", accessor: "bank",
-            render: (row) => row.bank ? <span className="text-gray-700">{row.bank}</span> : <span className="text-gray-400">-</span>,
+            header: "Metode Bayar", accessor: "payment_method",
+            render: (row) => row.payment_method === "CASH" ? "Tunai" : "Transfer",
+        },
+        {
+            header: "Bank", accessor: "bankCabang",
+            render: (row) => row.payment_method === "TRANSFER"
+                ? <span className="text-gray-700">{accountLabel(row)}</span>
+                : <span className="text-gray-400">-</span>,
         },
         {
             header: "Jumlah", accessor: "nominal",
-            render: (row) => HelperFunctions.formatCurrency(row.nominal),
+            render: (row) => HelperFunctions.formatCurrency(Number(row.nominal) || 0),
         },
         {
-            header: "Keterangan", accessor: "ket",
-            render: (row) => <span className="block max-w-[160px] truncate text-gray-600">{row.ket || "-"}</span>,
+            header: "Keterangan", accessor: "note",
+            render: (row) => <span className="block max-w-[160px] truncate text-gray-600">{row.note || "-"}</span>,
         },
     ];
+
+    const onChangePage = (page) => fetchDetail(page, detail.per_page);
+    const onChangePageSize = (size) => fetchDetail(1, size);
 
     return (
         <div className="flex w-full flex-col gap-6">
@@ -184,22 +262,22 @@ const ReportFinance = () => {
             <div className="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-3">
                 <StatCard
                     label="Total Kas & Bank (semua cabang)"
-                    value={HelperFunctions.formatCurrency(SUMMARY.total)}
-                    subLabel={`${SUMMARY.cabang} cabang • per ${SUMMARY.per}`}
+                    value={HelperFunctions.formatCurrency(totals.total_all)}
+                    subLabel={`${branches.length} cabang`}
                     icon={WalletIcon}
                     tone="info"
                 />
                 <StatCard
                     label="KAS Tunai (semua cabang)"
-                    value={HelperFunctions.formatCurrency(SUMMARY.kas)}
-                    subLabel={`${SUMMARY.cabang} cabang • per ${SUMMARY.per}`}
+                    value={HelperFunctions.formatCurrency(totals.total_cash)}
+                    subLabel={`${branches.length} cabang`}
                     icon={MoneyIcon}
                     tone="success"
                 />
                 <StatCard
                     label="Bank (semua cabang)"
-                    value={HelperFunctions.formatCurrency(SUMMARY.bank)}
-                    subLabel={`${SUMMARY.cabang} cabang • per ${SUMMARY.per}`}
+                    value={HelperFunctions.formatCurrency(totals.total_transfer)}
+                    subLabel={`${branches.length} cabang`}
                     icon={BankIcon}
                     tone="warning"
                 />
@@ -207,7 +285,13 @@ const ReportFinance = () => {
 
             {/* Saldo per cabang (accordion) */}
             <div className="px-4">
-                <BranchAccountAccordion branches={BRANCHES} defaultOpenId={3} />
+                {branches.length > 0 ? (
+                    <BranchAccountAccordion branches={branches} defaultOpenId={branches[0]?.id} />
+                ) : (
+                    <div className="rounded-lg border border-gray-200 bg-neutral-white py-8 text-center text-sm text-gray-400">
+                        Belum ada data saldo cabang
+                    </div>
+                )}
             </div>
 
             {/* Section title + filter bar */}
@@ -216,8 +300,8 @@ const ReportFinance = () => {
                     <h2 className="text-lg font-semibold text-gray-950">Laporan Transaksi</h2>
                     <p className="text-[13px] text-gray-500">Menyajikan rincian aktivitas keuangan dalam bentuk visual dan data.</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="min-w-[220px]">
+                <div className="flex items-center gap-3">
+                    <div className="w-[240px]">
                         <InputGroup
                             fields={[{ name: "dateRange", label: "", type: "daterange" }]}
                             formData={filter}
@@ -227,15 +311,15 @@ const ReportFinance = () => {
                     </div>
                     <div className="w-[180px]">
                         <InputGroup
-                            fields={[{ name: "cabang", label: "", type: "dropdown", options: CABANG_OPTIONS, placeholder: "Pilih cabang" }]}
+                            fields={[{ name: "cabang", label: "", type: "dropdown", options: branchOptions, placeholder: "Pilih cabang" }]}
                             formData={filter}
                             cols="1"
                             onChange={handleChange}
                         />
                     </div>
-                    <div className="w-[200px]">
+                    <div className="w-[180px]">
                         <InputGroup
-                            fields={[{ name: "bank", label: "", type: "dropdown", options: bankOptions, placeholder: "Pilih bank" }]}
+                            fields={[{ name: "metode", label: "", type: "dropdown", options: METODE_OPTIONS, placeholder: "Pilih metode" }]}
                             formData={filter}
                             cols="1"
                             onChange={handleChange}
@@ -246,19 +330,19 @@ const ReportFinance = () => {
 
             {/* Period KPI */}
             <div className="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard label="Saldo Awal" value={HelperFunctions.formatCurrency(PERIOD.saldoAwal)} icon={ArrowCircleDownIcon} tone="success" />
-                <StatCard label="Total Cash Out" value={HelperFunctions.formatCurrency(PERIOD.cashOut)} icon={ArrowCircleUpIcon} tone="danger" />
-                <StatCard label="Total Cash In" value={HelperFunctions.formatCurrency(PERIOD.cashIn)} icon={ArrowCircleDownIcon} tone="success" />
-                <StatCard label="Saldo Akhir" value={HelperFunctions.formatCurrency(PERIOD.saldoAkhir)} icon={CalendarBlankIcon} tone="info" />
+                <StatCard label="Saldo Awal" value={HelperFunctions.formatCurrency(period.opening_balance)} subLabel={periodLabel} icon={CalendarBlankIcon} tone="info" />
+                <StatCard label="Total Cash In" value={HelperFunctions.formatCurrency(period.cash_in)} icon={ArrowCircleDownIcon} tone="success" />
+                <StatCard label="Total Cash Out" value={HelperFunctions.formatCurrency(period.cash_out)} icon={ArrowCircleUpIcon} tone="danger" />
+                <StatCard label="Saldo Akhir" value={HelperFunctions.formatCurrency(period.closing_balance)} icon={WalletIcon} tone="info" />
             </div>
 
             {/* Donut charts */}
             <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2">
                 <ChartCard title="Cash In per Kategori">
-                    <DonutChart data={CASH_IN} colors={["#0079d3", "#f9a220", "#00c951"]} />
+                    <DonutChart data={cashIn} colors={["#0079d3", "#f9a220", "#00c951", "#7cc8fd"]} />
                 </ChartCard>
                 <ChartCard title="Cash Out per Kategori">
-                    <DonutChart data={CASH_OUT} colors={["#0079d3", "#f9a220", "#00c951", "#fb2c36"]} />
+                    <DonutChart data={cashOut} colors={["#0079d3", "#f9a220", "#00c951", "#fb2c36"]} />
                 </ChartCard>
             </div>
 
@@ -275,7 +359,7 @@ const ReportFinance = () => {
                                 fields={[{ name: "tipe", label: "", type: "dropdown", options: TIPE_OPTIONS, placeholder: "Semua Tipe" }]}
                                 formData={filter}
                                 cols="1"
-                                onChange={(e) => { handleChange(e); setPage(1); }}
+                                onChange={handleChange}
                             />
                         </div>
                         <button
@@ -289,12 +373,12 @@ const ReportFinance = () => {
 
                 <Table
                     columns={detailColumns}
-                    data={pagedDetail}
-                    page={page}
-                    pageSize={pageSize}
-                    total={filteredDetail.length}
-                    onPageChange={setPage}
-                    onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+                    data={detail.data}
+                    page={detail.current_page}
+                    pageSize={detail.per_page}
+                    total={detail.total}
+                    onPageChange={onChangePage}
+                    onPageSizeChange={onChangePageSize}
                 />
             </div>
         </div>

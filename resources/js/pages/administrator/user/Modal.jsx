@@ -45,7 +45,7 @@ export default function ModalUser({
             name: "email",
             type: "text",
             placeholder: "Masukkan email",
-            isRequired: !isView,
+            // isRequired: !isView,
             isDisable: isView,
         },
         {

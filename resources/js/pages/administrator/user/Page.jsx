@@ -31,7 +31,7 @@ const MasterUser = () => {
     const [requiredFields] = useState([
         { name: 'name', error_message: 'Nama lengkap wajib diisi' },
         { name: 'username', error_message: 'Username wajib diisi' },
-        { name: 'email', error_message: 'Email wajib diisi' },
+        // { name: 'email', error_message: 'Email wajib diisi' },
         { name: 'branch_id', error_message: 'Cabang/penempatan wajib diisi' },
         { name: 'role_id', error_message: 'Role wajib diisi' },
         { name: 'password', error_message: 'Password wajib diisi' },
