@@ -4,10 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
 use App\Models\MCustomer;
-use App\Models\TSales;
 use Illuminate\Http\Request;
 
-class ReportController extends Controller
+class CustomerReportController extends Controller
 {
     public function customerCount()
     {

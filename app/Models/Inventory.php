@@ -48,4 +48,29 @@ class Inventory extends Model
     {
         return $this->belongsTo(MCategory::class, 'subcategory_id', 'id');
     }
+
+    public function sales()
+    {
+        return $this->hasOne(TSalesDetail::class, 'inventory_code', 'inventory_code');
+    }
+
+    public function pembelian()
+    {
+        return $this->hasOne(Pembelian::class, 'inventory_code', 'inventory_code');
+    }
+
+    public function transfer()
+    {
+        return $this->hasOne(TransferItem::class, 'inventory_code', 'inventory_code');
+    }
+
+    public function remove()
+    {
+        return $this->hasOne(RemoveItem::class, 'inventory_code', 'inventory_code');
+    }
+
+    public function stockOpnameData()
+    {
+        return $this->hasMany(StockOpnameDetail::class, 'inventory_code', 'inventory_code');
+    }
 }

@@ -31,4 +31,9 @@ class MProduct extends Model
     {
         return $this->belongsTo(MBranch::class, 'branch_id', 'id');
     }
+
+    public function inventory()
+    {
+        return $this->hasMany(Inventory::class, 'product_id', 'id');
+    }
 }
