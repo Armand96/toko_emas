@@ -23,7 +23,8 @@ const Branch = () => {
     const [requiredFields, setRequiredFields] = useState([
         { name: 'branch_code', error_message: 'Kode cabang wajib diisi' },
         { name: 'branch_name', error_message: 'Nama cabang wajib diisi' },
-         { name: 'address', error_message: 'Alamat wajib diisi' },
+         { name: 'lokasi_cabang', error_message: 'Lokasi cabang wajib diisi' },
+        { name: 'address', error_message: 'Alamat wajib diisi' },
         // { name: 'is_active', error_message: 'Status wajib diisi' },
         { name: 'pic', error_message: 'PIC wajib diisi' },
         { name: 'branch_open_date', error_message: 'Tanggal buka cabang wajib diisi' }
@@ -150,6 +151,7 @@ const Branch = () => {
             body.append('branch_open_date', submitData.branch_open_date);
             body.append('is_active', submitData.is_active ? 1 : 0);
             body.append('branch_code', submitData.branch_code);
+            body.append('lokasi_cabang', submitData.lokasi_cabang);
 
             await submitData?.id ? BranchApis.PutBranch(submitData.id, body) : BranchApis.PostBranch(body);
             OptionsStore.getState().invalidate('branches');
@@ -173,6 +175,7 @@ const Branch = () => {
     const columns = [
         { header: 'Kode Cabang', accessor: 'branch_code', },
         { header: 'Nama Cabang', accessor: 'branch_name', },
+        { header: 'Lokasi Cabang', accessor: 'lokasi_cabang', },
         { header: 'Alamat', accessor: 'address', },
         { header: 'PIC', accessor: 'pic', },
         { header: 'Tanggal Buka', accessor: 'open_date', },
@@ -226,9 +229,11 @@ const Branch = () => {
     ];
 
     const searchFields = [
-        { name: 'search', label: 'Cari Cabang', type: 'text' },
-        { name: 'status', label: 'Pilih Status', type: 'dropdown', options: [{ value: null, label: 'Semua Status' }, { value: 'active', label: 'Aktif' }, { value: 'inactive', label: 'Tidak Aktif' }] }
+        { name: 'search', label: '', type: 'search', placeholder: 'Cari cabang...' },
+    ];
 
+    const filterFields = [
+        { name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: [{ value: null, label: 'Semua Status' }, { value: 'active', label: 'Aktif' }, { value: 'inactive', label: 'Tidak Aktif' }] },
     ];
 
     return (
@@ -240,13 +245,23 @@ const Branch = () => {
                 onClick={() => handleOpenModal('add')}
                 textButton="Tambah Cabang"
             />
-            <div className="w-2/6">
-                <InputGroup
-                    fields={searchFields}
-                    formData={search}
-                    cols='2'
-                    onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
-                />
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={searchFields}
+                        formData={search}
+                        cols='1'
+                        onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
+                    />
+                </div>
+                <div className="w-[160px]">
+                    <InputGroup
+                        fields={filterFields}
+                        formData={search}
+                        cols='1'
+                        onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
+                    />
+                </div>
             </div>
             <Table
                 columns={columns}

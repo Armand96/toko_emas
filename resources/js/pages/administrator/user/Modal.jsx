@@ -66,16 +66,18 @@ export default function ModalUser({
             isRequired: !isView,
             isDisable: isView,
         },
-        ...(!isEdit && !isView
+        ...(!isView
             ? [
                 {
                     label: "Password",
                     name: "password",
                     type: "password",
-                    placeholder: "Buat password baru",
-                    isRequired: true,
+                    placeholder: isEdit ? "Kosongkan jika tidak diubah" : "Buat password baru",
+                    isRequired: !isEdit,
                     isDisable: false,
-                    hint: "8 karakter · Huruf kapital · Huruf kecil · Angka",
+                    hint: isEdit
+                        ? "Isi hanya jika ingin mengganti password"
+                        : "8 karakter · Huruf kapital · Huruf kecil · Angka",
                 },
             ]
             : []),

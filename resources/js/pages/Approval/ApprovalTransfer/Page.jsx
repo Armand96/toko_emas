@@ -1,17 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { EyeIcon, CheckSquareOffsetIcon, MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react";
+import { EyeIcon, CheckSquareOffsetIcon } from "@phosphor-icons/react";
 import dayjs from "dayjs";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
+import InputGroup from "../../../components/FormElement/InputGroup";
 import ModalDetailTransfer from "./Modal";
 import { showAlert } from '../../../utils/showAlert';
 import HelperFunctions from "../../../utils/HelperFunctions";
 import LoadingStore from "../../../Store/LoadingStore";
 import InventoryApis from "../../../Services/Inventory.apis";
 import OptionsStore from "../../../Store/OptionsStore";
+import PermissionStore from "../../../Store/PermissionStore";
 
-const STATUS_OPTIONS = ['Approval', 'Disetujui', 'Ditolak', 'Dibatalkan'];
+const STATUS_OPTIONS = [
+    { value: 'Approval', label: 'Approval' },
+    { value: 'Disetujui', label: 'Disetujui' },
+    { value: 'Ditolak', label: 'Ditolak' },
+    { value: 'Dibatalkan', label: 'Dibatalkan' },
+];
 const STATUS_API_MAP = { 'Approval': 'APPROVAL', 'Disetujui': 'DISETUJUI', 'Ditolak': 'DITOLAK', 'Dibatalkan': 'DIBATALKAN' };
 const STATUS_DISPLAY = { APPROVAL: 'Approval', DISETUJUI: 'Disetujui', DITOLAK: 'Ditolak', DIBATALKAN: 'Dibatalkan' };
 
@@ -24,6 +31,7 @@ const STATUS_STYLE = {
 
 const ApprovalTransfer = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const can = PermissionStore((s) => s.can);
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
 
     const [paramFetch, setParamFetch] = useState({
@@ -75,7 +83,6 @@ const ApprovalTransfer = () => {
     }, [filterBounce]);
 
     const handleResetFilter = () => setFilter({ search: '', status: 'Approval' });
-    const hasActiveFilter = filter.search || (filter.status && filter.status !== 'Approval');
 
     const handleOpenModal = async (row) => {
         setLoading(true);
@@ -217,33 +224,34 @@ const ApprovalTransfer = () => {
                 icon={CheckSquareOffsetIcon}
             />
 
-            <div className="flex flex-wrap items-center gap-3">
-                <div className="relative flex-1 min-w-[220px] max-w-md">
-                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-                    <input
-                        type="text"
-                        value={filter.search}
-                        onChange={(e) => setFilter({ ...filter, search: e.target.value })}
-                        placeholder="Cari transaksi.."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={[{
+                            name: "search",
+                            label: "",
+                            type: "search",
+                            placeholder: "Cari transaksi..",
+                        }]}
+                        formData={filter}
+                        cols="1"
+                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
                     />
                 </div>
-                <select
-                    value={filter.status}
-                    onChange={(e) => setFilter({ ...filter, status: e.target.value })}
-                    className="py-2 px-3 border border-gray-300 rounded-lg text-sm text-neutral-600 focus:outline-none focus:ring-1 focus:ring-primary-500 min-w-[140px]"
-                >
-                    <option value="">Pilih status</option>
-                    {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-                {hasActiveFilter && (
-                    <button
-                        onClick={handleResetFilter}
-                        className="flex items-center gap-1 py-2 px-2 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
-                    >
-                        Reset <XIcon size={16} weight="bold" />
-                    </button>
-                )}
+                <div className="w-[160px]">
+                    <InputGroup
+                        fields={[{
+                            name: "status",
+                            label: "",
+                            type: "dropdown",
+                            placeholder: "Pilih status",
+                            options: STATUS_OPTIONS,
+                        }]}
+                        formData={filter}
+                        cols="1"
+                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
+                    />
+                </div>
             </div>
 
             <Table
@@ -259,8 +267,8 @@ const ApprovalTransfer = () => {
             <ModalDetailTransfer
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSubmitApprove={handleApprove}
-                onSubmitReject={handleReject}
+                onSubmitApprove={can('update', 'approval.transfer') ? handleApprove : undefined}
+                onSubmitReject={can('update', 'approval.transfer') ? handleReject : undefined}
                 data={selectedData}
                 productMap={productMap}
             />

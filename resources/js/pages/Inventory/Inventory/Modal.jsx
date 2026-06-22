@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { QRCodeCanvas } from "qrcode.react";
 import { PrinterIcon, CaretDownIcon, CaretUpIcon } from "@phosphor-icons/react";
+import GenerateQR from "../../../components/Utils/GenerateQR";
 
 import ModalCustom from "../../../components/modalCustom";
 import SectionTitle from "../../../components/SectionTitle";
@@ -165,8 +165,7 @@ export const DetailItemModal = ({ isOpen, onClose, item }) => {
                         onError={(e) => { e.target.style.display = "none"; }}
                     />
                     <div className="w-full border border-gray-200 rounded-lg p-3 overflow-hidden flex flex-col items-center gap-1">
-                        <QRCodeCanvas value={item.inventory_code} size={120} level="M" marginSize={1} />
-                        <span className="text-[10px] text-gray-500 font-medium">{item.inventory_code}</span>
+                        <GenerateQR value={item.inventory_code} size={64} />
                     </div>
                     <button
                         type="button"
@@ -260,8 +259,7 @@ export const EditItemModal = ({ isOpen, onClose, formData, errors = {}, onChange
                 <div className="w-full sm:w-44 flex flex-col gap-2 flex-shrink-0 min-w-0">
                     <PhotoUploadBox name="foto" value={formData.foto} onChange={onChange} />
                     <div className="w-full border border-gray-200 rounded-lg p-3 overflow-hidden flex flex-col items-center gap-1">
-                        <QRCodeCanvas value={formData.inventory_code} size={100} level="M" marginSize={1} />
-                        <span className="text-[10px] text-gray-500 font-medium">{formData.inventory_code}</span>
+                        <GenerateQR value={formData.inventory_code} size={56} />
                     </div>
                 </div>
 

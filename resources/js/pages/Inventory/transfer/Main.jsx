@@ -10,11 +10,13 @@ import { showAlert } from "../../../utils/showAlert";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import OptionsStore from "../../../Store/OptionsStore";
 import AuthStore from "../../../Store/AuthStore";
+import PermissionStore from "../../../Store/PermissionStore";
 
 const STATUS_MAP = { APPROVAL: 'Approval', DISETUJUI: 'Disetujui', DITOLAK: 'Ditolak', DIBATALKAN: 'Dibatalkan' };
 
 const Main = ({ setCurentState }) => {
     const user = AuthStore((s) => s.user);
+    const can = PermissionStore((s) => s.can);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
 
@@ -176,17 +178,11 @@ const Main = ({ setCurentState }) => {
         }
     };
 
-    const filterFields = [
-        { name: 'search', type: 'text', placeholder: 'Cari produk...', deskSpan: 2 },
-        {
-            name: 'status', type: 'dropdown', placeholder: 'Pilih status', deskSpan: 1,
-            options: [
-                { label: 'Disetujui', value: 'DISETUJUI' },
-                { label: 'Approval', value: 'APPROVAL' },
-                { label: 'Ditolak', value: 'DITOLAK' },
-                { label: 'Dibatalkan', value: 'DIBATALKAN' },
-            ],
-        },
+    const TRANSFER_STATUS_OPTIONS = [
+        { label: 'Disetujui', value: 'DISETUJUI' },
+        { label: 'Approval', value: 'APPROVAL' },
+        { label: 'Ditolak', value: 'DITOLAK' },
+        { label: 'Dibatalkan', value: 'DIBATALKAN' },
     ];
 
     const columns = [
@@ -226,7 +222,7 @@ const Main = ({ setCurentState }) => {
             header: 'Aksi', accessor: 'aksi',
             render: (row) => (
                 <div className="flex items-center gap-2">
-                    {row.status === 'Approval' && (
+                    {row.status === 'Approval' && can('delete', 'inventory.transfer') && (
                         <button
                             onClick={() => handleCancel(row)}
                             className="p-1.5 text-danger-500 hover:bg-danger-50 border border-danger-200 rounded-md transition-colors cursor-pointer"
@@ -254,15 +250,25 @@ const Main = ({ setCurentState }) => {
                 description="Catat dan kelola transfer item inventory antar cabang."
                 icon={PlusCircle}
                 textButton="Transfer"
-                onClick={() => setCurentState('form')}
+                onClick={can('create', 'inventory.transfer') ? () => setCurentState('form') : undefined}
             />
-            <div className="w-full md:w-1/2">
-                <InputGroup
-                    fields={filterFields}
-                    formData={filterData}
-                    onChange={handleFilterChange}
-                    cols="3"
-                />
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={[{ name: 'search', label: '', type: 'search', placeholder: 'Cari produk...' }]}
+                        formData={filterData}
+                        cols="1"
+                        onChange={handleFilterChange}
+                    />
+                </div>
+                <div className="w-[160px]">
+                    <InputGroup
+                        fields={[{ name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: TRANSFER_STATUS_OPTIONS }]}
+                        formData={filterData}
+                        cols="1"
+                        onChange={handleFilterChange}
+                    />
+                </div>
             </div>
             <Table
                 columns={columns}

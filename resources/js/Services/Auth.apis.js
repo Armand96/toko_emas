@@ -2,6 +2,7 @@ import Cookies from 'js-cookie';
 import authConfig from '../utils/authConfig';
 import Apis from '../utils/Apis';
 import AuthStore from '../Store/AuthStore';
+import PermissionStore from '../Store/PermissionStore';
 
 const AuthService = {
     login: async (username, password) => {
@@ -14,6 +15,7 @@ const AuthService = {
         Cookies.set(authConfig.tokenKey, token, authConfig.cookieOptions);
         Cookies.set(authConfig.userKey, JSON.stringify(user), authConfig.cookieOptions);
         AuthStore.getState().setAuth(user, token);
+        PermissionStore.getState().syncFromAuth();
 
         return user;
     },
@@ -27,6 +29,7 @@ const AuthService = {
         Cookies.remove(authConfig.tokenKey);
         Cookies.remove(authConfig.userKey);
         AuthStore.getState().clearAuth();
+        PermissionStore.getState().syncFromAuth();
     },
 };
 

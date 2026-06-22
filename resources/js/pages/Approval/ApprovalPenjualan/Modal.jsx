@@ -155,6 +155,19 @@ export default function ModalDetailPenjualan({
                         <span className="text-neutral-900">{HelperFunctions.formatCurrency(data?.grand_total)}</span>
                     </div>
 
+                    {!isTransfer && (
+                        <div className="text-sm border-t border-dashed border-neutral-200 pt-3 flex flex-col gap-1">
+                            <div className="flex justify-between">
+                                <span className="text-neutral-500">Uang Dibayar</span>
+                                <span className="font-medium text-neutral-900">{HelperFunctions.formatCurrency(data?.nominal_paid ?? 0)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-neutral-500">Kembalian</span>
+                                <span className="font-medium text-neutral-900">{HelperFunctions.formatCurrency(data?.exchange ?? 0)}</span>
+                            </div>
+                        </div>
+                    )}
+
                     {isTransfer && (
                         <div className="text-xs text-neutral-600 border-t border-dashed border-neutral-200 pt-3 flex flex-col gap-1">
                             <div>Pengirim: <span className="font-bold text-neutral-900 uppercase">{data?.sender_name ?? '-'}</span></div>

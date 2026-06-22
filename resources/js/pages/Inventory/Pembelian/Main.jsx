@@ -12,10 +12,15 @@ import HelperFunctions from "../../../utils/HelperFunctions";
 import LoadingStore from "../../../Store/LoadingStore";
 import InventoryApis from "../../../Services/Inventory.apis";
 import { showAlert } from "../../../utils/showAlert";
+import PermissionStore from "../../../Store/PermissionStore";
+import AuthStore from "../../../Store/AuthStore";
 import dayjs from "dayjs";
 
 const MainPembelian = ({ setCurentState }) => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const can = PermissionStore((s) => s.can);
+    const isKasir = PermissionStore((s) => s.isKasir);
+    const user = AuthStore((s) => s.user);
 
     const [paramFetch, setParamFetch] = useState({
         data: [],
@@ -34,8 +39,9 @@ const MainPembelian = ({ setCurentState }) => {
     const fetchData = async (page = 1, pageSize = 10, keyword = "") => {
         setLoading(true);
         try {
+            const branchFilter = isKasir() && user?.branch_id ? `&branch_id=${user.branch_id}` : "";
             const res = await InventoryApis.GetPembelian(
-                `?page=${page}&limit=${pageSize}${keyword ? `&search=${keyword}` : ""}`
+                `?page=${page}&limit=${pageSize}${keyword ? `&search=${keyword}` : ""}${branchFilter}`
             );
             setParamFetch(res);
             setFirstLoading(true);
@@ -118,7 +124,7 @@ const MainPembelian = ({ setCurentState }) => {
 
     const handleBulkPrint = () => {
         if (approvedItems.length === 0) return;
-        const barcodes = approvedItems.map(item => item.barcode);
+        const barcodes = approvedItems.map(item => item.inventory_code);
         const items = approvedItems.map(item => ({
             barcode: item.barcode,
             label: item.product?.product_name ?? item.product?.name ?? '',
@@ -208,7 +214,7 @@ const MainPembelian = ({ setCurentState }) => {
                         <EyeIcon size={20} />
                     </button>
                     {
-                        ["APPROVAL"].includes(row?.status) && <button
+                        ["APPROVAL"].includes(row?.status) && can('delete', 'inventory.pembelian') && <button
                             onClick={() => handleCancel(row)}
                             className="p-1.5 btn-outline !text-danger-500 !border-danger-500 hover:bg-info-50 rounded-md cursor-pointer"
                         >
@@ -241,26 +247,24 @@ const MainPembelian = ({ setCurentState }) => {
                 title="Pembelian"
                 description="Kelola data pembelian dan item inventory."
                 icon={PlusCircleIcon}
-                onClick={() => setCurentState && setCurentState("form")}
+                onClick={can('create', 'inventory.pembelian') ? () => setCurentState && setCurentState("form") : undefined}
                 textButton="Tambah Pembelian"
             />
 
-            <div className="w-full lg:w-1/3">
-                <InputGroup
-                    fields={[
-                        {
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={[{
                             name: "search",
                             label: "",
-                            type: "text",
+                            type: "search",
                             placeholder: "Cari pembelian...",
-                        },
-                    ]}
-                    formData={search}
-                    cols="1"
-                    onChange={(e) =>
-                        setSearch({ ...search, [e.target.name]: e.target.value })
-                    }
-                />
+                        }]}
+                        formData={search}
+                        cols="1"
+                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
+                    />
+                </div>
             </div>
 
             <Table

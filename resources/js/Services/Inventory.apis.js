@@ -60,6 +60,15 @@ const InventoryApis = {
     UpdateTransferItem: (body) => {
         return Apis.Put(`api/update-transfer-item`, body);
     },
+    GetStockOpname: (params) => {
+        return Apis.Get(`api/stock-opname${params}`).then(({ data }) => data);
+    },
+    GetStockOpnameSingle: (id) => {
+        return Apis.Get(`api/stock-opname/${id}`).then(({ data }) => data);
+    },
+    PostStockOpname: (body) => {
+        return Apis.Post(`api/stock-opname`, body);
+    },
 }
 
 export default InventoryApis;

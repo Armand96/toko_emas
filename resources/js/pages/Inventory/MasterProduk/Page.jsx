@@ -10,8 +10,13 @@ import InventoryApis from '../../../Services/Inventory.apis';
 import LoadingStore from '../../../Store/LoadingStore';
 import HelperFunctions from '../../../utils/HelperFunctions';
 import OptionsStore from '../../../Store/OptionsStore';
+import PermissionStore from '../../../Store/PermissionStore';
+import AuthStore from '../../../Store/AuthStore';
 
 const MasterProduk = () => {
+    const can = PermissionStore((s) => s.can);
+    const isKasir = PermissionStore((s) => s.isKasir);
+    const user = AuthStore((s) => s.user);
     const [paramFetch, setParamFetch] = useState({
         data: [],
         current_page: 1,
@@ -47,7 +52,8 @@ const MasterProduk = () => {
     const fetchData = async (page = 1, pageSize = 10, product_name = '', category_id = null, branch_id = null) => {
         setLoading(true);
         try {
-            const res = await InventoryApis.GetProducts(`?page=${page}&limit=${pageSize}${product_name ? `&product_name=${product_name}` : ''}${category_id ? `&category_id=${category_id}` : ''}${branch_id ? `&branch_id=${branch_id}` : ''}`);
+            const effectiveBranch = isKasir() && user?.branch_id ? user.branch_id : branch_id;
+            const res = await InventoryApis.GetProducts(`?page=${page}&limit=${pageSize}${product_name ? `&product_name=${product_name}` : ''}${category_id ? `&category_id=${category_id}` : ''}${effectiveBranch ? `&branch_id=${effectiveBranch}` : ''}`);
             setParamFetch(res);
             setFirstLoading(true);
         } catch (error) {
@@ -202,21 +208,26 @@ const MasterProduk = () => {
                     >
                         <EyeIcon size={20} />
                     </button>
-                    <button
-                        onClick={() => handleOpenModal('edit', row)}
-                        className="p-1.5 btn-outline !border-primary-500 text-warning-500 hover:bg-warning-50 rounded-md transition-colors"
-                    >
-                        <PencilSimpleLineIcon size={20} />
-                    </button>
+                    {can('update', 'inventory.master_produk') && (
+                        <button
+                            onClick={() => handleOpenModal('edit', row)}
+                            className="p-1.5 btn-outline !border-primary-500 text-warning-500 hover:bg-warning-50 rounded-md transition-colors"
+                        >
+                            <PencilSimpleLineIcon size={20} />
+                        </button>
+                    )}
                 </div>
             )
         }
     ];
 
     const searchFields = [
-        { name: 'search', label: 'Cari Produk', type: 'text' },
-        { name: 'status', label: 'Pilih Kategori', type: 'dropdown', options: categoryOptions },
-        { name: 'cabang', label: 'Pilih Cabang', type: 'dropdown', options: branchOptions }
+        { name: 'search', label: '', type: 'search', placeholder: 'Cari produk...' },
+    ];
+
+    const filterFieldsProduk = [
+        { name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih kategori', options: categoryOptions },
+        { name: 'cabang', label: '', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions },
     ];
 
     return (
@@ -225,16 +236,28 @@ const MasterProduk = () => {
                 title="Master Produk"
                 description="Kelola daftar produk toko emas Anda secara keseluruhan."
                 icon={PlusCircleIcon}
-                onClick={() => handleOpenModal('add')}
+                onClick={can('create', 'inventory.master_produk') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah Produk"
             />
-            <div className="w-full lg:w-3/6">
-                <InputGroup
-                    fields={searchFields}
-                    formData={search}
-                    cols='3'
-                    onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
-                />
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={searchFields}
+                        formData={search}
+                        cols='1'
+                        onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
+                    />
+                </div>
+                {filterFieldsProduk.map((field) => (
+                    <div key={field.name} className="w-[160px]">
+                        <InputGroup
+                            fields={[field]}
+                            formData={search}
+                            cols='1'
+                            onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
+                        />
+                    </div>
+                ))}
             </div>
             <Table
                 columns={columns}

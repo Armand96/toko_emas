@@ -31,6 +31,7 @@ const PrintKwitansi = () => {
         }
     }, []);
 
+
     if (!data) {
         return (
             <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
@@ -42,7 +43,7 @@ const PrintKwitansi = () => {
     const { customer, user, details = [], branch, order_id, grand_total, created_at } = data;
 
     const tanggal = created_at ? dayjs(created_at) : dayjs();
-    const kota = branch?.city || branch?.branch_name || "-";
+    const kota = branch?.lokasi_cabang || branch?.branch_name || "-";
 
     console.log(data)
 
@@ -100,14 +101,14 @@ const PrintKwitansi = () => {
                         </div>
                     </div>
 
-                    <div className="text-right text-[10px] leading-[1.9] min-w-[180px]">
+                    <div className=" text-[10px] leading-[1.9] w-[220px] shrink-0">
                         <div>
                             <span className="font-semibold">{kota}</span>, <span className="inline-block border-b border-[#999] min-w-[60px]">{tanggal.format("DD")}</span>
                             {" / "}<span className="inline-block border-b border-[#999] min-w-[40px]">{tanggal.format("MM")}</span>
                             {" / "}<span className="inline-block border-b border-[#999] min-w-[50px]">{tanggal.format("YYYY")}</span>
                         </div>
-                        <div>
-                           <span className="font-semibold"> Kepada Yth,</span> <span className="inline-block pl-1 border-b border-[#999] text-left  min-w-[145px]">{customer?.customer_name ?? ""}</span>
+                        <div className="text-left border-b border-[#999] line-clamp-2 leading-[2]">
+                            <span className="font-semibold">Kepada Yth, </span>{customer?.customer_name ?? ""}
                         </div>
                     </div>
                 </div>
@@ -138,15 +139,15 @@ const PrintKwitansi = () => {
                     </thead>
                     <tbody>
                         {details.map((item, i) => (
-                            <tr key={i}>
-                                <td className="border-x border-black px-[7px] py-[5px] text-[10px] text-center align-top">1</td>
-                                <td className="border-x border-black px-[7px] py-[5px] text-[10px] text-left align-top break-words">
+                            <tr key={i} >
+                                <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">1</td>
+                                <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-left align-top break-words">
                                     {item.product?.product_name ?? "-"}
                                     {item.inventory_code ? ` (${item.inventory_code})` : ""}
                                 </td>
-                                <td className="border-x border-black px-[7px] py-[5px] text-[10px] text-center align-top">{item.inventory?.karat ? `${item.inventory.karat}K` : "-"}</td>
-                                <td className="border-x border-black px-[7px] py-[5px] text-[10px] text-center align-top">{item.inventory?.berat ? `${item.inventory.berat}gr` : "-"}</td>
-                                <td className="border-x border-black px-[7px] py-[5px] text-[10px] text-right align-top">{HelperFunctions.formatCurrency(item.price)}</td>
+                                <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">{item.inventory?.karat ? `${item.inventory.karat}K` : "-"}</td>
+                                <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">{item.inventory?.berat ? `${item.inventory.berat}gr` : "-"}</td>
+                                <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-right align-top">{HelperFunctions.formatCurrency(item.price)}</td>
                             </tr>
                         ))}
                         {/* AREA KOSONG: tinggi dinamis berdasarkan jumlah item */}
@@ -194,11 +195,11 @@ const PrintKwitansi = () => {
                         <div className="flex mt-1.5">
                             <div className="flex-1 text-center px-1">
                                 <span className="block text-[9px]">Ttd Customer</span>
-                                <span className="block text-[9px] text-[#666] mt-7">( {customer?.customer_name ?? "................"} )</span>
+                                <span className="block text-[9px] mt-7">( {customer?.customer_name ?? "................"} )</span>
                             </div>
                             <div className="flex-1 text-center px-1">
                                 <span className="block text-[9px]">Hormat Kami</span>
-                                <span className="block text-[9px] text-[#666] mt-7">( {user?.name ?? "................"} )</span>
+                                <span className="block text-[9px] mt-7">( {user?.name ?? "................"} )</span>
                             </div>
                         </div>
                     </div>

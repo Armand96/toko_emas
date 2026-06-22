@@ -72,34 +72,39 @@ const PrintBarcode = () => {
                     width: 58mm;
                     box-sizing: border-box;
                     background: #fff;
-                    padding: 1.5mm 2mm;
+                    padding: 1mm 1.5mm;
                     display: flex;
-                    flex-direction: column;
+                    flex-direction: row;
                     align-items: center;
-                    gap: 0.5mm;
-                    border-bottom: 1px dashed #d1d5db;
+                    gap: 1.5mm;
+                    border-bottom: none;
                 }
                 .qr-img {
-                    width: 20mm;
-                    height: 20mm;
+                    width: 5mm;
+                    height: 5mm;
                     aspect-ratio: 1 / 1;
                     object-fit: contain;
                     display: block;
+                    flex-shrink: 0;
                     image-rendering: pixelated;
                 }
+                .qr-text {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.3mm;
+                    min-width: 0;
+                }
                 .qr-code {
-                    font-size: 6pt;
+                    font-size: 4pt;
                     font-weight: 600;
                     color: #111827;
                     line-height: 1.1;
-                    text-align: center;
                     word-break: break-all;
                 }
                 .qr-name {
-                    font-size: 5.5pt;
+                    font-size: 3pt;
                     color: #374151;
                     line-height: 1.1;
-                    text-align: center;
                     word-break: break-word;
                 }
                 .qr-source { position: absolute; left: -99999px; top: 0; }
@@ -123,12 +128,12 @@ const PrintBarcode = () => {
                     .qr-list { display: block; }
                     .qr-label {
                         width: 58mm;
-                        padding: 1mm 2mm;
-                        border-bottom: 0.5px dashed #999;
+                        padding: 1mm 1.5mm;
+                        border-bottom: none;
                     }
                     .qr-img {
-                        width: 20mm;
-                        height: 20mm;
+                        width: 6.5mm;
+                        height: 6.5mm;
                     }
                 }
             `}</style>
@@ -172,8 +177,10 @@ const PrintBarcode = () => {
                         {images[index] && (
                             <img src={images[index]} alt={item.barcode} className="qr-img" />
                         )}
-                        <span className="qr-code">{item.barcode}</span>
-                        {item.label && <span className="qr-name">{item.label}</span>}
+                        <div className="qr-text">
+                            <span className="qr-code">{item.barcode}</span>
+                            {item.label && <span className="qr-name">{item.label}</span>}
+                        </div>
                     </div>
                 ))}
             </div>

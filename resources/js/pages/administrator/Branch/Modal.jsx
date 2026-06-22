@@ -56,6 +56,14 @@ export default function Modal({
             isDisable: isView,
         },
         {
+            label: "Lokasi Cabang",
+            name: "lokasi_cabang",
+            type: "text",
+            placeholder: "Masukkan lokasi cabang",
+            isRequired: !isView,
+            isDisable: isView,
+        },
+        {
             label: "Alamat",
             name: "address",
             type: "text",
@@ -78,6 +86,7 @@ export default function Modal({
         if (
             !formData?.branch_code ||
             !formData?.branch_name ||
+            !formData?.lokasi_cabang ||
             !formData?.address ||
             !formData?.pic ||
             !formData?.open_date

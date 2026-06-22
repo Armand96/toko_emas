@@ -14,9 +14,11 @@ import InventoryApis from '../../../Services/Inventory.apis';
 import HelperFunctions from '../../../utils/HelperFunctions';
 import LoadingStore from '../../../Store/LoadingStore';
 import OptionsStore from '../../../Store/OptionsStore';
+import PermissionStore from '../../../Store/PermissionStore';
 
 const ApprovalPembelian = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const can = PermissionStore((s) => s.can);
     const ensureCategories = OptionsStore((s) => s.ensureCategories);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
 
@@ -286,30 +288,14 @@ const ApprovalPembelian = () => {
         { value: 'DIBATALKAN', label: 'Dibatalkan' },
     ];
 
-    const formFilter = [
-        {
-            type: 'search',
-            name: 'search',
-            placeholder: 'Cari produk..',
-        },
-        {
-            type: 'select',
-            name: 'status',
-            placeholder: 'Approval',
-            options: statusOptions,
-        },
-        {
-            type: 'select',
-            name: 'category_id',
-            placeholder: 'Pilih kategori',
-            options: categoryOptions,
-        },
-        {
-            type: 'select',
-            name: 'branch_id',
-            placeholder: 'Pilih cabang',
-            options: branchOptions,
-        },
+    const searchFilter = [
+        { type: 'search', name: 'search', label: '', placeholder: 'Cari produk..' },
+    ];
+
+    const dropdownFilters = [
+        { type: 'dropdown', name: 'status', label: '', placeholder: 'Pilih status', options: statusOptions },
+        { type: 'dropdown', name: 'category_id', label: '', placeholder: 'Pilih kategori', options: categoryOptions },
+        { type: 'dropdown', name: 'branch_id', label: '', placeholder: 'Pilih cabang', options: branchOptions },
     ];
 
     return (
@@ -320,13 +306,25 @@ const ApprovalPembelian = () => {
                 icon={CheckSquareOffsetIcon}
             />
 
-            <div className="w-2/3">
-                <InputGroup
-                    fields={formFilter}
-                    formData={search}
-                    onChange={handleFilterChange}
-                    cols="4"
-                />
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={searchFilter}
+                        formData={search}
+                        cols="1"
+                        onChange={handleFilterChange}
+                    />
+                </div>
+                {dropdownFilters.map((field) => (
+                    <div key={field.name} className="w-[160px]">
+                        <InputGroup
+                            fields={[field]}
+                            formData={search}
+                            cols="1"
+                            onChange={handleFilterChange}
+                        />
+                    </div>
+                ))}
             </div>
 
             <Table
@@ -342,8 +340,8 @@ const ApprovalPembelian = () => {
             <Modal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSubmitApprove={handleApprove}
-                onSubmitReject={handleReject}
+                onSubmitApprove={can('update', 'approval.pembelian') ? handleApprove : undefined}
+                onSubmitReject={can('update', 'approval.pembelian') ? handleReject : undefined}
                 data={selectedData}
                 mode="approve"
             />
@@ -352,10 +350,10 @@ const ApprovalPembelian = () => {
                 <FooterActionBar
                     selectedCount={selectedRows.length}
                     onClearSelection={() => setSelectedRows([])}
-                    secondaryText="Tolak"
+                    secondaryText={can('update', 'approval.pembelian') ? "Tolak" : undefined}
                     secondaryType="danger"
                     onSecondaryClick={handleBulkReject}
-                    primaryText="Setujui"
+                    primaryText={can('update', 'approval.pembelian') ? "Setujui" : undefined}
                     primaryType="primary"
                     onPrimaryClick={handleBulkApprove}
                 />

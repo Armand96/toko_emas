@@ -5,6 +5,8 @@ import ModalScanBarcode from "../../../components/ModaScanBarcode";
 import InventoryApis from "../../../Services/Inventory.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import { showAlert } from "../../../utils/showAlert";
+import PermissionStore from "../../../Store/PermissionStore";
+import AuthStore from "../../../Store/AuthStore";
 
 const JENIS_OPTIONS = [
     { value: 'HILANG', label: 'Hilang', desc: 'Item tidak ditemukan/hilang', Icon: WarningIcon, color: 'text-danger-500', bg: 'bg-danger-50' },
@@ -12,6 +14,8 @@ const JENIS_OPTIONS = [
 ];
 
 const FormAdd = ({ setCurentState }) => {
+    const isKasir = PermissionStore((s) => s.isKasir);
+    const user = AuthStore((s) => s.user);
     const [formData, setFormData] = useState({ jenis: 'HILANG', catatan: '' });
     const [selectedItems, setSelectedItems] = useState([]);
     const [isScanModalOpen, setIsScanModalOpen] = useState(false);
@@ -20,7 +24,8 @@ const FormAdd = ({ setCurentState }) => {
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
-        InventoryApis.GetInventory('?per_page=10000&status=AVAILABLE')
+        const branchFilter = isKasir() && user?.branch_id ? `&branch_id=${user.branch_id}` : '';
+        InventoryApis.GetInventory(`?per_page=10000&status=AVAILABLE${branchFilter}`)
             .then((res) => {
                 const list = res?.data || [];
                 setInventoryOptions(list);
@@ -95,8 +100,8 @@ const FormAdd = ({ setCurentState }) => {
         setIsSubmitting(true);
         try {
             const payload = {
-                branch_id: 1,
-                user_id: 1,
+                branch_id: user?.branch_id || 1,
+                user_id: user?.id || 1,
                 jenis: formData.jenis,
                 note: formData.catatan,
                 item: selectedItems.map(i => ({

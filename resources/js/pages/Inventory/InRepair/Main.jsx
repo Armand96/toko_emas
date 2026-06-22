@@ -9,8 +9,10 @@ import InventoryApis from "../../../Services/Inventory.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import { showAlert } from "../../../utils/showAlert";
 import OptionsStore from "../../../Store/OptionsStore";
+import PermissionStore from "../../../Store/PermissionStore";
 
 const Main = () => {
+    const can = PermissionStore((s) => s.can);
     const [filterData, setFilterData] = useState({ search: '' });
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -163,7 +165,7 @@ const Main = () => {
     };
 
     const filterFields = [
-        { name: 'search', type: 'text', placeholder: 'Cari produk...', deskSpan: 2 },
+        { name: 'search', label: '', type: 'search', placeholder: 'Cari produk...' },
     ];
 
     const columns = [
@@ -206,13 +208,15 @@ const Main = () => {
                     >
                         <EyeIcon size={16} weight="bold" />
                     </button>
-                    <button
-                        onClick={() => handleReturn(row)}
-                        className="p-1.5 text-success-600 hover:bg-success-50 border border-success-200 rounded-md transition-colors cursor-pointer"
-                        title="Kembalikan ke Inventory"
-                    >
-                        <ArrowCounterClockwiseIcon size={16} weight="bold" />
-                    </button>
+                    {can('update', 'inventory.in_repair') && (
+                        <button
+                            onClick={() => handleReturn(row)}
+                            className="p-1.5 text-success-600 hover:bg-success-50 border border-success-200 rounded-md transition-colors cursor-pointer"
+                            title="Kembalikan ke Inventory"
+                        >
+                            <ArrowCounterClockwiseIcon size={16} weight="bold" />
+                        </button>
+                    )}
                 </div>
             )
         },
@@ -224,13 +228,15 @@ const Main = () => {
                 title="Item Repair"
                 description="Kelola item inventory yang sedang dalam proses perbaikan dan kembalikan ke inventory aktif setelah repair selesai."
             />
-            <div className="w-full md:w-1/2">
-                <InputGroup
-                    fields={filterFields}
-                    formData={filterData}
-                    onChange={handleFilterChange}
-                    cols="2"
-                />
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={filterFields}
+                        formData={filterData}
+                        cols="1"
+                        onChange={handleFilterChange}
+                    />
+                </div>
             </div>
             <Table
                 columns={columns}

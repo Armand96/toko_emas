@@ -43,6 +43,9 @@ class PembelianController extends Controller
         if ($request->has('category_id') && $request->category_id != "") {
             $query->where('category_id', $request->category_id);
         }
+        if ($request->has('branch_id') && $request->branch_id != "") {
+            $query->where('branch_id', $request->branch_id);
+        }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
         $pembelians = $query->with(['product', 'category', 'branch', 'bank', 'inventory'])->orderBy('id', 'desc')->paginate($perPage);

@@ -9,10 +9,12 @@ import UsersApis from "../../../Services/User.apis";
 import HelperFunctions from '../../../utils/HelperFunctions';
 import LoadingStore from '../../../Store/LoadingStore';
 import OptionsStore from '../../../Store/OptionsStore';
+import PermissionStore from '../../../Store/PermissionStore';
 import { useDebounce } from 'use-debounce';
 
 const MasterUser = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const can = PermissionStore((s) => s.can);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const [paramFetch, setParamFetch] = useState({ data: [], page: 1, total: 0, pageSize: 10 });
     const [search, setSearch] = useState({ name: '' });
@@ -51,7 +53,9 @@ const MasterUser = () => {
     const fetchOptions = async () => {
         try {
             const branchData = await ensureBranches();
+            const RoleData = await UsersApis.GetRole(`?limit=99999`);
             setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name'));
+            setRoleOptions(HelperFunctions.formatDropdown(RoleData?.data, 'id', 'role_name'));
         } catch (error) {
             console.error(error);
         }
@@ -123,6 +127,7 @@ const MasterUser = () => {
             body.append('is_active', submitData.is_active ? 1 : 0);
             if (submitData.phone) body.append('phone', submitData.phone);
             if (!submitData.id) body.append('password', submitData.password);
+            if (submitData.id && submitData.password) body.append('password', submitData.password);
             if (submitData.id) body.append('id', submitData.id);
 
             await submitData?.id
@@ -180,12 +185,14 @@ const MasterUser = () => {
                     >
                         <EyeIcon size={20} />
                     </button>
-                    <button
-                        onClick={() => handleOpenModal('edit', row)}
-                        className="p-1.5 btn-outline hover:bg-warning-50 rounded-md cursor-pointer"
-                    >
-                        <PencilSimpleLineIcon size={20} />
-                    </button>
+                    {can('update', 'administrator.user') && (
+                        <button
+                            onClick={() => handleOpenModal('edit', row)}
+                            className="p-1.5 btn-outline hover:bg-warning-50 rounded-md cursor-pointer"
+                        >
+                            <PencilSimpleLineIcon size={20} />
+                        </button>
+                    )}
                 </div>
             )
         }
@@ -205,21 +212,23 @@ const MasterUser = () => {
                 title="User Management"
                 description="Kelola data pengguna untuk akses ke sistem."
                 icon={UserPlusIcon}
-                onClick={() => handleOpenModal('add')}
+                onClick={can('create', 'administrator.user') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah User"
             />
-            <div className="w-full lg:w-1/3">
-                <InputGroup
-                    fields={[{
-                        name: 'name',
-                        label: 'Cari Nama',
-                        type: 'text',
-                        placeholder: 'Cari nama...'
-                    }]}
-                    formData={search}
-                    cols='1'
-                    onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
-                />
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={[{
+                            name: 'name',
+                            label: '',
+                            type: 'search',
+                            placeholder: 'Cari nama...'
+                        }]}
+                        formData={search}
+                        cols='1'
+                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
+                    />
+                </div>
             </div>
             <Table
                 columns={columns}

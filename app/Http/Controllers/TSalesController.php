@@ -33,6 +33,9 @@ class TSalesController extends Controller
         if ($request->has('approval_status') && $request->status != "") {
             $query->where('approval_status', $request->status);
         }
+        if ($request->has('branch_id') && $request->branch_id != "") {
+            $query->where('branch_id', $request->branch_id);
+        }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
         $sales = $query->orderBy('id', 'desc')->with(['customer', 'user', 'details.inventory', 'details.product', 'branch'])->paginate($perPage);

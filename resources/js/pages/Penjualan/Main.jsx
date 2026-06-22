@@ -9,6 +9,8 @@ import LoadingStore from "../../Store/LoadingStore";
 import ModalViewPenjualan from "./ModalView";
 import HelperFunctions from "../../utils/HelperFunctions";
 import PenjualanApis from "../../Services/Penjualan.apis";
+import PermissionStore from "../../Store/PermissionStore";
+import AuthStore from "../../Store/AuthStore";
 import { showAlert } from "../../utils/showAlert";
 
 const STATUS_OPTIONS = [
@@ -37,6 +39,9 @@ const STATUS_LABEL = {
 
 const Main = ({ setCurentState }) => {
     const setLoading = LoadingStore((state) => state.setLoading);
+    const can = PermissionStore((s) => s.can);
+    const isKasir = PermissionStore((s) => s.isKasir);
+    const user = AuthStore((s) => s.user);
 
     const [paramFetch, setParamFetch] = useState({
         data: [],
@@ -63,7 +68,11 @@ const Main = ({ setCurentState }) => {
                 per_page: pageSize,
             });
             if (filters.search) params.append('order_id', filters.search);
-            if (filters.status) params.append('status', filters.status);
+            if (filters.status) {
+                params.append('approval_status', filters.status);
+                params.append('status', filters.status);
+            }
+            if (isKasir() && user?.branch_id) params.append('branch_id', user.branch_id);
 
             const res = await PenjualanApis.GetPenjualan(`?${params.toString()}`);
             setParamFetch(res);
@@ -176,9 +185,8 @@ const Main = ({ setCurentState }) => {
         }
     };
 
-    const searchFields = [
-        { name: 'search', label: '', type: 'text', placeholder: 'Cari transaksi..' },
-        { name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: STATUS_OPTIONS },
+    const searchFieldsPenjualan = [
+        { name: 'search', label: '', type: 'search', placeholder: 'Cari transaksi..' },
     ];
 
     const columns = [
@@ -196,7 +204,8 @@ const Main = ({ setCurentState }) => {
                 const items = row.details || [];
                 if (items.length === 0) return '-';
                 const names = items.map((d) => d.product?.product_name).filter(Boolean);
-                return names.join(', ');
+                if (names.length <= 3) return names.join(', ');
+                return `${names.slice(0, 3).join(', ')} +${names.length - 3} lainnya`;
             },
         },
         {
@@ -216,7 +225,7 @@ const Main = ({ setCurentState }) => {
             accessor: 'aksi',
             render: (row) => (
                 <div className="flex items-center gap-2">
-                    {row.approval_status === 'APPROVAL' && (
+                    {row.approval_status === 'APPROVAL' && can('delete', 'penjualan') && (
                         <button
                             onClick={() => handleCancel(row)}
                             className="p-1.5 btn-outline !text-danger-500 !border-danger-500 hover:bg-danger-50 rounded-md transition-colors"
@@ -232,7 +241,7 @@ const Main = ({ setCurentState }) => {
                     >
                         <EyeIcon size={20} />
                     </button>
-                    {(row.approval_status === 'DISETUJUI' || row.approval_status === 'CETAK KWITANSI') && (
+                    {(row.approval_status === 'SELESAI' || row.approval_status === 'DISETUJUI' || row.approval_status === 'CETAK KWITANSI') && (
                         <button
                             onClick={() => handlePrint(row)}
                             className="p-1.5 btn-outline text-primary-500 hover:bg-primary-50 rounded-md transition-colors"
@@ -258,17 +267,27 @@ const Main = ({ setCurentState }) => {
                 title="Penjualan"
                 description="Catat dan kelola transaksi penjualan barang kepada pelanggan."
                 icon={PlusCircleIcon}
-                onClick={() => setCurentState('form')}
+                onClick={can('create', 'penjualan') ? () => setCurentState('form') : undefined}
                 textButton="Transaksi Baru"
             />
 
-            <div className="w-full xl:w-2/5">
-                <InputGroup
-                    fields={searchFields}
-                    formData={search}
-                    cols='2'
-                    onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
-                />
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={searchFieldsPenjualan}
+                        formData={search}
+                        cols='1'
+                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
+                    />
+                </div>
+                <div className="w-[160px]">
+                    <InputGroup
+                        fields={[{ name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: STATUS_OPTIONS }]}
+                        formData={search}
+                        cols='1'
+                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
+                    />
+                </div>
             </div>
 
             <Table

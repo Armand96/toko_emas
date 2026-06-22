@@ -9,8 +9,13 @@ import InventoryApis from "../../../Services/Inventory.apis";
 import { showAlert } from "../../../utils/showAlert";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import OptionsStore from "../../../Store/OptionsStore";
+import PermissionStore from "../../../Store/PermissionStore";
+import AuthStore from "../../../Store/AuthStore";
 
 const Main = ({ setCurentState }) => {
+    const can = PermissionStore((s) => s.can);
+    const isKasir = PermissionStore((s) => s.isKasir);
+    const user = AuthStore((s) => s.user);
     const [filterData, setFilterData] = useState({ search: '', status: '', cabang: '' });
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,7 +44,8 @@ const Main = ({ setCurentState }) => {
             params.append('per_page', pageSize);
             if (filters.search) params.append('code', filters.search);
             if (filters.status) params.append('status', filters.status);
-            if (filters.cabang) params.append('branch_id', filters.cabang);
+            const effectiveBranch = isKasir() && user?.branch_id ? user.branch_id : filters.cabang;
+            if (effectiveBranch) params.append('branch_id', effectiveBranch);
 
             const res = await InventoryApis.GetRemoveItem(`?${params.toString()}`);
             const raw = res?.data || [];
@@ -121,9 +127,13 @@ const Main = ({ setCurentState }) => {
             let inventoryMap = {};
             if (codes.length > 0) {
                 try {
-                    const invRes = await InventoryApis.GetInventory(`?per_page=10000000`);
-                    const allInv = invRes?.data || [];
-                    allInv.forEach(inv => { inventoryMap[inv.inventory_code] = inv; });
+                    const results = await Promise.all(
+                        codes.map(code => InventoryApis.GetInventory(`?inventory_code=${encodeURIComponent(code)}`))
+                    );
+                    results.forEach(res => {
+                        const inv = res?.data?.[0];
+                        if (inv) inventoryMap[inv.inventory_code] = inv;
+                    });
                 } catch (_) {}
             }
 
@@ -185,21 +195,11 @@ const Main = ({ setCurentState }) => {
         }
     };
 
-    const filterFields = [
-        { name: 'search', type: 'text', placeholder: 'Cari kode/nama/berat/karat...', deskSpan: 2 },
-        {
-            name: 'status', type: 'dropdown', placeholder: 'Pilih status', deskSpan: 1,
-            options: [
-                { label: 'Disetujui', value: 'DISETUJUI' },
-                { label: 'Approval', value: 'APPROVAL' },
-                { label: 'Ditolak', value: 'DITOLAK' },
-                { label: 'Dibatalkan', value: 'DIBATALKAN' },
-            ],
-        },
-        {
-            name: 'cabang', type: 'dropdown', placeholder: 'Pilih cabang', deskSpan: 1,
-            options: branchOptions,
-        },
+    const REMOVE_STATUS_OPTIONS = [
+        { label: 'Disetujui', value: 'DISETUJUI' },
+        { label: 'Approval', value: 'APPROVAL' },
+        { label: 'Ditolak', value: 'DITOLAK' },
+        { label: 'Dibatalkan', value: 'DIBATALKAN' },
     ];
 
     const columns = [
@@ -239,7 +239,7 @@ const Main = ({ setCurentState }) => {
             header: 'Aksi', accessor: 'aksi',
             render: (row) => (
                 <div className="flex items-center gap-2">
-                    {row.status === 'Approval' && (
+                    {row.status === 'Approval' && can('delete', 'inventory.remove') && (
                         <button
                             onClick={() => handleCancel(row)}
                             className="p-1.5 text-danger-500 hover:bg-danger-50 border border-danger-200 rounded-md transition-colors cursor-pointer"
@@ -267,15 +267,33 @@ const Main = ({ setCurentState }) => {
                 description="Kelola proses barang keluar dari ready stock berdasarkan jenis transaksi."
                 icon={PlusCircleIcon}
                 textButton="Remove Item"
-                onClick={() => setCurentState('form')}
+                onClick={can('create', 'inventory.remove') ? () => setCurentState('form') : undefined}
             />
-            <div className="w-full md:w-3/4 xl:w-2/3">
-                <InputGroup
-                    fields={filterFields}
-                    formData={filterData}
-                    onChange={handleFilterChange}
-                    cols="4"
-                />
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={[{ name: 'search', label: '', type: 'search', placeholder: 'Cari kode/nama/berat/karat...' }]}
+                        formData={filterData}
+                        cols="1"
+                        onChange={handleFilterChange}
+                    />
+                </div>
+                <div className="w-[160px]">
+                    <InputGroup
+                        fields={[{ name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: REMOVE_STATUS_OPTIONS }]}
+                        formData={filterData}
+                        cols="1"
+                        onChange={handleFilterChange}
+                    />
+                </div>
+                <div className="w-[160px]">
+                    <InputGroup
+                        fields={[{ name: 'cabang', label: '', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions }]}
+                        formData={filterData}
+                        cols="1"
+                        onChange={handleFilterChange}
+                    />
+                </div>
             </div>
             <Table
                 columns={columns}
