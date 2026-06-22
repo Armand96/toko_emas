@@ -30,7 +30,7 @@ class UserRequest extends FormRequest
             'branch_id' => 'required|numeric',
             'role_id'   => 'required|numeric',
             'is_active' => 'required|boolean',
-            'email'     => 'required|string',
+            'email'     => 'nullable|string',
             'password'  => $this->isMethod('post')
                 ? 'required|string'
                 : 'nullable|string',
