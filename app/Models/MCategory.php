@@ -46,4 +46,9 @@ class MCategory extends Model
             'id'
         );
     }
+
+    public function products()
+    {
+        return $this->hasMany(MProduct::class, 'category_id', 'id');
+    }
 }
