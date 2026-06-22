@@ -176,18 +176,20 @@ const MasterCustomer = () => {
                 onClick={can('create', 'administrator.customer') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah Customer"
             />
-            <div className="w-full lg:w-1/3">
-                <InputGroup
-                    fields={[{
-                        name: 'name',
-                        label: 'Cari Customer',
-                        type: 'text',
-                        placeholder: 'Cari...'
-                    }]}
-                    formData={search}
-                    cols='1'
-                    onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
-                />
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={[{
+                            name: 'name',
+                            label: '',
+                            type: 'search',
+                            placeholder: 'Cari customer...'
+                        }]}
+                        formData={search}
+                        cols='1'
+                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
+                    />
+                </div>
             </div>
             <Table
                 columns={columns}

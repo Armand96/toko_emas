@@ -8,6 +8,7 @@ import InputPassword from "./SingleElement/Password";
 import PhotoInput from "./SingleElement/PhotoInput";
 import Checkbox from "./SingleElement/Checkbox";
 import SearchInput from "./SingleElement/SearchInput";
+import DateRange from "./SingleElement/DateRange";
 
 const gridColsMap = {
     1: "lg:grid-cols-1",
@@ -65,6 +66,8 @@ const InputGroup = ({
                 return <PhotoInput key={index} {...commonProps} accept={field.accept} />;
             case "search":
                 return <SearchInput key={index} {...commonProps}     />;
+            case "daterange":
+                return <DateRange key={index} {...commonProps} />;
             case "textarea":
                 return <TextArea key={index} {...commonProps} rows={field.rows} />;
             case "dropdown":

@@ -152,8 +152,10 @@ const MasterBank = () => {
     return (
         <div className="flex flex-col gap-6 w-full">
             <HeaderSection title="Master Bank" description="Kelola daftar bank." icon={PlusCircleIcon} onClick={() => handleOpenModal('add')} textButton="Tambah Bank" />
-            <div className="w-1/3">
-                <InputGroup fields={[{ name: 'category_name', label: 'Cari Bank', type: 'text', placeholder: 'Ketik nama bank...' }]} formData={search} cols='1' onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })} />
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup fields={[{ name: 'category_name', label: '', type: 'search', placeholder: 'Cari bank...' }]} formData={search} cols='1' onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })} />
+                </div>
             </div>
             <Table columns={columns} data={paramFetch.data} onPageChange={onChangePage} onPageSizeChange={onChangePageSize} total={paramFetch.total} page={paramFetch.current_page} pageSize={paramFetch.per_page} />
             <Modal isOpen={showModalAdd} onClose={handleCloseModal} onSubmit={handleSubmit} formData={formData} onChange={handleChange} formError={formError} isView={isView} parentOptions={parentOptions} />

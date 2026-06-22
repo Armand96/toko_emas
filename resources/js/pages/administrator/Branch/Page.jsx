@@ -229,9 +229,11 @@ const Branch = () => {
     ];
 
     const searchFields = [
-        { name: 'search', label: 'Cari Cabang', type: 'text' },
-        { name: 'status', label: 'Pilih Status', type: 'dropdown', options: [{ value: null, label: 'Semua Status' }, { value: 'active', label: 'Aktif' }, { value: 'inactive', label: 'Tidak Aktif' }] }
+        { name: 'search', label: '', type: 'search', placeholder: 'Cari cabang...' },
+    ];
 
+    const filterFields = [
+        { name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: [{ value: null, label: 'Semua Status' }, { value: 'active', label: 'Aktif' }, { value: 'inactive', label: 'Tidak Aktif' }] },
     ];
 
     return (
@@ -243,13 +245,23 @@ const Branch = () => {
                 onClick={() => handleOpenModal('add')}
                 textButton="Tambah Cabang"
             />
-            <div className="w-2/6">
-                <InputGroup
-                    fields={searchFields}
-                    formData={search}
-                    cols='2'
-                    onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
-                />
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={searchFields}
+                        formData={search}
+                        cols='1'
+                        onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
+                    />
+                </div>
+                <div className="w-[160px]">
+                    <InputGroup
+                        fields={filterFields}
+                        formData={search}
+                        cols='1'
+                        onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
+                    />
+                </div>
             </div>
             <Table
                 columns={columns}

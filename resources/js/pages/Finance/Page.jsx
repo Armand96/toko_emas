@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { PlusCircleIcon, EyeIcon, PencilSimpleLineIcon, TrashIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
+import { PlusCircleIcon, EyeIcon, PencilSimpleLineIcon, TrashIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../components/HeaderSection";
 import Table from "../../components/Table/Table";
+import InputGroup from "../../components/FormElement/InputGroup";
 import HelperFunctions from "../../utils/HelperFunctions";
 import { showAlert } from "../../utils/showAlert";
 import LoadingStore from "../../Store/LoadingStore";
@@ -61,7 +62,7 @@ const Finance = () => {
     useEffect(() => {
         fetchData();
         ensureBranches()
-            .then((data) => setBranchOptions(data))
+            .then((data) => setBranchOptions(HelperFunctions.formatDropdown(data, "id", "branch_name")))
             .catch((err) => console.error(err));
     }, []);
 
@@ -212,33 +213,48 @@ const Finance = () => {
             />
 
             {/* Filter Bar */}
-            <div className="flex flex-wrap items-center gap-3">
-                <div className="relative flex-1 min-w-[220px] max-w-md">
-                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-                    <input
-                        type="text"
-                        value={filter.search}
-                        onChange={(e) => setFilter({ ...filter, search: e.target.value })}
-                        placeholder="Cari keterangan"
-                        className="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={[{
+                            name: "search",
+                            label: "",
+                            type: "search",
+                            placeholder: "Cari keterangan",
+                        }]}
+                        formData={filter}
+                        cols="1"
+                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
                     />
                 </div>
-                <select
-                    value={filter.tipe}
-                    onChange={(e) => setFilter({ ...filter, tipe: e.target.value })}
-                    className="py-2 px-3 border border-neutral-200 rounded-lg text-sm text-neutral-600 focus:outline-none focus:ring-1 focus:ring-primary-500 min-w-[140px]"
-                >
-                    <option value="">Semua tipe</option>
-                    {TIPE_OPTIONS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
-                <select
-                    value={filter.cabang}
-                    onChange={(e) => setFilter({ ...filter, cabang: e.target.value })}
-                    className="py-2 px-3 border border-neutral-200 rounded-lg text-sm text-neutral-600 focus:outline-none focus:ring-1 focus:ring-primary-500 min-w-[140px]"
-                >
-                    <option value="">Semua cabang</option>
-                    {branchOptions.map((b) => <option key={b.id} value={b.id}>{b.branch_name}</option>)}
-                </select>
+                <div className="w-[160px]">
+                    <InputGroup
+                        fields={[{
+                            name: "tipe",
+                            label: "",
+                            type: "dropdown",
+                            placeholder: "Semua tipe",
+                            options: TIPE_OPTIONS,
+                        }]}
+                        formData={filter}
+                        cols="1"
+                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
+                    />
+                </div>
+                <div className="w-[170px]">
+                    <InputGroup
+                        fields={[{
+                            name: "cabang",
+                            label: "",
+                            type: "dropdown",
+                            placeholder: "Semua cabang",
+                            options: branchOptions,
+                        }]}
+                        formData={filter}
+                        cols="1"
+                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
+                    />
+                </div>
             </div>
 
             <Table

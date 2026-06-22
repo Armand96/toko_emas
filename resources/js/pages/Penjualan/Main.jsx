@@ -185,9 +185,8 @@ const Main = ({ setCurentState }) => {
         }
     };
 
-    const searchFields = [
-        { name: 'search', label: '', type: 'text', placeholder: 'Cari transaksi..' },
-        { name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: STATUS_OPTIONS },
+    const searchFieldsPenjualan = [
+        { name: 'search', label: '', type: 'search', placeholder: 'Cari transaksi..' },
     ];
 
     const columns = [
@@ -272,13 +271,23 @@ const Main = ({ setCurentState }) => {
                 textButton="Transaksi Baru"
             />
 
-            <div className="w-full xl:w-2/5">
-                <InputGroup
-                    fields={searchFields}
-                    formData={search}
-                    cols='2'
-                    onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
-                />
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={searchFieldsPenjualan}
+                        formData={search}
+                        cols='1'
+                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
+                    />
+                </div>
+                <div className="w-[160px]">
+                    <InputGroup
+                        fields={[{ name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: STATUS_OPTIONS }]}
+                        formData={search}
+                        cols='1'
+                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
+                    />
+                </div>
             </div>
 
             <Table

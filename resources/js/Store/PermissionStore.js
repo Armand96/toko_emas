@@ -143,7 +143,10 @@ const MENU_PERMISSION_MAP = {
     ],
     penjualan: 'penjualan',
     finance: 'finance',
-    report: 'report',
+    report: [
+        'report.customer',
+        'report.finance',
+    ],
     user: 'administrator.user',
     cabang: 'administrator.cabang',
     setting: 'administrator.setting',
@@ -167,6 +170,8 @@ const SUBMENU_PERMISSION_MAP = {
     '/inventory/in-repair': 'inventory.in_repair',
     '/inventory/transfer': 'inventory.transfer',
     '/inventory/stock-opname': 'inventory.stock_opname',
+    '/report/customer': 'report.customer',
+    '/report/finance': 'report.finance',
 };
 
 // Mapping: route path -> permission key
@@ -186,7 +191,8 @@ const ROUTE_PERMISSION_MAP = {
     '/inventory/stock-opname': 'inventory.stock_opname',
     '/penjualan': 'penjualan',
     '/finance': 'finance',
-    '/report': 'report',
+    '/report/customer': 'report.customer',
+    '/report/finance': 'report.finance',
     '/administrator/users': 'administrator.user',
     '/administrator/cabang': 'administrator.cabang',
     '/administrator/setting': 'administrator.setting',

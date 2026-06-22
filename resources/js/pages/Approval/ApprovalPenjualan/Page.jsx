@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { EyeIcon, CheckSquareOffsetIcon, MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react";
+import { EyeIcon, CheckSquareOffsetIcon } from "@phosphor-icons/react";
 import dayjs from "dayjs";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
+import InputGroup from "../../../components/FormElement/InputGroup";
 import ModalDetailPenjualan from "./Modal";
 import { showAlert } from '../../../utils/showAlert';
 import HelperFunctions from "../../../utils/HelperFunctions";
 import LoadingStore from "../../../Store/LoadingStore";
 import PenjualanApis from "../../../Services/Penjualan.apis";
 import PermissionStore from "../../../Store/PermissionStore";
-
-const CABANG_OPTIONS = ['BLOK M 1', 'BLOK M 2'];
+import OptionsStore from "../../../Store/OptionsStore";
 
 const STATUS_STYLE = {
     'APPROVAL': 'bg-warning-50 text-warning-600 border-warning-200',
@@ -34,7 +34,9 @@ const STATUS_LABEL = {
 const ApprovalPenjualan = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
     const can = PermissionStore((s) => s.can);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
 
+    const [branchOptions, setBranchOptions] = useState([]);
     const [paramFetch, setParamFetch] = useState({
         data: [],
         current_page: 1,
@@ -59,6 +61,7 @@ const ApprovalPenjualan = () => {
                 status: 'APPROVAL',
             });
             if (params.search) query.append('order_id', params.search);
+            if (params.cabang) query.append('branch_id', params.cabang);
 
             const res = await PenjualanApis.GetPenjualan(`?${query.toString()}`);
             setParamFetch(res);
@@ -72,6 +75,8 @@ const ApprovalPenjualan = () => {
 
     useEffect(() => {
         fetchData();
+        ensureBranches()
+            .then((data) => setBranchOptions(HelperFunctions.formatDropdown(data, "id", "branch_name")));
     }, []);
 
     useEffect(() => {
@@ -80,8 +85,7 @@ const ApprovalPenjualan = () => {
         }
     }, [filterBounce]);
 
-    const handleResetFilter = () => setFilter({ search: '', cabang: '' });
-    const hasActiveFilter = filter.search || filter.cabang;
+
 
     const filteredData = (paramFetch.data || []).filter((row) => {
         const matchCabang = !filter.cabang || row.branch?.branch_name === filter.cabang;
@@ -235,35 +239,34 @@ const ApprovalPenjualan = () => {
             />
 
             {/* Filter Bar */}
-            <div className="flex flex-wrap items-center gap-3">
-                <div className="relative flex-1 min-w-[220px] max-w-md">
-                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-                    <input
-                        type="text"
-                        value={filter.search}
-                        onChange={(e) => setFilter({ ...filter, search: e.target.value })}
-                        placeholder="Cari transaksi.."
-                        className="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={[{
+                            name: "search",
+                            label: "",
+                            type: "search",
+                            placeholder: "Cari transaksi..",
+                        }]}
+                        formData={filter}
+                        cols="1"
+                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
                     />
                 </div>
-
-                <select
-                    value={filter.cabang}
-                    onChange={(e) => setFilter({ ...filter, cabang: e.target.value })}
-                    className="py-2 px-3 border border-neutral-200 rounded-lg text-sm text-neutral-600 focus:outline-none focus:ring-1 focus:ring-primary-500 min-w-[140px]"
-                >
-                    <option value="">Pilih cabang</option>
-                    {CABANG_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-
-                {hasActiveFilter && (
-                    <button
-                        onClick={handleResetFilter}
-                        className="flex items-center gap-1 py-2 px-2 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
-                    >
-                        Reset <XIcon size={16} weight="bold" />
-                    </button>
-                )}
+                <div className="w-[160px]">
+                    <InputGroup
+                        fields={[{
+                            name: "cabang",
+                            label: "",
+                            type: "dropdown",
+                            placeholder: "Pilih cabang",
+                            options: branchOptions,
+                        }]}
+                        formData={filter}
+                        cols="1"
+                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
+                    />
+                </div>
             </div>
 
             <Table

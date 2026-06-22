@@ -6,6 +6,7 @@ import Layout from "../components/Layout/Layout";
 import Branch from "../pages/administrator/Branch/Page";
 import SettingStore from "../pages/administrator/Store/Page";
 import { Approval } from "./approval";
+import { Report } from "./report";
 import MasterBank from "../pages/administrator/MasterBank/Page";
 import Penjualan from "../pages/Penjualan/Page";
 import MasterUser from "../pages/administrator/user/Page";
@@ -47,6 +48,7 @@ const router = createBrowserRouter([
                     ...Inventory,
                     ...Ui,
                     ...Approval,
+                    ...Report,
                 ],
             },
         ],

@@ -68,7 +68,10 @@ const sidebarData = [
         id: "report",
         label: "Report",
         icon: ChartBarIcon,
-        link: "/report"
+        subItems: [
+          { label: "Customer", link: "/report/customer" },
+          { label: "Finance", link: "/report/finance" }
+        ]
       }
     ]
   },

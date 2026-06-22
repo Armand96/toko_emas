@@ -222,9 +222,12 @@ const MasterProduk = () => {
     ];
 
     const searchFields = [
-        { name: 'search', label: 'Cari Produk', type: 'text' },
-        { name: 'status', label: 'Pilih Kategori', type: 'dropdown', options: categoryOptions },
-        { name: 'cabang', label: 'Pilih Cabang', type: 'dropdown', options: branchOptions }
+        { name: 'search', label: '', type: 'search', placeholder: 'Cari produk...' },
+    ];
+
+    const filterFieldsProduk = [
+        { name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih kategori', options: categoryOptions },
+        { name: 'cabang', label: '', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions },
     ];
 
     return (
@@ -236,13 +239,25 @@ const MasterProduk = () => {
                 onClick={can('create', 'inventory.master_produk') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah Produk"
             />
-            <div className="w-full lg:w-3/6">
-                <InputGroup
-                    fields={searchFields}
-                    formData={search}
-                    cols='3'
-                    onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
-                />
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={searchFields}
+                        formData={search}
+                        cols='1'
+                        onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
+                    />
+                </div>
+                {filterFieldsProduk.map((field) => (
+                    <div key={field.name} className="w-[160px]">
+                        <InputGroup
+                            fields={[field]}
+                            formData={search}
+                            cols='1'
+                            onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
+                        />
+                    </div>
+                ))}
             </div>
             <Table
                 columns={columns}

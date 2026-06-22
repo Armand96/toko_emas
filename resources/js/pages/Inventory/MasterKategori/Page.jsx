@@ -193,25 +193,20 @@ const MasterKategori = () => {
                 onClick={can('create', 'inventory.master_kategori') ? () => handleOpenModal("add") : undefined}
                 textButton="Tambah Kategori"
             />
-            <div className="w-full lg:w-1/3">
-                <InputGroup
-                    fields={[
-                        {
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={[{
                             name: "category_name",
-                            label: "Cari Kategori",
-                            type: "text",
-                            placeholder: "Ketik nama kategori...",
-                        },
-                    ]}
-                    formData={search}
-                    cols="1"
-                    onChange={(e) =>
-                        setSearch({
-                            ...search,
-                            [e.target.name]: e.target.value,
-                        })
-                    }
-                />
+                            label: "",
+                            type: "search",
+                            placeholder: "Cari kategori...",
+                        }]}
+                        formData={search}
+                        cols="1"
+                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
+                    />
+                </div>
             </div>
             <Table
                 columns={columns}

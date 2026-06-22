@@ -165,7 +165,7 @@ const Main = () => {
     };
 
     const filterFields = [
-        { name: 'search', type: 'text', placeholder: 'Cari produk...', deskSpan: 2 },
+        { name: 'search', label: '', type: 'search', placeholder: 'Cari produk...' },
     ];
 
     const columns = [
@@ -228,13 +228,15 @@ const Main = () => {
                 title="Item Repair"
                 description="Kelola item inventory yang sedang dalam proses perbaikan dan kembalikan ke inventory aktif setelah repair selesai."
             />
-            <div className="w-full md:w-1/2">
-                <InputGroup
-                    fields={filterFields}
-                    formData={filterData}
-                    onChange={handleFilterChange}
-                    cols="2"
-                />
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={filterFields}
+                        formData={filterData}
+                        cols="1"
+                        onChange={handleFilterChange}
+                    />
+                </div>
             </div>
             <Table
                 columns={columns}

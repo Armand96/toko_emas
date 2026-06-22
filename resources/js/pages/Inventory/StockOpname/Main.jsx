@@ -94,19 +94,9 @@ const Main = ({ setCurentState }) => {
         setCurentState({ view: 'detail', id: row.id });
     };
 
-    const filterFields = [
-        { name: 'search', type: 'text', placeholder: 'Cari kode sesi...', deskSpan: 2 },
-        {
-            name: 'status', type: 'dropdown', placeholder: 'Pilih status', deskSpan: 1,
-            options: [
-                { label: 'Sesuai', value: 'SESUAI' },
-                { label: 'Selisih', value: 'SELISIH' },
-            ],
-        },
-        {
-            name: 'cabang', type: 'dropdown', placeholder: 'Pilih cabang', deskSpan: 1,
-            options: branchOptions,
-        },
+    const OPNAME_STATUS_OPTIONS = [
+        { label: 'Sesuai', value: 'SESUAI' },
+        { label: 'Selisih', value: 'SELISIH' },
     ];
 
     const columns = [
@@ -155,13 +145,31 @@ const Main = ({ setCurentState }) => {
                 textButton="Input Sesi Stock Opname"
                 onClick={can('create', 'inventory.stock_opname') ? () => setCurentState({ view: 'form' }) : undefined}
             />
-            <div className="w-full md:w-3/4 xl:w-2/3">
-                <InputGroup
-                    fields={filterFields}
-                    formData={filterData}
-                    onChange={handleFilterChange}
-                    cols="4"
-                />
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={[{ name: 'search', label: '', type: 'search', placeholder: 'Cari kode sesi...' }]}
+                        formData={filterData}
+                        cols="1"
+                        onChange={handleFilterChange}
+                    />
+                </div>
+                <div className="w-[160px]">
+                    <InputGroup
+                        fields={[{ name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: OPNAME_STATUS_OPTIONS }]}
+                        formData={filterData}
+                        cols="1"
+                        onChange={handleFilterChange}
+                    />
+                </div>
+                <div className="w-[160px]">
+                    <InputGroup
+                        fields={[{ name: 'cabang', label: '', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions }]}
+                        formData={filterData}
+                        cols="1"
+                        onChange={handleFilterChange}
+                    />
+                </div>
             </div>
             <Table
                 columns={columns}
