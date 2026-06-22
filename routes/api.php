@@ -74,6 +74,7 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
         Route::get('customer-count', [ReportController::class, 'customerCount']);
         Route::get('top-customer', [ReportController::class, 'topCustomer']);
         Route::get('top-customer-detail', [ReportController::class, 'topCustomerPagination']);
+        Route::get('customer-transaction', [ReportController::class, 'customerTransaction']);
     });
 
     Route::get('profile', [UserController::class, 'profile']);
