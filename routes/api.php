@@ -14,6 +14,7 @@ use App\Http\Controllers\MSupplierController;
 use App\Http\Controllers\PembelianController;
 use App\Http\Controllers\RemoveItemController;
 use App\Http\Controllers\CustomerReportController;
+use App\Http\Controllers\FinanceReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StockOpnameHeaderController;
 use App\Http\Controllers\StoreSettingController;
@@ -71,10 +72,17 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
     Route::get('roles', [RoleController::class, 'index']);
 
     Route::prefix('report')->group(function() {
+        // CUSTOMER
         Route::get('customer-count', [CustomerReportController::class, 'customerCount']);
         Route::get('top-customer', [CustomerReportController::class, 'topCustomer']);
         Route::get('top-customer-detail', [CustomerReportController::class, 'topCustomerPagination']);
         Route::get('customer-transaction', [CustomerReportController::class, 'customerTransaction']);
+
+        // FINANCE
+        Route::get('total-count', [FinanceReportController::class, 'totalCount']);
+        Route::get('total-group-by-cabang', [FinanceReportController::class, 'totalGroupedCabang']);
+        Route::get('finance-summary', [FinanceReportController::class, 'financeSummary']);
+        Route::get('finance-detail', [FinanceReportController::class, 'financeDetail']);
     });
 
     Route::get('profile', [UserController::class, 'profile']);

@@ -27,11 +27,11 @@ class CustomerReportController extends Controller
     {
         $query = MCustomer::query();
 
-        if ($request->has('date_start') && $request->date_start != "") {
-            $query->where('created_at', '>=',  $request->date_start);
+        if ($request->has('start_date') && $request->start_date != "") {
+            $query->where('created_at', '>=',  $request->start_date);
         }
-        if ($request->has('date_end') && $request->date_end != "") {
-            $query->where('created_at', '>=',  $request->date_start);
+        if ($request->has('end_date') && $request->end_date != "") {
+            $query->where('created_at', '<=',  $request->end_date);
         }
 
         $customers = $query->select(
@@ -55,11 +55,11 @@ class CustomerReportController extends Controller
     {
         $query = MCustomer::query();
 
-        if ($request->has('date_start') && $request->date_start != "") {
-            $query->where('created_at', '>=',  $request->date_start);
+        if ($request->has('start_date') && $request->start_date != "") {
+            $query->where('created_at', '>=',  $request->start_date);
         }
-        if ($request->has('date_end') && $request->date_end != "") {
-            $query->where('created_at', '>=',  $request->date_start);
+        if ($request->has('end_date') && $request->end_date != "") {
+            $query->where('created_at', '<=',  $request->end_date);
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
@@ -91,11 +91,11 @@ class CustomerReportController extends Controller
     {
         $query = MCustomer::query();
 
-        if ($request->has('date_start') && $request->date_start != "") {
-            $query->where('created_at', '>=',  $request->date_start);
+        if ($request->has('start_date') && $request->start_date != "") {
+            $query->where('t_sales.created_at', '>=',  $request->start_date);
         }
-        if ($request->has('date_end') && $request->date_end != "") {
-            $query->where('created_at', '>=',  $request->date_start);
+        if ($request->has('end_date') && $request->end_date != "") {
+            $query->where('t_sales.created_at', '<=',  $request->end_date);
         }
         $customerFrequency = $query->selectRaw('m_customers.id, COUNT(t_sales.id) as total_transaction ')
             ->join('t_sales', 't_sales.customer_id', '=', 'm_customers.id')
@@ -131,11 +131,11 @@ class CustomerReportController extends Controller
     {
         $query = MCustomer::query();
 
-        if ($request->has('date_start') && $request->date_start != "") {
-            $query->where('created_at', '>=',  $request->date_start);
+        if ($request->has('start_date') && $request->start_date != "") {
+            $query->where('t_sales.created_at', '>=',  $request->start_date);
         }
-        if ($request->has('date_end') && $request->date_end != "") {
-            $query->where('created_at', '>=',  $request->date_start);
+        if ($request->has('end_date') && $request->end_date != "") {
+            $query->where('t_sales.created_at', '<=',  $request->end_date);
         }
 
         $customerSpending = $query->selectRaw('m_customers.id, COALESCE(SUM(t_sales.grand_total), 0) as total_spending')

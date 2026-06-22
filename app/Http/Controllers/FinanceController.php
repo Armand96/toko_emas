@@ -34,7 +34,7 @@ class FinanceController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $finances = $query->with(['branch', 'category', 'bank'])->orderBy('id', 'desc')->paginate($perPage);
+        $finances = $query->with(['branch', 'category', 'bankCabang'])->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($finances);
     }
@@ -85,7 +85,7 @@ class FinanceController extends Controller
      */
     public function show(Finance $finance)
     {
-        return ApiResponse::success($finance->load(['branch', 'category', 'bank']), "Success");
+        return ApiResponse::success($finance->load(['branch', 'category', 'bankCabang']), "Success");
     }
 
     /**

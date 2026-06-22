@@ -22,7 +22,7 @@ class Finance extends Model
         return $this->belongsTo(MBranch::class, 'branch_id', 'id');
     }
 
-    public function bank()
+    public function bankCabang()
     {
         return $this->belongsTo(BankCabang::class, 'bank_cabang_id', 'id');
     }
