@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('username');
             $table->string('name');
+            $table->string('phone_number', 50)->nullable();
             $table->bigInteger('branch_id');
             // $table->string('image_path');
             // $table->string('thumb_path');

@@ -27,6 +27,7 @@ class UserRequest extends FormRequest
         return [
             'username'  => 'required|string',
             'name'      => 'required|string',
+            'phone_number'      => 'nullable|string',
             'branch_id' => 'required|numeric',
             'role_id'   => 'required|numeric',
             'is_active' => 'required|boolean',
