@@ -55,15 +55,15 @@ const TableComponent = () => {
   };
 
   const columns = [
-    { header: 'Tanggal Sesi', accessor: 'tanggal', sortable: true },
-    { header: 'Kode Sesi', accessor: 'kode', sortable: true },
-    { header: 'Cabang', accessor: 'cabang', sortable: true },
-    { header: 'Total Item', accessor: 'total', sortable: true },
-    { header: 'Sesuai', accessor: 'sesuai', sortable: true },
-    { header: 'Missing', accessor: 'missing', sortable: true },
-    { header: 'Extra', accessor: 'extra', sortable: true },
-    { header: 'Modal', accessor: 'modal', sortable: true },
-    { header: 'Jual', accessor: 'jual', sortable: true },
+    { header: 'Tanggal Sesi', accessor: 'tanggal' },
+    { header: 'Kode Sesi', accessor: 'kode' },
+    { header: 'Cabang', accessor: 'cabang' },
+    { header: 'Total Item', accessor: 'total' },
+    { header: 'Sesuai', accessor: 'sesuai' },
+    { header: 'Missing', accessor: 'missing' },
+    { header: 'Extra', accessor: 'extra' },
+    { header: 'Modal', accessor: 'modal' },
+    { header: 'Jual', accessor: 'jual' },
     {
       header: 'Status',
       accessor: 'status',

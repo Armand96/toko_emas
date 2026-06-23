@@ -465,25 +465,21 @@ const FormPembelian = ({ setCurentState }) => {
                             onChange={handleChange}
                         />
 
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm font-medium text-gray-700">Metode Pembayaran <span className="text-red-500">*</span></label>
-                            <div className="flex gap-2 p-1 bg-gray-50 border border-gray-200 rounded-lg w-full">
-                                <button
-                                    type="button"
-                                    onClick={() => setItem((prev) => ({ ...prev, payment_method: "CASH", bank_id: null }))}
-                                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${item.payment_method === "CASH" ? "bg-primary-50 text-primary-600 border border-primary-200 shadow-sm" : "text-gray-500 hover:bg-gray-100"}`}
-                                >
-                                    Tunai
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setItem((prev) => ({ ...prev, payment_method: "TRANSFER" }))}
-                                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${item.payment_method === "TRANSFER" ? "bg-primary-50 text-primary-600 border border-primary-200 shadow-sm" : "text-gray-500 hover:bg-gray-100"}`}
-                                >
-                                    Transfer
-                                </button>
-                            </div>
-                        </div>
+                        <Dropdown
+                            label="Metode Pembayaran"
+                            name="payment_method"
+                            value={item.payment_method}
+                            options={[
+                                { value: 'CASH', label: 'Tunai' },
+                                { value: 'TRANSFER', label: 'Transfer' },
+                            ]}
+                            placeholder="Pilih metode"
+                            isRequired
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setItem((prev) => ({ ...prev, payment_method: val, ...(val === 'CASH' ? { bank_id: null } : {}) }));
+                            }}
+                        />
 
                         {item.payment_method === "TRANSFER" && (
                             <Dropdown

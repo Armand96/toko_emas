@@ -142,15 +142,17 @@ const Finance = () => {
 
             await (form?.id ? FinanceApis.PutFinance(form.id, body) : FinanceApis.PostFinance(body));
 
+         setTimeout(() => {
             handleCloseModal();
             fetchData(paramFetch.current_page, paramFetch.per_page, filterBounce);
             showAlert({ icon: 'success', isAutoClose: true, title: 'Berhasil', message: 'Data transaksi berhasil disimpan' });
+            setLoading(false)
+         },300)
         } catch (error) {
             console.error(error);
             showAlert({ icon: 'error', title: 'Gagal', message: 'Gagal menyimpan data transaksi' });
-        } finally {
-            setLoading(false);
-        }
+            setLoading(false)
+        } 
     };
 
     const columns = [

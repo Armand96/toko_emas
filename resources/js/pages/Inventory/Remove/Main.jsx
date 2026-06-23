@@ -205,10 +205,10 @@ const Main = ({ setCurentState }) => {
     ];
 
     const columns = [
-        { header: 'Tanggal Out', accessor: 'tanggal', sortable: true },
-        { header: 'Kode', accessor: 'kode', sortable: true },
+        { header: 'Tanggal Out', accessor: 'tanggal' },
+        { header: 'Kode', accessor: 'kode' },
         {
-            header: 'Item Produk', accessor: 'item_produk', sortable: true,
+            header: 'Item Produk', accessor: 'item_produk',
             render: (row) => {
                 const details = row._raw?.details || [];
                 if (details.length === 0) return row.item_produk || '-';
@@ -221,10 +221,10 @@ const Main = ({ setCurentState }) => {
                 return names.join(', ') || '-';
             },
         },
-        { header: 'Cabang', accessor: 'cabang', sortable: true },
-        { header: 'Jenis', accessor: 'jenis', sortable: true },
+        { header: 'Cabang', accessor: 'cabang' },
+        { header: 'Jenis', accessor: 'jenis' },
         {
-            header: 'Status', accessor: 'status', sortable: true,
+            header: 'Status', accessor: 'status',
             render: (row) => {
                 let tone = 'gray';
                 if (row.status === 'Disetujui') tone = 'success';
