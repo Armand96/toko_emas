@@ -23,7 +23,7 @@ class MBranch extends Model
 
     public function bankcabang()
     {
-        return $this->hasOne(BankCabang::class, 'bank_id', 'id');
+        return $this->hasMany(BankCabang::class, 'bank_id', 'id');
     }
 
     public function pic()
