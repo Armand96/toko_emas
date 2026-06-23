@@ -6,9 +6,12 @@ import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
 import Badge from '../../../components/Badge';
 import HelperFunctions from '../../../utils/HelperFunctions';
 import BankApis from '../../../Services/Bank.apis';
+import OptionsStore from '../../../Store/OptionsStore';
 
 export default function ModalView({ isOpen, onClose, data }) {
     const [bankCabang, setBankCabang] = useState(null);
+    const ensureCategories = OptionsStore((s) => s.ensureCategories);
+    const [categoryOptions, setCategoryOptions] = useState([]);
 
     const statusMap = {
         'APPROVAL': { label: 'Approval', tone: 'warning' },
@@ -20,6 +23,24 @@ export default function ModalView({ isOpen, onClose, data }) {
 
     const margin = (data?.jual || 0) - (data?.modal || 0);
     const marginPercent = data?.modal ? ((margin / data.modal) * 100).toFixed(1) : 0;
+
+    useEffect(() => {
+        ensureCategories()
+            .then((data) => setCategoryOptions(HelperFunctions.formatDropdown(data, "id", "category_name")))
+            .catch((err) => console.error(err));
+    }, []);
+
+    const resolvedCategory = (() => {
+        const category = categoryOptions.find((c) => c.value === data?.category_id)?.details;
+        const isSubCategory = category?.parent_id !== null && category?.parent_id !== undefined;
+        const parentCategory = isSubCategory
+            ? categoryOptions.find((c) => c.value === category.parent_id)?.details
+            : category;
+        return {
+            kategori: parentCategory?.category_name || '-',
+            subKategori: isSubCategory ? category?.category_name : '-',
+        };
+    })();
 
     useEffect(() => {
         if (isOpen && data?.bank_id && data?.branch_id) {
@@ -55,7 +76,7 @@ export default function ModalView({ isOpen, onClose, data }) {
                                 <h2 className="text-lg font-bold text-neutral-900">{data?.product?.product_name || '-'}</h2>
                                 <div className="flex items-center gap-1.5 text-sm text-neutral-500 mt-1">
                                     <BarcodeIcon size={16} weight="bold" />
-                                    <span>{data?.barcode || '-'}</span>
+                                    <span>{data?.inventory_code || '-'}</span>
                                 </div>
                             </div>
                             <Badge tone={status.tone} className="!text-sm">
@@ -89,11 +110,11 @@ export default function ModalView({ isOpen, onClose, data }) {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                             <span className="text-sm text-neutral-500">Kategori</span>
-                            <span className="text-sm font-medium text-neutral-900">{data?.category?.category_name || '-'}</span>
+                            <span className="text-sm font-medium text-neutral-900">{resolvedCategory.kategori}</span>
                         </div>
                         <div className="flex flex-col gap-1">
                             <span className="text-sm text-neutral-500">Sub Kategori</span>
-                            <span className="text-sm font-medium text-neutral-900">{data?.category?.parent_id ? data?.category?.category_name : '-'}</span>
+                            <span className="text-sm font-medium text-neutral-900">{resolvedCategory.subKategori}</span>
                         </div>
                     </div>
 
@@ -146,7 +167,7 @@ export default function ModalView({ isOpen, onClose, data }) {
                 <div className="border border-neutral-200 rounded-lg p-4 flex items-center gap-6 text-sm">
                     <div className="flex gap-2">
                         <span className="text-neutral-500">Batch</span>
-                        <span className="font-medium text-neutral-900">{data?.batch ? String(data.batch).padStart(5, '0') : '-'}</span>
+                        <span className="font-medium text-neutral-900">{data?.batch}</span>
                     </div>
                     <div className="w-px h-4 bg-neutral-200"></div>
                     <div className="font-medium text-neutral-900">

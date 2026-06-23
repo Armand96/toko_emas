@@ -16,6 +16,7 @@ import LoadingStore from "../../../Store/LoadingStore";
 import InventoryApis from "../../../Services/Inventory.apis";
 import { showAlert } from "../../../utils/showAlert";
 import PermissionStore from "../../../Store/PermissionStore";
+import OptionsStore from "../../../Store/OptionsStore";
 import AuthStore from "../../../Store/AuthStore";
 import dayjs from "dayjs";
 
@@ -24,6 +25,8 @@ const MainPembelian = ({ setCurentState }) => {
     const can = PermissionStore((s) => s.can);
     const isKasir = PermissionStore((s) => s.isKasir);
     const user = AuthStore((s) => s.user);
+    const ensureCategories = OptionsStore((s) => s.ensureCategories);
+    const [categoryOptions, setCategoryOptions] = useState([]);
 
     const [paramFetch, setParamFetch] = useState({
         data: [],
@@ -57,6 +60,9 @@ const MainPembelian = ({ setCurentState }) => {
 
     useEffect(() => {
         fetchData();
+        ensureCategories()
+            .then((data) => setCategoryOptions(HelperFunctions.formatDropdown(data, "id", "category_name")))
+            .catch((err) => console.error(err));
     }, []);
 
     useEffect(() => {
@@ -164,7 +170,7 @@ const MainPembelian = ({ setCurentState }) => {
             header: "Kode",
             accessor: "barcode",
             render: (row) => (
-                <CodeBadge variant="table">{row.barcode ?? row.inventory_code ?? "-"}</CodeBadge>
+                <CodeBadge variant="table">{row.inventory_code || "-"}</CodeBadge>
             ),
         },
         {
@@ -182,8 +188,27 @@ const MainPembelian = ({ setCurentState }) => {
                 </div>
             ),
         },
-        { header: "Kategori", accessor: "category", render: (row) => row.category?.category_name || "-" },
-        { header: "Sub Kategori", accessor: "category", render: (row) => row.category?.parent_id ? row.category_name : "-" },
+        {
+            header: "Kategori",
+            accessor: "category",
+            render: (row) => {
+                const category = categoryOptions.find((c) => c.value === row.category_id)?.details;
+                const isSubCategory = category?.parent_id !== null && category?.parent_id !== undefined;
+                const parentCategory = isSubCategory
+                    ? categoryOptions.find((c) => c.value === category.parent_id)?.details
+                    : category;
+                return parentCategory?.category_name || "-";
+            },
+        },
+        {
+            header: "Sub Kategori",
+            accessor: "sub_kategori",
+            render: (row) => {
+                const category = categoryOptions.find((c) => c.value === row.category_id)?.details;
+                const isSubCategory = category?.parent_id !== null && category?.parent_id !== undefined;
+                return isSubCategory ? category?.category_name : "-";
+            },
+        },
 
         { header: "Berat", accessor: "berat", render: (row) => (row.berat ? `${row.berat} g` : "-") },
         { header: "Karat", accessor: "karat", render: (row) => (row.karat ? `${row.karat}K` : "-") },

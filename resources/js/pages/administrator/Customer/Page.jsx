@@ -16,7 +16,7 @@ const MasterCustomer = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
     const can = PermissionStore((s) => s.can);
     const [paramFetch, setParamFetch] = useState({ data: [], page: 1, total: 0, pageSize: 10 });
-    const [search, setSearch] = useState({ name: '' });
+    const [search, setSearch] = useState({ name: '', status: '' });
     const [showModalAdd, setShowModalAdd] = useState(false);
     const [formData, setFormData] = useState({});
     const [formError, setFormError] = useState({});
@@ -29,10 +29,13 @@ const MasterCustomer = () => {
         { name: 'address', error_message: 'Alamat wajib diisi' },
     ]);
 
-    const fetchData = async (page = 1, pageSize = 10, name = '') => {
+    const fetchData = async (page = 1, pageSize = 10, params = {}) => {
         setLoading(true);
         try {
-            const res = await CustomerApis.GetCustomer(`?page=${page}&limit=${pageSize}${name ? `&customer_name=${name}` : ''}`);
+            const query = new URLSearchParams({ page, limit: pageSize });
+            if (params.name) query.append('customer_name', params.name);
+            if (params.status !== '' && params.status !== undefined) query.append('is_active', params.status);
+            const res = await CustomerApis.GetCustomer(`?${query.toString()}`);
             setParamFetch(res);
             setFirstLoading(true);
         } catch (error) {
@@ -48,7 +51,7 @@ const MasterCustomer = () => {
 
     useEffect(() => {
         if (firstLoading) {
-            fetchData(1, paramFetch.pageSize, search.name);
+            fetchData(1, paramFetch.pageSize, searchBounce);
         }
     }, [searchBounce]);
 
@@ -152,11 +155,11 @@ const MasterCustomer = () => {
     ];
 
     const onChangePage = (page) => {
-        fetchData(page, paramFetch.pageSize, search.name);
+        fetchData(page, paramFetch.pageSize, search);
     };
 
     const onChangePageSize = (pageSize) => {
-        fetchData(1, pageSize, search.name);
+        fetchData(1, pageSize, search);
     };
 
     return (
@@ -176,6 +179,23 @@ const MasterCustomer = () => {
                             label: '',
                             type: 'search',
                             placeholder: 'Cari customer...'
+                        }]}
+                        formData={search}
+                        cols='1'
+                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
+                    />
+                </div>
+                <div className="w-[170px]">
+                    <InputGroup
+                        fields={[{
+                            name: 'status',
+                            label: '',
+                            type: 'dropdown',
+                            placeholder: 'Semua status',
+                            options: [
+                                { value: '1', label: 'Aktif' },
+                                { value: '0', label: 'Tidak Aktif' },
+                            ],
                         }]}
                         formData={search}
                         cols='1'

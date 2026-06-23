@@ -48,7 +48,7 @@ const Branch = () => {
     const fetchData = async (page = 1, pageSize = 10, branch_name = '', status = '') => {
         setLoading(true);
         try {
-            const res = await BranchApis.GetBranch(`?page=${page}&limit=${pageSize}${branch_name ? `&branch_name=${branch_name}` : ''}${status ? `&status=${status}` : ''}`);
+            const res = await BranchApis.GetBranch(`?page=${page}&limit=${pageSize}${branch_name ? `&branch_name=${branch_name}` : ''}${status ? `&is_active=${status}` : ''}`);
             setParamFetch(res);
             setFirstLoading(true);
         } catch (error) {
@@ -212,7 +212,7 @@ const Branch = () => {
     ];
 
     const filterFields = [
-        { name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: [{ value: 'active', label: 'Aktif' }, { value: 'inactive', label: 'Tidak Aktif' }] },
+        { name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: [{ value: '1', label: 'Aktif' }, { value: '0', label: 'Tidak Aktif' }] },
     ];
 
     return (
