@@ -87,7 +87,48 @@ const MasterInventory = () => {
             product_id: row.product_id,
             branch_id: row.branch_id,
             category_id: row.category_id,
-            riwayat: [],
+            riwayat: [
+                {
+                    title: "Storing item",
+                    actor: "Yanuar",
+                    date: "21 Mei 2026, 12:00",
+                    description: "Update kembali status item inventory ke Available",
+                    changes: [],
+                },
+                {
+                    title: "Remove item",
+                    actor: "Yanuar",
+                    date: "21 Mei 2026, 12:00",
+                    description: "Remove item dengan jenis Repair",
+                    changes: [],
+                },
+                {
+                    title: "Edit item",
+                    actor: "Ramdan",
+                    date: "21 Mei 2026, 12:00",
+                    description: null,
+                    changes: [
+                        { label: "Harga Jual", from: "Rp 6.400.000", to: "Rp 6.440.000" },
+                        { label: "Berat", from: "9.40g", to: "9.50g" },
+                        { label: "Karat", from: "17K", to: "18K" },
+                        { label: "Keterangan", from: "Kalung rantai diameter 10cm dengan motif kupu-kupu", to: "Kalung rantai diameter 10cm dengan motif bunga mawar melati semuanya indah" },
+                    ],
+                },
+                {
+                    title: "Transfer item",
+                    actor: "Yanuar",
+                    date: "21 Mei 2026, 12:00",
+                    description: "Transfer item dari cabang Blok M 1 ke Blok M 2",
+                    changes: [],
+                },
+                {
+                    title: "Input awal item",
+                    actor: "Yanuar",
+                    date: "21 Mei 2026, 12:00",
+                    description: null,
+                    changes: [],
+                },
+            ],
         };
     };
 

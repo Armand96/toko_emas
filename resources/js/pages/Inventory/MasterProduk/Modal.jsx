@@ -50,7 +50,6 @@ export default function Modal({
 
     const handleOnChange = (e) => {
         const { name, value, type } = e.target;
-        console.log('Field changed:', name, value);
         if(name === 'category') {
               InventoryApis.GetCategories(`?parent_id=${value}&limit=1000`).then(res => {
                 setSubCategoriesOptions(HelperFunctions.formatDropdown(res.data, 'id', 'category_name', ));
@@ -66,13 +65,6 @@ export default function Modal({
 
 
     const fieldsModal = [
-        ...(formData?.id ? [{
-            label: "Kode Produk",
-            name: "barcode",
-            type: "text",
-            placeholder: "Masukkan kode produk",
-            isDisable: true,
-        }] : []),
         {
             label: "Nama Produk",
             name: "product_name",
@@ -88,9 +80,6 @@ export default function Modal({
             placeholder: "Masukkan keterangan produk",
             isRequired: !isView,
             isDisable: isView,
-        },
-        {
-            type: ""
         },
         {
             label: "Kategori",
@@ -154,6 +143,12 @@ export default function Modal({
             disabledConfirmBtn={disableButton()}
         >
             <div className="flex flex-col gap-4 py-2">
+                {formData?.id && formData?.barcode && (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+                        <span className="text-sm text-gray-500">Kode Produk</span>
+                        <span className="text-sm font-medium text-gray-900">{formData.barcode}</span>
+                    </div>
+                )}
                 <InputGroup
                     cols="2"
                     fields={fieldsModal}

@@ -191,7 +191,7 @@ const MasterCustomer = () => {
                             name: 'status',
                             label: '',
                             type: 'dropdown',
-                            placeholder: 'Semua status',
+                            placeholder: 'Pilih status',
                             options: [
                                 { value: '1', label: 'Aktif' },
                                 { value: '0', label: 'Tidak Aktif' },

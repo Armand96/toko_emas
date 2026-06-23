@@ -81,9 +81,11 @@ const ModalTransaksi = ({ isOpen, onClose, mode = 'add', data = null, onSubmit }
     };
 
     const isTransfer = form.payment_method === 'TRANSFER';
+    const isCashOut = form.type === 'CASH OUT';
     const isValid = form.branch_id && form.nominal && form.payment_method && form.category_finance_id
         && (!isTransfer || form.bank_cabang_id)
-        && (!isTransfer || form.attachment);
+        && (isCashOut ? !!form.attachment : (!isTransfer || form.attachment))
+        && !!form.note?.trim();
 
     const fieldsModal = [
         {
@@ -138,6 +140,7 @@ const ModalTransaksi = ({ isOpen, onClose, mode = 'add', data = null, onSubmit }
             name: "note",
             type: "textarea",
             placeholder: "Masukkan keterangan ...",
+            isRequired: !isView,
             isDisable: isView,
             rows: 3,
         },
@@ -188,7 +191,7 @@ const ModalTransaksi = ({ isOpen, onClose, mode = 'add', data = null, onSubmit }
                 {/* Attachment */}
                 <div className="flex flex-col gap-1.5">
                     <label className="text-sm font-medium text-gray-900">
-                        Attachment{isTransfer && !isView && <span className="text-danger-500 ml-0.5">*</span>}
+                        Attachment{(isCashOut || isTransfer) && !isView && <span className="text-danger-500 ml-0.5">*</span>}
                     </label>
                     {isView ? (
                         typeof form.attachment === 'string' && form.attachment ? (

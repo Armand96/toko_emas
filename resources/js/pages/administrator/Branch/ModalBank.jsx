@@ -6,9 +6,11 @@ import Badge from '../../../components/Badge';
 import ModalAddBank from './ModalAddBank';
 import BankApis from '../../../Services/Bank.apis';
 import OptionsStore from '../../../Store/OptionsStore';
+import LoadingStore from '../../../Store/LoadingStore';
 import { showAlert } from '../../../utils/showAlert';
 
 export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, isView }) {
+    const setLoading = LoadingStore((state) => state.setLoading);
     const [banks, setBanks] = useState([]);
     const [isBankModalOpen, setIsBankModalOpen] = useState(false);
     const [selectedBank, setSelectedBank] = useState(null);
@@ -31,55 +33,61 @@ export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, i
         setTimeout(() => setSelectedBank(null), 300);
     };
 
-    const handleSubmitBank = (bankData) => {
-        console.log(bankData)
-        // let updatedBanks;
-        if (bankData.id) {
-            BankApis.PutBankBranch(bankData?.id, {
-                ...bankData,
-                is_active: bankData?.is_active ? 1 : 0,
-                branch_id: formData?.id,
-                bank_id: bankData?.bank_id
-            }).then(() => {
-                OptionsStore.getState().invalidate('banks');
-                BankApis.GetBankBranch(`?branch_id=${formData?.id}`).then((res) => {
-                    setBanks(res?.data)
-                })
-            })
-        } else {
-            BankApis.PostBankBranch({
-                ...bankData,
-                is_active: bankData ? 1 : 0,
-                branch_id: formData?.id,
-                bank_id: bankData?.bank_id
-            }).then(() => {
-                OptionsStore.getState().invalidate('banks');
-                BankApis.GetBankBranch(`?branch_id=${formData?.id}`).then((res) => {
-                    setBanks(res?.data)
-                })
-            })
+    const handleSubmitBank = async (bankData) => {
+        setLoading(true);
+        try {
+            if (bankData.id) {
+                await BankApis.PutBankBranch(bankData.id, {
+                    ...bankData,
+                    is_active: bankData?.is_active ? 1 : 0,
+                    branch_id: formData?.id,
+                    bank_id: bankData?.bank_id,
+                });
+            } else {
+                await BankApis.PostBankBranch({
+                    ...bankData,
+                    is_active: bankData ? 1 : 0,
+                    branch_id: formData?.id,
+                    bank_id: bankData?.bank_id,
+                });
+            }
+            OptionsStore.getState().invalidate('banks');
+            const res = await BankApis.GetBankBranch(`?branch_id=${formData?.id}`);
+            setBanks(res?.data);
+            handleCloseBankModal();
+            showAlert({ icon: 'success', isAutoClose: true, title: 'Berhasil', message: 'Data bank berhasil disimpan' });
+        } catch (error) {
+            console.error(error);
+            showAlert({ icon: 'error', title: 'Gagal', message: 'Gagal menyimpan data bank' });
+        } finally {
+            setLoading(false);
         }
-        handleCloseBankModal();
     };
 
-    const handleDeleteBank = (data) => {
-        showAlert({
+    const handleDeleteBank = async (data) => {
+        const { confirmed } = await showAlert({
             icon: "warning",
             title: "Hapus Bank",
             isAutoClose: false,
             message: "Anda yakin ingin menghapus bank ?",
             confirmText: "Ya",
-            cancelText: "Tidak"
-        }).then((res) => {
-            if(res.confirmed){
-                BankApis.DeleteBank(data.id).then(() => {
-                    OptionsStore.getState().invalidate('banks');
-                    BankApis.GetBankBranch(`?branch_id=${formData?.id}`).then((res) => {
-                        setBanks(res?.data)
-                    })
-                })
-            }
-        })
+            cancelText: "Tidak",
+        });
+        if (!confirmed) return;
+
+        setLoading(true);
+        try {
+            await BankApis.DeleteBank(data.id);
+            OptionsStore.getState().invalidate('banks');
+            const res = await BankApis.GetBankBranch(`?branch_id=${formData?.id}`);
+            setBanks(res?.data);
+            showAlert({ icon: 'success', isAutoClose: true, title: 'Berhasil', message: 'Bank berhasil dihapus' });
+        } catch (error) {
+            console.error(error);
+            showAlert({ icon: 'error', title: 'Gagal', message: 'Gagal menghapus bank' });
+        } finally {
+            setLoading(false);
+        }
     };
 
     const bankColumns = [

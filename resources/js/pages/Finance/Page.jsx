@@ -53,8 +53,8 @@ const Finance = () => {
             if (params.cabang) query.append('branch_id', params.cabang);
             const { mode, start, end } = params.dateRange || {};
             if (mode !== 'all' && start && end) {
-                query.append('start_date', `${start} 00:00:00`);
-                query.append('end_date', `${end} 23:59:59`);
+                query.append('start_date', `${start}`);
+                query.append('end_date', `${end} `);
             }
 
             const res = await FinanceApis.GetFinance(`?${query.toString()}`);
@@ -156,7 +156,7 @@ const Finance = () => {
     };
 
     const columns = [
-        { header: 'Tanggal', accessor: 'created_at', render: (row) => row.created_at ? dayjs(row.created_at).format("DD/MM/YYY, HH:mm") : '-' },
+        { header: 'Tanggal', accessor: 'created_at', render: (row) => row.created_at ? dayjs(row.created_at).format("DD/MM/YYYY, HH:mm") : '-' },
         { header: 'Cabang', accessor: 'branch', render: (row) => row.branch?.branch_name ?? '-' },
         {
             header: 'Tipe', accessor: 'type',
@@ -204,13 +204,12 @@ const Finance = () => {
 
             {/* Filter Bar */}
             <div className="flex flex-wrap items-end gap-3">
-                
                 <div className="min-w-[220px]">
                     <InputGroup
                         fields={[{ name: "dateRange", label: "", type: "daterange" }]}
                         formData={filter}
                         cols="1"
-                        onChange={(val) => setFilter({ ...filter, dateRange: val })}
+                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
                     />
                 </div>
                 <div className="w-[160px]">
@@ -219,7 +218,7 @@ const Finance = () => {
                             name: "tipe",
                             label: "",
                             type: "dropdown",
-                            placeholder: "Semua tipe",
+                            placeholder: "Pilih tipe",
                             options: TIPE_OPTIONS,
                         }]}
                         formData={filter}
@@ -233,7 +232,7 @@ const Finance = () => {
                             name: "cabang",
                             label: "",
                             type: "dropdown",
-                            placeholder: "Semua cabang",
+                            placeholder: "Pilih cabang",
                             options: branchOptions,
                         }]}
                         formData={filter}
