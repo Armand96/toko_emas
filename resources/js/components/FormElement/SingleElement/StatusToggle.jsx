@@ -36,7 +36,7 @@ const StatusToggle = ({
         </label>
       )}
       <div
-        className={`inline-flex w-fit items-center gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 ${
+        className={`inline-flex w-fit items-center gap-1 rounded-lg  p-1 ${
           isDisable ? "opacity-60 cursor-not-allowed" : ""
         }`}
       >
