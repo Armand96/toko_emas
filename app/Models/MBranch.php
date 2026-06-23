@@ -25,4 +25,9 @@ class MBranch extends Model
     {
         return $this->hasOne(BankCabang::class, 'bank_id', 'id');
     }
+
+    public function pic()
+    {
+        return $this->hasOne(User::class, 'pic', 'id');
+    }
 }

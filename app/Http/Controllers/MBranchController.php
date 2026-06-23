@@ -28,9 +28,12 @@ class MBranchController extends Controller
         if ($request->has('lokasi_cabang') && $request->lokasi_cabang != "") {
             $query->where('lokasi_cabang', 'like', '%' . $request->lokasi_cabang . '%');
         }
+        if ($request->has('is_active') && $request->is_active != "") {
+            $query->where('is_active', $request->is_active);
+        }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $branches = $query->orderBy('id', 'desc')->paginate($perPage);
+        $branches = $query->with(['bankCabang.bank', 'pic'])->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($branches);
     }
@@ -64,7 +67,7 @@ class MBranchController extends Controller
      */
     public function show(MBranch $branch)
     {
-        return ApiResponse::success($branch, "Success");
+        return ApiResponse::success($branch->load(['bankCabang.bank', 'pic']), "Success");
     }
 
     /**

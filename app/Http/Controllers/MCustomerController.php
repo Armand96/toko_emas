@@ -25,6 +25,9 @@ class MCustomerController extends Controller
         if ($request->has('phone_number') && $request->phone_number != "") {
             $query->where('phone_number', 'like', '%' . $request->phone_number . '%');
         }
+        if ($request->has('is_active') && $request->is_active != "") {
+            $query->where('is_active', $request->is_active);
+        }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
         $customeres = $query->orderBy('id', 'desc')->paginate($perPage);
