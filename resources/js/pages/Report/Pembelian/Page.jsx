@@ -111,8 +111,8 @@ const ReportPembelian = () => {
             />
 
             {/* Filter bar */}
-            <div className="flex items-center gap-3 px-4">
-                <div className="w-[240px]">
+            <div className="flex flex-wrap items-start gap-3 px-4">
+                <div className="w-full sm:w-[260px]">
                     <InputGroup
                         fields={[{ name: "dateRange", label: "", type: "daterange" }]}
                         formData={filter}
@@ -120,7 +120,7 @@ const ReportPembelian = () => {
                         onChange={handleChange}
                     />
                 </div>
-                <div className="w-[180px]">
+                <div className="w-full sm:w-[180px]">
                     <InputGroup
                         fields={[{ name: "cabang", label: "", type: "dropdown", options: CABANG_OPTIONS, placeholder: "Pilih cabang" }]}
                         formData={filter}

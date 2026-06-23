@@ -19,13 +19,12 @@ export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, f
             isRequired: !isView,
             isDisable: isView
         },
-         {
+        {
             label: "Status",
             name: "is_active",
             type: "checkbox",
             isDisable: isView,
         },
-
     ];
 
     const disableButton = () => {

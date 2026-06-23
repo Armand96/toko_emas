@@ -77,7 +77,6 @@ export default function Modal({
             type: "checkbox",
             isRequired: false,
             isDisable: isView,
-
         },
     ];
 

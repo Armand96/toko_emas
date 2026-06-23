@@ -300,8 +300,8 @@ const ReportFinance = () => {
                     <h2 className="text-lg font-semibold text-gray-950">Laporan Transaksi</h2>
                     <p className="text-[13px] text-gray-500">Menyajikan rincian aktivitas keuangan dalam bentuk visual dan data.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <div className="w-[240px]">
+                <div className="flex flex-wrap items-start gap-3">
+                    <div className="w-full sm:w-[260px]">
                         <InputGroup
                             fields={[{ name: "dateRange", label: "", type: "daterange" }]}
                             formData={filter}
@@ -309,7 +309,7 @@ const ReportFinance = () => {
                             onChange={handleChange}
                         />
                     </div>
-                    <div className="w-[180px]">
+                    <div className="w-full sm:w-[180px]">
                         <InputGroup
                             fields={[{ name: "cabang", label: "", type: "dropdown", options: branchOptions, placeholder: "Pilih cabang" }]}
                             formData={filter}
@@ -317,7 +317,7 @@ const ReportFinance = () => {
                             onChange={handleChange}
                         />
                     </div>
-                    <div className="w-[180px]">
+                    <div className="w-full sm:w-[180px]">
                         <InputGroup
                             fields={[{ name: "metode", label: "", type: "dropdown", options: METODE_OPTIONS, placeholder: "Pilih metode" }]}
                             formData={filter}

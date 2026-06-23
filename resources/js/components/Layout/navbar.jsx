@@ -5,6 +5,7 @@ import AuthService from "../../Services/Auth.apis";
 import UsersStore from "../../Services/User.apis";
 import AuthStore from "../../Store/AuthStore";
 import OptionsStore from "../../Store/OptionsStore";
+import StoreSettingStore from "../../Store/StoreSettingStore";
 import { showAlert } from "../../utils/showAlert";
 
 const Navbar = ({ setIsOpen }) => {
@@ -14,6 +15,7 @@ const Navbar = ({ setIsOpen }) => {
   const [branches, setBranches] = useState([]);
 
   const ensureBranches = OptionsStore((s) => s.ensureBranches);
+  const storeSetting = StoreSettingStore((state) => state.storeSetting);
 
   const user = AuthStore((state) => state.user);
   const initials = user?.name
@@ -50,12 +52,30 @@ const Navbar = ({ setIsOpen }) => {
 
   return (
     <header className="h-16 bg-neutral-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 z-30 shrink-0">
-      <button
-        className="p-2 -ml-2 text-gray-600 rounded-md hover:bg-gray-100 focus:outline-none cursor-pointer"
-        onClick={() => setIsOpen((prev) => !prev)}
-      >
-        <ListIcon size={24} />
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          className="p-2 -ml-2 text-gray-600 rounded-md hover:bg-gray-100 focus:outline-none cursor-pointer"
+          onClick={() => setIsOpen((prev) => !prev)}
+        >
+          <ListIcon size={24} />
+        </button>
+        {storeSetting && (
+          <div className="flex items-center gap-2">
+            {storeSetting.image_path && (
+              <div className="w-8 h-8 rounded overflow-hidden bg-gray-100 flex items-center justify-center shrink-0">
+                <img
+                  src={`${import.meta.env.VITE_API_BASE_URL}storage/${storeSetting.image_path}`}
+                  alt="Logo"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            )}
+            <span className="text-sm font-semibold text-gray-800 hidden sm:block">
+              {storeSetting.shop_name}
+            </span>
+          </div>
+        )}
+      </div>
 
       <div className="relative">
         <button

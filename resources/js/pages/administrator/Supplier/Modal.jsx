@@ -42,7 +42,7 @@ export default function ModalSupplier({
             name: "is_active",
             type: "checkbox",
             isDisable: isView,
-        }
+        },
     ];
 
     const disableButton = () => {
