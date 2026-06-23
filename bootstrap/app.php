@@ -23,43 +23,43 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
         $middleware->api(append: [
-            // \App\Http\Middleware\ForceJsonResponse::class
+            \App\Http\Middleware\ForceJsonResponse::class
         ]);
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // $exceptions->render(function (
-        //     Illuminate\Auth\AuthenticationException $e,
-        //     Illuminate\Http\Request $request
-        // ) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Unauthenticated',
-        //         'errors' => null,
-        //     ], 401);
-        // });
+        $exceptions->render(function (
+            Illuminate\Auth\AuthenticationException $e,
+            Illuminate\Http\Request $request
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated',
+                'errors' => null,
+            ], 401);
+        });
 
-        // // Validation (422)
-        // $exceptions->render(function (ValidationException $e, $request) {
-        //     return ApiResponse::error('Validation error', $e->errors(), 422);
-        // });
+        // Validation (422)
+        $exceptions->render(function (ValidationException $e, $request) {
+            return ApiResponse::error('Validation error', $e->errors(), 422);
+        });
 
-        // // Model not found (404)
-        // $exceptions->render(function (ModelNotFoundException $e, $request) {
-        //     return ApiResponse::error('Data not found', null, 404);
-        // });
+        // Model not found (404)
+        $exceptions->render(function (ModelNotFoundException $e, $request) {
+            return ApiResponse::error('Data not found', null, 404);
+        });
 
-        // // Route / model binding not found (404)
-        // $exceptions->render(function (NotFoundHttpException $e, $request) {
-        //     return ApiResponse::error('Endpoint or data not found', null, 404);
-        // });
+        // Route / model binding not found (404)
+        $exceptions->render(function (NotFoundHttpException $e, $request) {
+            return ApiResponse::error('Endpoint or data not found', null, 404);
+        });
 
-        // // General error (500)
-        // $exceptions->render(function (Throwable $e, $request) {
-        //     return ApiResponse::error(
-        //         'Server error',
-        //         app()->isLocal() ? $e->getMessage() : null,
-        //         500
-        //     );
-        // });
+        // General error (500)
+        $exceptions->render(function (Throwable $e, $request) {
+            return ApiResponse::error(
+                'Server error',
+                app()->isLocal() ? $e->getMessage() : null,
+                500
+            );
+        });
     })->create();
