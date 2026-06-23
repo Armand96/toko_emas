@@ -46,9 +46,12 @@ class PembelianController extends Controller
         if ($request->has('branch_id') && $request->branch_id != "") {
             $query->where('branch_id', $request->branch_id);
         }
+        if ($request->has('status') && $request->status != "") {
+            $query->where('status', $request->status);
+        }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $pembelians = $query->with(['product', 'category', 'branch', 'bank', 'inventory'])->orderBy('id', 'desc')->paginate($perPage);
+        $pembelians = $query->with(['product', 'category', 'branch', 'bank', 'inventory', 'user'])->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($pembelians);
     }
@@ -59,7 +62,8 @@ class PembelianController extends Controller
             'product',
             'category',
             'branch',
-            'bank'
+            'bank',
+            'user'
         ]), "OK", 200);
     }
 
@@ -79,6 +83,7 @@ class PembelianController extends Controller
                 $validated['data'][$index]['status'] = PembelianStatus::APPROVAL;
                 $validated['data'][$index]['batch'] = $batch->id;
                 $validated['data'][$index]['created_at'] = $dateNow;
+                $validated['data'][$index]['created_by'] = $request->user()->id;
 
                 $tempInsert = Pembelian::create($validated['data'][$index]);
                 array_push($result, $tempInsert);

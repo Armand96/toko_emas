@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
     'batch',
     'inventory_code',
     'product_id',
+    'created_by',
     'category_id',
     'subcategory_id',
     'supplier_id',
@@ -27,6 +28,10 @@ use Illuminate\Database\Eloquent\Model;
 class Pembelian extends Model
 {
     //
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by', 'id');
+    }
 
     public function product()
     {

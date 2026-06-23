@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('batch', false, true);
             $table->bigInteger('product_id', false, true);
+            $table->bigInteger('created_by', false, true);
             $table->bigInteger('category_id', false, true);
             $table->bigInteger('subcategory_id', false, true);
             $table->bigInteger('branch_id', false, true);
