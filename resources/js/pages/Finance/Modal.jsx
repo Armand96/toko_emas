@@ -56,7 +56,7 @@ const ModalTransaksi = ({ isOpen, onClose, mode = 'add', data = null, onSubmit }
                 type: data.type || 'CASH IN',
                 branch_id: data.branch_id ?? '',
                 bank_cabang_id: data.bank_cabang_id ?? '',
-                nominal: data.nominal ?? '',
+                nominal: String(Math.round(Number(data.nominal) || 0)),
                 payment_method: data.payment_method || '',
                 category_finance_id: data.category_finance_id ?? '',
                 attachment: data.attachment ? HelperFunctions.getStorageUrl(data.attachment) : null,
