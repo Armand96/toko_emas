@@ -12,6 +12,7 @@ class MBranch extends Model
         'address',
         'pic',
         'lokasi_cabang',
+        'phone_numbers',
         'branch_open_date',
         'is_active'
     ];

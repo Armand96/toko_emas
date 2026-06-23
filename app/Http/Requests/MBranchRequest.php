@@ -29,6 +29,7 @@ class MBranchRequest extends FormRequest
             'branch_code' => 'required|string',
             'lokasi_cabang' => 'required|string',
             'address' => 'required|string',
+            'phone_numbers' => 'nullable|string',
             'pic' => 'nullable|numeric',
             'branch_open_date' => 'required|date',
             'is_active' => 'required|boolean'
