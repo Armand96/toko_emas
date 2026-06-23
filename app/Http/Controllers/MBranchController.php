@@ -30,8 +30,7 @@ class MBranchController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $branches = $query->with('picUser:id,name')->orderBy('id', 'desc')->paginate($perPage);
-
+        $branches = $query->orderBy('id', 'desc')->paginate($perPage);
         return response()->json($branches);
     }
 

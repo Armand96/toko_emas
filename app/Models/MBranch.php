@@ -21,10 +21,10 @@ class MBranch extends Model
         'updated_at'
     ];
 
-    public function picUser()
-    {
-        return $this->belongsTo(User::class, 'pic', 'id');
-    }
+    // public function picUser()
+    // {
+    //     return $this->belongsTo(User::class, 'pic', 'id');
+    // }
 
     public function bankcabang()
     {
