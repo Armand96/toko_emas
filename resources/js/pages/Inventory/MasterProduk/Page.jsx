@@ -96,8 +96,8 @@ const MasterProduk = () => {
             ensureCategories(),
             ensureBranches(),
         ]).then(([categoryData, branchData]) => {
-            setCategoryOptions(HelperFunctions.formatDropdown(categoryData, 'id', 'category_name', true));
-            setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name', true));
+            setCategoryOptions(HelperFunctions.formatDropdown(categoryData, 'id', 'category_name'));
+            setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name'));
         }).catch(error => {
             console.error('Error fetching options:', error);
         }).finally(() => {
@@ -216,14 +216,14 @@ const MasterProduk = () => {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => handleOpenModal('view', row)}
-                        className="p-1.5 btn-outline text-info-500 hover:bg-info-50 rounded-md transition-colors"
+                        className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
                     >
                         <EyeIcon size={20} />
                     </button>
                     {can('update', 'inventory.master_produk') && (
                         <button
                             onClick={() => handleOpenModal('edit', row)}
-                            className="p-1.5 btn-outline !border-primary-500 text-warning-500 hover:bg-warning-50 rounded-md transition-colors"
+                            className="p-1.5 btn-outline hover:bg-warning-50 rounded-md cursor-pointer"
                         >
                             <PencilSimpleLineIcon size={20} />
                         </button>

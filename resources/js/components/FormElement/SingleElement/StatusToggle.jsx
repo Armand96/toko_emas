@@ -54,8 +54,8 @@ const StatusToggle = ({
                     ? "border border-[#E2E8F0] bg-[#F3F4F6] text-[#45556C]"
                     : "border border-[#E2E8F0] text-[#9CA3AF]"
                   : selected
-                    ? "border border-primary-500 bg-primary-50 text-primary-600 shadow-sm"
-                    : "border border-border-default text-[#62748E]"
+                    ? "border border-primary-500 bg-white text-primary-600"
+                    : "border border-gray-200 bg-gray-100 text-[#62748E]"
               } ${isDisable ? "cursor-not-allowed" : "cursor-pointer"}`}
             >
               {opt.label}

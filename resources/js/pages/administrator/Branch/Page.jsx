@@ -201,19 +201,19 @@ const Branch = () => {
                 <div className="flex items-center gap-2">
                        <button
                         onClick={() => handleOpenModal('bank', row)}
-                        className="p-1.5 btn-outline !border-primary-500 text-info-500 hover:bg-info-50 rounded-md transition-colors"
+                        className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
                     >
                         <BankIcon size={20} />
                     </button>
                     <button
                         onClick={() => handleOpenModal('view', row)}
-                        className="p-1.5 btn-outline !border-primary-500 text-info-500 hover:bg-info-50 rounded-md transition-colors"
+                        className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
                     >
                         <EyeIcon size={20} />
                     </button>
                     <button
                         onClick={() => handleOpenModal('edit', row)}
-                        className="p-1.5 btn-outline !border-primary-500 text-warning-500 hover:bg-warning-50 rounded-md transition-colors"
+                        className="p-1.5 btn-outline hover:bg-warning-50 rounded-md cursor-pointer"
                     >
                         <PencilSimpleLineIcon size={20} />
                     </button>
@@ -233,7 +233,7 @@ const Branch = () => {
     ];
 
     const filterFields = [
-        { name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: [{ value: null, label: 'Semua Status' }, { value: 'active', label: 'Aktif' }, { value: 'inactive', label: 'Tidak Aktif' }] },
+        { name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: [{ value: 'active', label: 'Aktif' }, { value: 'inactive', label: 'Tidak Aktif' }] },
     ];
 
     return (

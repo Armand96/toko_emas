@@ -28,7 +28,7 @@ export default function Modal({
             ensureBranches(),
         ]).then(([categoryRes, branchData]) => {
             setCategoryOptions(HelperFunctions.formatDropdown(categoryRes.data, 'id', 'category_name'));
-            setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name', true));
+            setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name'));
         }).catch(error => {
             console.error('Error fetching options:', error);
         }).finally(() => {
