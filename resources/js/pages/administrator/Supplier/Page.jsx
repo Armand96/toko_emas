@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserPlusIcon, PencilSimpleLineIcon, EyeIcon } from "@phosphor-icons/react";
+import { PlusCircleIcon, PencilSimpleLineIcon, EyeIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from '../../../components/FormElement/InputGroup';
@@ -131,8 +131,8 @@ const MasterSupplier = () => {
             header: 'Status',
             accessor: 'is_active',
             render: (row) => (
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${row.is_active ? 'bg-success-100 text-success-700' : 'bg-danger-100 text-danger-700'}`}>
-                    {row.is_active ? 'Active' : 'Inactive'}
+                <span className={`px-3 py-1 rounded-md text-xs font-medium border ${row.is_active ? 'bg-success-50 text-success-700 border-success-200' : 'bg-gray-50 text-gray-500 border-gray-200'}`}>
+                    {row.is_active ? 'Aktif' : 'Tidak Aktif'}
                 </span>
             )
         },
@@ -173,7 +173,7 @@ const MasterSupplier = () => {
             <HeaderSection
                 title="Supplier"
                 description="Kelola data supplier untuk mendukung proses transaksi pembelian."
-                icon={UserPlusIcon}
+                icon={PlusCircleIcon}
                 onClick={can('create', 'administrator.supplier') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah Supplier"
             />

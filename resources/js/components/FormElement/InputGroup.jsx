@@ -3,10 +3,9 @@ import TextArea from "./SingleElement/TextArea";
 import Dropdown from "./SingleElement/Dropdown";
 import Radio from "./SingleElement/Radio";
 import Checklist from "./SingleElement/Checklist";
-import Switch from "./SingleElement/Switch";
 import InputPassword from "./SingleElement/Password";
 import PhotoInput from "./SingleElement/PhotoInput";
-import Checkbox from "./SingleElement/Checkbox";
+import StatusToggle from "./SingleElement/StatusToggle";
 import SearchInput from "./SingleElement/SearchInput";
 import DateRange from "./SingleElement/DateRange";
 
@@ -92,10 +91,9 @@ const InputGroup = ({
                         />
                     );
             case "checkbox":
-                return <Checkbox key={index} {...commonProps} />;
             case "switch":
             case "toggle":
-                return <Switch key={index} {...commonProps} />;
+                return <StatusToggle key={index} {...commonProps} options={field.options} />;
             case "":
                 return <div></div>
             default:

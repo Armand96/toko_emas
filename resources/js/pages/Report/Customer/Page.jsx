@@ -46,6 +46,20 @@ const ReportCustomer = () => {
     });
     const [searchBounce] = useDebounce(filter.search, 500);
 
+    /* Param tanggal dari date range filter — dikirim ke endpoint yang
+       mendukung start_date/end_date (top customer, transaksi, detail). */
+    const dateParams = () => {
+        const q = new URLSearchParams();
+        const { mode, start, end } = filter.dateRange || {};
+        if (mode !== "all" && start && end) {
+            // end_date dijadikan akhir hari supaya transaksi di tanggal "end"
+            // ikut terhitung (backend pakai created_at <= end_date).
+            q.append("start_date", `${start} 00:00:00`);
+            q.append("end_date", `${end} 23:59:59`);
+        }
+        return q;
+    };
+
     const [summary, setSummary] = useState({ total: 0, aktif: 0, baru: 0 });
     const [topCustomerRaw, setTopCustomerRaw] = useState([]);
     const [frekuensi, setFrekuensi] = useState([]);
@@ -59,37 +73,38 @@ const ReportCustomer = () => {
     });
     const [firstLoaded, setFirstLoaded] = useState(false);
 
-    /* ── Fetch KPI + Top Customer (sekali di awal) ───────────── */
-    useEffect(() => {
-        (async () => {
-            setLoading(true);
-            try {
-                const [count, top, trx] = await Promise.all([
-                    ReportApis.GetCustomerCount(),
-                    ReportApis.GetTopCustomer(),
-                    ReportApis.GetCustomerTransaction(),
-                ]);
-                setSummary({
-                    total: count?.total_customer ?? 0,
-                    aktif: count?.customer_active ?? 0,
-                    baru: count?.new_customer ?? 0,
-                });
-                setTopCustomerRaw(Array.isArray(top) ? top.map(mapCustomer) : []);
-                setFrekuensi(toChartData(trx?.frequency_transaction));
-                setSegmen(toChartData(trx?.purchase_segment));
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setLoading(false);
-            }
-        })();
-    }, []);
+    /* ── Fetch KPI + Top Customer + chart (count tidak terpengaruh tanggal) ── */
+    const fetchSummary = async () => {
+        setLoading(true);
+        try {
+            const dq = dateParams().toString();
+            const [count, top, trx] = await Promise.all([
+                ReportApis.GetCustomerCount(),
+                ReportApis.GetTopCustomer(dq ? `?${dq}` : ""),
+                ReportApis.GetCustomerTransaction(dq ? `?${dq}` : ""),
+            ]);
+            setSummary({
+                total: count?.total_customer ?? 0,
+                aktif: count?.customer_active ?? 0,
+                baru: count?.new_customer ?? 0,
+            });
+            setTopCustomerRaw(Array.isArray(top) ? top.map(mapCustomer) : []);
+            setFrekuensi(toChartData(trx?.frequency_transaction));
+            setSegmen(toChartData(trx?.purchase_segment));
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     /* ── Fetch tabel Detail (paginated) ──────────────────────── */
     const fetchDetail = async (page = 1, perPage = 10, search = "") => {
         setLoading(true);
         try {
-            const query = new URLSearchParams({ page, per_page: perPage });
+            const query = dateParams();
+            query.append("page", page);
+            query.append("per_page", perPage);
             if (search) query.append("search", search);
 
             const res = await ReportApis.GetTopCustomerDetail(`?${query.toString()}`);
@@ -107,9 +122,21 @@ const ReportCustomer = () => {
         }
     };
 
+    // initial load
     useEffect(() => {
+        fetchSummary();
         fetchDetail();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // refetch saat date range berubah (KPI chart + tabel)
+    useEffect(() => {
+        if (firstLoaded) {
+            fetchSummary();
+            fetchDetail(1, detail.per_page, searchBounce);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filter.dateRange]);
 
     // refetch saat search berubah (debounced)
     useEffect(() => {
@@ -123,7 +150,6 @@ const ReportCustomer = () => {
         const key = filter.sort === "transaksi" ? "transaksi" : "total";
         return [...topCustomerRaw]
             .sort((a, b) => b[key] - a[key])
-            .slice(0, 5)
             .map((c, i) => ({ ...c, no: i + 1 }));
     }, [topCustomerRaw, filter.sort]);
 

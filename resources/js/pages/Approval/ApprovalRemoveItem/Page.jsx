@@ -206,7 +206,7 @@ const ApprovalRemoveItem = () => {
             render: (row) => (
                 <button
                     onClick={() => handleOpenModal(row)}
-                    className="p-1.5 bg-white border border-neutral-200 text-primary-600 rounded-md hover:bg-neutral-50 transition-colors"
+                    className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
                     title="Lihat Detail"
                 >
                     <EyeIcon size={18} />

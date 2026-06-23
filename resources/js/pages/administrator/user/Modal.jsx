@@ -45,7 +45,7 @@ export default function ModalUser({
             name: "email",
             type: "text",
             placeholder: "Masukkan email",
-            isRequired: !isView,
+            // isRequired: !isView,
             isDisable: isView,
         },
         {
@@ -88,8 +88,8 @@ export default function ModalUser({
             isRequired: !isView,
             isDisable: isView,
             options: [
-                { value: true, label: "Active" },
-                { value: false, label: "Inactive" },
+                { value: true, label: "Aktif" },
+                { value: false, label: "Tidak Aktif" },
             ],
         },
     ];

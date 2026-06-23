@@ -65,8 +65,8 @@ const ApprovalPembelian = () => {
                 ensureCategories(),
                 ensureBranches(),
             ]);
-            setCategoryOptions(HelperFunctions.formatDropdown(categoryData, 'id', 'category_name', true));
-            setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name', true));
+            setCategoryOptions(HelperFunctions.formatDropdown(categoryData, 'id', 'category_name'));
+            setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name'));
         } catch (error) {
             console.error(error);
         }
@@ -272,7 +272,7 @@ const ApprovalPembelian = () => {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => handleOpenModal(row)}
-                        className="p-1.5 bg-primary-50 text-primary-600 rounded-md hover:bg-primary-100 transition-colors cursor-pointer"
+                        className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
                     >
                         <EyeIcon size={18} />
                     </button>

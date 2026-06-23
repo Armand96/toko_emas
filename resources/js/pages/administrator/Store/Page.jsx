@@ -5,12 +5,14 @@ import HeaderSection from '../../../components/HeaderSection';
 import NullState from '../../../assets/images/setting_store.svg'
 import StoreApis from '../../../Services/Store.apis';
 import LoadingStore from '../../../Store/LoadingStore';
+import StoreSettingStore from '../../../Store/StoreSettingStore';
 
 const SettingStore = () => {
     const [storeData, setStoreData] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('add');
     const setLoading = LoadingStore((state) => state.setLoading);
+    const setStoreSetting = StoreSettingStore((state) => state.setStoreSetting);
     const [formData, setFormData] = useState({});
     const [formError, setFormError] = useState({});
     const [requiredFields, setRequiredFields] = useState([
@@ -24,7 +26,9 @@ const SettingStore = () => {
     const fetchData = () => {
         StoreApis.GetSettingsStore('').then(data => {
             console.log(data);
-            setStoreData({...data?.data?.[0], image: data?.data?.[0]?.image_path ? `${import.meta.env.VITE_API_BASE_URL}storage/${data?.data?.[0]?.image_path}` : data?.data?.[0]?.logo } || null);
+            const setting = data?.data?.[0] || null;
+            setStoreData({...setting, image: setting?.image_path ? `${import.meta.env.VITE_API_BASE_URL}storage/${setting?.image_path}` : setting?.logo } || null);
+            setStoreSetting(setting);
             setLoading(false);
         })
     }

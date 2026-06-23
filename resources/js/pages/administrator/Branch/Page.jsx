@@ -177,7 +177,7 @@ const Branch = () => {
         { header: 'Nama Cabang', accessor: 'branch_name', },
         { header: 'Lokasi Cabang', accessor: 'lokasi_cabang', },
         { header: 'Alamat', accessor: 'address', },
-        { header: 'PIC', accessor: 'pic', },
+        { header: 'PIC', accessor: 'pic', render: (row) => row.pic_user?.name || '-' },
         { header: 'Tanggal Buka', accessor: 'open_date', },
         {
             header: 'Status',
@@ -187,7 +187,7 @@ const Branch = () => {
                 return (
                     <span className={`px-3 py-1 rounded-md text-xs font-medium border ${isActive
                         ? 'bg-success-50 text-success-700 border-success-200'
-                        : 'bg-danger-50 text-danger-700 border-danger-200'
+                        : 'bg-gray-50 text-gray-500 border-gray-200'
                         }`}>
                         {isActive ? 'Aktif' : 'Tidak Aktif'}
                     </span>
@@ -201,19 +201,19 @@ const Branch = () => {
                 <div className="flex items-center gap-2">
                        <button
                         onClick={() => handleOpenModal('bank', row)}
-                        className="p-1.5 btn-outline !border-primary-500 text-info-500 hover:bg-info-50 rounded-md transition-colors"
+                        className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
                     >
                         <BankIcon size={20} />
                     </button>
                     <button
                         onClick={() => handleOpenModal('view', row)}
-                        className="p-1.5 btn-outline !border-primary-500 text-info-500 hover:bg-info-50 rounded-md transition-colors"
+                        className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
                     >
                         <EyeIcon size={20} />
                     </button>
                     <button
                         onClick={() => handleOpenModal('edit', row)}
-                        className="p-1.5 btn-outline !border-primary-500 text-warning-500 hover:bg-warning-50 rounded-md transition-colors"
+                        className="p-1.5 btn-outline hover:bg-warning-50 rounded-md cursor-pointer"
                     >
                         <PencilSimpleLineIcon size={20} />
                     </button>
@@ -233,7 +233,7 @@ const Branch = () => {
     ];
 
     const filterFields = [
-        { name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: [{ value: null, label: 'Semua Status' }, { value: 'active', label: 'Aktif' }, { value: 'inactive', label: 'Tidak Aktif' }] },
+        { name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: [{ value: 'active', label: 'Aktif' }, { value: 'inactive', label: 'Tidak Aktif' }] },
     ];
 
     return (

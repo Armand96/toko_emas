@@ -74,7 +74,7 @@ const DateRange = ({ label, name, value, isRequired, onChange }) => {
                 <button
                     type="button"
                     onClick={() => setOpen((o) => !o)}
-                    className="flex w-full min-w-[220px] items-center justify-between gap-3 rounded-lg border border-gray-200 bg-neutral-white px-3.5 py-2.5 text-sm text-gray-900 transition-colors hover:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+                    className="flex w-full min-w-[220px] items-center justify-between gap-3 rounded-lg border border-gray-200 bg-neutral-white px-3 py-[7px] text-sm text-gray-900 transition-colors hover:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/30"
                 >
                     <span className="flex items-center gap-2">
                         <CalendarBlankIcon size={18} className="text-gray-400" />
@@ -118,7 +118,7 @@ const DateRange = ({ label, name, value, isRequired, onChange }) => {
                                     value={draft.start}
                                     max={draft.end || undefined}
                                     onChange={(e) => setDraft({ ...draft, start: e.target.value })}
-                                    className="w-[130px] rounded-lg border border-gray-200 px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                                    className="w-[130px] rounded-lg  text-nowrap border border-gray-200 px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                                 />
                                 <span className="text-xs text-gray-400">s.d.</span>
                                 <input
@@ -126,7 +126,7 @@ const DateRange = ({ label, name, value, isRequired, onChange }) => {
                                     value={draft.end}
                                     min={draft.start || undefined}
                                     onChange={(e) => setDraft({ ...draft, end: e.target.value })}
-                                    className="w-[130px] rounded-lg border border-gray-200 px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                                    className="w-[130px] rounded-lg  text-nowrap border border-gray-200 px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                                 />
                             </div>
                         </div>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { NavLink } from "react-router";
 import {
   SquaresFourIcon,
@@ -15,6 +15,7 @@ import {
   XIcon
 } from "@phosphor-icons/react";
 import PermissionStore from "../../Store/PermissionStore";
+import StoreSettingStore from "../../Store/StoreSettingStore";
 
 const sidebarData = [
   {
@@ -69,8 +70,10 @@ const sidebarData = [
         label: "Report",
         icon: ChartBarIcon,
         subItems: [
-          { label: "Customer", link: "/report/customer" },
-          { label: "Finance", link: "/report/finance" }
+          { label: "Penjualan", link: "/report/penjualan" },
+          { label: "Pembelian", link: "/report/pembelian" },
+          { label: "Finance", link: "/report/finance" },
+          { label: "Customer", link: "/report/customer" }
         ]
       }
     ]
@@ -91,11 +94,16 @@ const sidebarData = [
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const [openMenus, setOpenMenus] = useState({});
-  // Subscribe ke nilai `permissions` supaya sidebar ikut re-render bila role
-  // berubah; fungsi helper di-ambil dari state yang sama agar konsisten.
   const permissions = PermissionStore((state) => state.permissions);
   const canSeeMenu = PermissionStore((state) => state.canSeeMenu);
   const canSeeSubMenu = PermissionStore((state) => state.canSeeSubMenu);
+  const storeSetting = StoreSettingStore((state) => state.storeSetting);
+  const fetched = StoreSettingStore((state) => state.fetched);
+  const fetchStoreSetting = StoreSettingStore((state) => state.fetchStoreSetting);
+
+  useEffect(() => {
+    if (!fetched) fetchStoreSetting();
+  }, [fetched, fetchStoreSetting]);
 
   const toggleMenu = (id) => {
     setOpenMenus((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -135,10 +143,20 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         <div className="w-64 h-full flex flex-col">
           <div className="flex items-center justify-between h-16 px-4 bg-primary-950 border-b border-primary-900 shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-neutral-white rounded flex items-center justify-center">
-                <div className="w-4 h-4 bg-primary-500 rounded-sm"></div>
+              <div className="w-8 h-8 bg-neutral-white rounded flex items-center justify-center overflow-hidden">
+                {storeSetting?.image_path ? (
+                  <img
+                    src={`${import.meta.env.VITE_API_BASE_URL}storage/${storeSetting.image_path}`}
+                    alt="Logo"
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <div className="w-4 h-4 bg-primary-500 rounded-sm"></div>
+                )}
               </div>
-              <span className="font-semibold text-neutral-white text-sm">Nama Sistem</span>
+              <span className="font-semibold text-neutral-white text-sm">
+                {storeSetting?.shop_name || "Nama Sistem"}
+              </span>
             </div>
             <button
               className="lg:hidden text-gray-400 hover:text-neutral-white cursor-pointer"

@@ -19,7 +19,7 @@ const Layout = () => {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Navbar setIsOpen={setIsSidebarOpen} />
 
-        <main className="flex-1 overflow-y-auto p-0 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-3 lg:px-4 lg:py-4">
            <Outlet />
         </main>
       </div>

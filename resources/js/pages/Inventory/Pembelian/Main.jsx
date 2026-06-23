@@ -124,7 +124,7 @@ const MainPembelian = ({ setCurentState }) => {
 
     const handleBulkPrint = () => {
         if (approvedItems.length === 0) return;
-        const barcodes = approvedItems.map(item => item.inventory_code);
+        const barcodes = approvedItems.map(item => item.barcode);
         const items = approvedItems.map(item => ({
             barcode: item.barcode,
             label: item.product?.product_name ?? item.product?.name ?? '',
@@ -223,7 +223,7 @@ const MainPembelian = ({ setCurentState }) => {
                     }
                     {
                         row?.status === "DISETUJUI" && <button
-                            onClick={() => HelperFunctions.printBarcode(row.barcode, { label: row.product?.product_name ?? row.product?.name })}
+                            onClick={() => HelperFunctions.printBarcode(row.inventory_code, { label: row.product?.product_name ?? row.product?.name })}
                             className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
                             title="Cetak QR Code"
                         >

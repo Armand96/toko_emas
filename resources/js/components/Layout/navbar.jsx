@@ -5,6 +5,7 @@ import AuthService from "../../Services/Auth.apis";
 import UsersStore from "../../Services/User.apis";
 import AuthStore from "../../Store/AuthStore";
 import OptionsStore from "../../Store/OptionsStore";
+import StoreSettingStore from "../../Store/StoreSettingStore";
 import { showAlert } from "../../utils/showAlert";
 
 const Navbar = ({ setIsOpen }) => {
@@ -14,6 +15,7 @@ const Navbar = ({ setIsOpen }) => {
   const [branches, setBranches] = useState([]);
 
   const ensureBranches = OptionsStore((s) => s.ensureBranches);
+  const storeSetting = StoreSettingStore((state) => state.storeSetting);
 
   const user = AuthStore((state) => state.user);
   const initials = user?.name
@@ -50,12 +52,14 @@ const Navbar = ({ setIsOpen }) => {
 
   return (
     <header className="h-16 bg-neutral-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 z-30 shrink-0">
-      <button
-        className="p-2 -ml-2 text-gray-600 rounded-md hover:bg-gray-100 focus:outline-none cursor-pointer"
-        onClick={() => setIsOpen((prev) => !prev)}
-      >
-        <ListIcon size={24} />
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          className="p-2 -ml-2 text-gray-600 rounded-md hover:bg-gray-100 focus:outline-none cursor-pointer"
+          onClick={() => setIsOpen((prev) => !prev)}
+        >
+          <ListIcon size={24} />
+        </button>
+      </div>
 
       <div className="relative">
         <button
@@ -87,10 +91,6 @@ const Navbar = ({ setIsOpen }) => {
                 <p className="text-xs text-gray-500 truncate">{roleName} · {branchName}</p>
               </div>
             </div>
-            <button className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors cursor-pointer">
-              <MagnifyingGlassIcon size={18} />
-              Ubah Password
-            </button>
             <button
               onClick={handleLogout}
               className="w-full text-left px-4 py-2.5 text-sm text-danger-600 hover:bg-danger-50 flex items-center gap-3 transition-colors cursor-pointer"

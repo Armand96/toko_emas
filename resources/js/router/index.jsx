@@ -17,11 +17,18 @@ import PrintBarcode from "../components/Utils/PrintBarcode";
 import PrintKwitansi from "../pages/Penjualan/PrintKwitansi";
 import Finance from "../pages/Finance/Page";
 import ProtectedRoute from "../components/ProtectedRoute";
+import PublicRoute from "../components/PublicRoute";
 import Dashboard from "../pages/Dashboard/Page";
 
 const router = createBrowserRouter([
     // ── PUBLIC ───────────────────────────────────────────────
-    { path: "/login", element: <Login /> },
+    // Kalau sudah login, /login otomatis dialihkan ke /dashboard.
+    {
+        element: <PublicRoute />,
+        children: [
+            { path: "/login", element: <Login /> },
+        ],
+    },
     { path: "/", element: <Navigate to="/login" replace /> },
 
     // ── PUBLIC (print) ────────────────────────────────────────

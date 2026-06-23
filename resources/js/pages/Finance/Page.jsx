@@ -171,7 +171,7 @@ const Finance = () => {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => handleOpenView(row)}
-                        className="p-1.5 text-info-500 hover:bg-info-50 border border-neutral-200 rounded-md transition-colors cursor-pointer"
+                        className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
                         title="Lihat Detail"
                     >
                         <EyeIcon size={18} />
@@ -179,7 +179,7 @@ const Finance = () => {
                     {can('update', 'finance') && (
                         <button
                             onClick={() => handleOpenEdit(row)}
-                            className="p-1.5 text-primary-500 hover:bg-primary-50 border border-primary-200 rounded-md transition-colors cursor-pointer"
+                            className="p-1.5 btn-outline hover:bg-warning-50 rounded-md cursor-pointer"
                             title="Edit"
                         >
                             <PencilSimpleLineIcon size={18} />
@@ -188,7 +188,7 @@ const Finance = () => {
                     {can('delete', 'finance') && (
                         <button
                             onClick={() => handleDelete(row)}
-                            className="p-1.5 text-danger-500 hover:bg-danger-50 border border-danger-200 rounded-md transition-colors cursor-pointer"
+                            className="p-1.5 btn-outline hover:bg-danger-50 rounded-md cursor-pointer text-danger-500"
                             title="Hapus"
                         >
                             <TrashIcon size={18} />

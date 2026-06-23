@@ -21,6 +21,11 @@ class MBranch extends Model
         'updated_at'
     ];
 
+    // public function picUser()
+    // {
+    //     return $this->belongsTo(User::class, 'pic', 'id');
+    // }
+
     public function bankcabang()
     {
         return $this->hasOne(BankCabang::class, 'bank_id', 'id');
