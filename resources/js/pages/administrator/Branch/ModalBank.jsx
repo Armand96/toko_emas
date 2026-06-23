@@ -36,7 +36,7 @@ export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, i
         if (bankData.id) {
             BankApis.PutBankBranch(bankData?.id, {
                 ...bankData,
-                is_active: bankData ? 1 : 0,
+                is_active: bankData?.is_active ? 1 : 0,
                 branch_id: formData?.id,
                 bank_id: bankData?.bank_id
             }).then(() => {
@@ -82,7 +82,7 @@ export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, i
     };
 
     const bankColumns = [
-        { header: 'Nama Bank', accessor: 'nama_bank' },
+        { header: 'Nama Bank', accessor: 'nama_bank', render: (row) => row?.bank?.bank_name  },
         { header: 'No Rekening', accessor: 'nomor_rekening' },
         { header: 'Nama Pemilik', accessor: 'nama_pemilik' },
         {

@@ -59,22 +59,6 @@ const Navbar = ({ setIsOpen }) => {
         >
           <ListIcon size={24} />
         </button>
-        {storeSetting && (
-          <div className="flex items-center gap-2">
-            {storeSetting.image_path && (
-              <div className="w-8 h-8 rounded overflow-hidden bg-gray-100 flex items-center justify-center shrink-0">
-                <img
-                  src={`${import.meta.env.VITE_API_BASE_URL}storage/${storeSetting.image_path}`}
-                  alt="Logo"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            )}
-            <span className="text-sm font-semibold text-gray-800 hidden sm:block">
-              {storeSetting.shop_name}
-            </span>
-          </div>
-        )}
       </div>
 
       <div className="relative">
@@ -107,10 +91,6 @@ const Navbar = ({ setIsOpen }) => {
                 <p className="text-xs text-gray-500 truncate">{roleName} · {branchName}</p>
               </div>
             </div>
-            <button className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors cursor-pointer">
-              <MagnifyingGlassIcon size={18} />
-              Ubah Password
-            </button>
             <button
               onClick={handleLogout}
               className="w-full text-left px-4 py-2.5 text-sm text-danger-600 hover:bg-danger-50 flex items-center gap-3 transition-colors cursor-pointer"

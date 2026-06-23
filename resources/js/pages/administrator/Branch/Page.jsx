@@ -177,7 +177,7 @@ const Branch = () => {
         { header: 'Nama Cabang', accessor: 'branch_name', },
         { header: 'Lokasi Cabang', accessor: 'lokasi_cabang', },
         { header: 'Alamat', accessor: 'address', },
-        { header: 'PIC', accessor: 'pic', },
+        { header: 'PIC', accessor: 'pic', render: (row) => row.pic_user?.name || '-' },
         { header: 'Tanggal Buka', accessor: 'open_date', },
         {
             header: 'Status',

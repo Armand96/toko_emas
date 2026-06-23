@@ -18,6 +18,8 @@ export default function ModalAddBank({ isOpen, onClose, onSubmit, initialData })
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
+
         // if(name === "bank_id"){
         //     const findBank = bankOptions?.find((x) => x.id === x.value)
             setFormData(prev => ({ ...prev, [name]: value   }));

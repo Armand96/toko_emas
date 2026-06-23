@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserPlusIcon, PencilSimpleLineIcon, EyeIcon } from "@phosphor-icons/react";
+import { PlusCircleIcon, PencilSimpleLineIcon, EyeIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import ModalUser from "./Modal";
@@ -64,8 +64,7 @@ const MasterUser = () => {
     console.log(branchOptions)
 
     useEffect(() => {
-        fetchData();
-        fetchOptions();
+        fetchOptions().then(() => fetchData());
     }, []);
 
     useEffect(() => {
@@ -153,12 +152,12 @@ const MasterUser = () => {
         {
             header: 'Cabang',
             accessor: 'branch_id',
-            render: (row) => branchOptions.find(b => b.value === row.branch_id)?.label ?? '-'
+            render: (row) => branchOptions.find(b => b.value == row.branch_id)?.label ?? '-'
         },
         {
             header: 'Role',
             accessor: 'role_id',
-            render: (row) => roleOptions.find(r => r.value === row.role_id)?.label ?? '-'
+            render: (row) => roleOptions.find(r => r.value == row.role_id)?.label ?? '-'
         },
         {
             header: 'Last Login',
@@ -169,7 +168,7 @@ const MasterUser = () => {
             header: 'Status',
             accessor: 'is_active',
             render: (row) => (
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${row.is_active ? 'bg-success-100 text-success-700' : 'bg-danger-100 text-danger-700'}`}>
+                <span className={`px-3 py-1 rounded-md text-xs font-medium border ${row.is_active ? 'bg-success-50 text-success-700 border-success-200' : 'bg-gray-50 text-gray-500 border-gray-200'}`}>
                     {row.is_active ? 'Aktif' : 'Tidak Aktif'}
                 </span>
             )
@@ -211,7 +210,7 @@ const MasterUser = () => {
             <HeaderSection
                 title="User Management"
                 description="Kelola data pengguna untuk akses ke sistem."
-                icon={UserPlusIcon}
+                icon={PlusCircleIcon}
                 onClick={can('create', 'administrator.user') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah User"
             />
