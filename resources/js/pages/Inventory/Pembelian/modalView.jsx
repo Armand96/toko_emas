@@ -3,6 +3,7 @@ import { TrendUpIcon, TrendDownIcon, BarcodeIcon, CheckCircleIcon, XCircleIcon, 
 import dayjs from 'dayjs';
 import ModalCustom from '../../../components/modalCustom';
 import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
+import Badge from '../../../components/Badge';
 import HelperFunctions from '../../../utils/HelperFunctions';
 import BankApis from '../../../Services/Bank.apis';
 
@@ -10,12 +11,12 @@ export default function ModalView({ isOpen, onClose, data }) {
     const [bankCabang, setBankCabang] = useState(null);
 
     const statusMap = {
-        'APPROVAL': { label: 'Approval', style: 'bg-warning-50 text-warning-700 border-warning-200' },
-        'DISETUJUI': { label: 'Disetujui', style: 'bg-success-50 text-success-700 border-success-200' },
-        'DITOLAK': { label: 'Ditolak', style: 'bg-danger-50 text-danger-700 border-danger-200' },
-        'DIBATALKAN': { label: 'Dibatalkan', style: 'bg-danger-50 text-danger-700 border-danger-200' },
+        'APPROVAL': { label: 'Approval', tone: 'warning' },
+        'DISETUJUI': { label: 'Disetujui', tone: 'success' },
+        'DITOLAK': { label: 'Ditolak', tone: 'danger' },
+        'DIBATALKAN': { label: 'Dibatalkan', tone: 'danger' },
     };
-    const status = statusMap[data?.status] || { label: data?.status || '-', style: 'bg-gray-50 text-gray-700 border-gray-200' };
+    const status = statusMap[data?.status] || { label: data?.status || '-', tone: 'gray' };
 
     const margin = (data?.jual || 0) - (data?.modal || 0);
     const marginPercent = data?.modal ? ((margin / data.modal) * 100).toFixed(1) : 0;
@@ -57,9 +58,9 @@ export default function ModalView({ isOpen, onClose, data }) {
                                     <span>{data?.barcode || '-'}</span>
                                 </div>
                             </div>
-                            <span className={`px-3 py-1 text-sm font-medium rounded-md border ${status.style}`}>
+                            <Badge tone={status.tone} className="!text-sm">
                                 {status.label}
-                            </span>
+                            </Badge>
                         </div>
 
                         <div className="mt-4 grid gap-y-2 text-sm">

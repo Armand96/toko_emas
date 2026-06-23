@@ -3,6 +3,8 @@ import { PackageIcon, CheckCircleIcon, WarningCircleIcon, PlusCircleIcon } from 
 import StatCards from "./StatCards";
 import InventoryApis from "../../../Services/Inventory.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
+import CodeBadge from "../../../components/CodeBadge";
+import Badge from "../../../components/Badge";
 
 const ItemTable = ({ rows, lost = false }) => (
     <div className="overflow-x-auto">
@@ -23,7 +25,7 @@ const ItemTable = ({ rows, lost = false }) => (
                 ) : rows.map((row, idx) => (
                     <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                         <td className="px-4 py-3">
-                            <span className="px-2.5 py-1 bg-gray-50 text-gray-500 rounded text-xs font-medium border border-gray-200">{row.kode}</span>
+                            <CodeBadge>{row.kode}</CodeBadge>
                         </td>
                         <td className="px-4 py-3">
                             <div className="flex items-center gap-3">
@@ -37,9 +39,9 @@ const ItemTable = ({ rows, lost = false }) => (
                         <td className="px-4 py-3 text-gray-600">{row.berat}</td>
                         <td className="px-4 py-3 text-gray-600">{row.karat}</td>
                         <td className="px-4 py-3">
-                            <span className={`px-3 py-1 rounded-md text-xs font-medium border ${lost ? 'bg-danger-50 text-danger-700 border-danger-200' : 'bg-success-50 text-success-700 border-success-200'}`}>
+                            <Badge tone={lost ? 'danger' : 'success'}>
                                 {row.last_status}
-                            </span>
+                            </Badge>
                         </td>
                     </tr>
                 ))}
@@ -173,7 +175,7 @@ const Detail = ({ id, setCurentState }) => {
                                 ) : extraRows.map((row, idx) => (
                                     <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                                         <td className="px-4 py-3">
-                                            <span className="px-2.5 py-1 bg-gray-50 text-gray-500 rounded text-xs font-medium border border-gray-200">{row.kode}</span>
+                                            <CodeBadge>{row.kode}</CodeBadge>
                                         </td>
                                         <td className="px-4 py-3 text-gray-600">{row.note || 'Barcode tidak ditemukan di sistem atau di cabang ini.'}</td>
                                         <td className="px-4 py-3 text-gray-600">{row.waktu}</td>

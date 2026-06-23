@@ -1,10 +1,7 @@
 import { useState, useEffect } from "react";
-import {
-    PlusCircleIcon,
-    PencilSimpleLineIcon,
-    EyeIcon,
-} from "@phosphor-icons/react";
+import { PlusCircleIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
+import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
 import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
 import InputGroup from "../../../components/FormElement/InputGroup";
@@ -156,22 +153,12 @@ const MasterKategori = () => {
             header: "Aksi",
             accessor: "aksi",
             render: (row) => (
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => handleOpenModal("view", row)}
-                        className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
-                    >
-                        <EyeIcon size={20} />
-                    </button>
+                <ActionButtonGroup>
+                    <ActionButton variant="view" onClick={() => handleOpenModal("view", row)} />
                     {can('update', 'inventory.master_kategori') && (
-                        <button
-                            onClick={() => handleOpenModal("edit", row)}
-                            className="p-1.5 btn-outline hover:bg-warning-50 rounded-md cursor-pointer"
-                        >
-                            <PencilSimpleLineIcon size={20} />
-                        </button>
+                        <ActionButton variant="edit" onClick={() => handleOpenModal("edit", row)} />
                     )}
-                </div>
+                </ActionButtonGroup>
             ),
         },
     ];

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useDebounce } from "use-debounce";
-import { EyeIcon, PencilSimpleLineIcon, PrinterIcon } from "@phosphor-icons/react";
+import { PrinterIcon } from "@phosphor-icons/react";
+import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
@@ -342,24 +343,12 @@ const MasterInventory = () => {
             header: "Aksi",
             accessor: "aksi",
             render: (row) => (
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => handleViewDetail(row)}
-                        className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
-                        title="Lihat Detail"
-                    >
-                        <EyeIcon size={18} />
-                    </button>
+                <ActionButtonGroup>
+                    <ActionButton variant="view" title="Lihat Detail" onClick={() => handleViewDetail(row)} />
                     {row.status === "AVAILABLE" && can('update', 'inventory.item_inventory') && (
-                        <button
-                            onClick={() => handleEdit(row)}
-                            className="p-1.5 btn-outline hover:bg-warning-50 rounded-md cursor-pointer"
-                            title="Edit"
-                        >
-                            <PencilSimpleLineIcon size={18} />
-                        </button>
+                        <ActionButton variant="edit" onClick={() => handleEdit(row)} />
                     )}
-                </div>
+                </ActionButtonGroup>
             ),
         },
     ];

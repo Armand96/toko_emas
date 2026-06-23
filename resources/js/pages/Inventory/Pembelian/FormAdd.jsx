@@ -30,6 +30,7 @@ const emptyItem = {
     category_id: null,
     subcategory_id: null,
     branch_id: null,
+    payment_method: "TRANSFER",
     bank_id: null,
     supplier_id: null,
     berat: "",
@@ -49,7 +50,6 @@ const requiredItem = [
     ["modal", "Harga modal wajib diisi"],
     ["jual", "Harga jual wajib diisi"],
     ["branch_id", "Cabang wajib dipilih"],
-    ["bank_id", "Bank keluar wajib dipilih"],
     // ["supplier_id", "Supplier wajib dipilih"],
 ];
 
@@ -180,6 +180,10 @@ const FormPembelian = ({ setCurentState }) => {
             const v = item[key];
             if (v === null || v === undefined || v === "") newErrors[key] = msg;
         });
+        if (item.payment_method === "TRANSFER") {
+            const v = item.bank_id;
+            if (v === null || v === undefined || v === "") newErrors.bank_id = "Bank keluar wajib dipilih";
+        }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -220,7 +224,8 @@ const FormPembelian = ({ setCurentState }) => {
                 product_id: Number(b.product_id),
                 category_id: Number(b.category_id),
                 subcategory_id: Number(b.subcategory_id),
-                bank_id: Number(b.bank_id),
+                payment_method: b.payment_method,
+                bank_id: b.bank_id ? Number(b.bank_id) : null,
                 supplier_id: Number(b.supplier_id),
                 barcode: b.barcode,
                 berat: Number(b.berat),
@@ -316,10 +321,12 @@ const FormPembelian = ({ setCurentState }) => {
                 branchOptions.find((b) => b.value === row.branch_id)?.label || "-",
         },
         {
-            header: "Bank Keluar",
-            accessor: "bank_id",
+            header: "Pembayaran",
+            accessor: "payment_method",
             render: (row) =>
-                bankOptions.find((b) => b.value === row.bank_id)?.label || "-",
+                row.payment_method === "CASH"
+                    ? "Tunai"
+                    : bankOptions.find((b) => b.value === row.bank_id)?.label || "Transfer",
         },
         {
             header: "Aksi",
@@ -458,16 +465,38 @@ const FormPembelian = ({ setCurentState }) => {
                             onChange={handleChange}
                         />
 
-                        <Dropdown
-                            label="Bank Keluar"
-                            name="bank_id"
-                            value={item.bank_id}
-                            options={bankOptions}
-                            placeholder="Pilih bank"
-                            isRequired
-                            error={errors.bank_id}
-                            onChange={handleChange}
-                        />
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-medium text-gray-700">Metode Pembayaran <span className="text-red-500">*</span></label>
+                            <div className="flex gap-2 p-1 bg-gray-50 border border-gray-200 rounded-lg w-full">
+                                <button
+                                    type="button"
+                                    onClick={() => setItem((prev) => ({ ...prev, payment_method: "CASH", bank_id: null }))}
+                                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${item.payment_method === "CASH" ? "bg-primary-50 text-primary-600 border border-primary-200 shadow-sm" : "text-gray-500 hover:bg-gray-100"}`}
+                                >
+                                    Tunai
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setItem((prev) => ({ ...prev, payment_method: "TRANSFER" }))}
+                                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${item.payment_method === "TRANSFER" ? "bg-primary-50 text-primary-600 border border-primary-200 shadow-sm" : "text-gray-500 hover:bg-gray-100"}`}
+                                >
+                                    Transfer
+                                </button>
+                            </div>
+                        </div>
+
+                        {item.payment_method === "TRANSFER" && (
+                            <Dropdown
+                                label="Bank Keluar"
+                                name="bank_id"
+                                value={item.bank_id}
+                                options={bankOptions}
+                                placeholder="Pilih bank"
+                                isRequired
+                                error={errors.bank_id}
+                                onChange={handleChange}
+                            />
+                        )}
 
                         <button
                             onClick={handleAddToBatch}

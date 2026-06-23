@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { PlusCircleIcon, PencilSimpleLineIcon, TrashIcon, EyeIcon, BankIcon } from "@phosphor-icons/react";
+import { PlusCircleIcon } from "@phosphor-icons/react";
+import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
+import Badge from "../../../components/Badge";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
@@ -26,7 +28,7 @@ const Branch = () => {
          { name: 'lokasi_cabang', error_message: 'Lokasi cabang wajib diisi' },
         { name: 'address', error_message: 'Alamat wajib diisi' },
         // { name: 'is_active', error_message: 'Status wajib diisi' },
-        { name: 'pic', error_message: 'PIC wajib diisi' },
+        // { name: 'pic', error_message: 'PIC wajib diisi' },
         { name: 'branch_open_date', error_message: 'Tanggal buka cabang wajib diisi' }
         ]);
         const [search, setSearch] = useState({
@@ -179,19 +181,16 @@ const Branch = () => {
         { header: 'Lokasi Cabang', accessor: 'lokasi_cabang', },
         { header: 'Alamat', accessor: 'address', },
         { header: 'PIC', accessor: 'pic', render: (row) => row.pic?.name || '-' },
-        { header: 'Tanggal Buka', accessor: 'open_date', },
+        { header: 'Tanggal Buka', accessor: 'branch_open_date', },
         {
             header: 'Status',
             accessor: 'is_active',
             render: (row) => {
                 const isActive = row.is_active === 1;
                 return (
-                    <span className={`px-3 py-1 rounded-md text-xs font-medium border ${isActive
-                        ? 'bg-success-50 text-success-700 border-success-200'
-                        : 'bg-gray-50 text-gray-500 border-gray-200'
-                        }`}>
+                    <Badge tone={isActive ? 'success' : 'gray'}>
                         {isActive ? 'Aktif' : 'Tidak Aktif'}
-                    </span>
+                    </Badge>
                 );
             }
         },
@@ -199,32 +198,11 @@ const Branch = () => {
             header: 'Aksi',
             accessor: 'aksi',
             render: (row) => (
-                <div className="flex items-center gap-2">
-                       <button
-                        onClick={() => handleOpenModal('bank', row)}
-                        className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
-                    >
-                        <BankIcon size={20} />
-                    </button>
-                    <button
-                        onClick={() => handleOpenModal('view', row)}
-                        className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
-                    >
-                        <EyeIcon size={20} />
-                    </button>
-                    <button
-                        onClick={() => handleOpenModal('edit', row)}
-                        className="p-1.5 btn-outline hover:bg-warning-50 rounded-md cursor-pointer"
-                    >
-                        <PencilSimpleLineIcon size={20} />
-                    </button>
-                    {/* <button
-                        onClick={() => handleDelete(row.id)}
-                        className="p-1.5 btn-outline !text-red-500   hover:bg-danger-50 rounded-md transition-colors"
-                    >
-                        <TrashIcon size={20} />
-                    </button> */}
-                </div>
+                <ActionButtonGroup>
+                    <ActionButton variant="view" onClick={() => handleOpenModal('view', row)} />
+                    <ActionButton variant="edit" onClick={() => handleOpenModal('edit', row)} />
+                    <ActionButton variant="bank" onClick={() => handleOpenModal('bank', row)} />
+                </ActionButtonGroup>
             )
         }
     ];

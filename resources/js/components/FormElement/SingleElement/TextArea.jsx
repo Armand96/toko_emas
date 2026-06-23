@@ -31,7 +31,7 @@ const TextArea = ({
           className={`w-full px-3 py-2 text-sm bg-white border rounded-lg outline-none transition-all duration-200 resize-none
             ${
               isDisable
-                ? "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed"
+                ? "!bg-[#F3F4F6] border-[#E2E8F0] text-[#45556C] cursor-not-allowed"
                 : error
                 ? "border-danger-500 focus:border-danger-500 focus:ring-1 focus:ring-danger-500"
                 : "border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 text-neutral-black"

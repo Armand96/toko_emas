@@ -3,6 +3,7 @@ import { ScanIcon, XIcon, ImageIcon, WarningIcon, WrenchIcon } from "@phosphor-i
 import HeaderSection from "../../../components/HeaderSection";
 import ModalScanBarcode from "../../../components/ModaScanBarcode";
 import InventoryApis from "../../../Services/Inventory.apis";
+import CodeBadge from "../../../components/CodeBadge";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import { showAlert } from "../../../utils/showAlert";
 import PermissionStore from "../../../Store/PermissionStore";
@@ -219,9 +220,7 @@ const FormAdd = ({ setCurentState }) => {
                             {selectedItems.map((item) => (
                                 <div key={item.inventory_code} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
                                     <div className="flex items-center gap-4">
-                                        <div className="px-3 py-1.5 bg-gray-50 text-gray-500 rounded-md text-xs font-semibold tracking-wide border border-gray-200">
-                                            {item.inventory_code}
-                                        </div>
+                                        <CodeBadge>{item.inventory_code}</CodeBadge>
                                         <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center text-amber-400 overflow-hidden">
                                             {item.image
                                                 ? <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" />

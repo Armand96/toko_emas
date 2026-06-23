@@ -3,6 +3,7 @@ import { TimerIcon, CheckCircleIcon, XCircleIcon } from '@phosphor-icons/react';
 import ModalCustom from '../../../components/modalCustom';
 import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
 import HelperFunctions from "../../../utils/HelperFunctions";
+import CodeBadge from '../../../components/CodeBadge';
 
 const STATUS_VIEW = {
     'APPROVAL': { Icon: TimerIcon, iconColor: 'text-warning-500', statusText: 'Menunggu Approval oleh' },
@@ -90,9 +91,7 @@ export default function ModalDetailRemoveItem({
                             const image = d.inventory?.image_path ? HelperFunctions.getStorageUrl(d.inventory.image_path) : null;
                             return (
                                 <div key={idx} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white">
-                                    <span className="px-3 py-1 bg-gray-50 rounded text-xs font-medium text-gray-500 border border-gray-200 flex-shrink-0">
-                                        {d.inventory_code}
-                                    </span>
+                                    <CodeBadge>{d.inventory_code}</CodeBadge>
                                     <div className="w-10 h-10 rounded-md bg-amber-100/50 overflow-hidden flex-shrink-0 border border-gray-200 flex items-center justify-center">
                                         {image ? (
                                             <img src={image} alt={d.product?.product_name} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />

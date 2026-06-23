@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { PlusCircleIcon, EyeIcon, PencilSimpleLineIcon, TrashIcon } from "@phosphor-icons/react";
+import { PlusCircleIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../components/HeaderSection";
+import ActionButton, { ActionButtonGroup } from "../../components/ActionButton";
+import Badge from "../../components/Badge";
 import Table from "../../components/Table/Table";
 import InputGroup from "../../components/FormElement/InputGroup";
 import HelperFunctions from "../../utils/HelperFunctions";
@@ -22,7 +24,7 @@ const Finance = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
     const can = PermissionStore((s) => s.can);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
-    const [filter, setFilter] = useState({ search: '', tipe: '', cabang: '' });
+    const [filter, setFilter] = useState({ search: '', tipe: '', cabang: '', dateRange: { mode: 'all', start: '', end: '' } });
     const [filterBounce] = useDebounce(filter, 500);
     const [firstLoading, setFirstLoading] = useState(false);
 
@@ -49,6 +51,11 @@ const Finance = () => {
             if (params.search) query.append('note', params.search);
             if (params.tipe) query.append('type', params.tipe);
             if (params.cabang) query.append('branch_id', params.cabang);
+            const { mode, start, end } = params.dateRange || {};
+            if (mode !== 'all' && start && end) {
+                query.append('start_date', `${start} 00:00:00`);
+                query.append('end_date', `${end} 23:59:59`);
+            }
 
             const res = await FinanceApis.GetFinance(`?${query.toString()}`);
             setParamFetch(res);
@@ -152,11 +159,9 @@ const Finance = () => {
         {
             header: 'Tipe', accessor: 'type',
             render: (row) => (
-                <span className={`px-3 py-1 rounded-md text-xs font-medium border ${row.type === 'CASH IN'
-                    ? 'bg-success-50 text-success-700 border-success-200'
-                    : 'bg-danger-50 text-danger-700 border-danger-200'}`}>
+                <Badge tone={row.type === 'CASH IN' ? 'success' : 'danger'}>
                     {row.type === 'CASH IN' ? 'Cash In' : 'Cash Out'}
-                </span>
+                </Badge>
             )
         },
         { header: 'Kategori', accessor: 'category', render: (row) => row.category?.category_name ?? '-' },
@@ -169,33 +174,15 @@ const Finance = () => {
         {
             header: 'Aksi', accessor: 'aksi',
             render: (row) => (
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => handleOpenView(row)}
-                        className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
-                        title="Lihat Detail"
-                    >
-                        <EyeIcon size={18} />
-                    </button>
+                <ActionButtonGroup>
+                    <ActionButton variant="view" title="Lihat Detail" onClick={() => handleOpenView(row)} />
                     {can('update', 'finance') && (
-                        <button
-                            onClick={() => handleOpenEdit(row)}
-                            className="p-1.5 btn-outline hover:bg-warning-50 rounded-md cursor-pointer"
-                            title="Edit"
-                        >
-                            <PencilSimpleLineIcon size={18} />
-                        </button>
+                        <ActionButton variant="edit" onClick={() => handleOpenEdit(row)} />
                     )}
                     {can('delete', 'finance') && (
-                        <button
-                            onClick={() => handleDelete(row)}
-                            className="p-1.5 btn-outline hover:bg-danger-50 rounded-md cursor-pointer text-danger-500"
-                            title="Hapus"
-                        >
-                            <TrashIcon size={18} />
-                        </button>
+                        <ActionButton variant="delete" onClick={() => handleDelete(row)} />
                     )}
-                </div>
+                </ActionButtonGroup>
             )
         },
     ];
@@ -215,17 +202,13 @@ const Finance = () => {
 
             {/* Filter Bar */}
             <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px] max-w-xs">
+                
+                <div className="min-w-[220px]">
                     <InputGroup
-                        fields={[{
-                            name: "search",
-                            label: "",
-                            type: "search",
-                            placeholder: "Cari keterangan",
-                        }]}
+                        fields={[{ name: "dateRange", label: "", type: "daterange" }]}
                         formData={filter}
                         cols="1"
-                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
+                        onChange={(val) => setFilter({ ...filter, dateRange: val })}
                     />
                 </div>
                 <div className="w-[160px]">

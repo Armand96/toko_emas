@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDebounce } from "use-debounce";
-import { EyeIcon, ArrowCounterClockwiseIcon } from "@phosphor-icons/react";
+import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
+import Badge from "../../../components/Badge";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
@@ -10,9 +11,12 @@ import HelperFunctions from "../../../utils/HelperFunctions";
 import { showAlert } from "../../../utils/showAlert";
 import OptionsStore from "../../../Store/OptionsStore";
 import PermissionStore from "../../../Store/PermissionStore";
+import AuthStore from "../../../Store/AuthStore";
 
 const Main = () => {
     const can = PermissionStore((s) => s.can);
+    const isKasir = PermissionStore((s) => s.isKasir);
+    const user = AuthStore((s) => s.user);
     const [filterData, setFilterData] = useState({ search: '' });
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,6 +44,7 @@ const Main = () => {
             params.append('jenis', 'REPAIR');
             params.append('status', 'DISETUJUI');
             if (filters.search) params.append('code', filters.search);
+            if (isKasir() && user?.branch_id) params.append('branch_id', user.branch_id);
 
             const res = await InventoryApis.GetRemoveItem(`?${params.toString()}`);
             const raw = res?.data || [];
@@ -191,33 +196,17 @@ const Main = () => {
         { header: 'Cabang', accessor: 'cabang', sortable: true },
         {
             header: 'Status', accessor: 'status', sortable: false,
-            render: () => (
-                <span className="px-3 py-1 rounded-md text-xs font-medium border bg-warning-50 text-warning-700 border-warning-200">
-                    Repair
-                </span>
-            )
+            render: () => <Badge tone="warning">Repair</Badge>
         },
         {
             header: 'Aksi', accessor: 'aksi',
             render: (row) => (
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => handleViewDetail(row)}
-                        className="p-1.5 text-primary-500 hover:bg-primary-50 border border-primary-200 rounded-md transition-colors cursor-pointer"
-                        title="Lihat Detail"
-                    >
-                        <EyeIcon size={16} weight="bold" />
-                    </button>
+                <ActionButtonGroup>
+                    <ActionButton variant="view" title="Lihat Detail" onClick={() => handleViewDetail(row)} />
                     {can('update', 'inventory.in_repair') && (
-                        <button
-                            onClick={() => handleReturn(row)}
-                            className="p-1.5 text-success-600 hover:bg-success-50 border border-success-200 rounded-md transition-colors cursor-pointer"
-                            title="Kembalikan ke Inventory"
-                        >
-                            <ArrowCounterClockwiseIcon size={16} weight="bold" />
-                        </button>
+                        <ActionButton variant="restore" title="Kembalikan ke Inventory" onClick={() => handleReturn(row)} />
                     )}
-                </div>
+                </ActionButtonGroup>
             )
         },
     ];

@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import {
-    EyeIcon,
-    CheckSquareOffsetIcon,
-} from "@phosphor-icons/react";
+import { CheckSquareOffsetIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
+import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
+import Badge from "../../../components/Badge";
 import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
 import { showAlert } from '../../../utils/showAlert';
@@ -252,31 +251,22 @@ const ApprovalPembelian = () => {
             accessor: 'status',
             render: (row) => {
                 const statusMap = {
-                    'APPROVAL': { label: 'Approval', style: 'bg-warning-50 text-warning-700 border-warning-200' },
-                    'DISETUJUI': { label: 'Disetujui', style: 'bg-success-50 text-success-700 border-success-200' },
-                    'DITOLAK': { label: 'Ditolak', style: 'bg-danger-50 text-danger-700 border-danger-200' },
-                    'DIBATALKAN': { label: 'Dibatalkan', style: 'bg-danger-50 text-danger-700 border-danger-200' },
+                    'APPROVAL': { label: 'Approval', tone: 'warning' },
+                    'DISETUJUI': { label: 'Disetujui', tone: 'success' },
+                    'DITOLAK': { label: 'Ditolak', tone: 'danger' },
+                    'DIBATALKAN': { label: 'Dibatalkan', tone: 'danger' },
                 };
-                const status = statusMap[row.status] || { label: row.status, style: 'bg-gray-50 text-gray-700 border-gray-200' };
-                return (
-                    <span className={`px-3 py-1 rounded-md text-xs font-medium border ${status.style}`}>
-                        {status.label}
-                    </span>
-                );
+                const status = statusMap[row.status] || { label: row.status, tone: 'gray' };
+                return <Badge tone={status.tone}>{status.label}</Badge>;
             }
         },
         {
             header: 'Aksi',
             accessor: 'aksi',
             render: (row) => (
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => handleOpenModal(row)}
-                        className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
-                    >
-                        <EyeIcon size={18} />
-                    </button>
-                </div>
+                <ActionButtonGroup>
+                    <ActionButton variant="view" onClick={() => handleOpenModal(row)} />
+                </ActionButtonGroup>
             )
         }
     ];

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { EyeIcon, CheckSquareOffsetIcon } from "@phosphor-icons/react";
+import { CheckSquareOffsetIcon } from "@phosphor-icons/react";
+import ActionButton from "../../../components/ActionButton";
+import Badge from "../../../components/Badge";
 import dayjs from "dayjs";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
@@ -13,13 +15,13 @@ import PenjualanApis from "../../../Services/Penjualan.apis";
 import PermissionStore from "../../../Store/PermissionStore";
 import OptionsStore from "../../../Store/OptionsStore";
 
-const STATUS_STYLE = {
-    'APPROVAL': 'bg-warning-50 text-warning-600 border-warning-200',
-    'DISETUJUI': 'bg-success-50 text-success-700 border-success-200',
-    'CETAK KWITANSI': 'bg-info-50 text-info-700 border-info-200',
-    'SELESAI': 'bg-success-50 text-success-700 border-success-200',
-    'DITOLAK': 'bg-danger-50 text-danger-600 border-danger-200',
-    'DIBATALKAN': 'bg-danger-50 text-danger-600 border-danger-200',
+const STATUS_TONE = {
+    'APPROVAL': 'warning',
+    'DISETUJUI': 'success',
+    'CETAK KWITANSI': 'info',
+    'SELESAI': 'success',
+    'DITOLAK': 'danger',
+    'DIBATALKAN': 'danger',
 };
 
 const STATUS_LABEL = {
@@ -210,22 +212,16 @@ const ApprovalPenjualan = () => {
             header: 'Status',
             accessor: 'approval_status',
             render: (row) => (
-                <span className={`px-3 py-1 rounded-md text-xs font-medium border ${STATUS_STYLE[row.approval_status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                <Badge tone={STATUS_TONE[row.approval_status] || 'gray'}>
                     {STATUS_LABEL[row.approval_status] || row.approval_status}
-                </span>
+                </Badge>
             )
         },
         {
             header: 'Aksi',
             accessor: 'aksi',
             render: (row) => (
-                <button
-                    onClick={() => handleOpenModal(row)}
-                    className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
-                    title="Lihat Detail"
-                >
-                    <EyeIcon size={18} />
-                </button>
+                <ActionButton variant="view" title="Lihat Detail" onClick={() => handleOpenModal(row)} />
             )
         }
     ];

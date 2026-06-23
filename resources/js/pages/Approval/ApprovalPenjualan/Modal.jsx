@@ -3,6 +3,7 @@ import { TimerIcon, CheckCircleIcon, XCircleIcon, ReceiptIcon } from '@phosphor-
 import ModalCustom from '../../../components/modalCustom';
 import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
 import HelperFunctions from "../../../utils/HelperFunctions";
+import CodeBadge from '../../../components/CodeBadge';
 
 const APPROVAL_VIEW = {
     'APPROVAL': { Icon: TimerIcon, iconColor: 'text-warning-500', statusText: 'Menunggu Approval oleh' },
@@ -110,9 +111,7 @@ export default function ModalDetailPenjualan({
                         {(details || []).map((item, index) => (
                             <div key={index} className="flex justify-between items-center border border-neutral-200 rounded-lg p-3">
                                 <div className="flex items-center gap-4">
-                                    <span className="text-sm font-medium text-neutral-500 bg-neutral-50 px-2 py-1 rounded border border-neutral-200">
-                                        {item.inventory_code}
-                                    </span>
+                                    <CodeBadge>{item.inventory_code}</CodeBadge>
                                     {item.inventory?.thumb_path ? (
                                         <img src={HelperFunctions.getStorageUrl(item.inventory.thumb_path)} alt={item.product?.product_name} className="w-10 h-10 rounded-md object-cover border border-neutral-200" />
                                     ) : (

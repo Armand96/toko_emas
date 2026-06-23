@@ -3,6 +3,8 @@ import { ScanIcon, PackageIcon, CheckCircleIcon, ClockCountdownIcon, PlusCircleI
 import ModalScanBarcode from "../../../components/ModaScanBarcode";
 import StatCards from "./StatCards";
 import InventoryApis from "../../../Services/Inventory.apis";
+import CodeBadge from "../../../components/CodeBadge";
+import Badge from "../../../components/Badge";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import { showAlert } from "../../../utils/showAlert";
 import AuthStore from "../../../Store/AuthStore";
@@ -298,7 +300,7 @@ const FormAdd = ({ setCurentState }) => {
                                 {extraList.map((row) => (
                                     <tr key={row.code} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                                         <td className="px-4 py-3">
-                                            <span className="px-2.5 py-1 bg-gray-50 text-gray-500 rounded text-xs font-medium border border-gray-200">{row.code}</span>
+                                            <CodeBadge>{row.code}</CodeBadge>
                                         </td>
                                         <td className="px-4 py-3 text-gray-600">{row.note || 'Barcode tidak ditemukan di sistem atau di cabang ini.'}</td>
                                         <td className="px-4 py-3 text-gray-600">{fmtWaktu(row.waktu)}</td>
@@ -348,7 +350,7 @@ const InventoryRows = ({ rows, statusLabel, lost = false }) => (
                 ) : rows.map((row, idx) => (
                     <tr key={row.inventory_code || idx} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                         <td className="px-4 py-3">
-                            <span className="px-2.5 py-1 bg-gray-50 text-gray-500 rounded text-xs font-medium border border-gray-200">{row.inventory_code}</span>
+                            <CodeBadge>{row.inventory_code}</CodeBadge>
                         </td>
                         <td className="px-4 py-3">
                             <div className="flex items-center gap-3">
@@ -362,9 +364,9 @@ const InventoryRows = ({ rows, statusLabel, lost = false }) => (
                         <td className="px-4 py-3 text-gray-600">{row.berat ? `${row.berat}g` : '-'}</td>
                         <td className="px-4 py-3 text-gray-600">{row.karat ? `${row.karat}K` : '-'}</td>
                         <td className="px-4 py-3">
-                            <span className={`px-3 py-1 rounded-md text-xs font-medium border ${lost ? 'bg-danger-50 text-danger-700 border-danger-200' : 'bg-success-50 text-success-700 border-success-200'}`}>
+                            <Badge tone={lost ? 'danger' : 'success'}>
                                 {statusLabel}
-                            </span>
+                            </Badge>
                         </td>
                     </tr>
                 ))}

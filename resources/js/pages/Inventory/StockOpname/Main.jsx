@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDebounce } from "use-debounce";
-import { PlusCircleIcon, EyeIcon } from "@phosphor-icons/react";
+import { PlusCircleIcon } from "@phosphor-icons/react";
+import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
+import Badge from "../../../components/Badge";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
@@ -8,9 +10,12 @@ import InventoryApis from "../../../Services/Inventory.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import OptionsStore from "../../../Store/OptionsStore";
 import PermissionStore from "../../../Store/PermissionStore";
+import AuthStore from "../../../Store/AuthStore";
 
 const Main = ({ setCurentState }) => {
     const can = PermissionStore((s) => s.can);
+    const isKasir = PermissionStore((s) => s.isKasir);
+    const user = AuthStore((s) => s.user);
     const [filterData, setFilterData] = useState({ search: '', status: '', cabang: '' });
     const [isLoading, setIsLoading] = useState(false);
     const [branchOptions, setBranchOptions] = useState([]);
@@ -35,7 +40,8 @@ const Main = ({ setCurentState }) => {
             params.append('per_page', pageSize);
             if (filters.search) params.append('kode_sesi', filters.search);
             if (filters.status) params.append('status', filters.status);
-            if (filters.cabang) params.append('branch_id', filters.cabang);
+            const effectiveBranch = isKasir() && user?.branch_id ? user.branch_id : filters.cabang;
+            if (effectiveBranch) params.append('branch_id', effectiveBranch);
 
             const res = await InventoryApis.GetStockOpname(`?${params.toString()}`);
             const raw = res?.data || [];
@@ -109,29 +115,18 @@ const Main = ({ setCurentState }) => {
         { header: 'Extra', accessor: 'extra', sortable: true },
         {
             header: 'Status', accessor: 'status', sortable: true,
-            render: (row) => {
-                const badgeClass = row.status === 'Sesuai'
-                    ? 'bg-success-50 text-success-700 border-success-200'
-                    : 'bg-danger-50 text-danger-700 border-danger-200';
-                return (
-                    <span className={`px-3 py-1 rounded-md text-xs font-medium border ${badgeClass}`}>
-                        {row.status}
-                    </span>
-                );
-            }
+            render: (row) => (
+                <Badge tone={row.status === 'Sesuai' ? 'success' : 'danger'}>
+                    {row.status}
+                </Badge>
+            )
         },
         {
             header: 'Aksi', accessor: 'aksi',
             render: (row) => (
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => handleViewDetail(row)}
-                        className="p-1.5 text-primary-500 hover:bg-primary-50 border border-primary-200 rounded-md transition-colors cursor-pointer"
-                        title="Lihat Detail"
-                    >
-                        <EyeIcon size={16} weight="bold" />
-                    </button>
-                </div>
+                <ActionButtonGroup>
+                    <ActionButton variant="view" title="Lihat Detail" onClick={() => handleViewDetail(row)} />
+                </ActionButtonGroup>
             )
         },
     ];
@@ -162,14 +157,16 @@ const Main = ({ setCurentState }) => {
                         onChange={handleFilterChange}
                     />
                 </div>
-                <div className="w-[160px]">
-                    <InputGroup
-                        fields={[{ name: 'cabang', label: '', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions }]}
-                        formData={filterData}
-                        cols="1"
-                        onChange={handleFilterChange}
-                    />
-                </div>
+                {!isKasir() && (
+                    <div className="w-[160px]">
+                        <InputGroup
+                            fields={[{ name: 'cabang', label: '', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions }]}
+                            formData={filterData}
+                            cols="1"
+                            onChange={handleFilterChange}
+                        />
+                    </div>
+                )}
             </div>
             <Table
                 columns={columns}

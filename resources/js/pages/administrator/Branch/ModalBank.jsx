@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { PlusCircleIcon, PencilSimpleLineIcon, TrashIcon, TrashSimpleIcon } from "@phosphor-icons/react";
 import ModalCustom from '../../../components/modalCustom';
 import Table from '../../../components/Table/Table';
+import Badge from '../../../components/Badge';
 import ModalAddBank from './ModalAddBank';
 import BankApis from '../../../Services/Bank.apis';
 import OptionsStore from '../../../Store/OptionsStore';
@@ -91,12 +92,9 @@ export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, i
             render: (row) => {
                 const isActive = row.is_active === 1;
                 return (
-                    <span className={`px-3 py-1 rounded-md text-xs font-medium border ${isActive
-                        ? 'bg-success-50 text-success-700 border-success-200'
-                        : 'bg-gray-50 text-gray-500 border-gray-200'
-                        }`}>
+                    <Badge tone={isActive ? 'success' : 'gray'}>
                         {isActive ? 'Aktif' : 'Tidak Aktif'}
-                    </span>
+                    </Badge>
                 );
             }
         },

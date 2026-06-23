@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { EyeIcon, CheckSquareOffsetIcon } from "@phosphor-icons/react";
+import { CheckSquareOffsetIcon } from "@phosphor-icons/react";
+import ActionButton from "../../../components/ActionButton";
+import Badge from "../../../components/Badge";
 import dayjs from "dayjs";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
@@ -194,23 +196,13 @@ const ApprovalRemoveItem = () => {
         {
             header: 'Status',
             accessor: 'status',
-            render: () => (
-                <span className="px-3 py-1 rounded-md text-xs font-medium border bg-warning-50 text-warning-600 border-warning-200">
-                    Approval
-                </span>
-            )
+            render: () => <Badge tone="warning">Approval</Badge>
         },
         {
             header: 'Aksi',
             accessor: 'aksi',
             render: (row) => (
-                <button
-                    onClick={() => handleOpenModal(row)}
-                    className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
-                    title="Lihat Detail"
-                >
-                    <EyeIcon size={18} />
-                </button>
+                <ActionButton variant="view" title="Lihat Detail" onClick={() => handleOpenModal(row)} />
             )
         }
     ];

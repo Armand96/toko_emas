@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 import dayjs from "dayjs";
-import { PlusCircleIcon, EyeIcon, XIcon, PrinterIcon } from "@phosphor-icons/react";
+import { PlusCircleIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../components/HeaderSection";
+import ActionButton, { ActionButtonGroup } from "../../components/ActionButton";
+import Badge from "../../components/Badge";
 import InputGroup from "../../components/FormElement/InputGroup";
 import Table from "../../components/Table/Table";
 import LoadingStore from "../../Store/LoadingStore";
@@ -21,12 +23,12 @@ const STATUS_OPTIONS = [
     { value: 'DITOLAK', label: 'Ditolak' },
 ];
 
-const STATUS_STYLE = {
-    'SELESAI': 'bg-success-50 text-success-700 border-success-200',
-    'DISETUJUI': 'bg-success-50 text-success-700 border-success-200',
-    'CETAK KWITANSI': 'bg-info-50 text-info-700 border-info-200',
-    'APPROVAL': 'bg-warning-50 text-warning-700 border-warning-200',
-    'DITOLAK': 'bg-danger-50 text-danger-700 border-danger-200',
+const STATUS_TONE = {
+    'SELESAI': 'success',
+    'DISETUJUI': 'success',
+    'CETAK KWITANSI': 'info',
+    'APPROVAL': 'warning',
+    'DITOLAK': 'danger',
 };
 
 const STATUS_LABEL = {
@@ -212,9 +214,9 @@ const Main = ({ setCurentState }) => {
             header: 'Status',
             accessor: 'approval_status',
             render: (row) => (
-                <span className={`px-3 py-1 rounded-md text-xs font-medium border ${STATUS_STYLE[row.approval_status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                <Badge tone={STATUS_TONE[row.approval_status] || 'gray'}>
                     {STATUS_LABEL[row.approval_status] || row.approval_status}
-                </span>
+                </Badge>
             ),
         },
         { header: 'Nominal', accessor: 'grand_total', render: (row) => HelperFunctions.formatCurrency(row.grand_total || 0) },
@@ -224,33 +226,15 @@ const Main = ({ setCurentState }) => {
             header: 'Aksi',
             accessor: 'aksi',
             render: (row) => (
-                <div className="flex items-center gap-2">
+                <ActionButtonGroup>
                     {row.approval_status === 'APPROVAL' && can('delete', 'penjualan') && (
-                        <button
-                            onClick={() => handleCancel(row)}
-                            className="p-1.5 btn-outline !text-danger-500 !border-danger-500 hover:bg-danger-50 rounded-md transition-colors"
-                            title="Tolak"
-                        >
-                            <XIcon size={20} />
-                        </button>
+                        <ActionButton variant="cancel" title="Tolak" onClick={() => handleCancel(row)} />
                     )}
-                    <button
-                        onClick={() => handleViewTransaction(row)}
-                        className="p-1.5 btn-outline text-info-500 hover:bg-info-50 rounded-md transition-colors"
-                        title="Lihat Detail"
-                    >
-                        <EyeIcon size={20} />
-                    </button>
+                    <ActionButton variant="view" title="Lihat Detail" onClick={() => handleViewTransaction(row)} />
                     {(row.approval_status === 'SELESAI' || row.approval_status === 'DISETUJUI' || row.approval_status === 'CETAK KWITANSI') && (
-                        <button
-                            onClick={() => handlePrint(row)}
-                            className="p-1.5 btn-outline text-primary-500 hover:bg-primary-50 rounded-md transition-colors"
-                            title="Cetak Kwitansi"
-                        >
-                            <PrinterIcon size={20} />
-                        </button>
+                        <ActionButton variant="print" title="Cetak Kwitansi" onClick={() => handlePrint(row)} />
                     )}
-                </div>
+                </ActionButtonGroup>
             ),
         },
     ];

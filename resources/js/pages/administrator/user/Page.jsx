@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { PlusCircleIcon, PencilSimpleLineIcon, EyeIcon } from "@phosphor-icons/react";
+import { PlusCircleIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
+import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
+import Badge from "../../../components/Badge";
 import Table from "../../../components/Table/Table";
 import ModalUser from "./Modal";
 import InputGroup from '../../../components/FormElement/InputGroup';
@@ -168,31 +170,21 @@ const MasterUser = () => {
             header: 'Status',
             accessor: 'is_active',
             render: (row) => (
-                <span className={`px-3 py-1 rounded-md text-xs font-medium border ${row.is_active ? 'bg-success-50 text-success-700 border-success-200' : 'bg-gray-50 text-gray-500 border-gray-200'}`}>
+                <Badge tone={row.is_active ? 'success' : 'gray'}>
                     {row.is_active ? 'Aktif' : 'Tidak Aktif'}
-                </span>
+                </Badge>
             )
         },
         {
             header: 'Aksi',
             accessor: 'aksi',
             render: (row) => (
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => handleOpenModal('view', row)}
-                        className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
-                    >
-                        <EyeIcon size={20} />
-                    </button>
+                <ActionButtonGroup>
+                    <ActionButton variant="view" onClick={() => handleOpenModal('view', row)} />
                     {can('update', 'administrator.user') && (
-                        <button
-                            onClick={() => handleOpenModal('edit', row)}
-                            className="p-1.5 btn-outline hover:bg-warning-50 rounded-md cursor-pointer"
-                        >
-                            <PencilSimpleLineIcon size={20} />
-                        </button>
+                        <ActionButton variant="edit" onClick={() => handleOpenModal('edit', row)} />
                     )}
-                </div>
+                </ActionButtonGroup>
             )
         }
     ];

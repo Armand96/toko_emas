@@ -2,6 +2,7 @@ import { TimerIcon, CheckCircleIcon, XCircleIcon } from '@phosphor-icons/react';
 import ModalCustom from '../../../components/modalCustom';
 import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
 import HelperFunctions from '../../../utils/HelperFunctions';
+import CodeBadge from '../../../components/CodeBadge';
 
 const APPROVAL_VIEW = {
     'APPROVAL': { Icon: TimerIcon, iconColor: 'text-warning-500', statusText: 'Menunggu Approval oleh', reason: null },
@@ -110,7 +111,7 @@ export default function ModalDetailTransfer({
                     <div className="flex flex-col gap-3">
                         {items.length > 0 ? items.map((item, idx) => (
                             <div key={idx} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white">
-                                <span className="px-3 py-1 bg-gray-50 rounded text-xs font-medium text-gray-500 border border-gray-200 flex-shrink-0">{item.kode}</span>
+                                <CodeBadge>{item.kode}</CodeBadge>
                                 <div className="w-10 h-10 rounded-md bg-amber-100/50 overflow-hidden flex-shrink-0 border border-gray-200 flex items-center justify-center">
                                     {item.image ? (
                                         <img src={item.image} alt={item.nama} className="w-full h-full object-cover" />

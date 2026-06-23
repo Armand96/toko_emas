@@ -3,6 +3,7 @@ import { useDebounce } from "use-debounce";
 import { ScanIcon, XIcon, CaretRightIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../components/HeaderSection";
 import ModalScanBarcode from "./ModaScanBarcode";
+import CodeBadge from "../../components/CodeBadge";
 import HelperFunctions from "../../utils/HelperFunctions";
 import LoadingStore from "../../Store/LoadingStore";
 import { showAlert } from "../../utils/showAlert";
@@ -439,9 +440,7 @@ const FormAdd = ({ setCurentState }) => {
                     {cartItems.map((item) => (
                         <div key={item.inventory_code} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50/50">
                             <div className="flex items-center gap-4">
-                                <div className="px-3 py-1 bg-gray-100 rounded text-xs font-medium text-gray-500 border border-gray-200">
-                                    {item.inventory_code}
-                                </div>
+                                <CodeBadge>{item.inventory_code}</CodeBadge>
                                 {item.image ? (
                                     <img src={item.image} alt={item.name} className="w-10 h-10 rounded-md object-cover border border-gray-200" />
                                 ) : (

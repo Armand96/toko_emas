@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
-import { PlusCircleIcon, EyeIcon, XIcon, PrinterIcon } from "@phosphor-icons/react";
+import { PlusCircleIcon, PrinterIcon } from "@phosphor-icons/react";
+import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
+import Badge from "../../../components/Badge";
 import { useDebounce } from "use-debounce";
 
 import HeaderSection from "../../../components/HeaderSection";
 import InputGroup from "../../../components/FormElement/InputGroup";
 import Table from "../../../components/Table/Table";
+import CodeBadge from "../../../components/CodeBadge";
 import FooterActionBar from "../../../components/FooterActionBar";
 import ModalView from "./modalView";
 
@@ -157,8 +160,28 @@ const MainPembelian = ({ setCurentState }) => {
         },
         { header: "Tanggal", accessor: "tanggal", render: (row) => row.tanggal ?? dayjs(row.created_at).format("DD/MM/YYYY") ?? "-" },
         { header: "Batch", accessor: "batch" },
-        { header: "Kode", accessor: "barcode", },
-        { header: "Produk", accessor: "produk", render: (row) => row.product?.name ?? row.product?.product_name ?? "-" },
+        {
+            header: "Kode",
+            accessor: "barcode",
+            render: (row) => (
+                <CodeBadge variant="table">{row.barcode ?? row.inventory_code ?? "-"}</CodeBadge>
+            ),
+        },
+        {
+            header: "Produk",
+            accessor: "produk",
+            render: (row) => (
+                <div className="flex items-center gap-2">
+                    <img
+                        src={row.image_path ? `/storage/${row.image_path}` : ""}
+                        alt={row.product?.name ?? row.product?.product_name ?? ""}
+                        className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                    <span className="text-gray-900">{row.product?.name ?? row.product?.product_name ?? "-"}</span>
+                </div>
+            ),
+        },
         { header: "Kategori", accessor: "category", render: (row) => row.category?.category_name || "-" },
         { header: "Sub Kategori", accessor: "category", render: (row) => row.category?.parent_id ? row.category_name : "-" },
 
@@ -184,53 +207,41 @@ const MainPembelian = ({ setCurentState }) => {
             accessor: 'status',
             render: (row) => {
                 const statusMap = {
-                    "DISETUJUI": { label: 'Disetujui', style: 'bg-success-50 text-success-700 border-success-200' },
-                    "DITOLAK": { label: 'Ditolak', style: 'bg-danger-50 text-danger-700 border-danger-200' },
-                    "DIBATALKAN": { label: 'Dibatalkan', style: 'bg-danger-50 text-danger-700 border-danger-200' },
-                    "APPROVAL": { label: 'Approval', style: 'bg-warning-50 text-warning-700 border-warning-200' }
+                    "DISETUJUI": { label: 'Disetujui', tone: 'success' },
+                    "DITOLAK": { label: 'Ditolak', tone: 'danger' },
+                    "DIBATALKAN": { label: 'Dibatalkan', tone: 'danger' },
+                    "APPROVAL": { label: 'Approval', tone: 'warning' }
                 };
 
-                const status = statusMap[row.status] || { label: 'Unknown', style: 'bg-gray-50 text-gray-700 border-gray-200' };
+                const status = statusMap[row.status] || { label: 'Unknown', tone: 'gray' };
 
-                return (
-                    <span className={`px-3 py-1 rounded-md text-xs font-medium border ${status.style}`}>
-                        {status.label}
-                    </span>
-                );
+                return <Badge tone={status.tone}>{status.label}</Badge>;
             }
         },
         {
             header: "Aksi",
             accessor: "aksi",
             render: (row) => (
-                <div className="flex items-center gap-2">
-                    <button
+                <ActionButtonGroup>
+                    {["APPROVAL"].includes(row?.status) && can('delete', 'inventory.pembelian') && (
+                        <ActionButton variant="cancel" title="Tolak" onClick={() => handleCancel(row)} />
+                    )}
+                    <ActionButton
+                        variant="view"
+                        title="Lihat Detail"
                         onClick={() => {
                             setSelectedData(row);
                             setIsModalOpen(true);
                         }}
-                        className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
-                    >
-                        <EyeIcon size={20} />
-                    </button>
-                    {
-                        ["APPROVAL"].includes(row?.status) && can('delete', 'inventory.pembelian') && <button
-                            onClick={() => handleCancel(row)}
-                            className="p-1.5 btn-outline !text-danger-500 !border-danger-500 hover:bg-info-50 rounded-md cursor-pointer"
-                        >
-                            <XIcon size={20} />
-                        </button>
-                    }
-                    {
-                        row?.status === "DISETUJUI" && <button
-                            onClick={() => HelperFunctions.printBarcode(row.inventory_code, { label: row.product?.product_name ?? row.product?.name })}
-                            className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
+                    />
+                    {row?.status === "DISETUJUI" && (
+                        <ActionButton
+                            variant="print"
                             title="Cetak QR Code"
-                        >
-                            <PrinterIcon size={20} />
-                        </button>
-                    }
-                </div>
+                            onClick={() => HelperFunctions.printBarcode(row.inventory_code, { label: row.product?.product_name ?? row.product?.name })}
+                        />
+                    )}
+                </ActionButtonGroup>
             ),
         },
     ];

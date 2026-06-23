@@ -56,7 +56,7 @@ const ROLE_PERMISSIONS = {
         'approval.transfer': CRUD,
         'inventory.master_kategori': CRUD,
         'inventory.master_produk': CRUD,
-        'inventory.item_inventory': CRUD,
+        'inventory.item_inventory': READ,
         'inventory.remove': READ,
         'inventory.in_repair': READ,
         'inventory.transfer': READ,

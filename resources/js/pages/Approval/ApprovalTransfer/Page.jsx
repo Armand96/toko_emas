@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { EyeIcon, CheckSquareOffsetIcon } from "@phosphor-icons/react";
+import { CheckSquareOffsetIcon } from "@phosphor-icons/react";
+import ActionButton from "../../../components/ActionButton";
+import Badge from "../../../components/Badge";
 import dayjs from "dayjs";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
@@ -22,11 +24,11 @@ const STATUS_OPTIONS = [
 const STATUS_API_MAP = { 'Approval': 'APPROVAL', 'Disetujui': 'DISETUJUI', 'Ditolak': 'DITOLAK', 'Dibatalkan': 'DIBATALKAN' };
 const STATUS_DISPLAY = { APPROVAL: 'Approval', DISETUJUI: 'Disetujui', DITOLAK: 'Ditolak', DIBATALKAN: 'Dibatalkan' };
 
-const STATUS_STYLE = {
-    'Approval': 'bg-warning-50 text-warning-600 border-warning-200',
-    'Disetujui': 'bg-success-50 text-success-700 border-success-200',
-    'Ditolak': 'bg-danger-50 text-danger-600 border-danger-200',
-    'Dibatalkan': 'bg-danger-50 text-danger-600 border-danger-200',
+const STATUS_TONE = {
+    'Approval': 'warning',
+    'Disetujui': 'success',
+    'Ditolak': 'danger',
+    'Dibatalkan': 'danger',
 };
 
 const ApprovalTransfer = () => {
@@ -194,24 +196,14 @@ const ApprovalTransfer = () => {
             accessor: 'status',
             render: (row) => {
                 const display = STATUS_DISPLAY[row.status] || row.status;
-                return (
-                    <span className={`px-3 py-1 rounded-md text-xs font-medium border ${STATUS_STYLE[display] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                        {display}
-                    </span>
-                );
+                return <Badge tone={STATUS_TONE[display] || 'gray'}>{display}</Badge>;
             }
         },
         {
             header: 'Aksi',
             accessor: 'aksi',
             render: (row) => (
-                <button
-                    onClick={() => handleOpenModal(row)}
-                    className="p-1.5 btn-outline hover:bg-info-50 rounded-md cursor-pointer"
-                    title="Lihat Detail"
-                >
-                    <EyeIcon size={18} />
-                </button>
+                <ActionButton variant="view" title="Lihat Detail" onClick={() => handleOpenModal(row)} />
             )
         }
     ];

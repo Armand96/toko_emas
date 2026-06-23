@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDebounce } from "use-debounce";
-import { PlusCircleIcon, EyeIcon, XIcon } from "@phosphor-icons/react";
+import { PlusCircleIcon } from "@phosphor-icons/react";
+import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
+import Badge from "../../../components/Badge";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
@@ -224,38 +226,22 @@ const Main = ({ setCurentState }) => {
         {
             header: 'Status', accessor: 'status', sortable: true,
             render: (row) => {
-                let badgeClass = 'bg-gray-50 text-gray-700 border-gray-200';
-                if (row.status === 'Disetujui') badgeClass = 'bg-success-50 text-success-700 border-success-200';
-                else if (row.status === 'Approval') badgeClass = 'bg-warning-50 text-warning-700 border-warning-200';
-                else if (row.status === 'Ditolak' || row.status === 'Dibatalkan') badgeClass = 'bg-danger-50 text-danger-700 border-danger-200';
-                return (
-                    <span className={`px-3 py-1 rounded-md text-xs font-medium border ${badgeClass}`}>
-                        {row.status}
-                    </span>
-                );
+                let tone = 'gray';
+                if (row.status === 'Disetujui') tone = 'success';
+                else if (row.status === 'Approval') tone = 'warning';
+                else if (row.status === 'Ditolak' || row.status === 'Dibatalkan') tone = 'danger';
+                return <Badge tone={tone}>{row.status}</Badge>;
             }
         },
         {
             header: 'Aksi', accessor: 'aksi',
             render: (row) => (
-                <div className="flex items-center gap-2">
+                <ActionButtonGroup>
                     {row.status === 'Approval' && can('delete', 'inventory.remove') && (
-                        <button
-                            onClick={() => handleCancel(row)}
-                            className="p-1.5 text-danger-500 hover:bg-danger-50 border border-danger-200 rounded-md transition-colors cursor-pointer"
-                            title="Batalkan"
-                        >
-                            <XIcon size={16} weight="bold" />
-                        </button>
+                        <ActionButton variant="cancel" onClick={() => handleCancel(row)} />
                     )}
-                    <button
-                        onClick={() => handleViewDetail(row)}
-                        className="p-1.5 text-primary-500 hover:bg-primary-50 border border-primary-200 rounded-md transition-colors cursor-pointer"
-                        title="Lihat Detail"
-                    >
-                        <EyeIcon size={16} weight="bold" />
-                    </button>
-                </div>
+                    <ActionButton variant="view" title="Lihat Detail" onClick={() => handleViewDetail(row)} />
+                </ActionButtonGroup>
             )
         },
     ];
@@ -286,14 +272,16 @@ const Main = ({ setCurentState }) => {
                         onChange={handleFilterChange}
                     />
                 </div>
-                <div className="w-[160px]">
-                    <InputGroup
-                        fields={[{ name: 'cabang', label: '', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions }]}
-                        formData={filterData}
-                        cols="1"
-                        onChange={handleFilterChange}
-                    />
-                </div>
+                {!isKasir() && (
+                    <div className="w-[160px]">
+                        <InputGroup
+                            fields={[{ name: 'cabang', label: '', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions }]}
+                            formData={filterData}
+                            cols="1"
+                            onChange={handleFilterChange}
+                        />
+                    </div>
+                )}
             </div>
             <Table
                 columns={columns}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { TimerIcon, CheckCircleIcon, XCircleIcon, ReceiptIcon } from "@phosphor-icons/react";
 import ModalCustom from "../../components/modalCustom";
+import CodeBadge from "../../components/CodeBadge";
 import ApprovalStatusCard from "../../components/ApprovalStatusCard";
 import HelperFunctions from "../../utils/HelperFunctions";
 import OptionsStore from "../../Store/OptionsStore";
@@ -102,9 +103,7 @@ const ModalViewPenjualan = ({ isOpen, onClose, data }) => {
                         {(details || []).map((item, index) => (
                             <div key={index} className="flex items-center justify-between p-3 border border-neutral-200 rounded-lg bg-white">
                                 <div className="flex items-center gap-4">
-                                    <span className="px-3 py-1 bg-neutral-50 rounded text-xs font-medium text-neutral-500 border border-neutral-200">
-                                        {item.inventory_code}
-                                    </span>
+                                    <CodeBadge>{item.inventory_code}</CodeBadge>
                                     {item.inventory?.thumb_path ? (
                                         <img src={HelperFunctions.getStorageUrl(item.inventory.thumb_path)} alt={item.product?.product_name} className="w-10 h-10 rounded-md object-cover border border-neutral-200" />
                                     ) : (
