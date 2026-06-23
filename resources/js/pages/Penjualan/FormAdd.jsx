@@ -12,6 +12,7 @@ import BankApis from "../../Services/Bank.apis";
 import PenjualanApis from "../../Services/Penjualan.apis";
 import OptionsStore from "../../Store/OptionsStore";
 import AuthStore from "../../Store/AuthStore";
+import CurrencyInput from "../../components/FormElement/SingleElement/CurrencyInput";
 
 const FormAdd = ({ setCurentState }) => {
     const setLoading = LoadingStore((state) => state.setLoading);
@@ -507,16 +508,14 @@ const FormAdd = ({ setCurentState }) => {
                     {/* --- UANG DIBAYAR & KEMBALIAN (HANYA MUNCUL JIKA TUNAI) --- */}
                     {paymentMethod === 'tunai' && (
                         <div className="grid grid-cols-2 gap-4 mt-2">
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-sm font-medium text-gray-700">Uang Dibayar<span className="text-error-500">*</span></label>
-                                <input
-                                    type="text"
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                                    value={HelperFunctions.formatNumberInput(uangDibayar)}
-                                    onChange={(e) => setUangDibayar(Number(HelperFunctions.unformatNumberInput(e.target.value)))}
-                                    placeholder="Rp 0"
-                                />
-                            </div>
+                            <CurrencyInput
+                                label="Uang Dibayar"
+                                name="uangDibayar"
+                                value={uangDibayar}
+                                isRequired
+                                placeholder="0"
+                                onChange={(e) => setUangDibayar(Number(e.target.value))}
+                            />
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-sm font-medium text-gray-700">Kembalian</label>
                                 <div className="w-full border border-gray-200 rounded-lg px-3 py-2.5 bg-gray-50 text-gray-800 font-medium">

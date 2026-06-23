@@ -10,6 +10,7 @@ import GenerateQR from "../../../components/Utils/GenerateQR";
 import HeaderSection from "../../../components/HeaderSection";
 import Dropdown from "../../../components/FormElement/SingleElement/Dropdown";
 import Input from "../../../components/FormElement/SingleElement/Input";
+import CurrencyInput from "../../../components/FormElement/SingleElement/CurrencyInput";
 import PhotoInput from "../../../components/FormElement/SingleElement/PhotoInput";
 import Table from "../../../components/Table/Table";
 
@@ -149,8 +150,7 @@ const FormPembelian = ({ setCurentState }) => {
         }
 
         if (name === "modal" || name === "jual") {
-            const raw = HelperFunctions.unformatNumberInput(value);
-            setItem((prev) => ({ ...prev, [name]: raw }));
+            setItem((prev) => ({ ...prev, [name]: value }));
             if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
             return;
         }
@@ -427,22 +427,20 @@ const FormPembelian = ({ setCurentState }) => {
                         />
 
                         <div className="grid grid-cols-2 gap-3">
-                            <Input
+                            <CurrencyInput
                                 label="Harga Modal"
                                 name="modal"
-                                type="text"
-                                value={HelperFunctions.formatNumberInput(item.modal)}
-                                placeholder="Rp 0"
+                                value={item.modal}
+                                placeholder="0"
                                 isRequired
                                 error={errors.modal}
                                 onChange={handleChange}
                             />
-                            <Input
+                            <CurrencyInput
                                 label="Harga Jual"
                                 name="jual"
-                                type="text"
-                                value={HelperFunctions.formatNumberInput(item.jual)}
-                                placeholder="Rp 0"
+                                value={item.jual}
+                                placeholder="0"
                                 isRequired
                                 error={errors.jual}
                                 onChange={handleChange}

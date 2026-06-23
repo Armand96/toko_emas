@@ -182,8 +182,7 @@ const MasterInventory = () => {
         }
 
         if (name === "jual") {
-            const raw = HelperFunctions.unformatNumberInput(value);
-            setFormData((prev) => ({ ...prev, jual: raw }));
+            setFormData((prev) => ({ ...prev, jual: value }));
             if (formErrors.jual) setFormErrors((prev) => ({ ...prev, jual: "" }));
             return;
         }

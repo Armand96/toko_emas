@@ -7,7 +7,7 @@ import FinanceApis from '../../Services/Finance.apis';
 import OptionsStore from '../../Store/OptionsStore';
 
 const METODE_OPTIONS = [
-    { value: 'CASH', label: 'Cash' },
+    { value: 'CASH', label: 'Tunai' },
     { value: 'TRANSFER', label: 'Transfer' },
 ];
 
@@ -27,7 +27,7 @@ const ModalTransaksi = ({ isOpen, onClose, mode = 'add', data = null, onSubmit }
     const ensureBanks = OptionsStore((s) => s.ensureBanks);
     const [form, setForm] = useState(emptyForm);
     const [branchOptions, setBranchOptions] = useState([]);
-    const [bankOptions, setBankOptions] = useState([]);
+    const [allBankOptions, setAllBankOptions] = useState([]);
     const [categoryOptions, setCategoryOptions] = useState([]);
 
     const isView = mode === 'view';
@@ -40,7 +40,7 @@ const ModalTransaksi = ({ isOpen, onClose, mode = 'add', data = null, onSubmit }
             .catch((err) => console.error(err));
 
         ensureBanks()
-            .then((data) => setBankOptions(HelperFunctions.formatDropdownBank(data)))
+            .then((data) => setAllBankOptions(HelperFunctions.formatDropdownBank(data)))
             .catch((err) => console.error(err));
 
         FinanceApis.GetCategoryFinance(`?per_page=10000000&is_active=1`)
@@ -67,13 +67,23 @@ const ModalTransaksi = ({ isOpen, onClose, mode = 'add', data = null, onSubmit }
         }
     }, [isOpen, mode, data]);
 
+    const bankOptions = form.branch_id
+        ? allBankOptions.filter(b => String(b.details?.branch_id) === String(form.branch_id))
+        : allBankOptions;
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setForm(prev => ({ ...prev, [name]: value }));
+        if (name === 'branch_id') {
+            setForm(prev => ({ ...prev, branch_id: value, bank_cabang_id: '' }));
+        } else {
+            setForm(prev => ({ ...prev, [name]: value }));
+        }
     };
 
+    const isTransfer = form.payment_method === 'TRANSFER';
     const isValid = form.branch_id && form.nominal && form.payment_method && form.category_finance_id
-        && (form.payment_method !== 'TRANSFER' || form.bank_cabang_id);
+        && (!isTransfer || form.bank_cabang_id)
+        && (!isTransfer || form.attachment);
 
     const fieldsModal = [
         {
@@ -115,8 +125,8 @@ const ModalTransaksi = ({ isOpen, onClose, mode = 'add', data = null, onSubmit }
         {
             label: "Nominal",
             name: "nominal",
-            type: "text",
-            placeholder: "Rp 0",
+            type: "currency",
+            placeholder: "0",
             isRequired: !isView,
             isDisable: isView,
         },
@@ -135,16 +145,7 @@ const ModalTransaksi = ({ isOpen, onClose, mode = 'add', data = null, onSubmit }
 
     const handleNominalChange = (e) => {
         const { name, value } = e.target;
-        if (name === 'nominal') {
-            setForm(prev => ({ ...prev, [name]: HelperFunctions.unformatNumberInput(value) }));
-        } else {
-            setForm(prev => ({ ...prev, [name]: value }));
-        }
-    };
-
-    const formDataForDisplay = {
-        ...form,
-        nominal: form.nominal ? HelperFunctions.formatNumberInput(form.nominal) : '',
+        setForm(prev => ({ ...prev, [name]: value }));
     };
 
     return (
@@ -180,13 +181,15 @@ const ModalTransaksi = ({ isOpen, onClose, mode = 'add', data = null, onSubmit }
                 <InputGroup
                     cols="2"
                     fields={fieldsModal}
-                    formData={formDataForDisplay}
+                    formData={form}
                     onChange={handleNominalChange}
                 />
 
                 {/* Attachment */}
                 <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-medium text-gray-900">Attachment</label>
+                    <label className="text-sm font-medium text-gray-900">
+                        Attachment{isTransfer && !isView && <span className="text-danger-500 ml-0.5">*</span>}
+                    </label>
                     {isView ? (
                         typeof form.attachment === 'string' && form.attachment ? (
                             <a href={form.attachment} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-primary-600 hover:underline">
@@ -199,7 +202,11 @@ const ModalTransaksi = ({ isOpen, onClose, mode = 'add', data = null, onSubmit }
                         <label className="flex items-center justify-between gap-2 px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-400 cursor-pointer hover:bg-gray-50 transition-colors">
                             <span className="flex items-center gap-2 truncate">
                                 <PaperclipIcon size={16} />
-                                {form.attachment instanceof File ? form.attachment.name : 'Upload attachment'}
+                                {form.attachment instanceof File
+                                    ? form.attachment.name
+                                    : typeof form.attachment === 'string' && form.attachment
+                                        ? form.attachment.split('/').pop()
+                                        : 'Upload attachment'}
                             </span>
                             {form.attachment ? (
                                 <XIcon

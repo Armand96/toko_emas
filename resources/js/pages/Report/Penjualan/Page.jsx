@@ -107,7 +107,7 @@ const ReportPenjualan = () => {
 
     const detailColumns = [
         {
-            header: "Tanggal", accessor: "tanggal", sortable: true,
+            header: "Tanggal", accessor: "tanggal",
             render: (row) => new Date(row.tanggal).toLocaleDateString("id-ID"),
         },
         { header: "Order ID", accessor: "orderId" },

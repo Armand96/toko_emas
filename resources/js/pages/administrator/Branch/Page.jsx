@@ -81,10 +81,12 @@ const Branch = () => {
             setFormData({ is_active: false});
             setIsView(false);
         } else if (mode === 'edit') {
-            setFormData({...record, is_active:record.is_active === 1 ? true : false});
+            const picId = typeof record.pic === 'object' && record.pic !== null ? record.pic.id : record.pic;
+            setFormData({...record, is_active: record.is_active === 1 ? true : false, pic: picId});
             setIsView(false);
         } else if (mode === 'view') {
-            setFormData(record);
+            const picId = typeof record.pic === 'object' && record.pic !== null ? record.pic.id : record.pic;
+            setFormData({...record, pic: picId});
             setIsView(true);
         }else if (mode === 'bank') {
             setFormData(record);
@@ -146,8 +148,7 @@ const Branch = () => {
             const body = new FormData();
             body.append('branch_name', submitData.branch_name);
             body.append('address', submitData.address);
-            // body.append('pic', submitData.pic );
-            body.append('pic', 1);
+            body.append('pic', submitData.pic);
             body.append('branch_open_date', submitData.branch_open_date);
             body.append('is_active', submitData.is_active ? 1 : 0);
             body.append('branch_code', submitData.branch_code);
@@ -177,7 +178,7 @@ const Branch = () => {
         { header: 'Nama Cabang', accessor: 'branch_name', },
         { header: 'Lokasi Cabang', accessor: 'lokasi_cabang', },
         { header: 'Alamat', accessor: 'address', },
-        { header: 'PIC', accessor: 'pic', render: (row) => row.pic_user?.name || '-' },
+        { header: 'PIC', accessor: 'pic', render: (row) => row.pic?.name || '-' },
         { header: 'Tanggal Buka', accessor: 'open_date', },
         {
             header: 'Status',

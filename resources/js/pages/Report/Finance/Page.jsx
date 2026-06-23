@@ -211,7 +211,7 @@ const ReportFinance = () => {
 
     const detailColumns = [
         {
-            header: "Tanggal", accessor: "created_at", sortable: true,
+            header: "Tanggal", accessor: "created_at",
             render: (row) => row.created_at
                 ? new Date(row.created_at).toLocaleString("id-ID", { dateStyle: "short", timeStyle: "short" })
                 : "-",

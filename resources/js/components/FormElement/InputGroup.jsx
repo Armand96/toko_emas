@@ -8,6 +8,7 @@ import PhotoInput from "./SingleElement/PhotoInput";
 import StatusToggle from "./SingleElement/StatusToggle";
 import SearchInput from "./SingleElement/SearchInput";
 import DateRange from "./SingleElement/DateRange";
+import CurrencyInput from "./SingleElement/CurrencyInput";
 
 const gridColsMap = {
     1: "lg:grid-cols-1",
@@ -65,6 +66,8 @@ const InputGroup = ({
                 return <PhotoInput key={index} {...commonProps} accept={field.accept} />;
             case "search":
                 return <SearchInput key={index} {...commonProps}     />;
+            case "currency":
+                return <CurrencyInput key={index} {...commonProps} />;
             case "daterange":
                 return <DateRange key={index} {...commonProps} />;
             case "textarea":

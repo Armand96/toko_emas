@@ -11,6 +11,7 @@ import ModalTransaksi from "./Modal";
 import FinanceApis from "../../Services/Finance.apis";
 import OptionsStore from "../../Store/OptionsStore";
 import PermissionStore from "../../Store/PermissionStore";
+import dayjs from 'dayjs';
 
 const TIPE_OPTIONS = [
     { value: 'CASH IN', label: 'Cash In' },
@@ -146,7 +147,7 @@ const Finance = () => {
     };
 
     const columns = [
-        { header: 'Tanggal', accessor: 'created_at', render: (row) => row.created_at ? new Date(row.created_at).toLocaleString('id-ID') : '-' },
+        { header: 'Tanggal', accessor: 'created_at', render: (row) => row.created_at ? dayjs(row.created_at).format("DD/MM/YYY, HH:mm") : '-' },
         { header: 'Cabang', accessor: 'branch', render: (row) => row.branch?.branch_name ?? '-' },
         {
             header: 'Tipe', accessor: 'type',

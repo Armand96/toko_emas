@@ -156,13 +156,13 @@ const ReportCustomer = () => {
     const detailColumns = [
         { header: "Nama Customer", accessor: "nama" },
         { header: "No. HP", accessor: "hp" },
-        { header: "Jumlah Transaksi", accessor: "transaksi", sortable: true },
+        { header: "Jumlah Transaksi", accessor: "transaksi" },
         {
-            header: "Total Pembelian", accessor: "total", sortable: true,
+            header: "Total Pembelian", accessor: "total",
             render: (row) => HelperFunctions.formatCurrency(row.total),
         },
         {
-            header: "Transaksi Terakhir", accessor: "terakhir", sortable: true,
+            header: "Transaksi Terakhir", accessor: "terakhir",
             render: (row) => row.terakhir ? new Date(row.terakhir).toLocaleDateString("id-ID") : "-",
         },
     ];

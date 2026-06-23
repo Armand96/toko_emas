@@ -124,7 +124,7 @@ const MasterUser = () => {
             body.append('branch_id', submitData.branch_id);
             body.append('role_id', submitData.role_id);
             body.append('is_active', submitData.is_active ? 1 : 0);
-            if (submitData.phone) body.append('phone', submitData.phone);
+            if (submitData.phone_number) body.append('phone_number', submitData.phone_number);
             if (!submitData.id) body.append('password', submitData.password);
             if (submitData.id && submitData.password) body.append('password', submitData.password);
             if (submitData.id) body.append('id', submitData.id);

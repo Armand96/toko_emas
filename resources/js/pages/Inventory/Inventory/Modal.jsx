@@ -6,6 +6,7 @@ import ModalCustom from "../../../components/modalCustom";
 import SectionTitle from "../../../components/SectionTitle";
 import Dropdown from "../../../components/FormElement/SingleElement/Dropdown";
 import Input from "../../../components/FormElement/SingleElement/Input";
+import CurrencyInput from "../../../components/FormElement/SingleElement/CurrencyInput";
 
 import HelperFunctions from "../../../utils/HelperFunctions";
 
@@ -309,21 +310,19 @@ export const EditItemModal = ({ isOpen, onClose, formData, errors = {}, onChange
                     />
 
                     <div className="grid grid-cols-2 gap-3">
-                        <Input
+                        <CurrencyInput
                             label="Harga Modal"
                             name="modal"
-                            type="text"
-                            value={HelperFunctions.formatNumberInput(formData.modal)}
-                            placeholder="Rp 0"
+                            value={formData.modal}
+                            placeholder="0"
                             isDisable
                             onChange={onChange}
                         />
-                        <Input
+                        <CurrencyInput
                             label="Harga Jual"
                             name="jual"
-                            type="text"
-                            value={HelperFunctions.formatNumberInput(formData.jual)}
-                            placeholder="Rp 0"
+                            value={formData.jual}
+                            placeholder="0"
                             isRequired
                             error={errors.jual}
                             onChange={onChange}

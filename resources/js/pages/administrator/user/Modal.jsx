@@ -34,7 +34,7 @@ export default function ModalUser({
         },
         {
             label: "No HP Aktif",
-            name: "phone",
+            name: "phone_number",
             type: "text",
             placeholder: "Contoh: 08xxxxxxxxxxxx",
             isRequired: false,
@@ -85,7 +85,6 @@ export default function ModalUser({
             label: "Status",
             name: "is_active",
             type: "toggle",          // pakai toggle/radio sesuai komponen yang ada di proyekmu
-            isRequired: !isView,
             isDisable: isView,
             options: [
                 { value: true, label: "Aktif" },
