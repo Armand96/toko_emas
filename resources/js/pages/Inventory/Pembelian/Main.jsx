@@ -281,7 +281,7 @@ const MainPembelian = ({ setCurentState }) => {
         <div className={`flex flex-col gap-6 w-full relative min-h-full ${selectedRows.length > 0 ? 'pb-24 lg:pb-28' : ''}`}>
             <HeaderSection
                 title="Pembelian"
-                description="Kelola data pembelian dan item inventory."
+                description="Catat dan kelola pembelian barang sebelum masuk ke inventory aktif"
                 icon={PlusCircleIcon}
                 onClick={can('create', 'inventory.pembelian') ? () => setCurentState && setCurentState("form") : undefined}
                 textButton="Tambah Pembelian"
