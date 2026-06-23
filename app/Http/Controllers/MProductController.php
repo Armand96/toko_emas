@@ -39,8 +39,7 @@ class MProductController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        // $products = $query->with(['category', 'branch])->paginate($perPage);
-        $products = $query->orderBy('id', 'desc')->paginate($perPage);
+        $products = $query->with(['category.parent', 'branch'])->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($products);
     }

@@ -33,6 +33,9 @@ class MCategoryController extends Controller
         if($request->has('has_parent') && $request->has_parent > 0) {
             $query->has('parent');
         }
+        if($request->has('only_parent') && $request->only_parent > 0) {
+            $query->whereNull('parent_id');
+        }
         // if ($request->has('is_active') && $request->is_active != "") {
         //     $query->where('is_active', $request->is_active);
         // }

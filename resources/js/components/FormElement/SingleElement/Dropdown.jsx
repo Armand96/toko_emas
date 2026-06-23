@@ -17,7 +17,7 @@ const Dropdown = ({
       ...base,
       minHeight: "38px",
       borderRadius: "0.5rem",
-      backgroundColor: isDisable ? "#F8FAFC" : "#FFFFFF",
+      backgroundColor: isDisable ? "#F3F4F6" : "#FFFFFF",
       borderColor: error
         ? "#FB2C36"
         : state.isFocused
@@ -42,7 +42,7 @@ const Dropdown = ({
     }),
     singleValue: (base) => ({
       ...base,
-      color: "#121212",
+      color: isDisable ? "#45556C" : "#121212",
     }),
     menu: (base) => ({
       ...base,

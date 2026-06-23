@@ -170,7 +170,7 @@ const MasterUser = () => {
             accessor: 'is_active',
             render: (row) => (
                 <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${row.is_active ? 'bg-success-100 text-success-700' : 'bg-danger-100 text-danger-700'}`}>
-                    {row.is_active ? 'Active' : 'Inactive'}
+                    {row.is_active ? 'Aktif' : 'Tidak Aktif'}
                 </span>
             )
         },

@@ -93,7 +93,7 @@ export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, i
                 return (
                     <span className={`px-3 py-1 rounded-md text-xs font-medium border ${isActive
                         ? 'bg-success-50 text-success-700 border-success-200'
-                        : 'bg-danger-50 text-danger-700 border-danger-200'
+                        : 'bg-gray-50 text-gray-500 border-gray-200'
                         }`}>
                         {isActive ? 'Aktif' : 'Tidak Aktif'}
                     </span>

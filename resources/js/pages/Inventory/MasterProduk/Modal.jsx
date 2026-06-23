@@ -16,7 +16,6 @@ export default function Modal({
     isView,
 }) {
     const setLoading = LoadingStore((state) => state.setLoading);
-    const ensureCategories = OptionsStore((s) => s.ensureCategories);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
         const [branchOptions, setBranchOptions] = useState([]);
         const [categoryOptions, setCategoryOptions] = useState([]);
@@ -25,10 +24,10 @@ export default function Modal({
     useEffect(() => {
         setLoading(true);
         Promise.all([
-            ensureCategories(),
+            InventoryApis.GetCategories('?only_parent=1&limit=1000'),
             ensureBranches(),
-        ]).then(([categoryData, branchData]) => {
-            setCategoryOptions(HelperFunctions.formatDropdown(categoryData, 'id', 'category_name', true));
+        ]).then(([categoryRes, branchData]) => {
+            setCategoryOptions(HelperFunctions.formatDropdown(categoryRes.data, 'id', 'category_name'));
             setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name', true));
         }).catch(error => {
             console.error('Error fetching options:', error);
@@ -36,6 +35,17 @@ export default function Modal({
             setLoading(false);
         });
     }, []);
+
+    useEffect(() => {
+        if (isOpen && formData?.category) {
+            InventoryApis.GetCategories(`?parent_id=${formData.category}&limit=1000`).then(res => {
+                setSubCategoriesOptions(HelperFunctions.formatDropdown(res.data, 'id', 'category_name'));
+            });
+        }
+        if (!isOpen) {
+            setSubCategoriesOptions([]);
+        }
+    }, [isOpen, formData?.category]);
 
 
     const handleOnChange = (e) => {
@@ -56,13 +66,13 @@ export default function Modal({
 
 
     const fieldsModal = [
-        {
+        ...(formData?.id ? [{
             label: "Kode Produk",
             name: "barcode",
             type: "text",
             placeholder: "Masukkan kode produk",
             isDisable: true,
-        },
+        }] : []),
         {
             label: "Nama Produk",
             name: "product_name",
@@ -89,7 +99,7 @@ export default function Modal({
             placeholder: "Pilih kategori",
             options: categoryOptions,
             isRequired: !isView ,
-            isDisable: isView || (formData?.sub_category && formData?.id),
+            isDisable: isView || !!formData?.id,
         },
         {
             label: "Sub Kategori",
@@ -98,7 +108,7 @@ export default function Modal({
             placeholder: "Pilih sub kategori",
             options: subCategoriesOptions,
             isRequired: !isView && subCategoriesOptions.length > 0,
-            isDisable: isView,
+            isDisable: isView || !!formData?.id,
         },
         {
             label: "Cabang",

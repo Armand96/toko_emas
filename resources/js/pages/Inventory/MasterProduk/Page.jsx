@@ -178,10 +178,22 @@ const MasterProduk = () => {
     const columns = [
         { header: 'Kode Produk', accessor: 'barcode' },
         { header: 'Nama Produk', accessor: 'product_name' },
-        { header: 'Kategori', accessor: 'category' },
-        { header: 'Sub Kategori', accessor: 'sub_category' },
+        {
+            header: 'Kategori',
+            accessor: 'category',
+            render: (row) => row.category?.parent?.category_name || row.category?.category_name || '-'
+        },
+        {
+            header: 'Sub Kategori',
+            accessor: 'sub_category',
+            render: (row) => row.category?.parent ? row.category?.category_name : '-'
+        },
         { header: 'Deskripsi', accessor: 'description' },
-        { header: 'Cabang', accessor: 'branch' },
+        {
+            header: 'Cabang',
+            accessor: 'branch',
+            render: (row) => row.branch?.branch_name || '-'
+        },
         {
             header: 'Status',
             accessor: 'is_active',
@@ -190,7 +202,7 @@ const MasterProduk = () => {
                 return (
                     <span className={`px-3 py-1 rounded-md text-xs font-medium border ${isActive
                         ? 'bg-success-50 text-success-700 border-success-200'
-                        : 'bg-danger-50 text-danger-700 border-danger-200'
+                        : 'bg-gray-50 text-gray-500 border-gray-200'
                         }`}>
                         {isActive ? 'Aktif' : 'Tidak Aktif'}
                     </span>
