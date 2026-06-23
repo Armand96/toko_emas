@@ -54,6 +54,7 @@ class MBranchController extends Controller
         $validated = $request->validated();
 
         try {
+            $validated['pic'] = isset($validated['pic']) ? $validated['pic'] : 0;
             $branch = MBranch::create($validated);
 
             return ApiResponse::success($branch, "Success create branch", 201);
