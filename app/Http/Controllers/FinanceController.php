@@ -32,6 +32,12 @@ class FinanceController extends Controller
         if ($request->has('payment_method') && $request->payment_method != "") {
             $query->where('payment_method', $request->payment_method);
         }
+        if ($request->has('start_date') && $request->start_date != "") {
+            $query->where('created_at', '>=', $request->start_date);
+        }
+        if ($request->has('end_date') && $request->end_date != "") {
+            $query->where('created_at', '<=', $request->end_date);
+        }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
         $finances = $query->with(['branch', 'category', 'bankCabang'])->orderBy('id', 'desc')->paginate($perPage);
