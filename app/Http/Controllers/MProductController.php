@@ -7,6 +7,7 @@ use App\Http\Requests\MProductRequest;
 use App\Models\MCategory;
 use App\Models\MProduct;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -59,47 +60,61 @@ class MProductController extends Controller
     {
         $validated = $request->validated();
 
+        DB::beginTransaction();
+
         try {
 
-            if ($request->hasFile('image')) {
+            $insertData = [];
+            $dateNow = now();
 
-                // Upload new image
-                $image = $request->file('image');
+            foreach ($validated['data'] as $item) {
 
-                $imageName = $validated['product_name'] . "_" . date('Y-m-d') . "." . $image->getClientOriginalExtension();
+                $countData = MProduct::where(
+                    'category_id',
+                    $item['category_id']
+                )->count();
 
-                $image->storeAs(
-                    'images',
-                    $imageName,
-                    'public'
-                );
+                $category = MCategory::find($item['category_id']);
 
-                $validated['image_path'] = 'images/' . $imageName;
+                $barcode = $category->category_code . "-" .
+                    str_pad($countData + 1, 5, "0", STR_PAD_LEFT);
 
-                $validated['thumb_path'] = 'thumbs/' . $imageName;
+                $insertData[] = [
+                    'product_name' => $item['product_name'],
+                    'branch_id' => $item['branch_id'],
+                    'category_id' => $item['category_id'],
+                    'subcategory_id' => $item['subcategory_id'],
+                    'description' => $item['description'],
+                    'is_active' => $item['is_active'] ?? true,
 
-                // Generate thumbnail
-                $thumb = Image::decode($image)
-                    ->scale(height: 200);
+                    'barcode' => $barcode,
 
-                Storage::disk('public')->put(
-                    $validated['thumb_path'],
-                    $thumb->encodeUsingFileExtension(
-                        $image->getClientOriginalExtension(),
-                        quality: 70
-                    )
-                );
+                    // 'image_path' => $item['image_path'] ?? null,
+                    // 'thumb_path' => $item['thumb_path'] ?? null,
+
+                    'created_at' => $dateNow,
+                    'updated_at' => $dateNow,
+                ];
             }
 
-            $countData = MProduct::where('category_id', $validated['category_id'])->count();
-            $category = MCategory::find($validated['category_id']);
-            $validated['barcode'] = $category->category_code . "-" . str_pad($countData + 1, 5, "0", STR_PAD_LEFT);
+            MProduct::insert($insertData);
 
-            $product = MProduct::create($validated);
+            DB::commit();
 
-            return ApiResponse::success($product, "Success create product", 201);
+            return ApiResponse::success(
+                [],
+                "Success create products",
+                201
+            );
         } catch (\Throwable $th) {
-            return ApiResponse::error($th->getMessage(), $th, 500);
+
+            DB::rollBack();
+
+            return ApiResponse::error(
+                $th->getMessage(),
+                $th,
+                500
+            );
         }
     }
 

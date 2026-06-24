@@ -26,6 +26,7 @@ class MCategoryFinanceRequest extends FormRequest
     {
         return [
             'category_name' => 'required|string',
+            'is_active' => 'required|boolean',
             'type' => 'required|string'
         ];
     }
