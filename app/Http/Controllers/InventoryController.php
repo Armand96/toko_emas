@@ -65,14 +65,14 @@ class InventoryController extends Controller
         $validated = $request->validated();
         try {
 
-            $inventory->update($validated);
-
             $data = $inventory->toArray();
             unset($data['id']);
             $data['inventory_id'] = $inventory->id;
             $data['updated_by'] = $request->user()->id;
             // dd($data);
             $dataEdit = InventoryEditHistory::create($data);
+
+            $inventory->update($validated);
 
             DB::commit();
 
