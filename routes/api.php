@@ -15,6 +15,7 @@ use App\Http\Controllers\PembelianController;
 use App\Http\Controllers\RemoveItemController;
 use App\Http\Controllers\CustomerReportController;
 use App\Http\Controllers\FinanceReportController;
+use App\Http\Controllers\PembelianReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StockOpnameHeaderController;
 use App\Http\Controllers\StoreSettingController;
@@ -84,6 +85,12 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
         Route::get('total-group-by-cabang', [FinanceReportController::class, 'totalGroupedCabang']);
         Route::get('finance-summary', [FinanceReportController::class, 'financeSummary']);
         Route::get('finance-detail', [FinanceReportController::class, 'financeDetail']);
+
+        // PEMBELIAN
+        Route::get('pembelian-total-item', [PembelianReportController::class, 'totalItem']);
+        Route::get('pembelian-by-category', [PembelianReportController::class, 'pembelianKategoriReport']);
+        Route::get('pembelian-by-karat', [PembelianReportController::class, 'pembelianKaratReport']);
+        Route::get('pembelian-detail', [PembelianReportController::class, 'pembelianDetail']);
     });
 
     Route::get('profile', [UserController::class, 'profile']);
