@@ -15,6 +15,7 @@ use App\Http\Controllers\PembelianController;
 use App\Http\Controllers\RemoveItemController;
 use App\Http\Controllers\CustomerReportController;
 use App\Http\Controllers\FinanceReportController;
+use App\Http\Controllers\InventoryReportController;
 use App\Http\Controllers\PembelianReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SalesReportController;
@@ -98,6 +99,12 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
         Route::get('sales-trend', [SalesReportController::class, 'salesTrendAndTopProduct']);
         Route::get('sales-by-category-karat', [SalesReportController::class, 'salesCategoryAndKarat']);
         Route::get('sales-detail', [SalesReportController::class, 'salesDetail']);
+
+        // INVENTORY
+        Route::get('inventory-summary', [InventoryReportController::class, 'inventorySummary']);
+        Route::get('inventory-distribution', [InventoryReportController::class, 'inventoryDistribution']);
+        Route::get('inventory-status-aging', [InventoryReportController::class, 'inventoryStatusAndAging']);
+        Route::get('inventory-detail', [InventoryReportController::class, 'inventoryDetail']);
     });
 
     Route::get('profile', [UserController::class, 'profile']);
