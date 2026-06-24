@@ -10,6 +10,7 @@ class MProduct extends Model
         'product_name',
         'branch_id',
         'category_id',
+        'subcategory_id',
         'description',
         'is_active',
         'image_path',
@@ -25,6 +26,11 @@ class MProduct extends Model
     public function category()
     {
         return $this->belongsTo(MCategory::class, 'category_id', 'id');
+    }
+
+    public function subcategory()
+    {
+        return $this->belongsTo(MCategory::class, 'subcategory_id', 'id');
     }
 
     public function branch()

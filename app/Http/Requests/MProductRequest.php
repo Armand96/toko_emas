@@ -33,8 +33,9 @@ class MProductRequest extends FormRequest
 
         return [
             'product_name' => 'required|string',
-            'branch_id' => 'required|numeric',
-            'category_id' => 'required|numeric',
+            'branch_id' => 'required|integer',
+            'category_id' => 'required|integer',
+            'subcategory_id' => 'required|integer',
             'description' => 'required|string',
             'is_active' => 'nullable|boolean',
             'image_path' => 'nullable|string',
