@@ -31,6 +31,9 @@ class UserController extends Controller
         if ($request->has('branch_id') && $request->branch_id != "") {
             $query->where('branch_id', $request->branch_id);
         }
+        if ($request->has('is_active') && $request->is_active != "") {
+            $query->where('is_active', $request->is_active);
+        }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
         $users = $query->orderBy('id', 'desc')->paginate($perPage);
