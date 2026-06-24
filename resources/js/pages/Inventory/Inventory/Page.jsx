@@ -237,11 +237,41 @@ const MasterInventory = () => {
         setSelectedItem(null);
     };
 
-    const handleEdit = (row) => {
-        const mapped = mapInventory(row);
-        setFormData({ ...mapped, foto: mapped.image });
-        setFormErrors({});
-        setShowEditModal(true);
+    const handleEdit = async (row) => {
+        setLoading(true);
+        try {
+            const res = await InventoryApis.GetInventorySingle(row.id);
+            const detail = res?.data || res;
+            const mapped = mapInventory(detail);
+            setFormData({
+                ...mapped,
+                berat: detail.berat ?? row.berat,
+                karat: detail.karat ?? row.karat,
+                modal: Number(detail.modal ?? row.modal),
+                jual: Number(detail.jual ?? row.jual),
+                note: detail.note ?? row.note ?? "",
+                no_seri: detail.note ?? row.note ?? "",
+                foto: mapped.image,
+            });
+            setFormErrors({});
+            setShowEditModal(true);
+        } catch (error) {
+            console.error(error);
+            setFormData({
+                ...mapInventory(row),
+                berat: row.berat,
+                karat: row.karat,
+                modal: Number(row.modal),
+                jual: Number(row.jual),
+                note: row.note ?? "",
+                no_seri: row.note ?? "",
+                foto: row.image_path ? `/storage/${row.image_path}` : null,
+            });
+            setFormErrors({});
+            setShowEditModal(true);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleCloseEdit = () => {
@@ -256,6 +286,13 @@ const MasterInventory = () => {
         if (name === "foto") {
             const file = files ? files[0] : value;
             setFormData((prev) => ({ ...prev, foto: file ?? null }));
+            return;
+        }
+
+        if (name === "berat" || name === "karat") {
+            const normalized = value.replace(/,/g, ".").replace(/[^0-9.]/g, "");
+            setFormData((prev) => ({ ...prev, [name]: normalized }));
+            if (formErrors[name]) setFormErrors((prev) => ({ ...prev, [name]: "" }));
             return;
         }
 
@@ -276,7 +313,7 @@ const MasterInventory = () => {
         if (formErrors[name]) setFormErrors((prev) => ({ ...prev, [name]: "" }));
     };
 
-    const handleSubmitEdit = () => {
+    const handleSubmitEdit = async () => {
         const newErrors = {};
         if (!formData.product_id) newErrors.product_id = "Produk wajib dipilih";
         if (!formData.berat) newErrors.berat = "Berat wajib diisi";
@@ -288,8 +325,23 @@ const MasterInventory = () => {
             return;
         }
 
-        // TODO: kirim ke API saat endpoint update inventory sudah ready
-        handleCloseEdit();
+        setLoading(true);
+        try {
+            const body = {
+                product_id: formData.product_id,
+                berat: Number(formData.berat),
+                karat: Number(formData.karat),
+                jual: Number(formData.jual),
+                serial_number: formData.no_seri || null,
+            };
+            await InventoryApis.PutInventory(formData.id, body);
+            handleCloseEdit();
+            fetchData(paramFetch.current_page, paramFetch.per_page, search.kode, filter.status, filter.kategori);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSelectAll = (e) => {

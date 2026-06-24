@@ -354,6 +354,12 @@ const ReportFinance = () => {
                         <p className="text-[13px] text-gray-500">Daftar lengkap transaksi keuangan untuk kebutuhan monitoring dan analisis.</p>
                     </div>
                     <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-primary-200 px-3.5 py-2.5 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50"
+                        >
+                            <ExportIcon size={18} /> Export Data
+                        </button>
                         <div className="w-[160px]">
                             <InputGroup
                                 fields={[{ name: "tipe", label: "", type: "dropdown", options: TIPE_OPTIONS, placeholder: "Pilih tipe" }]}
@@ -362,12 +368,6 @@ const ReportFinance = () => {
                                 onChange={handleChange}
                             />
                         </div>
-                        <button
-                            type="button"
-                            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-primary-200 px-3.5 py-2.5 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50"
-                        >
-                            <ExportIcon size={18} /> Export Data
-                        </button>
                     </div>
                 </div>
 

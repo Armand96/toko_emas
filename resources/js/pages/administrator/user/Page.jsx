@@ -20,6 +20,7 @@ const MasterUser = () => {
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const [paramFetch, setParamFetch] = useState({ data: [], page: 1, total: 0, pageSize: 10 });
     const [search, setSearch] = useState({ name: '' });
+    const [filter, setFilter] = useState({ status: '', branch_id: '' });
     const [showModalAdd, setShowModalAdd] = useState(false);
     const [formData, setFormData] = useState({});
     const [formError, setFormError] = useState({});
@@ -39,10 +40,14 @@ const MasterUser = () => {
         { name: 'password', error_message: 'Password wajib diisi' },
     ]);
 
-    const fetchData = async (page = 1, pageSize = 10, name = '') => {
+    const fetchData = async (page = 1, pageSize = 10, name = '', status = '', branch_id = '') => {
         setLoading(true);
         try {
-            const res = await UsersApis.GetUser(`?page=${page}&limit=${pageSize}${name ? `&name=${name}` : ''}`);
+            const params = `?page=${page}&limit=${pageSize}`
+                + (name ? `&name=${name}` : '')
+                + (status !== '' ? `&is_active=${status}` : '')
+                + (branch_id ? `&branch_id=${branch_id}` : '');
+            const res = await UsersApis.GetUser(params);
             setParamFetch(res);
             setFirstLoading(true);
         } catch (error) {
@@ -71,7 +76,7 @@ const MasterUser = () => {
 
     useEffect(() => {
         if (firstLoading) {
-            fetchData(1, paramFetch.pageSize, search.name);
+            fetchData(1, paramFetch.pageSize, search.name, filter.status, filter.branch_id);
         }
     }, [searchBounce]);
 
@@ -190,11 +195,18 @@ const MasterUser = () => {
     ];
 
     const onChangePage = (page) => {
-        fetchData(page, paramFetch.pageSize, search.name);
+        fetchData(page, paramFetch.pageSize, search.name, filter.status, filter.branch_id);
     };
 
     const onChangePageSize = (pageSize) => {
-        fetchData(1, pageSize, search.name);
+        fetchData(1, pageSize, search.name, filter.status, filter.branch_id);
+    };
+
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        const newFilter = { ...filter, [name]: value };
+        setFilter(newFilter);
+        fetchData(1, paramFetch.per_page, search.name, newFilter.status, newFilter.branch_id);
     };
 
     return (
@@ -218,6 +230,37 @@ const MasterUser = () => {
                         formData={search}
                         cols='1'
                         onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
+                    />
+                </div>
+                <div className="w-[160px]">
+                    <InputGroup
+                        fields={[{
+                            name: 'status',
+                            label: '',
+                            type: 'dropdown',
+                            placeholder: 'Pilih status',
+                            options: [
+                                { value: '1', label: 'Aktif' },
+                                { value: '0', label: 'Tidak Aktif' },
+                            ],
+                        }]}
+                        formData={filter}
+                        cols='1'
+                        onChange={handleFilterChange}
+                    />
+                </div>
+                <div className="w-[180px]">
+                    <InputGroup
+                        fields={[{
+                            name: 'branch_id',
+                            label: '',
+                            type: 'dropdown',
+                            placeholder: 'Pilih cabang',
+                            options: branchOptions,
+                        }]}
+                        formData={filter}
+                        cols='1'
+                        onChange={handleFilterChange}
                     />
                 </div>
             </div>

@@ -53,7 +53,7 @@ export default function ModalAddBank({ isOpen, onClose, onSubmit, initialData })
     };
 
     const fields = [
-        { name: 'bank_id', label: 'Nama Bank', type: 'dropdown', options: bankOptions, isRequired: true, placeholder: 'Masukkan Nama Bank' },
+        { name: 'bank_id', label: 'Nama Bank', type: 'dropdown', options: bankOptions, isRequired: true, placeholder: 'Pilih Bank' },
         { name: 'nomor_rekening', label: 'No Rekening', type: 'text', isRequired: true, placeholder: 'Masukkan No Rekening' },
         { name: 'nama_pemilik', label: 'Nama Pemilik', type: 'text', isRequired: true, placeholder: 'Masukkan Nama Pemilik' },
         { name: 'is_active', label: 'Status', type: 'checkbox', }

@@ -272,7 +272,8 @@ export const EditItemModal = ({ isOpen, onClose, formData, errors = {}, onChange
                         <Input
                             label="Berat (g)"
                             name="berat"
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             value={formData.berat}
                             placeholder="0.00"
                             isRequired
@@ -282,7 +283,8 @@ export const EditItemModal = ({ isOpen, onClose, formData, errors = {}, onChange
                         <Input
                             label="Karat"
                             name="karat"
-                            type="number"
+                            type="text"
+                            inputMode="numeric"
                             value={formData.karat}
                             placeholder="0"
                             isRequired

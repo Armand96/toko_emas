@@ -26,6 +26,7 @@ const DesktopSpanClasses = {
 const Input = ({
     label,
     type = "text",
+    inputMode,
     name,
     value,
     placeholder,
@@ -47,6 +48,7 @@ const Input = ({
             <div className="relative flex items-center">
                 <input
                     type={type}
+                    inputMode={inputMode}
                     name={name}
                     value={value || ""}
                     onChange={onChange}

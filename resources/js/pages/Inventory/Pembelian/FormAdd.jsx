@@ -149,6 +149,13 @@ const FormPembelian = ({ setCurentState }) => {
             return;
         }
 
+        if (name === "berat" || name === "karat") {
+            const normalized = value.replace(/,/g, ".").replace(/[^0-9.]/g, "");
+            setItem((prev) => ({ ...prev, [name]: normalized }));
+            if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+            return;
+        }
+
         if (name === "modal" || name === "jual") {
             setItem((prev) => ({ ...prev, [name]: value }));
             if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -405,7 +412,8 @@ const FormPembelian = ({ setCurentState }) => {
                             <Input
                                 label="Berat (g)"
                                 name="berat"
-                                type="number"
+                                type="text"
+                                inputMode="decimal"
                                 value={item.berat}
                                 placeholder="0.00"
                                 isRequired
@@ -415,7 +423,8 @@ const FormPembelian = ({ setCurentState }) => {
                             <Input
                                 label="Karat"
                                 name="karat"
-                                type="number"
+                                type="text"
+                                inputMode="numeric"
                                 value={item.karat}
                                 placeholder="0"
                                 isRequired
