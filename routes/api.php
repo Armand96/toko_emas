@@ -17,6 +17,7 @@ use App\Http\Controllers\CustomerReportController;
 use App\Http\Controllers\FinanceReportController;
 use App\Http\Controllers\PembelianReportController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\StockOpnameHeaderController;
 use App\Http\Controllers\StoreSettingController;
 use App\Http\Controllers\TransferItemController;
@@ -91,6 +92,12 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
         Route::get('pembelian-by-category', [PembelianReportController::class, 'pembelianKategoriReport']);
         Route::get('pembelian-by-karat', [PembelianReportController::class, 'pembelianKaratReport']);
         Route::get('pembelian-detail', [PembelianReportController::class, 'pembelianDetail']);
+
+        // PENJUALAN / SALES
+        Route::get('sales-summary', [SalesReportController::class, 'salesSummary']);
+        Route::get('sales-trend', [SalesReportController::class, 'salesTrendAndTopProduct']);
+        Route::get('sales-by-category-karat', [SalesReportController::class, 'salesCategoryAndKarat']);
+        Route::get('sales-detail', [SalesReportController::class, 'salesDetail']);
     });
 
     Route::get('profile', [UserController::class, 'profile']);

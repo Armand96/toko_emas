@@ -78,7 +78,7 @@ class TSalesController extends Controller
 
             $hdrData = TSales::create($hdrSales);
 
-            $dateNow = date('Y-m-d H:i:s');
+            // $dateNow = date('Y-m-d H:i:s');
             $insertBatch = [];
             $subTotal = 0;
 
@@ -88,7 +88,7 @@ class TSalesController extends Controller
                     'product_id' => $value['product_id'],
                     'price' => $value['price'],
                     'inventory_code' => $value['inventory_code'],
-                    'created_at' => $dateNow
+                    'created_at' => $hdrData->created_at
                 );
 
                 $subTotal += $value['price'];
