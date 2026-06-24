@@ -39,7 +39,7 @@ class MProductController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $products = $query->with(['category.parent', 'branch'])->orderBy('id', 'desc')->paginate($perPage);
+        $products = $query->with(['category.parent', 'branch', 'subcategory'])->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($products);
     }
@@ -93,7 +93,7 @@ class MProductController extends Controller
 
             $countData = MProduct::where('category_id', $validated['category_id'])->count();
             $category = MCategory::find($validated['category_id']);
-            $validated['barcode'] = $category->category_code . "-" . str_pad($countData+1, 5, "0", STR_PAD_LEFT);
+            $validated['barcode'] = $category->category_code . "-" . str_pad($countData + 1, 5, "0", STR_PAD_LEFT);
 
             $product = MProduct::create($validated);
 
@@ -108,7 +108,7 @@ class MProductController extends Controller
      */
     public function show(MProduct $product)
     {
-        return ApiResponse::success($product, "Success");
+        return ApiResponse::success($product->load(['subcategory', 'category.parent', 'branch']), "Success");
     }
 
     /**
