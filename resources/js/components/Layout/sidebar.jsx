@@ -45,7 +45,6 @@ const sidebarData = [
         subItems: [
           { label: "Master Kategori", link: "/inventory/master-kategori" },
           { label: "Master Produk", link: "/inventory/master-produk" },
-          { label: "Pembelian", link: "/inventory/pembelian" },
           { label: "Item Inventory", link: "/inventory/inventory" },
           { label: "Remove", link: "/inventory/remove" },
           { label: "In Repair", link: "/inventory/in-repair" },
@@ -54,10 +53,18 @@ const sidebarData = [
         ]
       },
       {
-        id: "penjualan",
-        label: "Penjualan",
-        icon: ShoppingCartIcon,
-        link: "/penjualan"
+        id: "transaksi",
+        label: "Transaksi",
+        icon: SquaresFourIcon,
+        subItems: [
+          {
+            id: "penjualan",
+            label: "Penjualan",
+            link: "/transaksi/penjualan"
+          },
+          { label: "Pembelian", link: "/transaksi/pembelian" },
+
+        ]
       },
       {
         id: "finance",

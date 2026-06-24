@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
     PackageIcon,
     ScalesIcon,
@@ -9,97 +9,155 @@ import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
 import HelperFunctions from "../../../utils/HelperFunctions";
+import LoadingStore from "../../../Store/LoadingStore";
+import OptionsStore from "../../../Store/OptionsStore";
+import ReportApis from "../../../Services/Report.apis";
 import StatCard from "./Component/StatCard";
 import ChartCard from "./Component/ChartCard";
 import BarChartH from "./Component/BarChartH";
 
-/* ──────────────────────────────────────────────────────────
-   DUMMY DATA — nanti tinggal diganti hasil API
-   ────────────────────────────────────────────────────────── */
-const SUMMARY = {
-    totalItem: 2000,
-    totalBerat: 500,
-    totalNilai: 2700000000,
-};
+/** [{category_name|subcategory_name, total_modal}] → [{label, value}] untuk chart. */
+const toCategoryChart = (rows, labelKey) =>
+    Array.isArray(rows)
+        ? rows.map((r) => ({ label: r[labelKey] ?? "-", value: Number(r.total_modal) || 0 }))
+        : [];
 
-const PER_KATEGORI = [
-    { label: "Perhiasan", value: 29000000 },
-    { label: "Logam Mulia", value: 23000000 },
-    { label: "Silver", value: 9000000 },
-    { label: "Berlian", value: 14000000 },
-    { label: "Cukim", value: 6000000 },
-];
-
-const PER_SUB_KATEGORI = [
-    { label: "Cincin", value: 29000000 },
-    { label: "Anting", value: 22000000 },
-    { label: "Kalung", value: 8000000 },
-    { label: "Gelang", value: 15000000 },
-    { label: "Liontin", value: 4000000 },
-];
-
-const PER_KARAT = [
-    { label: "24K", value: 30000000 },
-    { label: "23K", value: 29000000 },
-    { label: "22K", value: 7000000 },
-    { label: "21K", value: 16000000 },
-    { label: "20K", value: 13000000 },
-    { label: "18K", value: 9000000 },
-    { label: "17K", value: 8000000 },
-    { label: "16K", value: 7000000 },
-    { label: "14K", value: 9000000 },
-    { label: "10K", value: 6000000 },
-    { label: "9K", value: 5000000 },
-    { label: "8K", value: 4000000 },
-    { label: "6K", value: 5000000 },
-];
-
-const DETAIL = [
-    { id: 1, tanggal: "2026-05-11", batch: "00005", supplier: "CV. ADI PERKASA", cabang: "Blok M 2", totalItem: 5, totalBerat: 50, totalModal: 60000000 },
-    { id: 2, tanggal: "2026-05-11", batch: "00004", supplier: "CV. ADI PERKASA", cabang: "Blok M 1", totalItem: 5, totalBerat: 50, totalModal: 60000000 },
-    { id: 3, tanggal: "2026-05-11", batch: "00003", supplier: "CV. ADI PERKASA", cabang: "Blok M 2", totalItem: 5, totalBerat: 50, totalModal: 60000000 },
-    { id: 4, tanggal: "2026-05-11", batch: "00002", supplier: "CV. ADI PERKASA", cabang: "Blok M 1", totalItem: 5, totalBerat: 50, totalModal: 60000000 },
-    { id: 5, tanggal: "2026-05-11", batch: "00005", supplier: "CV. ADI PERKASA", cabang: "Blok M 2", totalItem: 5, totalBerat: 50, totalModal: 60000000 },
-];
-
-const CABANG_OPTIONS = [
-    { value: "", label: "Semua Cabang" },
-    { value: "blok-m-1", label: "Blok M 1" },
-    { value: "blok-m-2", label: "Blok M 2" },
-    { value: "blok-m-3", label: "Blok M 3" },
-];
+/** [{karat, total_modal}] → [{label, value}] untuk chart. */
+const toKaratChart = (rows) =>
+    Array.isArray(rows)
+        ? rows.map((r) => ({ label: `${r.karat}K`, value: Number(r.total_modal) || 0 }))
+        : [];
 
 const ReportPembelian = () => {
+    const setLoading = LoadingStore((s) => s.setLoading);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
+
     const [filter, setFilter] = useState({
-        dateRange: { mode: "range", start: "2026-06-01", end: "2026-06-15" },
+        dateRange: { mode: "all", start: "", end: "" },
         cabang: "",
     });
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+
+    const [branchOptions, setBranchOptions] = useState([{ value: "", label: "Semua Cabang" }]);
+
+    const [summary, setSummary] = useState({ totalItem: 0, totalBerat: 0, totalNilai: 0 });
+    const [perKategori, setPerKategori] = useState([]);
+    const [perSubKategori, setPerSubKategori] = useState([]);
+    const [perKarat, setPerKarat] = useState([]);
+
+    const [detail, setDetail] = useState({ data: [], current_page: 1, total: 0, per_page: 10 });
+
+    /* Susun query param dari filter aktif. */
+    const buildParams = (extra = {}) => {
+        const q = new URLSearchParams();
+        const { mode, start, end } = filter.dateRange || {};
+        if (mode !== "all" && start && end) {
+            q.append("start_date", start);
+            q.append("end_date", end);
+        }
+        if (filter.cabang) q.append("branch_id", filter.cabang);
+        Object.entries(extra).forEach(([k, v]) => {
+            if (v !== "" && v !== undefined && v !== null) q.append(k, v);
+        });
+        return q;
+    };
+
+    /* ── KPI + chart (refetch saat filter berubah) ── */
+    const fetchSummary = async () => {
+        setLoading(true);
+        try {
+            const params = buildParams().toString();
+            const suffix = params ? `?${params}` : "";
+            const [total, category, karat] = await Promise.all([
+                ReportApis.GetPembelianTotalItem(suffix),
+                ReportApis.GetPembelianByCategory(suffix),
+                ReportApis.GetPembelianByKarat(suffix),
+            ]);
+            setSummary({
+                totalItem: Number(total?.total_item_dibeli) || 0,
+                totalBerat: Number(total?.total_berat) || 0,
+                totalNilai: Number(total?.total_nilai) || 0,
+            });
+            setPerKategori(toCategoryChart(category?.category, "category_name"));
+            setPerSubKategori(toCategoryChart(category?.subcategory, "subcategory_name"));
+            setPerKarat(toKaratChart(karat));
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /* ── Tabel detail (paginated, refetch saat filter berubah) ── */
+    const fetchDetail = async (page = 1, perPage = 10) => {
+        setLoading(true);
+        try {
+            const params = buildParams({ page, per_page: perPage });
+            const res = await ReportApis.GetPembelianDetail(`?${params.toString()}`);
+            setDetail({
+                data: Array.isArray(res?.data) ? res.data : [],
+                current_page: res?.current_page ?? 1,
+                total: res?.total ?? 0,
+                per_page: res?.per_page ?? perPage,
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // initial load: ambil daftar cabang untuk dropdown
+    useEffect(() => {
+        (async () => {
+            try {
+                const branchList = await ensureBranches();
+                setBranchOptions([
+                    { value: "", label: "Semua Cabang" },
+                    ...HelperFunctions.formatDropdown(branchList, "id", "branch_name"),
+                ]);
+            } catch (error) {
+                console.error(error);
+            }
+        })();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        fetchSummary();
+        fetchDetail(1, detail.per_page);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filter.dateRange, filter.cabang]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFilter((prev) => ({ ...prev, [name]: value }));
     };
 
-    const pagedDetail = useMemo(() => {
-        const start = (page - 1) * pageSize;
-        return DETAIL.slice(start, start + pageSize);
-    }, [page, pageSize]);
+    const onChangePage = (page) => fetchDetail(page, detail.per_page);
+    const onChangePageSize = (size) => fetchDetail(1, size);
 
     const detailColumns = [
         {
             header: "Tanggal", accessor: "tanggal",
-            render: (row) => new Date(row.tanggal).toLocaleDateString("id-ID"),
+            render: (row) => (row.tanggal ? new Date(row.tanggal).toLocaleDateString("id-ID") : "-"),
         },
         { header: "Batch", accessor: "batch" },
-        { header: "Supplier", accessor: "supplier" },
-        { header: "Cabang", accessor: "cabang" },
-        { header: "Total Item", accessor: "totalItem" },
-        { header: "Total Berat", accessor: "totalBerat", render: (row) => `${row.totalBerat} gr` },
         {
-            header: "Total Modal", accessor: "totalModal",
-            render: (row) => HelperFunctions.formatCurrency(row.totalModal),
+            header: "Supplier", accessor: "supplier",
+            render: (row) => row.supplier?.supplier_name ?? row.supplier_id ?? "-",
+        },
+        {
+            header: "Cabang", accessor: "branch",
+            render: (row) => row.branch?.branch_name ?? "-",
+        },
+        { header: "Total Item", accessor: "total_item" },
+        {
+            header: "Total Berat", accessor: "total_berat",
+            render: (row) => `${Number(row.total_berat) || 0} gr`,
+        },
+        {
+            header: "Total Modal", accessor: "total_modal",
+            render: (row) => HelperFunctions.formatCurrency(Number(row.total_modal) || 0),
         },
     ];
 
@@ -122,7 +180,7 @@ const ReportPembelian = () => {
                 </div>
                 <div className="w-full sm:w-[180px]">
                     <InputGroup
-                        fields={[{ name: "cabang", label: "", type: "dropdown", options: CABANG_OPTIONS, placeholder: "Pilih cabang" }]}
+                        fields={[{ name: "cabang", label: "", type: "dropdown", options: branchOptions, placeholder: "Pilih cabang" }]}
                         formData={filter}
                         cols="1"
                         onChange={handleChange}
@@ -132,23 +190,23 @@ const ReportPembelian = () => {
 
             {/* KPI cards */}
             <div className="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-3">
-                <StatCard label="Total Item Dibeli" value={SUMMARY.totalItem.toLocaleString("id-ID")} icon={PackageIcon} tone="info" />
-                <StatCard label="Total Berat" value={`${SUMMARY.totalBerat.toLocaleString("id-ID")} gr`} icon={ScalesIcon} tone="success" />
-                <StatCard label="Total Nilai Pembelian" value={HelperFunctions.formatCurrency(SUMMARY.totalNilai)} icon={CurrencyCircleDollarIcon} tone="warning" />
+                <StatCard label="Total Item Dibeli" value={summary.totalItem.toLocaleString("id-ID")} icon={PackageIcon} tone="info" />
+                <StatCard label="Total Berat" value={`${summary.totalBerat.toLocaleString("id-ID")} gr`} icon={ScalesIcon} tone="success" />
+                <StatCard label="Total Nilai Pembelian" value={HelperFunctions.formatCurrency(summary.totalNilai)} icon={CurrencyCircleDollarIcon} tone="warning" />
             </div>
 
             {/* Per Kategori/Sub Kategori + Per Karat */}
             <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2">
                 <div className="flex flex-col gap-4">
                     <ChartCard title="Pembelian per Kategori" subtitle="Distribusi pembelian berdasarkan kategori produk.">
-                        <BarChartH data={PER_KATEGORI} height={180} />
+                        <BarChartH data={perKategori} height={180} />
                     </ChartCard>
                     <ChartCard title="Pembelian per Sub Kategori" subtitle="Distribusi pembelian berdasarkan sub kategori produk.">
-                        <BarChartH data={PER_SUB_KATEGORI} height={180} />
+                        <BarChartH data={perSubKategori} height={180} />
                     </ChartCard>
                 </div>
                 <ChartCard title="Pembelian per Karat" subtitle="Distribusi pembelian berdasarkan karat emas.">
-                    <BarChartH data={PER_KARAT} height={400} />
+                    <BarChartH data={perKarat} height={400} />
                 </ChartCard>
             </div>
 
@@ -169,12 +227,12 @@ const ReportPembelian = () => {
 
                 <Table
                     columns={detailColumns}
-                    data={pagedDetail}
-                    page={page}
-                    pageSize={pageSize}
-                    total={DETAIL.length}
-                    onPageChange={setPage}
-                    onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+                    data={detail.data}
+                    page={detail.current_page}
+                    pageSize={detail.per_page}
+                    total={detail.total}
+                    onPageChange={onChangePage}
+                    onPageSizeChange={onChangePageSize}
                 />
             </div>
         </div>

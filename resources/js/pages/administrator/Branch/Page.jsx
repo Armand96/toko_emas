@@ -150,7 +150,7 @@ const Branch = () => {
             const body = new FormData();
             body.append('branch_name', submitData.branch_name);
             body.append('address', submitData.address);
-            body.append('pic', submitData.pic);
+            if (submitData.pic) body.append('pic', submitData.pic);
             body.append('branch_open_date', submitData.branch_open_date);
             body.append('is_active', submitData.is_active ? 1 : 0);
             body.append('branch_code', submitData.branch_code);

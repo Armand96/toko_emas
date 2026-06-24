@@ -18,7 +18,7 @@ export const Inventory = [
         element: <MasterProduk />,
     },
       {
-        path: "/inventory/pembelian",
+        path: "/transaksi/pembelian",
         element: <Pembelian />,
     },
       {

@@ -36,6 +36,26 @@ const ReportApis = {
     GetFinanceDetail: (params = "") => {
         return Apis.Get(`api/report/finance-detail${params}`).then(({ data }) => data?.data ?? data);
     },
+
+    /* ── PEMBELIAN ────────────────────────────────────────────
+       Semua endpoint dibungkus ApiResponse::success → unwrap .data */
+
+    // { total_item_dibeli, total_berat, total_nilai }
+    GetPembelianTotalItem: (params = "") => {
+        return Apis.Get(`api/report/pembelian-total-item${params}`).then(({ data }) => data?.data ?? data);
+    },
+    // { category: [{category_name, total_modal}], subcategory: [{subcategory_name, total_modal}] }
+    GetPembelianByCategory: (params = "") => {
+        return Apis.Get(`api/report/pembelian-by-category${params}`).then(({ data }) => data?.data ?? data);
+    },
+    // [{ karat, total_modal }]
+    GetPembelianByKarat: (params = "") => {
+        return Apis.Get(`api/report/pembelian-by-karat${params}`).then(({ data }) => data?.data ?? data);
+    },
+    // paginated → { data: [{batch, supplier_id, branch_id, tanggal, total_item, total_berat, total_modal, branch}], current_page, total, per_page }
+    GetPembelianDetail: (params = "") => {
+        return Apis.Get(`api/report/pembelian-detail${params}`).then(({ data }) => data?.data ?? data);
+    },
 };
 
 export default ReportApis;

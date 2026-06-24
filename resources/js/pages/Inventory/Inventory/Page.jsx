@@ -58,7 +58,72 @@ const MasterInventory = () => {
     const ensureCategories = OptionsStore((s) => s.ensureCategories);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
 
-    const mapInventory = (row) => {
+    const formatDateTime = (dateStr) => {
+        if (!dateStr) return "-";
+        const d = new Date(dateStr);
+        return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    };
+
+    const buildRiwayat = (editHistories) => {
+        if (!editHistories || editHistories.length === 0) return [];
+
+        const sorted = [...editHistories].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        return sorted.map((history, idx) => {
+            const isFirst = idx === sorted.length - 1;
+            const prev = isFirst ? null : sorted[idx + 1];
+
+            if (isFirst) {
+                return {
+                    title: "Input awal item",
+                    actor: history.update_by_user?.name || "-",
+                    date: formatDateTime(history.created_at),
+                    description: null,
+                    changes: [],
+                };
+            }
+
+            const changes = [];
+            if (prev && Number(prev.jual) !== Number(history.jual)) {
+                changes.push({ label: "Harga Jual", from: HelperFunctions.formatCurrency(prev.jual), to: HelperFunctions.formatCurrency(history.jual) });
+            }
+            if (prev && Number(prev.modal) !== Number(history.modal)) {
+                changes.push({ label: "Harga Modal", from: HelperFunctions.formatCurrency(prev.modal), to: HelperFunctions.formatCurrency(history.modal) });
+            }
+            if (prev && Number(prev.berat) !== Number(history.berat)) {
+                changes.push({ label: "Berat", from: `${prev.berat}g`, to: `${history.berat}g` });
+            }
+            if (prev && Number(prev.karat) !== Number(history.karat)) {
+                changes.push({ label: "Karat", from: `${prev.karat}K`, to: `${history.karat}K` });
+            }
+            if (prev && prev.note !== history.note) {
+                changes.push({ label: "Keterangan", from: prev.note || "-", to: history.note || "-" });
+            }
+            if (prev && prev.status !== history.status) {
+                changes.push({ label: "Status", from: toTitleCase(prev.status), to: toTitleCase(history.status) });
+            }
+            if (prev && prev.branch_id !== history.branch_id) {
+                const fromBranch = branchOptions.find(b => b.value === prev.branch_id)?.label || "-";
+                const toBranch = branchOptions.find(b => b.value === history.branch_id)?.label || "-";
+                changes.push({ label: "Cabang", from: fromBranch, to: toBranch });
+            }
+            if (prev && prev.product_id !== history.product_id) {
+                const fromProduct = productOptions.find(p => p.value === prev.product_id)?.label || "-";
+                const toProduct = productOptions.find(p => p.value === history.product_id)?.label || "-";
+                changes.push({ label: "Produk", from: fromProduct, to: toProduct });
+            }
+
+            return {
+                title: "Edit item",
+                actor: history.update_by_user?.name || "-",
+                date: formatDateTime(history.created_at),
+                description: changes.length > 0 ? null : "Tidak ada perubahan field",
+                changes,
+            };
+        });
+    };
+
+    const mapInventory = (row, editHistories = null) => {
         const product  = productOptions.find((p) => p.value === row.product_id)?.details;
         const branch   = branchOptions.find((b) => b.value === row.branch_id)?.details;
         const category = categoryOptions.find((c) => c.value === row.category_id)?.details;
@@ -87,48 +152,7 @@ const MasterInventory = () => {
             product_id: row.product_id,
             branch_id: row.branch_id,
             category_id: row.category_id,
-            riwayat: [
-                {
-                    title: "Storing item",
-                    actor: "Yanuar",
-                    date: "21 Mei 2026, 12:00",
-                    description: "Update kembali status item inventory ke Available",
-                    changes: [],
-                },
-                {
-                    title: "Remove item",
-                    actor: "Yanuar",
-                    date: "21 Mei 2026, 12:00",
-                    description: "Remove item dengan jenis Repair",
-                    changes: [],
-                },
-                {
-                    title: "Edit item",
-                    actor: "Ramdan",
-                    date: "21 Mei 2026, 12:00",
-                    description: null,
-                    changes: [
-                        { label: "Harga Jual", from: "Rp 6.400.000", to: "Rp 6.440.000" },
-                        { label: "Berat", from: "9.40g", to: "9.50g" },
-                        { label: "Karat", from: "17K", to: "18K" },
-                        { label: "Keterangan", from: "Kalung rantai diameter 10cm dengan motif kupu-kupu", to: "Kalung rantai diameter 10cm dengan motif bunga mawar melati semuanya indah" },
-                    ],
-                },
-                {
-                    title: "Transfer item",
-                    actor: "Yanuar",
-                    date: "21 Mei 2026, 12:00",
-                    description: "Transfer item dari cabang Blok M 1 ke Blok M 2",
-                    changes: [],
-                },
-                {
-                    title: "Input awal item",
-                    actor: "Yanuar",
-                    date: "21 Mei 2026, 12:00",
-                    description: null,
-                    changes: [],
-                },
-            ],
+            riwayat: editHistories ? buildRiwayat(editHistories) : [],
         };
     };
 
@@ -191,9 +215,21 @@ const MasterInventory = () => {
     const onChangePage     = (page)     => fetchData(page, paramFetch.per_page, search.kode, filter.status, filter.kategori);
     const onChangePageSize = (pageSize) => fetchData(1,    pageSize,            search.kode, filter.status, filter.kategori);
 
-    const handleViewDetail = (row) => {
-        setSelectedItem({...mapInventory(row), ...row});
-        setShowDetailModal(true);
+    const handleViewDetail = async (row) => {
+        setLoading(true);
+        try {
+            const res = await InventoryApis.GetInventorySingle(row.id);
+            const detail = res?.data || res;
+            const editHistories = detail?.edit_histories || [];
+            setSelectedItem({ ...mapInventory(row, editHistories), ...row });
+            setShowDetailModal(true);
+        } catch (error) {
+            console.error(error);
+            setSelectedItem({ ...mapInventory(row), ...row });
+            setShowDetailModal(true);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleCloseDetail = () => {

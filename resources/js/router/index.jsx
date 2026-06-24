@@ -50,7 +50,7 @@ const router = createBrowserRouter([
                     { path: "/administrator/supplier", element: <MasterSupplier /> },
                     { path: "/administrator/customer", element: <MasterCustomer /> },
                     { path: "/administrator/master-category-finance", element: <MasterCategoryFinance /> },
-                    { path: "/penjualan", element: <Penjualan /> },
+                    { path: "/transaksi/penjualan", element: <Penjualan /> },
                     { path: "/finance", element: <Finance /> },
                     ...Inventory,
                     ...Ui,
