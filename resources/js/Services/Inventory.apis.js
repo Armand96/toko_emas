@@ -36,6 +36,9 @@ const InventoryApis = {
     GetInventory: (params) => {
         return Apis.Get(`api/inventory${params}`).then(({ data }) => data);
     },
+    GetInventorySingle: (id) => {
+        return Apis.Get(`api/inventory/${id}`).then(({ data }) => data);
+    },
     GetRemoveItem: (params) => {
         return Apis.Get(`api/remove-item${params}`).then(({ data }) => data);
     },

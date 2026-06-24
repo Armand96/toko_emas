@@ -23,6 +23,7 @@ const MasterCategoryFinance = () => {
     const [searchBounce] = useDebounce(search, 500);
     const [requiredFields] = useState([
         { name: 'category_name', error_message: 'Nama kategori wajib diisi' },
+        { name: 'type', error_message: 'Tipe wajib dipilih' },
     ]);
 
     const fetchData = async (page = 1, pageSize = 10, category_name = '') => {
@@ -90,6 +91,7 @@ const MasterCategoryFinance = () => {
         try {
             const body = {
                 category_name: submitData.category_name,
+                type: submitData.type,
                 is_active: submitData.is_active === true ? 1 : 0,
             };
 
@@ -110,6 +112,13 @@ const MasterCategoryFinance = () => {
 
     const columns = [
         { header: 'Nama Kategori', accessor: 'category_name' },
+        {
+            header: 'Tipe', accessor: 'type', render: (row) => (
+                <Badge tone={row.type === 'CASH IN' ? 'success' : 'danger'}>
+                    {row.type}
+                </Badge>
+            )
+        },
         {
             header: 'Status', accessor: 'is_active', render: (row) => {
                 const isActive = row.is_active === 1;

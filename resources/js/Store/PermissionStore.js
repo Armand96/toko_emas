@@ -38,6 +38,7 @@ const ROLE_PERMISSIONS = {
         'report.pembelian': CRUD,
         'report.penjualan': CRUD,
         'report.finance': CRUD,
+
         'report.customer': CRUD,
         'administrator.user': CRUD,
         'administrator.cabang': CRUD,
@@ -46,6 +47,8 @@ const ROLE_PERMISSIONS = {
         'administrator.supplier': CRUD,
         'administrator.customer': CRUD,
         'administrator.master_category_finance': CRUD,
+        'transaksi.penjualan': CRUD,
+        'transaksi.pembelian': CRUD,
     },
 
     [ROLES.OWNER]: {
@@ -73,6 +76,8 @@ const ROLE_PERMISSIONS = {
         'administrator.setting': CRUD,
         'administrator.master_bank': CRUD,
         'administrator.supplier': CRUD,
+        'transaksi.penjualan': READ,
+        'transaksi.pembelian': READ,
         'administrator.customer': CRUD,
         'administrator.master_category_finance': CRUD,
     },
@@ -102,6 +107,8 @@ const ROLE_PERMISSIONS = {
         'administrator.setting': CRUD,
         'administrator.master_bank': CRUD,
         'administrator.supplier': CRUD,
+        'transaksi.penjualan': READ,
+        'transaksi.pembelian': READ,
         'administrator.customer': CRUD,
         'administrator.master_category_finance': CRUD,
     },
@@ -116,7 +123,8 @@ const ROLE_PERMISSIONS = {
         'inventory.in_repair': CRUD,
         'inventory.transfer': CRUD,
         'inventory.stock_opname': CRUD,
-        penjualan: CRUD,
+        'transaksi.penjualan': CRUD,
+        'transaksi.pembelian': CRUD,
         'administrator.supplier': CRUD,
         'administrator.customer': CRUD,
     },
@@ -130,6 +138,10 @@ const MENU_PERMISSION_MAP = {
         'approval.pembelian',
         'approval.remove_item',
         'approval.transfer',
+    ],
+    transaksi: [
+        'transaksi.penjualan',
+        'transaksi.pembelian',
     ],
     inventory: [
         'inventory.master_kategori',
@@ -176,6 +188,8 @@ const SUBMENU_PERMISSION_MAP = {
     '/report/pembelian': 'report.pembelian',
     '/report/customer': 'report.customer',
     '/report/finance': 'report.finance',
+     '/transaksi/penjualan': 'transaksi.penjualan',
+    '/transaksi/pembelian': 'transaksi.pembelian',
 };
 
 // Mapping: route path -> permission key
@@ -185,6 +199,8 @@ const ROUTE_PERMISSION_MAP = {
     '/approval/pembelian': 'approval.pembelian',
     '/approval/remove-item': 'approval.remove_item',
     '/approval/transfer': 'approval.transfer',
+    '/transaksi/penjualan': 'transaksi.penjualan',
+    '/transaksi/pembelian': 'transaksi.pembelian',
     '/inventory/master-kategori': 'inventory.master_kategori',
     '/inventory/master-produk': 'inventory.master_produk',
     '/inventory/pembelian': 'inventory.pembelian',

@@ -12,6 +12,18 @@ export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, f
             isDisable: isView
         },
         {
+            label: "Tipe",
+            name: "type",
+            type: "select",
+            placeholder: "Pilih tipe",
+            options: [
+                { value: "CASH IN", label: "Cash In" },
+                { value: "CASH OUT", label: "Cash Out" },
+            ],
+            isRequired: !isView,
+            isDisable: isView
+        },
+        {
             label: "Status",
             name: "is_active",
             type: "checkbox",
@@ -21,7 +33,7 @@ export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, f
 
     const disableButton = () => {
         if (isView) return true;
-        if (!formData?.category_name) return true;
+        if (!formData?.category_name || !formData?.type) return true;
         return formError && Object.values(formError).some(error => error);
     };
 
