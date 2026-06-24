@@ -169,7 +169,12 @@ const MasterProduk = () => {
             }
         });
 
-        console.log(newErrors)
+        // requiredFields.forEach(field => {
+        //     const value = submitData[field.name];
+           
+        // });
+
+        console.log(submitData)
 
         if (hasError) {
             setFormError(newErrors);
@@ -180,25 +185,25 @@ const MasterProduk = () => {
         try {
             setLoading(true);
 
-            const buildBody = (branchId) => {
-                const body = new FormData();
-                body.append('product_name', formData.product_name);
-                body.append('description', formData.description);
-                body.append('branch_id', branchId);
-                body.append('is_active', formData.is_active ? 1 : 0);
-                body.append('category_id', formData.category);
-                body.append('subcategory_id', formData.sub_category || 0);
-                if (formData.barcode) body.append('barcode', formData.barcode);
-                return body;
+            const payload = {
+                product_name: submitData.product_name,
+                description: submitData.description,
+                is_active: submitData.is_active ? 1 : 0,
+                category_id: submitData.category,
+                subcategory_id: submitData.sub_category || 0,
             };
 
             if (formData?.id) {
-                // Edit: single update (branch tetap satu)
-                await InventoryApis.PutProducts(formData.id, buildBody(formData.branch));
+                await InventoryApis.PutProducts(formData.id, {
+                    ...payload,
+                    branch_id: submitData.branch,
+                    barcode: formData.barcode,
+                });
             } else {
-                // Create: bulk — 1 produk per cabang terpilih
-                const branches = Array.isArray(formData.branch) ? formData.branch : [formData.branch];
-                await Promise.all(branches.map((branchId) => InventoryApis.PostProducts(buildBody(branchId))));
+                await InventoryApis.PostProducts({
+                    ...payload,
+                    branch_id: Array.isArray(submitData.branch) ? submitData.branch : [submitData.branch],
+                });
             }
 
             OptionsStore.getState().invalidate('products');
