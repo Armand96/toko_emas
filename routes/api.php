@@ -14,6 +14,7 @@ use App\Http\Controllers\MSupplierController;
 use App\Http\Controllers\PembelianController;
 use App\Http\Controllers\RemoveItemController;
 use App\Http\Controllers\CustomerReportController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceReportController;
 use App\Http\Controllers\InventoryReportController;
 use App\Http\Controllers\PembelianReportController;
@@ -74,6 +75,11 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
     Route::post('stock-opname', [StockOpnameHeaderController::class, 'createOpname']);
 
     Route::get('roles', [RoleController::class, 'index']);
+
+    Route::prefix('dashboard')->group(function() {
+        Route::get('take-action-data', [DashboardController::class, 'takeAction']);
+        Route::get('data-today', [DashboardController::class, 'dataToday']);
+    });
 
     Route::prefix('report')->group(function() {
         // CUSTOMER
