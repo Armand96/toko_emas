@@ -356,7 +356,7 @@ const ReportFinance = () => {
                     <div className="flex items-center gap-3">
                         <div className="w-[160px]">
                             <InputGroup
-                                fields={[{ name: "tipe", label: "", type: "dropdown", options: TIPE_OPTIONS, placeholder: "Semua Tipe" }]}
+                                fields={[{ name: "tipe", label: "", type: "dropdown", options: TIPE_OPTIONS, placeholder: "Pilih tipe" }]}
                                 formData={filter}
                                 cols="1"
                                 onChange={handleChange}

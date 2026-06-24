@@ -211,7 +211,7 @@ const ApprovalPembelian = () => {
                 />
             )
         },
-        { header: 'Batch', accessor: 'batch', sortable: true },
+        { header: 'Batch', accessor: 'batch' },
         {
             header: 'Kode',
             accessor: 'barcode',

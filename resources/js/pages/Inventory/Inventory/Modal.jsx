@@ -4,18 +4,19 @@ import GenerateQR from "../../../components/Utils/GenerateQR";
 
 import ModalCustom from "../../../components/modalCustom";
 import SectionTitle from "../../../components/SectionTitle";
+import Badge from "../../../components/Badge";
 import Dropdown from "../../../components/FormElement/SingleElement/Dropdown";
 import Input from "../../../components/FormElement/SingleElement/Input";
 import CurrencyInput from "../../../components/FormElement/SingleElement/CurrencyInput";
 
 import HelperFunctions from "../../../utils/HelperFunctions";
 
-const STATUS_CONFIG = {
-    Available: { bg: "bg-success-100", text: "text-success-700" },
-    Transit:   { bg: "bg-warning-100", text: "text-warning-700" },
-    Sold:      { bg: "bg-gray-100",    text: "text-gray-600" },
-    Repair:    { bg: "bg-info-100",    text: "text-info-700" },
-    Lost:      { bg: "bg-danger-100",  text: "text-danger-700" },
+const STATUS_TONE = {
+    Available: "success",
+    Transit:   "warning",
+    Sold:      "gray",
+    Repair:    "info",
+    Lost:      "danger",
 };
 
 const PhotoUploadBox = ({ name, value, onChange }) => {
@@ -73,14 +74,6 @@ const PhotoUploadBox = ({ name, value, onChange }) => {
     );
 };
 
-const StatusBadge = ({ status }) => {
-    const cfg = STATUS_CONFIG[status] || { bg: "bg-gray-100", text: "text-gray-600" };
-    return (
-        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${cfg.bg} ${cfg.text}`}>
-            {status}
-        </span>
-    );
-};
 
 const RiwayatItem = ({ item }) => {
     const [open, setOpen] = useState(false);
@@ -139,8 +132,6 @@ const RiwayatItem = ({ item }) => {
 export const DetailItemModal = ({ isOpen, onClose, item }) => {
     if (!item) return null;
 
-    console.log(item)
-
     const margin = (item.jual || 0) - (item.modal || 0);
     const marginPct = item.modal ? ((margin / item.modal) * 100).toFixed(1) : 0;
 
@@ -183,7 +174,7 @@ export const DetailItemModal = ({ isOpen, onClose, item }) => {
                         <div>
                             <div className="flex items-center justify-between">
                                 <p className="text-base font-semibold text-gray-900">{item.produk}</p>
-                                <StatusBadge status={item.status} />
+                                <Badge tone={STATUS_TONE[item.status] || "gray"}>{item.status}</Badge>
                             </div>
                             <p className="text-sm text-gray-500">
                                 {item.berat} {"·"} {item.karat} {item.no_seri ? `· ${item.no_seri}` : ""}

@@ -174,9 +174,9 @@ const Main = () => {
     ];
 
     const columns = [
-        { header: 'Kode', accessor: 'kode', sortable: true },
+        { header: 'Kode', accessor: 'kode' },
         {
-            header: 'Produk', accessor: 'produk', sortable: true,
+            header: 'Produk', accessor: 'produk',
             render: (row) => (
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-amber-50 rounded-md flex items-center justify-center overflow-hidden border border-gray-100 flex-shrink-0">
@@ -189,13 +189,13 @@ const Main = () => {
                 </div>
             )
         },
-        { header: 'Berat', accessor: 'berat', sortable: true },
-        { header: 'Karat', accessor: 'karat', sortable: true },
-        { header: 'Tanggal Repair', accessor: 'tanggal_repair', sortable: true },
-        { header: 'Lama Repair', accessor: 'lama_repair', sortable: false },
-        { header: 'Cabang', accessor: 'cabang', sortable: true },
+        { header: 'Berat', accessor: 'berat' },
+        { header: 'Karat', accessor: 'karat' },
+        { header: 'Tanggal Repair', accessor: 'tanggal_repair' },
+        { header: 'Lama Repair', accessor: 'lama_repair' },
+        { header: 'Cabang', accessor: 'cabang' },
         {
-            header: 'Status', accessor: 'status', sortable: false,
+            header: 'Status', accessor: 'status',
             render: () => <Badge tone="warning">Repair</Badge>
         },
         {

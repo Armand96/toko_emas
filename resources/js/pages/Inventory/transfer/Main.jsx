@@ -188,10 +188,10 @@ const Main = ({ setCurentState }) => {
     ];
 
     const columns = [
-        { header: 'Tanggal', accessor: 'tanggal', sortable: true },
-        { header: 'Kode', accessor: 'kode', sortable: true },
+        { header: 'Tanggal', accessor: 'tanggal' },
+        { header: 'Kode', accessor: 'kode' },
         {
-            header: 'Item Produk', accessor: 'item_produk', sortable: true,
+            header: 'Item Produk', accessor: 'item_produk',
             render: (row) => {
                 const details = row._raw?.details || [];
                 if (details.length === 0) return row.item_produk || '-';
@@ -204,10 +204,10 @@ const Main = ({ setCurentState }) => {
                 return names.join(', ') || '-';
             },
         },
-        { header: 'Cabang Asal', accessor: 'cabang_asal', sortable: true },
-        { header: 'Cabang Tujuan', accessor: 'cabang_tujuan', sortable: true },
+        { header: 'Cabang Asal', accessor: 'cabang_asal' },
+        { header: 'Cabang Tujuan', accessor: 'cabang_tujuan' },
         {
-            header: 'Status', accessor: 'status', sortable: true,
+            header: 'Status', accessor: 'status',
             render: (row) => {
                 let tone = 'gray';
                 if (row.status === 'Disetujui') tone = 'success';

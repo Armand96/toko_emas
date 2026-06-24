@@ -17,7 +17,6 @@ const TextArea = ({
         <label className="flex items-center gap-1 text-sm font-medium text-gray-900">
           {label}
           {isRequired && <span className="text-danger-500">*</span>}
-          <InfoIcon size={14} className="text-gray-400" />
         </label>
       )}
       <div className="relative">
