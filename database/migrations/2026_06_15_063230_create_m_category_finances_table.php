@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('m_category_finances', function (Blueprint $table) {
             $table->id();
             $table->string('category_name', 150);
+            $table->enum('type', ['CASH IN', 'CASH OUT']);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
