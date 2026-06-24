@@ -70,6 +70,7 @@ class InventoryController extends Controller
             $data = $inventory->toArray();
             unset($data['id']);
             $data['inventory_id'] = $inventory->id;
+            $data['updated_by'] = $request->user()->id;
             // dd($data);
             $dataEdit = InventoryEditHistory::create($data);
 
