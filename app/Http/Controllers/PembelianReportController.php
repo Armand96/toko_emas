@@ -9,12 +9,25 @@ use Illuminate\Http\Request;
 
 class PembelianReportController extends Controller
 {
-    public function totalItem()
+    public function totalItem(Request $request)
     {
+        $query = Pembelian::query();
+
+        if ($request->start_date && $request->end_date) {
+            $query->whereBetween('pembelians.created_at', [
+                $request->start_date,
+                $request->end_date
+            ]);
+        }
+
+        if ($request->branch_id) {
+            $query->where('branch_id', $request->branch_id);
+        }
+
         return ApiResponse::success([
-            'total_item_dibeli' => Pembelian::where('status', PembelianStatus::DISETUJUI)->count(),
-            'total_berat' => Pembelian::where('status', PembelianStatus::DISETUJUI)->sum('berat'),
-            'total_nilai' => Pembelian::where('status', PembelianStatus::DISETUJUI)->sum('modal')
+            'total_item_dibeli' => (clone $query)->where('status', PembelianStatus::DISETUJUI)->count(),
+            'total_berat' => (clone $query)->where('status', PembelianStatus::DISETUJUI)->sum('berat'),
+            'total_nilai' => $query->where('status', PembelianStatus::DISETUJUI)->sum('modal')
         ], "OK", 200);
     }
 
