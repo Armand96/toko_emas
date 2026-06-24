@@ -64,33 +64,89 @@ class MProductController extends Controller
 
         try {
 
+            /*
+        |--------------------------------------------------------------------------
+        | Upload Image Once
+        |--------------------------------------------------------------------------
+        */
+
+            $imagePath = null;
+            $thumbPath = null;
+
+            if ($request->hasFile('image')) {
+
+                $image = $request->file('image');
+
+                $imageName =
+                    str_replace(' ', '_', $validated['product_name'])
+                    . "_"
+                    . date('YmdHis')
+                    . "."
+                    . $image->getClientOriginalExtension();
+
+                $image->storeAs(
+                    'images',
+                    $imageName,
+                    'public'
+                );
+
+                $imagePath = 'images/' . $imageName;
+                $thumbPath = 'thumbs/' . $imageName;
+
+                // generate thumbnail
+                $thumb = Image::decode($image)
+                    ->scale(height: 200);
+
+                Storage::disk('public')->put(
+                    $thumbPath,
+                    $thumb->encodeUsingFileExtension(
+                        $image->getClientOriginalExtension(),
+                        quality: 70
+                    )
+                );
+            }
+
+            /*
+        |--------------------------------------------------------------------------
+        | Generate Products
+        |--------------------------------------------------------------------------
+        */
+
+            $category = MCategory::findOrFail(
+                $validated['category_id']
+            );
+
+            $countData = MProduct::where(
+                'category_id',
+                $validated['category_id']
+            )
+                ->lockForUpdate()
+                ->count();
+
             $insertData = [];
             $dateNow = now();
 
-            foreach ($validated['data'] as $item) {
+            foreach ($validated['branch_id'] as $index => $branchId) {
 
-                $countData = MProduct::where(
-                    'category_id',
-                    $item['category_id']
-                )->count();
+                $counter = $countData + $index + 1;
 
-                $category = MCategory::find($item['category_id']);
-
-                $barcode = $category->category_code . "-" .
-                    str_pad($countData + 1, 5, "0", STR_PAD_LEFT);
+                $barcode =
+                    $category->category_code
+                    . "-"
+                    . str_pad($counter, 5, "0", STR_PAD_LEFT);
 
                 $insertData[] = [
-                    'product_name' => $item['product_name'],
-                    'branch_id' => $item['branch_id'],
-                    'category_id' => $item['category_id'],
-                    'subcategory_id' => $item['subcategory_id'],
-                    'description' => $item['description'],
-                    'is_active' => $item['is_active'] ?? true,
+                    'product_name' => $validated['product_name'],
+                    'branch_id' => $branchId,
+                    'category_id' => $validated['category_id'],
+                    'subcategory_id' => $validated['subcategory_id'],
+                    'description' => $validated['description'],
+                    'is_active' => $validated['is_active'] ?? true,
 
                     'barcode' => $barcode,
 
-                    // 'image_path' => $item['image_path'] ?? null,
-                    // 'thumb_path' => $item['thumb_path'] ?? null,
+                    'image_path' => $imagePath,
+                    'thumb_path' => $thumbPath,
 
                     'created_at' => $dateNow,
                     'updated_at' => $dateNow,
@@ -102,7 +158,7 @@ class MProductController extends Controller
             DB::commit();
 
             return ApiResponse::success(
-                [],
+                $insertData,
                 "Success create products",
                 201
             );
@@ -141,23 +197,48 @@ class MProductController extends Controller
     {
         $validated = $request->validated();
 
+        DB::beginTransaction();
+
         try {
+
+            /*
+        |--------------------------------------------------------------------------
+        | Upload New Image
+        |--------------------------------------------------------------------------
+        */
 
             if ($request->hasFile('image')) {
 
-                // Delete old files
-                if ($product->image_path != null && Storage::disk('public')->exists($product->image_path)) {
+                // delete old image
+                if (
+                    $product->image_path &&
+                    Storage::disk('public')->exists($product->image_path)
+                ) {
                     Storage::disk('public')->delete($product->image_path);
                 }
 
-                if ($product->thumb_path != null && Storage::disk('public')->exists($product->thumb_path)) {
+                // delete old thumbnail
+                if (
+                    $product->thumb_path &&
+                    Storage::disk('public')->exists($product->thumb_path)
+                ) {
                     Storage::disk('public')->delete($product->thumb_path);
                 }
 
-                // Upload new image
+                /*
+            |--------------------------------------------------------------------------
+            | Store New Image
+            |--------------------------------------------------------------------------
+            */
+
                 $image = $request->file('image');
 
-                $imageName = $validated['product_name'] . "_" . date('Y-m-d') . "." . $image->getClientOriginalExtension();
+                $imageName =
+                    str_replace(' ', '_', $validated['product_name'])
+                    . "_"
+                    . date('YmdHis')
+                    . "."
+                    . $image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
@@ -165,11 +246,18 @@ class MProductController extends Controller
                     'public'
                 );
 
-                $validated['image_path'] = 'images/' . $imageName;
+                $validated['image_path'] =
+                    'images/' . $imageName;
 
-                $validated['thumb_path'] = 'thumbs/' . $imageName;
+                $validated['thumb_path'] =
+                    'thumbs/' . $imageName;
 
-                // Generate thumbnail
+                /*
+            |--------------------------------------------------------------------------
+            | Generate Thumbnail
+            |--------------------------------------------------------------------------
+            */
+
                 $thumb = Image::decode($image)
                     ->scale(height: 200);
 
@@ -182,11 +270,60 @@ class MProductController extends Controller
                 );
             }
 
-            $product->update($validated);
+            /*
+        |--------------------------------------------------------------------------
+        | Handle branch_id array
+        |--------------------------------------------------------------------------
+        */
 
-            return ApiResponse::success($product, "Success update product", 201);
+            if (isset($validated['branch_id'])) {
+
+                // if branch_id sent as array, use first value
+                if (is_array($validated['branch_id'])) {
+                    $validated['branch_id'] =
+                        $validated['branch_id'][0];
+                }
+            }
+
+            /*
+        |--------------------------------------------------------------------------
+        | Update Product
+        |--------------------------------------------------------------------------
+        */
+
+            $product->update([
+                'product_name' => $validated['product_name'],
+                'branch_id' => $validated['branch_id'],
+                'category_id' => $validated['category_id'],
+                'subcategory_id' => $validated['subcategory_id'],
+                'description' => $validated['description'],
+                'is_active' => $validated['is_active'] ?? true,
+
+                'image_path' =>
+                $validated['image_path']
+                    ?? $product->image_path,
+
+                'thumb_path' =>
+                $validated['thumb_path']
+                    ?? $product->thumb_path,
+            ]);
+
+            DB::commit();
+
+            return ApiResponse::success(
+                $product->fresh(),
+                "Success update product",
+                200
+            );
         } catch (\Throwable $th) {
-            return ApiResponse::error($th->getMessage(), $th, 500);
+
+            DB::rollBack();
+
+            return ApiResponse::error(
+                $th->getMessage(),
+                $th,
+                500
+            );
         }
     }
 
