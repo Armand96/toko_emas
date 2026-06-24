@@ -57,9 +57,9 @@ class FinanceReportController extends Controller
 
             SUM(
                 CASE
-                    WHEN type = 'CASH IN'
+                    WHEN finances.type = 'CASH IN'
                         THEN nominal
-                    WHEN type = 'CASH OUT'
+                    WHEN finances.type = 'CASH OUT'
                         THEN -nominal
                     ELSE 0
                 END
@@ -102,7 +102,7 @@ class FinanceReportController extends Controller
             $summary = (clone $query)->selectRaw("
                 COALESCE(SUM(
                     CASE
-                        WHEN type = 'CASH IN'
+                        WHEN finances.type = 'CASH IN'
                             THEN nominal
                         ELSE 0
                     END
@@ -110,7 +110,7 @@ class FinanceReportController extends Controller
 
                 COALESCE(SUM(
                     CASE
-                        WHEN type = 'CASH OUT'
+                        WHEN finances.type = 'CASH OUT'
                             THEN nominal
                         ELSE 0
                     END
@@ -126,9 +126,9 @@ class FinanceReportController extends Controller
             })->selectRaw("
                 COALESCE(SUM(
                     CASE
-                        WHEN type = 'CASH IN'
+                        WHEN finances.type = 'CASH IN'
                             THEN nominal
-                        WHEN type = 'CASH OUT'
+                        WHEN finances.type = 'CASH OUT'
                             THEN -nominal
                         ELSE 0
                     END
@@ -138,7 +138,7 @@ class FinanceReportController extends Controller
             $closingBalance = $openingBalance + $summary->total_cash_in - $summary->total_cash_out;
 
             $cashInCategory = (clone $query)
-            ->where('type', 'CASH IN')
+            ->where('finances.type', 'CASH IN')
             ->join(
                 'm_category_finances',
                 'm_category_finances.id',
@@ -153,7 +153,7 @@ class FinanceReportController extends Controller
             )->get();
 
             $cashOutCategory = (clone $query)
-            ->where('type', 'CASH OUT')
+            ->where('finances.type', 'CASH OUT')
             ->join(
                 'm_category_finances',
                 'm_category_finances.id',
@@ -202,7 +202,7 @@ class FinanceReportController extends Controller
         }
 
         if ($request->type) {
-            $query->where('type', $request->type);
+            $query->where('finances.type', $request->type);
         }
 
         if ($request->start_date && $request->end_date) {
