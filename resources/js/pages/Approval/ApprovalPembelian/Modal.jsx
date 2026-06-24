@@ -176,6 +176,11 @@ export default function Modal({
                         <span className="font-medium text-neutral-900">{data?.batch ? String(data.batch).padStart(5, '0') : '-'}</span>
                     </div>
                     <div className="w-px h-4 bg-neutral-200"></div>
+                    <div className="flex gap-2">
+                        <span className="text-neutral-500">Diajukan oleh</span>
+                        <span className="font-medium text-neutral-900">{data?.user?.name || '-'}</span>
+                    </div>
+                    <div className="w-px h-4 bg-neutral-200"></div>
                     <div className="font-medium text-neutral-900">
                         {data?.created_at ? dayjs(data.created_at).format('DD MMMM YYYY, HH:mm') : '-'}
                     </div>

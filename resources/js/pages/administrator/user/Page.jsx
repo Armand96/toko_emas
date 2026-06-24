@@ -166,11 +166,11 @@ const MasterUser = () => {
             accessor: 'role_id',
             render: (row) => roleOptions.find(r => r.value == row.role_id)?.label ?? '-'
         },
-        {
-            header: 'Last Login',
-            accessor: 'last_login',
-            render: (row) => row.last_login ?? '-'
-        },
+        // {
+        //     header: 'Last Login',
+        //     accessor: 'last_login',
+        //     render: (row) => row.last_login ?? '-'
+        // },
         {
             header: 'Status',
             accessor: 'is_active',

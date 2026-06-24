@@ -102,7 +102,7 @@ export default function Modal({
         {
             label: "Cabang",
             name: "branch",
-            type: "dropdown",
+            type: formData?.id ? "dropdown" : "multidropdown",
             placeholder: "Pilih cabang",
             options: branchOptions,
             isRequired: !isView,

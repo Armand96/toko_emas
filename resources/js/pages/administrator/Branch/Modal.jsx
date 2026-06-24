@@ -22,17 +22,17 @@ export default function Modal({
             .then((data) => setUserOptions(HelperFunctions.formatDropdown(data, "id", "name")));
     }, []);
 
-    // No telepon disimpan sebagai string dipisah koma di formData.phone_number,
-    // tapi di UI ditampilkan sebagai beberapa input. Minimal satu baris tampil.
+    // No telepon disimpan sebagai string dipisah koma di formData.phone_numbers
+    // (sesuai kolom BE), tapi di UI ditampilkan sebagai beberapa input. Minimal satu baris tampil.
     const phoneList = (() => {
-        const raw = formData?.phone_number ?? "";
-        const parts = raw.split(",").map((p) => p.trim());
+        const raw = formData?.phone_numbers ?? "";
+        const parts = String(raw).split(",").map((p) => p.trim());
         return parts.length > 0 ? parts : [""];
     })();
 
     const emitPhones = (list) => {
         const value = list.map((p) => p.trim()).filter(Boolean).join(",");
-        onChange({ target: { name: "phone_number", value } });
+        onChange({ target: { name: "phone_numbers", value } });
     };
 
     const handlePhoneChange = (index, value) => {

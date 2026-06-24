@@ -26,7 +26,9 @@ const MainPembelian = ({ setCurentState }) => {
     const isKasir = PermissionStore((s) => s.isKasir);
     const user = AuthStore((s) => s.user);
     const ensureCategories = OptionsStore((s) => s.ensureCategories);
+    const ensureUsers = OptionsStore((s) => s.ensureUsers);
     const [categoryOptions, setCategoryOptions] = useState([]);
+    const [userMap, setUserMap] = useState({});
 
     const [paramFetch, setParamFetch] = useState({
         data: [],
@@ -58,10 +60,28 @@ const MainPembelian = ({ setCurentState }) => {
         }
     };
 
+    // Buka detail: tembak endpoint single agar relasi lengkap (termasuk user pengaju).
+    const handleViewDetail = async (row) => {
+        setSelectedData(row);   // tampilkan cepat dari data list dulu
+        setIsModalOpen(true);
+        try {
+            setLoading(true);
+            const detail = await InventoryApis.GetPembelianSingle(row.id);
+            if (detail) setSelectedData(detail);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchData();
         ensureCategories()
             .then((data) => setCategoryOptions(HelperFunctions.formatDropdown(data, "id", "category_name")))
+            .catch((err) => console.error(err));
+        ensureUsers()
+            .then((data) => setUserMap(Object.fromEntries((data || []).map((u) => [u.id, u.name]))))
             .catch((err) => console.error(err));
     }, []);
 
@@ -254,10 +274,7 @@ const MainPembelian = ({ setCurentState }) => {
                     <ActionButton
                         variant="view"
                         title="Lihat Detail"
-                        onClick={() => {
-                            setSelectedData(row);
-                            setIsModalOpen(true);
-                        }}
+                        onClick={() => handleViewDetail(row)}
                     />
                     {row?.status === "DISETUJUI" && (
                         <ActionButton
@@ -319,7 +336,12 @@ const MainPembelian = ({ setCurentState }) => {
                     setIsModalOpen(false);
                     setSelectedData(null);
                 }}
-                data={selectedData}
+                data={selectedData ? {
+                    ...selectedData,
+                    user: selectedData.user ?? (userMap[selectedData.created_by]
+                        ? { name: userMap[selectedData.created_by] }
+                        : null),
+                } : null}
             />
 
             <div className="w-3/6 relative z-60">

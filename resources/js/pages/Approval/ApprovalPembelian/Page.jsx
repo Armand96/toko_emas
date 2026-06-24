@@ -20,6 +20,7 @@ const ApprovalPembelian = () => {
     const can = PermissionStore((s) => s.can);
     const ensureCategories = OptionsStore((s) => s.ensureCategories);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
+    const ensureUsers = OptionsStore((s) => s.ensureUsers);
 
     const [paramFetch, setParamFetch] = useState({
         data: [],
@@ -38,6 +39,7 @@ const ApprovalPembelian = () => {
 
     const [categoryOptions, setCategoryOptions] = useState([]);
     const [branchOptions, setBranchOptions] = useState([]);
+    const [userMap, setUserMap] = useState({});
 
     const fetchData = async (page = 1, pageSize = 10, params = {}) => {
         setLoading(true);
@@ -60,12 +62,14 @@ const ApprovalPembelian = () => {
 
     const fetchOptions = async () => {
         try {
-            const [categoryData, branchData] = await Promise.all([
+            const [categoryData, branchData, userData] = await Promise.all([
                 ensureCategories(),
                 ensureBranches(),
+                ensureUsers(),
             ]);
             setCategoryOptions(HelperFunctions.formatDropdown(categoryData, 'id', 'category_name'));
             setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name'));
+            setUserMap(Object.fromEntries((userData || []).map((u) => [u.id, u.name])));
         } catch (error) {
             console.error(error);
         }
@@ -332,7 +336,12 @@ const ApprovalPembelian = () => {
                 onClose={handleCloseModal}
                 onSubmitApprove={can('update', 'approval.pembelian') ? handleApprove : undefined}
                 onSubmitReject={can('update', 'approval.pembelian') ? handleReject : undefined}
-                data={selectedData}
+                data={selectedData ? {
+                    ...selectedData,
+                    user: selectedData.user ?? (userMap[selectedData.created_by]
+                        ? { name: userMap[selectedData.created_by] }
+                        : null),
+                } : null}
                 mode="approve"
             />
 

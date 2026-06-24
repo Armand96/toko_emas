@@ -6,7 +6,8 @@ import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
 import FooterActionBar from "../../../components/FooterActionBar";
-import { DetailItemModal, EditItemModal } from "./Modal";
+import DetailItemModal from "./DetailItemModal";
+import EditItemModal from "./EditItemModal";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import InventoryApis from "../../../Services/Inventory.apis";
 import LoadingStore from "../../../Store/LoadingStore";
@@ -64,6 +65,30 @@ const MasterInventory = () => {
         return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
     };
 
+    // Nama + role pengguna yang melakukan perubahan (diambil dari API).
+    const buildActor = (history) => {
+        const user = history.update_by_user;
+        if (!user?.name) return "-";
+        const role = user.role?.role_name;
+        return role ? `${user.name} (${role})` : user.name;
+    };
+
+    // Snapshot nilai awal item saat pertama kali diinput (ditampilkan di entri "Input awal item").
+    const buildInitialSnapshot = (history) => {
+        const changes = [];
+        changes.push({ label: "Harga Jual", to: HelperFunctions.formatCurrency(history.jual) });
+        changes.push({ label: "Harga Modal", to: HelperFunctions.formatCurrency(history.modal) });
+        changes.push({ label: "Berat", to: `${history.berat}g` });
+        changes.push({ label: "Karat", to: `${history.karat}K` });
+        changes.push({ label: "Status", to: toTitleCase(history.status) });
+        const branch = branchOptions.find(b => b.value === history.branch_id)?.label;
+        if (branch) changes.push({ label: "Cabang", to: branch });
+        const product = productOptions.find(p => p.value === history.product_id)?.label;
+        if (product) changes.push({ label: "Produk", to: product });
+        if (history.note) changes.push({ label: "Keterangan", to: history.note });
+        return changes;
+    };
+
     const buildRiwayat = (editHistories) => {
         if (!editHistories || editHistories.length === 0) return [];
 
@@ -76,10 +101,11 @@ const MasterInventory = () => {
             if (isFirst) {
                 return {
                     title: "Input awal item",
-                    actor: history.update_by_user?.name || "-",
+                    actor: buildActor(history),
                     date: formatDateTime(history.created_at),
                     description: null,
-                    changes: [],
+                    changes: buildInitialSnapshot(history),
+                    initial: true,
                 };
             }
 
@@ -115,7 +141,7 @@ const MasterInventory = () => {
 
             return {
                 title: "Edit item",
-                actor: history.update_by_user?.name || "-",
+                actor: buildActor(history),
                 date: formatDateTime(history.created_at),
                 description: changes.length > 0 ? null : "Tidak ada perubahan field",
                 changes,
@@ -221,11 +247,11 @@ const MasterInventory = () => {
             const res = await InventoryApis.GetInventorySingle(row.id);
             const detail = res?.data || res;
             const editHistories = detail?.edit_histories || [];
-            setSelectedItem({ ...mapInventory(row, editHistories), ...row });
+            setSelectedItem({ ...row, ...mapInventory(row, editHistories) });
             setShowDetailModal(true);
         } catch (error) {
             console.error(error);
-            setSelectedItem({ ...mapInventory(row), ...row });
+            setSelectedItem({ ...row, ...mapInventory(row) });
             setShowDetailModal(true);
         } finally {
             setLoading(false);

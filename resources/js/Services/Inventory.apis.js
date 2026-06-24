@@ -22,6 +22,10 @@ const InventoryApis = {
       GetPembelian: (params) => {
         return Apis.Get(`api/pembelian${params}`).then(({ data }) => data);
     },
+      // detail 1 pembelian (dibungkus ApiResponse::success → unwrap .data)
+      GetPembelianSingle: (id) => {
+        return Apis.Get(`api/pembelian/${id}`).then(({ data }) => data?.data ?? data);
+    },
       PostPembelian: (body) => {
         return Apis.Post(`api/pembelian`, body,);
     },

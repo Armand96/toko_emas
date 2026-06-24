@@ -1,6 +1,7 @@
 import Input from "./SingleElement/Input";
 import TextArea from "./SingleElement/TextArea";
 import Dropdown from "./SingleElement/Dropdown";
+import MultiDropdown from "./SingleElement/MultiDropdown";
 import Radio from "./SingleElement/Radio";
 import Checklist from "./SingleElement/Checklist";
 import InputPassword from "./SingleElement/Password";
@@ -75,6 +76,9 @@ const InputGroup = ({
             case "dropdown":
             case "select":
                 return <Dropdown key={index} {...commonProps} options={field.options} />;
+            case "multidropdown":
+            case "multiselect":
+                return <MultiDropdown key={index} {...commonProps} options={field.options} maxChips={field.maxChips} />;
             case "radio":
                 return (
                     <Radio

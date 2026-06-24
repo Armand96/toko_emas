@@ -55,7 +55,14 @@ class InventoryController extends Controller
 
     public function single(Inventory $inventory)
     {
-        return ApiResponse::success($inventory->load(['product', 'branch', 'category', 'subCategory', 'editHistories']), "OK", 200);
+        return ApiResponse::success($inventory->load([
+            'product',
+            'branch',
+            'category',
+            'subCategory',
+            'editHistories.updateByUser:id,name,role_id',
+            'editHistories.updateByUser.role:id,role_name',
+        ]), "OK", 200);
     }
 
     public function update(UpdateInventoryRequest $request, Inventory $inventory)

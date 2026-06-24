@@ -73,18 +73,42 @@ const MasterProduk = () => {
         fetchData(1, pageSize, search.search, search.status, search.cabang);
     };
 
+    /**
+     * Susun formData untuk edit/view.
+     * - Jika record punya subcategory_id (>0): category_id = induk, subcategory_id = sub.
+     * - Fallback data lama: sub kategori tersimpan di category_id, induk diambil dari parent_id.
+     */
+    const buildEditFormData = (record) => {
+        const hasSub = record.subcategory_id && Number(record.subcategory_id) > 0;
+        let category;
+        let sub_category;
+
+        if (hasSub) {
+            category = record.category_id;
+            sub_category = record.subcategory_id;
+        } else {
+            const categoryList = categoryOptions.find((o) => o.value == record.category_id);
+            const parentId = categoryList?.details?.parent_id;
+            category = parentId != null ? parentId : record.category_id;
+            sub_category = parentId != null ? record.category_id : '';
+        }
+
+        return {
+            ...record,
+            is_active: record.is_active === 1,
+            category,
+            sub_category,
+            branch: record.branch_id,
+        };
+    };
+
     const handleOpenModal = (mode, record = null) => {
         if (mode === 'add') {
-            setFormData({ is_active: false });
+            setFormData({ is_active: false, branch: [] });
             setIsView(false);
-        } else if (mode === 'edit') {
-            let categoryList = categoryOptions.find(option => option.value == record.category_id);
-            setFormData({ ...record, is_active: record.is_active === 1 ? true : false, category: categoryList?.details?.parent_id !== null ? categoryList?.details?.parent_id : record.category_id, sub_category: record.category_id, branch: record.branch_id });
-            setIsView(false);
-        } else if (mode === 'view') {
-            let categoryList = categoryOptions.find(option => option.value == record.category_id);
-            setFormData({ ...record, is_active: record.is_active === 1 ? true : false, category: categoryList?.details?.parent_id !== null ? categoryList?.details?.parent_id : record.category_id, sub_category: record.category_id, branch: record.branch_id });
-            setIsView(true);
+        } else if (mode === 'edit' || mode === 'view') {
+            setFormData(buildEditFormData(record));
+            setIsView(mode === 'view');
         }
         setIsModalOpen(true);
     };
@@ -138,7 +162,8 @@ const MasterProduk = () => {
 
         requiredFields.forEach(field => {
             const value = submitData[field.name];
-            if (!value || (typeof value === 'string' && !value.trim())) {
+            const isEmpty = Array.isArray(value) ? value.length === 0 : (!value || (typeof value === 'string' && !value.trim()));
+            if (isEmpty) {
                 newErrors[field.name] = field.error_message;
                 hasError = true;
             }
@@ -154,22 +179,35 @@ const MasterProduk = () => {
 
         try {
             setLoading(true);
-            const body = new FormData();
-            body.append('barcode', formData.barcode);
-            body.append('product_name', formData.product_name);
-            body.append('description', formData.description);
-            body.append('branch_id', formData.branch);
-            body.append('is_active', formData.is_active ? 1 : 0);
-            body.append('category_id', formData?.sub_category || formData.category);
 
-            await formData?.id ? InventoryApis.PutProducts(formData.id, body) : InventoryApis.PostProducts(body);
+            const buildBody = (branchId) => {
+                const body = new FormData();
+                body.append('product_name', formData.product_name);
+                body.append('description', formData.description);
+                body.append('branch_id', branchId);
+                body.append('is_active', formData.is_active ? 1 : 0);
+                body.append('category_id', formData.category);
+                body.append('subcategory_id', formData.sub_category || 0);
+                if (formData.barcode) body.append('barcode', formData.barcode);
+                return body;
+            };
+
+            if (formData?.id) {
+                // Edit: single update (branch tetap satu)
+                await InventoryApis.PutProducts(formData.id, buildBody(formData.branch));
+            } else {
+                // Create: bulk — 1 produk per cabang terpilih
+                const branches = Array.isArray(formData.branch) ? formData.branch : [formData.branch];
+                await Promise.all(branches.map((branchId) => InventoryApis.PostProducts(buildBody(branchId))));
+            }
+
             OptionsStore.getState().invalidate('products');
             setTimeout(() => {
                 showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
                 handleCloseModal();
-                setLoading(false)
+                setLoading(false);
                 fetchData();
-            }, 1000)
+            }, 1000);
         } catch (error) {
             showAlert({ title: 'Gagal', message: 'Gagal menyimpan data', icon: 'error' });
         } finally {
@@ -183,12 +221,17 @@ const MasterProduk = () => {
         {
             header: 'Kategori',
             accessor: 'category',
-            render: (row) => row.category?.parent?.category_name || row.category?.category_name || '-'
+            // Konvensi baru: subcategory_id terisi -> category = induk.
+            // Data lama: sub tersimpan di category_id -> ambil induk dari parent.
+            render: (row) => row.subcategory
+                ? row.category?.category_name
+                : (row.category?.parent?.category_name || row.category?.category_name || '-')
         },
         {
             header: 'Sub Kategori',
             accessor: 'sub_category',
-            render: (row) => row.category?.parent ? row.category?.category_name : '-'
+            render: (row) => row.subcategory?.category_name
+                || (row.category?.parent ? row.category?.category_name : '-')
         },
         { header: 'Deskripsi', accessor: 'description' },
         {

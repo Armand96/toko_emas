@@ -155,6 +155,8 @@ const Branch = () => {
             body.append('is_active', submitData.is_active ? 1 : 0);
             body.append('branch_code', submitData.branch_code);
             body.append('lokasi_cabang', submitData.lokasi_cabang);
+            // No telepon (bisa lebih dari satu) — string dipisah koma.
+            body.append('phone_numbers', submitData.phone_numbers || '');
 
             await submitData?.id ? BranchApis.PutBranch(submitData.id, body) : BranchApis.PostBranch(body);
             OptionsStore.getState().invalidate('branches');
