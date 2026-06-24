@@ -6,6 +6,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Requests\FinanceRequest;
 use App\Models\Finance;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class FinanceController extends Controller
@@ -15,6 +16,8 @@ class FinanceController extends Controller
      */
     public function index(Request $request)
     {
+        DB::enableQueryLog();
+
         $query = Finance::query();
 
         if ($request->has('note') && $request->note != "") {
@@ -33,10 +36,10 @@ class FinanceController extends Controller
             $query->where('payment_method', $request->payment_method);
         }
         if ($request->has('start_date') && $request->start_date != "") {
-            $query->where('created_at', '>=', $request->start_date);
+            $query->where('created_at', '>=', $request->start_date . " 00:00:00");
         }
         if ($request->has('end_date') && $request->end_date != "") {
-            $query->where('created_at', '<=', $request->end_date);
+            $query->where('created_at', '<=', $request->end_date . " 23:59:59");
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page

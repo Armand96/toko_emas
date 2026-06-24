@@ -28,10 +28,10 @@ class CustomerReportController extends Controller
         $query = MCustomer::query();
 
         if ($request->has('start_date') && $request->start_date != "") {
-            $query->where('created_at', '>=',  $request->start_date);
+            $query->where('created_at', '>=',  $request->start_date . " 00:00:00");
         }
         if ($request->has('end_date') && $request->end_date != "") {
-            $query->where('created_at', '<=',  $request->end_date);
+            $query->where('created_at', '<=',  $request->end_date . " 23:59:59");
         }
 
         $customers = $query->select(
@@ -56,10 +56,10 @@ class CustomerReportController extends Controller
         $query = MCustomer::query();
 
         if ($request->has('start_date') && $request->start_date != "") {
-            $query->where('created_at', '>=',  $request->start_date);
+            $query->where('created_at', '>=',  $request->start_date . " 00:00:00");
         }
         if ($request->has('end_date') && $request->end_date != "") {
-            $query->where('created_at', '<=',  $request->end_date);
+            $query->where('created_at', '<=',  $request->end_date . " 23:59:59");
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
@@ -92,10 +92,10 @@ class CustomerReportController extends Controller
         $query = MCustomer::query();
 
         if ($request->has('start_date') && $request->start_date != "") {
-            $query->where('t_sales.created_at', '>=',  $request->start_date);
+            $query->where('t_sales.created_at', '>=',  $request->start_date . " 00:00:00");
         }
         if ($request->has('end_date') && $request->end_date != "") {
-            $query->where('t_sales.created_at', '<=',  $request->end_date);
+            $query->where('t_sales.created_at', '<=',  $request->end_date . " 23:59:59");
         }
         $customerFrequency = $query->selectRaw('m_customers.id, COUNT(t_sales.id) as total_transaction ')
             ->join('t_sales', 't_sales.customer_id', '=', 'm_customers.id')
@@ -132,10 +132,10 @@ class CustomerReportController extends Controller
         $query = MCustomer::query();
 
         if ($request->has('start_date') && $request->start_date != "") {
-            $query->where('t_sales.created_at', '>=',  $request->start_date);
+            $query->where('t_sales.created_at', '>=',  $request->start_date . " 00:00:00");
         }
         if ($request->has('end_date') && $request->end_date != "") {
-            $query->where('t_sales.created_at', '<=',  $request->end_date);
+            $query->where('t_sales.created_at', '<=',  $request->end_date . " 23:59:59");
         }
 
         $customerSpending = $query->selectRaw('m_customers.id, COALESCE(SUM(t_sales.grand_total), 0) as total_spending')

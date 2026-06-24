@@ -120,8 +120,8 @@ class FinanceReportController extends Controller
             $openingBalance = Finance::when($request->start_date, function($quiry) use($request) {
                 $quiry->where(
                     'finances.created_at',
-                    '<',
-                    $request->start_date
+                    '=<',
+                    $request->start_date . " 00:00:00"
                 );
             })->selectRaw("
                 COALESCE(SUM(
