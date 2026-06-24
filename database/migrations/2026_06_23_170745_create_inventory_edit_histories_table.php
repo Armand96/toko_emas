@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('inventories', function (Blueprint $table) {
+        Schema::create('inventory_edit_histories', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('inventory_id', false, true);
             $table->bigInteger('pembelian_id', false, true);
             $table->bigInteger('product_id', false, true);
             $table->bigInteger('category_id', false, true);
             $table->bigInteger('subcategory_id', false, true);
             $table->bigInteger('branch_id', false, true);
-            $table->string('inventory_code', 50)->unique();
+            $table->bigInteger('updated_by', false, true);
+            $table->string('inventory_code', 50);
             $table->string('barcode');
             $table->float('berat');
             $table->integer('karat');
@@ -28,7 +30,6 @@ return new class extends Migration
             $table->string('thumb_path')->nullable();
             $table->enum('status', ['AVAILABLE', 'TRANSIT', 'SOLD', 'REPAIR', 'LOST']);
             $table->string('note')->nullable();
-            $table->string('serial_number')->nullable();
             $table->timestamps();
         });
     }
@@ -38,6 +39,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('inventories');
+        Schema::dropIfExists('inventory_edit_histories');
     }
 };

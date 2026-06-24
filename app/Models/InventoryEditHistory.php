@@ -2,33 +2,34 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-class Inventory extends Model
+#[Fillable([
+    'inventory_id',
+    'pembelian_id',
+    'product_id',
+    'category_id',
+    'subcategory_id',
+    'branch_id',
+    'inventory_code',
+    'barcode',
+    'berat',
+    'karat',
+    'modal',
+    'jual',
+    'image_path',
+    'thumb_path',
+    'status',
+    'note',
+    'updated_by'
+])]
+class InventoryEditHistory extends Model
 {
-    protected $fillable = [
-        'inventory_code',
-        'product_id',
-        'category_id',
-        'subcategory_id',
-        'pembelian_id',
-        'branch_id',
-        'barcode',
-        'berat',
-        'karat',
-        'modal',
-        'jual',
-        'image_path',
-        'thumb_path',
-        'status',
-        'note',
-        'serial_number'
-    ];
-
-    // protected $hidden = [
-    //     // 'created_at',
-    //     'updated_at'
-    // ];
+    public function parent()
+    {
+        return $this->belongsTo(Inventory::class, 'inventory_id', 'id');
+    }
 
     public function product()
     {
@@ -75,8 +76,8 @@ class Inventory extends Model
         return $this->hasMany(StockOpnameDetail::class, 'inventory_code', 'inventory_code');
     }
 
-    public function editHistories()
+    public function updateByUser()
     {
-        return $this->hasMany(InventoryEditHistory::class, 'inventory_id', 'id');
+        return $this->belongsTo(User::class, 'updated_by', 'id');
     }
 }

@@ -48,6 +48,7 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
     Route::post('update-pembelian', [PembelianController::class, 'changeApproval']);
 
     Route::get('inventory/{inventory}', [InventoryController::class, 'single']);
+    Route::put('inventory/{inventory}', [InventoryController::class, 'update']);
     Route::get('inventory', [InventoryController::class, 'index']);
 
     Route::get('sales/{sales}', [TSalesController::class, 'single']);

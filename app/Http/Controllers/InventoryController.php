@@ -5,8 +5,12 @@ namespace App\Http\Controllers;
 // use App\Helpers\ApiResponse;
 
 use App\Helpers\ApiResponse;
+use App\Http\Requests\UpdateInventoryRequest;
 use App\Models\Inventory;
+use App\Models\InventoryEditHistory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 // use InventoryStatus;
 
 class InventoryController extends Controller
@@ -51,6 +55,30 @@ class InventoryController extends Controller
 
     public function single(Inventory $inventory)
     {
-        return ApiResponse::success($inventory->load(['product', 'branch', 'category', 'subCategory']), "OK", 200);
+        return ApiResponse::success($inventory->load(['product', 'branch', 'category', 'subCategory', 'editHistories']), "OK", 200);
+    }
+
+    public function update(UpdateInventoryRequest $request, Inventory $inventory)
+    {
+        DB::beginTransaction();
+
+        $validated = $request->validated();
+        try {
+
+            $inventory->update($validated);
+
+            $data = $inventory->toArray();
+            unset($data['id']);
+            $data['inventory_id'] = $inventory->id;
+            // dd($data);
+            $dataEdit = InventoryEditHistory::create($data);
+
+            DB::commit();
+
+            return ApiResponse::success($dataEdit, "Update Success", 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return ApiResponse::error($th->getMessage(), $th, 500);
+        }
     }
 }
