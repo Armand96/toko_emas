@@ -25,7 +25,9 @@ class MProductController extends Controller
             $query->where('product_name', 'like', '%' . $request->product_name . '%');
         }
         if ($request->has('branch_id') && $request->branch_id != "") {
-            $query->where('branch_id', $request->branch_id);
+            $query->whereHas('branches', function($qry) use($request) {
+                $qry->where('branch_id', $request->branch_id);
+            });
         }
         if ($request->has('category_id') && $request->category_id != "") {
             $query->where('category_id', $request->category_id);
@@ -41,7 +43,7 @@ class MProductController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $products = $query->with(['category.parent', 'branch', 'subcategory'])->orderBy('id', 'desc')->paginate($perPage);
+        $products = $query->with(['category.parent', 'branches.branch', 'subcategory'])->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($products);
     }
@@ -103,7 +105,7 @@ class MProductController extends Controller
      */
     public function show(MProduct $product)
     {
-        return ApiResponse::success($product->load(['subcategory', 'category.parent', 'branch']), "Success");
+        return ApiResponse::success($product->load(['subcategory', 'category.parent', 'branches.branch']), "Success");
     }
 
     /**
