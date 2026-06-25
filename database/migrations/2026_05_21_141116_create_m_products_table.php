@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('m_products', function (Blueprint $table) {
             $table->id();
             $table->string('product_name');
-            $table->bigInteger('branch_id', false, true);
+            $table->bigInteger('branch_id', false, true)->nullable();
             $table->bigInteger('category_id', false, true);
             $table->bigInteger('subcategory_id', false, true);
             $table->string('image_path')->nullable();

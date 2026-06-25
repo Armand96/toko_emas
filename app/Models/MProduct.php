@@ -42,4 +42,9 @@ class MProduct extends Model
     {
         return $this->hasMany(Inventory::class, 'product_id', 'id');
     }
+
+    public function branches()
+    {
+        return $this->hasMany(BranchProduct::class, 'product_id', 'id');
+    }
 }
