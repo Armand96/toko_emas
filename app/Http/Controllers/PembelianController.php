@@ -159,7 +159,7 @@ class PembelianController extends Controller
                 Finance::create(array(
                     'branch_id' => $value->branch_id,
                     'category_finance_id' => $categoryFinance->id,
-                    'bank_cabang_id' => $value->bank_id,
+                    'bank_cabang_id' => $value->bank_cabang_id,
                     'type' => FinanceType::CASHOUT,
                     'payment_method' => FinancePaymentMethod::TRANSFER,
                     'nominal' => $value->modal

@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Model;
     'thumb_path',
     'branch_id',
     'status',
-    'bank__cabank_id',
+    'bank_cabank_id',
     'barcode',
     'berat',
     'karat',
