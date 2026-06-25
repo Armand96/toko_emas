@@ -14,6 +14,7 @@ import PenjualanApis from "../../Services/Penjualan.apis";
 import OptionsStore from "../../Store/OptionsStore";
 import AuthStore from "../../Store/AuthStore";
 import CurrencyInput from "../../components/FormElement/SingleElement/CurrencyInput";
+import Dropdown from "../../components/FormElement/SingleElement/Dropdown";
 
 const FormAdd = ({ setCurentState }) => {
     const setLoading = LoadingStore((state) => state.setLoading);
@@ -420,18 +421,14 @@ const FormAdd = ({ setCurentState }) => {
                         Scan QR Code
                     </button>
                     <span className="text-gray-400 text-sm">atau</span>
-                    <div className="flex-1 relative">
-                        <select
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none cursor-pointer pr-10 appearance-none bg-white"
+                    <div className="flex-1">
+                        <Dropdown
+                            name="item_select"
                             value=""
+                            options={itemDropdownOptions}
+                            placeholder="Pilih item.."
                             onChange={handleSelectItem}
-                        >
-                            <option value="">Pilih item..</option>
-                            {itemDropdownOptions.map((opt) => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                        </select>
-                        <CaretRightIcon size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                        />
                     </div>
                 </div>
 

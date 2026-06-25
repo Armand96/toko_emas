@@ -1,12 +1,317 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 @import "tailwindcss";
 
+/* =========================================
+   OpenSauceOne
+   ========================================= */
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-LightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-Italic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-MediumItalic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-SemiBoldItalic.ttf') format('truetype');
+    font-weight: 600;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-BoldItalic.ttf') format('truetype');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-ExtraBoldItalic.ttf') format('truetype');
+    font-weight: 800;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-BlackItalic.ttf') format('truetype');
+    font-weight: 900;
+    font-style: italic;
+    font-display: swap;
+}
 
-* {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+/* =========================================
+   OpenSauceSans
+   ========================================= */
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-LightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-Italic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-MediumItalic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-SemiBoldItalic.ttf') format('truetype');
+    font-weight: 600;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-BoldItalic.ttf') format('truetype');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-ExtraBoldItalic.ttf') format('truetype');
+    font-weight: 800;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-BlackItalic.ttf') format('truetype');
+    font-weight: 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* =========================================
+   OpenSauceTwo
+   ========================================= */
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-LightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-Italic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-MediumItalic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-SemiBoldItalic.ttf') format('truetype');
+    font-weight: 600;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-BoldItalic.ttf') format('truetype');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-ExtraBoldItalic.ttf') format('truetype');
+    font-weight: 800;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-BlackItalic.ttf') format('truetype');
+    font-weight: 900;
+    font-style: italic;
+    font-display: swap;
 }
 
 @theme {
+  --font-sans: 'OpenSauceOne', 'OpenSauceSans', sans-serif;
+  --font-one: 'OpenSauceOne', sans-serif;
+  --font-sauce-sans: 'OpenSauceSans', sans-serif;
+  --font-two: 'OpenSauceTwo', sans-serif;
+
   /* =========================================
      BRAND COLORS
      ========================================= */

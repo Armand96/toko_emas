@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ScanIcon, XIcon, ImageIcon, WarningIcon, WrenchIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import ModalScanBarcode from "../../../components/ModaScanBarcode";
@@ -8,6 +8,7 @@ import HelperFunctions from "../../../utils/HelperFunctions";
 import { showAlert } from "../../../utils/showAlert";
 import PermissionStore from "../../../Store/PermissionStore";
 import AuthStore from "../../../Store/AuthStore";
+import Dropdown from "../../../components/FormElement/SingleElement/Dropdown";
 
 const JENIS_OPTIONS = [
     { value: 'HILANG', label: 'Hilang', desc: 'Item tidak ditemukan/hilang', Icon: WarningIcon, color: 'text-danger-500', bg: 'bg-danger-50' },
@@ -59,12 +60,20 @@ const FormAdd = ({ setCurentState }) => {
         if (errors.items) setErrors(prev => ({ ...prev, items: null }));
     };
 
+    const itemDropdownOptions = useMemo(() => {
+        return inventoryOptions
+            .filter((inv) => !selectedItems.some((item) => item.inventory_code === inv.inventory_code))
+            .map((inv) => ({
+                value: inv.inventory_code,
+                label: `${inv.inventory_code} - ${inv.product?.product_name || inv.product?.name || '-'} (${inv.berat ? `${inv.berat}g` : '-'} • ${inv.karat ? `${inv.karat}K` : '-'})`,
+            }));
+    }, [inventoryOptions, selectedItems]);
+
     const handleSelectChange = (e) => {
         const inventoryCode = e.target.value;
         if (!inventoryCode) return;
         const inv = inventoryOptions.find(i => i.inventory_code === inventoryCode);
         addItemFromInventory(inv);
-        e.target.value = '';
     };
 
     const handleScanSuccess = async (scannedCode) => {
@@ -201,18 +210,14 @@ const FormAdd = ({ setCurentState }) => {
                             <span className="text-sm text-gray-400 font-medium">atau</span>
 
                             <div className="flex-[2]">
-                                <select
+                                <Dropdown
+                                    name="item_select"
+                                    value=""
+                                    options={itemDropdownOptions}
+                                    placeholder="Pilih item.."
                                     onChange={handleSelectChange}
-                                    className={`w-full px-4 py-2.5 bg-white border rounded-lg text-gray-500 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 cursor-pointer ${errors.items ? 'border-danger-500' : 'border-gray-300'}`}
-                                >
-                                    <option value="">Pilih item..</option>
-                                    {inventoryOptions.map((inv) => (
-                                        <option key={inv.inventory_code} value={inv.inventory_code}>
-                                            {inv.inventory_code} - {inv.product?.product_name || inv.product?.name || '-'} ({inv.berat ? `${inv.berat}g` : '-'} • {inv.karat ? `${inv.karat}K` : '-'})
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.items && <span className="text-xs text-danger-500 mt-1 block">{errors.items}</span>}
+                                    error={errors.items}
+                                />
                             </div>
                         </div>
 

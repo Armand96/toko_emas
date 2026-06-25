@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ArrowRight, Scan, X, Image as ImageIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import ModalScanBarcode from "../../../components/ModaScanBarcode";
@@ -8,6 +8,7 @@ import HelperFunctions from "../../../utils/HelperFunctions";
 import { showAlert } from "../../../utils/showAlert";
 import OptionsStore from "../../../Store/OptionsStore";
 import AuthStore from "../../../Store/AuthStore";
+import Dropdown from "../../../components/FormElement/SingleElement/Dropdown";
 
 const FormAdd = ({ setCurentState }) => {
     const user = AuthStore((s) => s.user);
@@ -76,12 +77,23 @@ const FormAdd = ({ setCurentState }) => {
         if (errors.items) setErrors(prev => ({ ...prev, items: null }));
     };
 
+    const itemDropdownOptions = useMemo(() => {
+        return inventoryOptions
+            .filter((inv) => !selectedItems.some((item) => item.inventory_code === inv.inventory_code))
+            .map((inv) => {
+                const prodName = productMap[inv.product_id] || inv.product?.product_name || inv.product?.name || '-';
+                return {
+                    value: inv.inventory_code,
+                    label: `${inv.inventory_code} - ${prodName} (${inv.berat}g • ${inv.karat})`,
+                };
+            });
+    }, [inventoryOptions, selectedItems, productMap]);
+
     const handleSelectChange = (e) => {
         const inventoryCode = e.target.value;
         if (!inventoryCode) return;
         const inv = inventoryOptions.find(i => i.inventory_code === inventoryCode);
         addItemFromInventory(inv);
-        e.target.value = '';
     };
 
     const handleScanSuccess = async (scannedCode) => {
@@ -173,21 +185,16 @@ const FormAdd = ({ setCurentState }) => {
                             </div>
 
                             <div className="flex-1 flex flex-col gap-1.5">
-                                <label className="text-sm font-medium text-gray-700">
-                                    Cabang Tujuan<span className="text-red-500 ml-1">*</span>
-                                </label>
-                                <select
+                                <Dropdown
+                                    label="Cabang Tujuan"
                                     name="cabang_tujuan"
                                     value={formData.cabang_tujuan}
+                                    options={branchOptions}
+                                    placeholder="Pilih cabang tujuan"
+                                    isRequired
                                     onChange={handleInputChange}
-                                    className={`w-full px-4 py-2.5 bg-white border rounded-lg text-gray-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer ${errors.cabang_tujuan ? 'border-danger-500' : 'border-gray-300'}`}
-                                >
-                                    <option value="" disabled>Pilih cabang tujuan</option>
-                                    {branchOptions.map((b) => (
-                                        <option key={b.value} value={b.value}>{b.label}</option>
-                                    ))}
-                                </select>
-                                {errors.cabang_tujuan && <span className="text-xs text-danger-500">{errors.cabang_tujuan}</span>}
+                                    error={errors.cabang_tujuan}
+                                />
                             </div>
                         </div>
 
@@ -229,21 +236,14 @@ const FormAdd = ({ setCurentState }) => {
                             <span className="text-sm text-gray-400 font-medium">atau</span>
 
                             <div className="flex-[2]">
-                                <select
+                                <Dropdown
+                                    name="item_select"
+                                    value=""
+                                    options={itemDropdownOptions}
+                                    placeholder="Pilih item.."
                                     onChange={handleSelectChange}
-                                    className={`w-full px-4 py-2.5 bg-white border rounded-lg text-gray-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer ${errors.items ? 'border-danger-500' : 'border-gray-300'}`}
-                                >
-                                    <option value="">Pilih item..</option>
-                                    {inventoryOptions.map((inv) => {
-                                        const prodName = productMap[inv.product_id] || inv.product?.product_name || inv.product?.name || '-';
-                                        return (
-                                            <option key={inv.inventory_code} value={inv.inventory_code}>
-                                                {inv.inventory_code} - {prodName} ({inv.berat}g • {inv.karat})
-                                            </option>
-                                        );
-                                    })}
-                                </select>
-                                {errors.items && <span className="text-xs text-danger-500 mt-1 block">{errors.items}</span>}
+                                    error={errors.items}
+                                />
                             </div>
                         </div>
 
