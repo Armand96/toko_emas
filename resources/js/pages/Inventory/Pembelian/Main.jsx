@@ -36,7 +36,7 @@ const MainPembelian = ({ setCurentState }) => {
         total: 0,
         per_page: 10,
     });
-    const [search, setSearch] = useState({ search: "" });
+    const [search, setSearch] = useState({ search: "", status: "", category_id: "" });
     const [searchBounce] = useDebounce(search, 500);
     const [firstLoading, setFirstLoading] = useState(false);
 
@@ -44,13 +44,16 @@ const MainPembelian = ({ setCurentState }) => {
     const [selectedData, setSelectedData] = useState(null);
     const [selectedRows, setSelectedRows] = useState([]);
 
-    const fetchData = async (page = 1, pageSize = 10, keyword = "") => {
+    const fetchData = async (page = 1, pageSize = 10, params = {}) => {
         setLoading(true);
         try {
-            const branchFilter = isKasir() && user?.branch_id ? `&branch_id=${user.branch_id}` : "";
-            const res = await InventoryApis.GetPembelian(
-                `?page=${page}&limit=${pageSize}${keyword ? `&search=${keyword}` : ""}${branchFilter}`
-            );
+            const query = new URLSearchParams({ page, per_page: pageSize });
+            if (params.search) query.append('product_name', params.search);
+            if (params.status) query.append('status', params.status);
+            if (params.category_id) query.append('category_id', params.category_id);
+            if (isKasir() && user?.branch_id) query.append('branch_id', user.branch_id);
+
+            const res = await InventoryApis.GetPembelian(`?${query.toString()}`);
             setParamFetch(res);
             setFirstLoading(true);
         } catch (error) {
@@ -76,7 +79,7 @@ const MainPembelian = ({ setCurentState }) => {
     };
 
     useEffect(() => {
-        fetchData();
+        fetchData(1, 10, search);
         ensureCategories()
             .then((data) => setCategoryOptions(HelperFunctions.formatDropdown(data, "id", "category_name")))
             .catch((err) => console.error(err));
@@ -87,7 +90,7 @@ const MainPembelian = ({ setCurentState }) => {
 
     useEffect(() => {
         if (firstLoading) {
-            fetchData(1, paramFetch.per_page, search.search);
+            fetchData(1, paramFetch.per_page, search);
         }
     }, [searchBounce]);
 
@@ -110,7 +113,7 @@ const MainPembelian = ({ setCurentState }) => {
                     pembelian_ids: ids
                 }).then((res) => {
                     setSelectedRows([]);
-                    fetchData(paramFetch.current_page, paramFetch.per_page, search.search);
+                    fetchData(paramFetch.current_page, paramFetch.per_page, search);
                     showAlert({
                         icon: 'success',
                         isAutoClose: false,
@@ -289,10 +292,10 @@ const MainPembelian = ({ setCurentState }) => {
     ];
 
     const onChangePage = (page) =>
-        fetchData(page, paramFetch.per_page, search.search);
+        fetchData(page, paramFetch.per_page, search);
 
     const onChangePageSize = (pageSize) =>
-        fetchData(1, pageSize, search.search);
+        fetchData(1, pageSize, search);
 
     return (
         <div className={`flex flex-col gap-6 w-full relative min-h-full ${selectedRows.length > 0 ? 'pb-24 lg:pb-28' : ''}`}>
@@ -311,13 +314,37 @@ const MainPembelian = ({ setCurentState }) => {
                             name: "search",
                             label: "",
                             type: "search",
-                            placeholder: "Cari pembelian...",
+                            placeholder: "Cari produk...",
                         }]}
                         formData={search}
                         cols="1"
                         onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
                     />
                 </div>
+                {[
+                    { name: 'status', placeholder: 'Pilih status', options: [
+                        { value: 'APPROVAL', label: 'Approval' },
+                        { value: 'DISETUJUI', label: 'Disetujui' },
+                        { value: 'DITOLAK', label: 'Ditolak' },
+                        { value: 'DIBATALKAN', label: 'Dibatalkan' },
+                    ]},
+                    { name: 'category_id', placeholder: 'Pilih kategori', options: categoryOptions.filter((c) => !c.details?.parent_id) },
+                ].map((field) => (
+                    <div key={field.name} className="w-[160px]">
+                        <InputGroup
+                            fields={[{
+                                name: field.name,
+                                label: "",
+                                type: "dropdown",
+                                placeholder: field.placeholder,
+                                options: field.options,
+                            }]}
+                            formData={search}
+                            cols="1"
+                            onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
+                        />
+                    </div>
+                ))}
             </div>
 
             <Table

@@ -3,7 +3,7 @@ import { TimerIcon, CheckCircleIcon, XCircleIcon } from '@phosphor-icons/react';
 import ModalCustom from '../../../components/modalCustom';
 import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
 import HelperFunctions from "../../../utils/HelperFunctions";
-import CodeBadge from '../../../components/CodeBadge';
+import InventoryItemCard from '../../../components/InventoryItemCard';
 
 const STATUS_VIEW = {
     'APPROVAL': { Icon: TimerIcon, iconColor: 'text-warning-500', statusText: 'Menunggu Approval oleh' },
@@ -87,30 +87,19 @@ export default function ModalDetailRemoveItem({
                         <h3 className="font-semibold text-gray-900 text-sm">Daftar Barang</h3>
                     </div>
                     <div className="flex flex-col gap-3">
-                        {(details || []).length > 0 ? (details || []).map((d, idx) => {
-                            const image = d.inventory?.image_path ? HelperFunctions.getStorageUrl(d.inventory.image_path) : null;
-                            return (
-                                <div key={idx} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white">
-                                    <CodeBadge>{d.inventory_code}</CodeBadge>
-                                    <div className="w-10 h-10 rounded-md bg-amber-100/50 overflow-hidden flex-shrink-0 border border-gray-200 flex items-center justify-center">
-                                        {image ? (
-                                            <img src={image} alt={d.product?.product_name} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
-                                        ) : (
-                                            <span className="text-[10px] text-amber-700">Img</span>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <span className="text-sm font-bold text-gray-900 truncate">{d.product?.product_name || '-'}</span>
-                                        <span className="text-xs text-gray-500 mt-0.5">
-                                            {d.inventory?.berat ? `${d.inventory.berat}g` : '-'} • {d.inventory?.karat ? `${d.inventory.karat}K` : '-'}
-                                        </span>
-                                    </div>
-                                    <span className="text-sm font-bold text-gray-900 flex-shrink-0">
-                                        {HelperFunctions.formatCurrency(d.inventory?.jual || 0)}
-                                    </span>
-                                </div>
-                            );
-                        }) : (
+                        {(details || []).length > 0 ? (details || []).map((d, idx) => (
+                            <InventoryItemCard
+                                key={idx}
+                                code={d.inventory_code}
+                                name={d.product?.product_name}
+                                specs={[
+                                    d.inventory?.berat ? `${d.inventory.berat}g` : '-',
+                                    d.inventory?.karat ? `${d.inventory.karat}K` : '-',
+                                ].join(' • ')}
+                                image={d.inventory?.image_path ? HelperFunctions.getStorageUrl(d.inventory.image_path) : null}
+                                price={d.inventory?.jual || 0}
+                            />
+                        )) : (
                             <p className="text-sm text-gray-400 py-4 text-center">Tidak ada barang</p>
                         )}
                     </div>

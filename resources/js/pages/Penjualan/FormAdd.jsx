@@ -1,9 +1,9 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useDebounce } from "use-debounce";
-import { ScanIcon, XIcon, CaretRightIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
+import { ScanIcon, CaretRightIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../components/HeaderSection";
 import ModalScanBarcode from "./ModaScanBarcode";
-import CodeBadge from "../../components/CodeBadge";
+import InventoryItemCard from "../../components/InventoryItemCard";
 import HelperFunctions from "../../utils/HelperFunctions";
 import LoadingStore from "../../Store/LoadingStore";
 import { showAlert } from "../../utils/showAlert";
@@ -435,29 +435,15 @@ const FormAdd = ({ setCurentState }) => {
                 {/* List Items */}
                 <div className="flex flex-col gap-3">
                     {cartItems.map((item) => (
-                        <div key={item.inventory_code} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50/50">
-                            <div className="flex items-center gap-4">
-                                <CodeBadge>{item.inventory_code}</CodeBadge>
-                                {item.image ? (
-                                    <img src={item.image} alt={item.name} className="w-10 h-10 rounded-md object-cover border border-gray-200" />
-                                ) : (
-                                    <div className="w-10 h-10 rounded-md bg-amber-100/50 border border-gray-200 flex items-center justify-center text-[10px] text-amber-700">Img</div>
-                                )}
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-semibold text-gray-800">{item.name}</span>
-                                    <span className="text-xs text-gray-500">{item.specs}</span>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-6">
-                                <span className="font-semibold text-gray-800">{HelperFunctions.formatCurrency(item.price)}</span>
-                                <button
-                                    onClick={() => handleRemoveItem(item.inventory_code)}
-                                    className="p-1.5 text-error-500 hover:bg-error-50 rounded-md transition-colors"
-                                >
-                                    <XIcon size={18} />
-                                </button>
-                            </div>
-                        </div>
+                        <InventoryItemCard
+                            key={item.inventory_code}
+                            code={item.inventory_code}
+                            name={item.name}
+                            specs={item.specs}
+                            image={item.image}
+                            price={item.price}
+                            onRemove={() => handleRemoveItem(item.inventory_code)}
+                        />
                     ))}
 
                     {cartItems.length === 0 && (

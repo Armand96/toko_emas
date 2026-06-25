@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useDebounce } from "use-debounce";
 import { PrinterIcon } from "@phosphor-icons/react";
 import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
+import Badge from "../../../components/Badge";
+import CodeBadge from "../../../components/CodeBadge";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
@@ -38,7 +40,7 @@ const MasterInventory = () => {
     const user = AuthStore((s) => s.user);
     const [paramFetch, setParamFetch] = useState({ data: [], current_page: 1, total: 0, per_page: 10 });
     const [search, setSearch]         = useState({ kode: "" });
-    const [filter, setFilter]         = useState({ status: "", kategori: "" });
+    const [filter, setFilter]         = useState({ status: "", kategori: "", cabang: "" });
     const [firstLoading, setFirstLoading] = useState(false);
     const [searchBounce] = useDebounce(search, 500);
 
@@ -182,14 +184,15 @@ const MasterInventory = () => {
         };
     };
 
-    const fetchData = async (page = 1, pageSize = 10, kode = "", status = "", kategori = "") => {
+    const fetchData = async (page = 1, pageSize = 10, kode = "", status = "", kategori = "", cabang = "") => {
         setLoading(true);
         try {
+            const effectiveBranch = isKasir() && user?.branch_id ? user.branch_id : cabang;
             const params = `?page=${page}&limit=${pageSize}`
                 + (kode ? `&search=${kode}` : "")
                 + (status ? `&status=${status}` : "")
                 + (kategori ? `&category_id=${kategori}` : "")
-                + (isKasir() && user?.branch_id ? `&branch_id=${user.branch_id}` : "");
+                + (effectiveBranch ? `&branch_id=${effectiveBranch}` : "");
 
             const res = await InventoryApis.GetInventory(params);
             setParamFetch(res);
@@ -211,7 +214,9 @@ const MasterInventory = () => {
             setProductOptions(HelperFunctions.formatDropdown(productData, "id", "product_name"));
             setCategoryOptions(HelperFunctions.formatDropdown(categoryData, "id", "category_name"));
             setBranchOptions(HelperFunctions.formatDropdown(branchData, "id", "branch_name"));
-            setKategoriFilterOptions(HelperFunctions.formatDropdown(categoryData, "id", "category_name"));
+            setKategoriFilterOptions(HelperFunctions.formatDropdown(
+                categoryData.filter((c) => !c.parent_id), "id", "category_name"
+            ));
         }).catch((error) => {
             console.error("Error fetching options:", error);
         }).finally(() => {
@@ -229,17 +234,17 @@ const MasterInventory = () => {
         const { name, value } = e.target;
         const newFilter = { ...filter, [name]: value };
         setFilter(newFilter);
-        fetchData(1, paramFetch.per_page, search.kode, newFilter.status, newFilter.kategori);
+        fetchData(1, paramFetch.per_page, search.kode, newFilter.status, newFilter.kategori, newFilter.cabang);
     };
 
     useEffect(() => {
         if (firstLoading) {
-            fetchData(1, paramFetch.per_page, search.kode, filter.status, filter.kategori);
+            fetchData(1, paramFetch.per_page, search.kode, filter.status, filter.kategori, filter.cabang);
         }
     }, [searchBounce]);
 
-    const onChangePage     = (page)     => fetchData(page, paramFetch.per_page, search.kode, filter.status, filter.kategori);
-    const onChangePageSize = (pageSize) => fetchData(1,    pageSize,            search.kode, filter.status, filter.kategori);
+    const onChangePage     = (page)     => fetchData(page, paramFetch.per_page, search.kode, filter.status, filter.kategori, filter.cabang);
+    const onChangePageSize = (pageSize) => fetchData(1,    pageSize,            search.kode, filter.status, filter.kategori, filter.cabang);
 
     const handleViewDetail = async (row) => {
         setLoading(true);
@@ -362,7 +367,7 @@ const MasterInventory = () => {
             };
             await InventoryApis.PutInventory(formData.id, body);
             handleCloseEdit();
-            fetchData(paramFetch.current_page, paramFetch.per_page, search.kode, filter.status, filter.kategori);
+            fetchData(paramFetch.current_page, paramFetch.per_page, search.kode, filter.status, filter.kategori, filter.cabang);
         } catch (error) {
             console.error(error);
         } finally {
@@ -421,9 +426,7 @@ const MasterInventory = () => {
         {
             header: "Kode",
             accessor: "barcode",
-            render: (row) => (
-                <span className="text-gray-700 text-sm">{row.inventory_code}</span>
-            ),
+            render: (row) => <CodeBadge variant="table">{row.inventory_code}</CodeBadge>,
         },
         {
             header: "Produk",
@@ -486,12 +489,8 @@ const MasterInventory = () => {
             accessor: "status",
             render: (row) => {
                 const status = toTitleCase(row.status);
-                const cfg = STATUS_CONFIG[status] || { bg: "bg-gray-100", text: "text-gray-600" };
-                return (
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${cfg.bg} ${cfg.text}`}>
-                        {status}
-                    </span>
-                );
+                const toneMap = { Available: 'success', Transit: 'warning', Sold: 'gray', Repair: 'info', Lost: 'danger' };
+                return <Badge tone={toneMap[status] || 'gray'}>{status}</Badge>;
             },
         },
         {
@@ -544,7 +543,7 @@ const MasterInventory = () => {
                         onChange={handleFilterChange}
                     />
                 </div>
-                <div className="w-[170px]">
+                <div className="w-[160px]">
                     <InputGroup
                         fields={[{
                             name: "kategori",
@@ -558,6 +557,22 @@ const MasterInventory = () => {
                         onChange={handleFilterChange}
                     />
                 </div>
+                {!isKasir() && (
+                    <div className="w-[160px]">
+                        <InputGroup
+                            fields={[{
+                                name: "cabang",
+                                label: "",
+                                type: "dropdown",
+                                placeholder: "Pilih cabang",
+                                options: branchOptions,
+                            }]}
+                            formData={filter}
+                            cols="1"
+                            onChange={handleFilterChange}
+                        />
+                    </div>
+                )}
             </div>
 
             <Table

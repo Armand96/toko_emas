@@ -29,7 +29,7 @@ const ApprovalPembelian = () => {
         per_page: 10,
     });
 
-    const [search, setSearch] = useState({ search: '', status: 'APPROVAL' });
+    const [search, setSearch] = useState({ search: '', status: '' });
     const [searchBounce] = useDebounce(search, 500);
     const [firstLoading, setFirstLoading] = useState(false);
 
@@ -44,8 +44,9 @@ const ApprovalPembelian = () => {
     const fetchData = async (page = 1, pageSize = 10, params = {}) => {
         setLoading(true);
         try {
-            const { search: keyword = '', category_id = '', branch_id = '', status = 'APPROVAL' } = params;
-            let query = `?page=${page}&limit=${pageSize}&status=${status || 'APPROVAL'}`;
+            const { search: keyword = '', category_id = '', branch_id = '', status = '' } = params;
+            let query = `?page=${page}&limit=${pageSize}`;
+            if (status) query += `&status=${status}`;
             if (keyword) query += `&search=${keyword}`;
             if (category_id) query += `&category_id=${category_id}`;
             if (branch_id) query += `&branch_id=${branch_id}`;

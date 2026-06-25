@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { TimerIcon, CheckCircleIcon, XCircleIcon, ReceiptIcon } from "@phosphor-icons/react";
 import ModalCustom from "../../components/modalCustom";
-import CodeBadge from "../../components/CodeBadge";
 import ApprovalStatusCard from "../../components/ApprovalStatusCard";
+import InventoryItemCard from "../../components/InventoryItemCard";
 import HelperFunctions from "../../utils/HelperFunctions";
 import OptionsStore from "../../Store/OptionsStore";
 
@@ -101,24 +101,17 @@ const ModalViewPenjualan = ({ isOpen, onClose, data }) => {
                     <SectionHeader title="Keranjang Penjualan" badge={`${details?.length || 0} item`} />
                     <div className="flex flex-col gap-3">
                         {(details || []).map((item, index) => (
-                            <div key={index} className="flex items-center justify-between p-3 border border-neutral-200 rounded-lg bg-white">
-                                <div className="flex items-center gap-4">
-                                    <CodeBadge>{item.inventory_code}</CodeBadge>
-                                    {item.inventory?.thumb_path ? (
-                                        <img src={HelperFunctions.getStorageUrl(item.inventory.thumb_path)} alt={item.product?.product_name} className="w-10 h-10 rounded-md object-cover border border-neutral-200" />
-                                    ) : (
-                                        <div className="w-10 h-10 rounded-md bg-amber-100/50 border border-neutral-200 flex items-center justify-center text-[10px] text-amber-700">Img</div>
-                                    )}
-                                    <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-neutral-900">{item.product?.product_name ?? '-'}</span>
-                                        <span className="text-xs text-neutral-500 mt-0.5">
-                                            {item.inventory?.berat ? `${item.inventory.berat}g` : ''}
-                                            {item.inventory?.karat ? ` • ${item.inventory.karat}K` : ''}
-                                        </span>
-                                    </div>
-                                </div>
-                                <span className="text-sm font-bold text-neutral-900">{HelperFunctions.formatCurrency(item.price)}</span>
-                            </div>
+                            <InventoryItemCard
+                                key={index}
+                                code={item.inventory_code}
+                                name={item.product?.product_name}
+                                specs={[
+                                    item.inventory?.berat ? `${item.inventory.berat}g` : '',
+                                    item.inventory?.karat ? `${item.inventory.karat}K` : '',
+                                ].filter(Boolean).join(' • ')}
+                                image={item.inventory?.thumb_path ? HelperFunctions.getStorageUrl(item.inventory.thumb_path) : null}
+                                price={item.price}
+                            />
                         ))}
                     </div>
                 </div>

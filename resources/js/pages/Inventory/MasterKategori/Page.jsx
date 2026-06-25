@@ -16,6 +16,7 @@ import { useDebounce } from "use-debounce";
 const MasterKategori = () => {
     const can = PermissionStore((s) => s.can);
     const setLoading = LoadingStore((state) => state.setLoading);
+    const ensureCategories = OptionsStore((s) => s.ensureCategories);
     const [paramFetch, setParamFetch] = useState({
         data: [],
         page: 1,
@@ -29,6 +30,7 @@ const MasterKategori = () => {
     const [isView, setIsView] = useState(false);
     const [firstLoading, setFirstLoading] = useState(false);
     const [searchBounce] = useDebounce(search, 500);
+    const [allParentOptions, setAllParentOptions] = useState([]);
     const [requiredFields, setRequiredFields] = useState([
         { name: "category_name", error_message: "Nama kategori wajib diisi" },
         { name: "category_code", error_message: "Kode kategori wajib diisi" },
@@ -52,6 +54,15 @@ const MasterKategori = () => {
 
     useEffect(() => {
         fetchData();
+        ensureCategories().then((data) => {
+            setAllParentOptions(
+                HelperFunctions.formatDropdown(
+                    (data || []).filter((item) => !item.parent_id),
+                    "id",
+                    "category_name",
+                )
+            );
+        });
     }, []);
 
     useEffect(() => {
@@ -134,19 +145,13 @@ const MasterKategori = () => {
         }
     };
 
-    const parentOptions = HelperFunctions.formatDropdown(
-        paramFetch.data.filter((item) => !item.parent_id),
-        "id",
-        "category_name",
-    );
-
     const columns = [
         { header: "Nama Kategori", accessor: "category_name" },
         {
             header: "Kategori Utama",
             accessor: "parent_id",
             render: (row) =>
-                parentOptions.find((p) => p.value === row.parent_id)?.label,
+                allParentOptions.find((p) => p.value === row.parent_id)?.label || '-',
         },
         { header: "Deskripsi", accessor: "description" },
         {
@@ -212,7 +217,7 @@ const MasterKategori = () => {
                 onChange={handleChange}
                 formError={formError}
                 isView={isView}
-                parentOptions={parentOptions}
+                parentOptions={allParentOptions}
             />
         </div>
     );

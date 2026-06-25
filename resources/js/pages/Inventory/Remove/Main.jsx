@@ -68,7 +68,7 @@ const Main = ({ setCurentState }) => {
                         : '-',
                     kode: item.code,
                     item_produk: productNames || '-',
-                    cabang: item.branch?.name || '-',
+                    cabang: item.branch?.branch_name || item.branch?.name || '-',
                     jenis: item.jenis === 'HILANG' ? 'Hilang' : item.jenis === 'REPAIR' ? 'Repair' : item.jenis,
                     status: (() => {
                         const map = { APPROVAL: 'Approval', DISETUJUI: 'Disetujui', DITOLAK: 'Ditolak', DIBATALKAN: 'Dibatalkan', RETURN: 'Return' };
@@ -174,7 +174,7 @@ const Main = ({ setCurentState }) => {
         if (!confirmed) return;
 
         try {
-            await InventoryApis.UpdateRemoveItem({ status: 'DIBATALKAN', note: null, remove_id: row.id });
+            await InventoryApis.UpdateRemoveItem({ status: 'DIBATALKAN', remove_id: row.id });
             await showAlert({ title: 'Berhasil', message: 'Remove item berhasil dibatalkan.', icon: 'success', confirmText: 'OK' });
             fetchData(paramFetch.page, paramFetch.pageSize, filterData);
         } catch (err) {
@@ -201,10 +201,13 @@ const Main = ({ setCurentState }) => {
                 const names = details
                     .map((d) => {
                         const name = d.product?.name || productMap[d.product_id];
-                        return name ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ?? ''}` : d.inventory_code;
+                        const karat = d.inventory?.karat ? `${d.inventory.karat}K` : '';
+                        return name ? `${name} ${d.inventory?.berat ?? ''}g ${karat}` : d.inventory_code;
                     })
                     .filter(Boolean);
-                return names.join(', ') || '-';
+                if (names.length === 0) return '-';
+                if (names.length <= 3) return names.join(', ');
+                return `${names.slice(0, 3).join(', ')} +${names.length - 3} lainnya`;
             },
         },
         { header: 'Cabang', accessor: 'cabang' },
@@ -244,7 +247,7 @@ const Main = ({ setCurentState }) => {
             <div className="flex flex-wrap items-end gap-3">
                 <div className="flex-1 min-w-[220px] max-w-xs">
                     <InputGroup
-                        fields={[{ name: 'search', label: '', type: 'search', placeholder: 'Cari kode/nama/berat/karat...' }]}
+                        fields={[{ name: 'search', label: '', type: 'search', placeholder: 'Cari kode...' }]}
                         formData={filterData}
                         cols="1"
                         onChange={handleFilterChange}

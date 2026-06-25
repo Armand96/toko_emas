@@ -35,6 +35,7 @@ const ApprovalTransfer = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
     const can = PermissionStore((s) => s.can);
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
 
     const [paramFetch, setParamFetch] = useState({
         data: [],
@@ -43,10 +44,11 @@ const ApprovalTransfer = () => {
         per_page: 10,
     });
 
-    const [filter, setFilter] = useState({ search: '', status: 'Approval' });
+    const [filter, setFilter] = useState({ search: '', status: '', branch_id: '' });
     const [filterBounce] = useDebounce(filter, 500);
     const [firstLoading, setFirstLoading] = useState(false);
     const [productMap, setProductMap] = useState({});
+    const [branchOptions, setBranchOptions] = useState([]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedData, setSelectedData] = useState(null);
@@ -55,9 +57,12 @@ const ApprovalTransfer = () => {
         setLoading(true);
         try {
             const query = new URLSearchParams({ page, per_page: pageSize });
-            const statusVal = STATUS_API_MAP[params.status] || 'APPROVAL';
-            query.append('status', statusVal);
+            if (params.status) {
+                const statusVal = STATUS_API_MAP[params.status] || params.status;
+                query.append('status', statusVal);
+            }
             if (params.search) query.append('kode_transfer', params.search);
+            if (params.branch_id) query.append('branch_source_id', params.branch_id);
 
             const res = await InventoryApis.GetTransferItem(`?${query.toString()}`);
             setParamFetch(res);
@@ -75,6 +80,9 @@ const ApprovalTransfer = () => {
             data.forEach((p) => { map[p.id] = p.product_name; });
             setProductMap(map);
         });
+        ensureBranches().then((data) => {
+            setBranchOptions(HelperFunctions.formatDropdown(data, 'id', 'branch_name'));
+        });
         fetchData(1, 10, filter);
     }, []);
 
@@ -84,7 +92,7 @@ const ApprovalTransfer = () => {
         }
     }, [filterBounce]);
 
-    const handleResetFilter = () => setFilter({ search: '', status: 'Approval' });
+    const handleResetFilter = () => setFilter({ search: '', status: '', branch_id: '' });
 
     const handleOpenModal = async (row) => {
         setLoading(true);
@@ -230,20 +238,25 @@ const ApprovalTransfer = () => {
                         onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
                     />
                 </div>
-                <div className="w-[160px]">
-                    <InputGroup
-                        fields={[{
-                            name: "status",
-                            label: "",
-                            type: "dropdown",
-                            placeholder: "Pilih status",
-                            options: STATUS_OPTIONS,
-                        }]}
-                        formData={filter}
-                        cols="1"
-                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
-                    />
-                </div>
+                {[
+                    { name: 'status', placeholder: 'Pilih status', options: STATUS_OPTIONS },
+                    { name: 'branch_id', placeholder: 'Pilih cabang', options: branchOptions },
+                ].map((field) => (
+                    <div key={field.name} className="w-[160px]">
+                        <InputGroup
+                            fields={[{
+                                name: field.name,
+                                label: "",
+                                type: "dropdown",
+                                placeholder: field.placeholder,
+                                options: field.options,
+                            }]}
+                            formData={filter}
+                            cols="1"
+                            onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
+                        />
+                    </div>
+                ))}
             </div>
 
             <Table

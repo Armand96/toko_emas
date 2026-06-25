@@ -3,6 +3,7 @@ import { useDebounce } from "use-debounce";
 import { PlusCircle } from "@phosphor-icons/react";
 import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
 import Badge from "../../../components/Badge";
+import CodeBadge from "../../../components/CodeBadge";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
@@ -189,7 +190,7 @@ const Main = ({ setCurentState }) => {
 
     const columns = [
         { header: 'Tanggal', accessor: 'tanggal' },
-        { header: 'Kode', accessor: 'kode' },
+        { header: 'Kode', accessor: 'kode', render: (row) => <CodeBadge variant="table">{row.kode}</CodeBadge> },
         {
             header: 'Item Produk', accessor: 'item_produk',
             render: (row) => {
@@ -201,7 +202,9 @@ const Main = ({ setCurentState }) => {
                         return name ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ?? ''}` : d.inventory_code;
                     })
                     .filter(Boolean);
-                return names.join(', ') || '-';
+                if (names.length === 0) return '-';
+                if (names.length <= 3) return names.join(', ');
+                return `${names.slice(0, 3).join(', ')} +${names.length - 3} lainnya`;
             },
         },
         { header: 'Cabang Asal', accessor: 'cabang_asal' },

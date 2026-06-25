@@ -104,7 +104,7 @@ export default function ModalView({ isOpen, onClose, data }) {
                 <div className="border border-neutral-200 rounded-lg p-5 flex flex-col gap-4 mt-2">
                     <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
                         <div className="w-1 h-4 bg-info-500 rounded-full"></div>
-                        <h3 className="font-bold text-neutral-900">Informasi Detail</h3>
+                        <h3 className="font-semibold text-neutral-900 text-sm">Informasi Detail</h3>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -152,15 +152,28 @@ export default function ModalView({ isOpen, onClose, data }) {
                             <span className="text-sm font-medium text-neutral-900">{data?.branch?.branch_name || '-'}</span>
                         </div>
                         <div className="flex flex-col gap-1">
-                            <span className="text-sm text-neutral-500">Bank Keluar</span>
-                            <span className="text-sm font-medium text-neutral-900">
-                                {data?.bank?.bank_name || '-'}
-                                {bankCabang?.nomor_rekening ? ` (${bankCabang.nomor_rekening})` : ''}
-                            </span>
-                            {bankCabang?.nama_pemilik && (
-                                <span className="text-xs text-neutral-500">a.n. {bankCabang.nama_pemilik}</span>
-                            )}
+                            <span className="text-sm text-neutral-500">Supplier</span>
+                            <span className="text-sm font-medium text-neutral-900">{data?.supplier?.supplier_name || '-'}</span>
                         </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-sm text-neutral-500">Metode Bayar</span>
+                            <span className="text-sm font-medium text-neutral-900">{data?.tipe_pembayaran === 'TUNAI' ? 'Tunai' : data?.tipe_pembayaran === 'TRANSFER' ? 'Transfer' : data?.tipe_pembayaran || '-'}</span>
+                        </div>
+                        {data?.tipe_pembayaran === 'TRANSFER' && (
+                            <div className="flex flex-col gap-1">
+                                <span className="text-sm text-neutral-500">Bank Keluar</span>
+                                <span className="text-sm font-medium text-neutral-900">
+                                    {data?.bank?.bank_name || '-'}
+                                    {bankCabang?.nomor_rekening ? ` (${bankCabang.nomor_rekening})` : ''}
+                                </span>
+                                {bankCabang?.nama_pemilik && (
+                                    <span className="text-xs text-neutral-500">a.n. {bankCabang.nama_pemilik}</span>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -182,13 +195,13 @@ export default function ModalView({ isOpen, onClose, data }) {
 
                 <ApprovalStatusCard
                     status="Approval"
-                    Icon={data?.status === 'DISETUJUI' ? CheckCircleIcon : data?.status === 'DITOLAK' ? XCircleIcon : ClockIcon}
-                    iconColor={data?.status === 'DISETUJUI' ? 'text-success-500' : data?.status === 'DITOLAK' ? 'text-danger-500' : 'text-warning-500'}
-                    statusText={data?.status === 'DISETUJUI' ? 'Disetujui oleh' : data?.status === 'DITOLAK' ? 'Ditolak oleh' : 'Menunggu Approval oleh'}
+                    Icon={data?.status === 'DISETUJUI' ? CheckCircleIcon : (data?.status === 'DITOLAK' || data?.status === 'DIBATALKAN') ? XCircleIcon : ClockIcon}
+                    iconColor={data?.status === 'DISETUJUI' ? 'text-success-500' : (data?.status === 'DITOLAK' || data?.status === 'DIBATALKAN') ? 'text-danger-500' : 'text-warning-500'}
+                    statusText={data?.status === 'DISETUJUI' ? 'Disetujui oleh' : data?.status === 'DITOLAK' ? 'Ditolak oleh' : data?.status === 'DIBATALKAN' ? 'Dibatalkan oleh' : 'Menunggu Approval oleh'}
                     pic={data?.approved_by || 'Owner'}
                     date={data?.updated_at ? dayjs(data.updated_at).format('DD MMMM YYYY, HH:mm') : '-'}
-                    reasonLabel={data?.status === 'DITOLAK' ? 'Alasan Penolakan' : null}
-                    reason={data?.status === 'DITOLAK' ? data?.note : null}
+                    reasonLabel={data?.status === 'DITOLAK' ? 'Alasan Penolakan' : data?.status === 'DIBATALKAN' ? 'Alasan Pembatalan' : null}
+                    reason={(data?.status === 'DITOLAK' || data?.status === 'DIBATALKAN') ? data?.note : null}
                 />
             </div>
         </ModalCustom>

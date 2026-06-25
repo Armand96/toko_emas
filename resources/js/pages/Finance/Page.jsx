@@ -226,7 +226,7 @@ const Finance = () => {
                         onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
                     />
                 </div>
-                <div className="w-[170px]">
+                <div className="w-[160px]">
                     <InputGroup
                         fields={[{
                             name: "cabang",

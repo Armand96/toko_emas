@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDebounce } from "use-debounce";
 import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
 import Badge from "../../../components/Badge";
+import CodeBadge from "../../../components/CodeBadge";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
@@ -66,10 +67,10 @@ const Main = () => {
                         product_id: d.product_id,
                         produk: d.product?.name || '',
                         berat: d.inventory?.berat ? `${d.inventory.berat}g` : '-',
-                        karat: d.inventory?.karat || '-',
+                        karat: d.inventory?.karat ? `${d.inventory.karat}K` : '-',
                         tanggal_repair: createdAt.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }),
                         lama_repair: `${diffDays} Hari`,
-                        cabang: item.branch?.name || '-',
+                        cabang: item.branch?.branch_name || item.branch?.name || '-',
                         status: 'Repair',
                         image: d.inventory?.image_path ? HelperFunctions.getStorageUrl(d.inventory.image_path) : null,
                         _raw: item,
@@ -174,7 +175,7 @@ const Main = () => {
     ];
 
     const columns = [
-        { header: 'Kode', accessor: 'kode' },
+        { header: 'Kode', accessor: 'kode', render: (row) => <CodeBadge variant="table">{row.kode}</CodeBadge> },
         {
             header: 'Produk', accessor: 'produk',
             render: (row) => (
@@ -196,7 +197,7 @@ const Main = () => {
         { header: 'Cabang', accessor: 'cabang' },
         {
             header: 'Status', accessor: 'status',
-            render: () => <Badge tone="warning">Repair</Badge>
+            render: () => <Badge tone="info">Repair</Badge>
         },
         {
             header: 'Aksi', accessor: 'aksi',

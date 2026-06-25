@@ -30,7 +30,7 @@ const ApprovalRemoveItem = () => {
         per_page: 10,
     });
 
-    const [filter, setFilter] = useState({ search: '', cabang: '' });
+    const [filter, setFilter] = useState({ search: '', cabang: '', status: '' });
     const [filterBounce] = useDebounce(filter, 500);
     const [firstLoading, setFirstLoading] = useState(false);
     const [branchOptions, setBranchOptions] = useState([]);
@@ -45,8 +45,8 @@ const ApprovalRemoveItem = () => {
             const query = new URLSearchParams({
                 page,
                 per_page: pageSize,
-                status: 'APPROVAL',
             });
+            if (params.status) query.append('status', params.status);
             if (params.search) query.append('code', params.search);
             if (params.cabang) query.append('branch_id', params.cabang);
 
@@ -191,12 +191,21 @@ const ApprovalRemoveItem = () => {
                 return names.join(', ');
             },
         },
-        { header: 'Cabang', accessor: 'branch', render: (row) => row.branch?.name ?? '-' },
+        { header: 'Cabang', accessor: 'branch', render: (row) => row.branch?.branch_name || row.branch?.name || '-' },
         { header: 'Jenis', accessor: 'jenis', render: (row) => JENIS_LABEL[row.jenis] || row.jenis || '-' },
         {
             header: 'Status',
             accessor: 'status',
-            render: () => <Badge tone="warning">Approval</Badge>
+            render: (row) => {
+                const statusMap = {
+                    'APPROVAL': { label: 'Approval', tone: 'warning' },
+                    'DISETUJUI': { label: 'Disetujui', tone: 'success' },
+                    'DITOLAK': { label: 'Ditolak', tone: 'danger' },
+                    'DIBATALKAN': { label: 'Dibatalkan', tone: 'danger' },
+                };
+                const status = statusMap[row.status] || { label: row.status, tone: 'gray' };
+                return <Badge tone={status.tone}>{status.label}</Badge>;
+            }
         },
         {
             header: 'Aksi',
@@ -230,20 +239,30 @@ const ApprovalRemoveItem = () => {
                         onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
                     />
                 </div>
-                <div className="w-[160px]">
-                    <InputGroup
-                        fields={[{
-                            name: "cabang",
-                            label: "",
-                            type: "dropdown",
-                            placeholder: "Pilih cabang",
-                            options: branchOptions,
-                        }]}
-                        formData={filter}
-                        cols="1"
-                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
-                    />
-                </div>
+                {[
+                    { name: 'status', placeholder: 'Pilih status', options: [
+                        { value: 'APPROVAL', label: 'Approval' },
+                        { value: 'DISETUJUI', label: 'Disetujui' },
+                        { value: 'DITOLAK', label: 'Ditolak' },
+                        { value: 'DIBATALKAN', label: 'Dibatalkan' },
+                    ]},
+                    { name: 'cabang', placeholder: 'Pilih cabang', options: branchOptions },
+                ].map((field) => (
+                    <div key={field.name} className="w-[160px]">
+                        <InputGroup
+                            fields={[{
+                                name: field.name,
+                                label: "",
+                                type: "dropdown",
+                                placeholder: field.placeholder,
+                                options: field.options,
+                            }]}
+                            formData={filter}
+                            cols="1"
+                            onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
+                        />
+                    </div>
+                ))}
             </div>
 
             <Table

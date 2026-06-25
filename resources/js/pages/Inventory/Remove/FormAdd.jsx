@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ScanIcon, XIcon, ImageIcon, WarningIcon, WrenchIcon } from "@phosphor-icons/react";
+import { ScanIcon, WarningIcon, WrenchIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import ModalScanBarcode from "../../../components/ModaScanBarcode";
 import InventoryApis from "../../../Services/Inventory.apis";
-import CodeBadge from "../../../components/CodeBadge";
+import InventoryItemCard from "../../../components/InventoryItemCard";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import { showAlert } from "../../../utils/showAlert";
 import PermissionStore from "../../../Store/PermissionStore";
@@ -53,7 +53,7 @@ const FormAdd = ({ setCurentState }) => {
             product_id: inv.product_id,
             name: inv.product?.product_name || inv.product?.name || inv.inventory_code,
             weight: inv.berat ? `${inv.berat}g` : '-',
-            karat: inv.karat || '-',
+            karat: inv.karat ? `${inv.karat}K` : '-',
             price: inv.jual || 0,
             image: inv.image_path ? HelperFunctions.getStorageUrl(inv.image_path) : null,
         }]);
@@ -223,31 +223,15 @@ const FormAdd = ({ setCurentState }) => {
 
                         <div className="flex flex-col gap-3">
                             {selectedItems.map((item) => (
-                                <div key={item.inventory_code} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
-                                    <div className="flex items-center gap-4">
-                                        <CodeBadge>{item.inventory_code}</CodeBadge>
-                                        <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center text-amber-400 overflow-hidden">
-                                            {item.image
-                                                ? <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" />
-                                                : <ImageIcon size={24} weight="fill" />
-                                            }
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-semibold text-gray-900">{item.name}</span>
-                                            <span className="text-xs text-gray-500">{item.weight} • {item.karat}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-6 justify-between sm:justify-end">
-                                        <span className="text-sm font-bold text-gray-900">{HelperFunctions.formatCurrency(item.price)}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveItem(item.inventory_code)}
-                                            className="p-1.5 text-danger-500 hover:bg-danger-50 rounded-md transition-colors cursor-pointer"
-                                        >
-                                            <XIcon size={16} weight="bold" />
-                                        </button>
-                                    </div>
-                                </div>
+                                <InventoryItemCard
+                                    key={item.inventory_code}
+                                    code={item.inventory_code}
+                                    name={item.name}
+                                    specs={`${item.weight} • ${item.karat}`}
+                                    image={item.image}
+                                    price={item.price}
+                                    onRemove={() => handleRemoveItem(item.inventory_code)}
+                                />
                             ))}
                             {selectedItems.length === 0 && (
                                 <div className="text-center py-8 text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-xl">

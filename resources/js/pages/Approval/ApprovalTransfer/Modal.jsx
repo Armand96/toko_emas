@@ -2,7 +2,7 @@ import { TimerIcon, CheckCircleIcon, XCircleIcon } from '@phosphor-icons/react';
 import ModalCustom from '../../../components/modalCustom';
 import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
 import HelperFunctions from '../../../utils/HelperFunctions';
-import CodeBadge from '../../../components/CodeBadge';
+import InventoryItemCard from '../../../components/InventoryItemCard';
 
 const APPROVAL_VIEW = {
     'APPROVAL': { Icon: TimerIcon, iconColor: 'text-warning-500', statusText: 'Menunggu Approval oleh', reason: null },
@@ -93,12 +93,10 @@ export default function ModalDetailTransfer({
                             <span className="text-xs text-gray-400">Cabang Tujuan</span>
                             <span className="text-sm font-medium text-gray-900">{branchDest}</span>
                         </div>
-                        {data?.note && (
-                            <div className="col-span-2 flex flex-col gap-0.5">
-                                <span className="text-xs text-gray-400">Catatan</span>
-                                <span className="text-sm font-medium text-gray-900">{data.note}</span>
-                            </div>
-                        )}
+                        <div className="col-span-2 flex flex-col gap-0.5">
+                            <span className="text-xs text-gray-400">Catatan</span>
+                            <span className="text-sm font-medium text-gray-900">{data?.note || '-'}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -110,23 +108,14 @@ export default function ModalDetailTransfer({
                     </div>
                     <div className="flex flex-col gap-3">
                         {items.length > 0 ? items.map((item, idx) => (
-                            <div key={idx} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white">
-                                <CodeBadge>{item.kode}</CodeBadge>
-                                <div className="w-10 h-10 rounded-md bg-amber-100/50 overflow-hidden flex-shrink-0 border border-gray-200 flex items-center justify-center">
-                                    {item.image ? (
-                                        <img src={item.image} alt={item.nama} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <span className="text-[10px] text-amber-700">Img</span>
-                                    )}
-                                </div>
-                                <div className="flex flex-col flex-1 min-w-0">
-                                    <span className="text-sm font-bold text-gray-900 truncate">{item.nama}</span>
-                                    <span className="text-xs text-gray-500 mt-0.5">{item.berat} • {item.karat}</span>
-                                </div>
-                                <span className="text-sm font-bold text-gray-900 flex-shrink-0">
-                                    {HelperFunctions.formatCurrency(item.harga_jual)}
-                                </span>
-                            </div>
+                            <InventoryItemCard
+                                key={idx}
+                                code={item.kode}
+                                name={item.nama}
+                                specs={`${item.berat} • ${item.karat}`}
+                                image={item.image}
+                                price={item.harga_jual}
+                            />
                         )) : (
                             <p className="text-sm text-gray-400 py-4 text-center">Tidak ada barang</p>
                         )}

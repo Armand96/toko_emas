@@ -90,6 +90,7 @@ const EditItemModal = ({ isOpen, onClose, formData, errors = {}, onChange, onSub
                         options={productOptions}
                         placeholder="Pilih produk"
                         isRequired
+                        isDisable
                         error={errors.product_id}
                         onChange={onChange}
                     />
@@ -154,6 +155,7 @@ const EditItemModal = ({ isOpen, onClose, formData, errors = {}, onChange, onSub
                         value={formData.branch_id}
                         options={branchOptions}
                         placeholder="Pilih cabang"
+                        isDisable
                         error={errors.branch_id}
                         onChange={onChange}
                     />
