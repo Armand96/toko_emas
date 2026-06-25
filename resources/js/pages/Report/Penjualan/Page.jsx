@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     ReceiptIcon,
     ChatTextIcon,
@@ -10,127 +10,226 @@ import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
 import HelperFunctions from "../../../utils/HelperFunctions";
+import LoadingStore from "../../../Store/LoadingStore";
+import OptionsStore from "../../../Store/OptionsStore";
+import ReportApis from "../../../Services/Report.apis";
 import StatCard from "./Component/StatCard";
 import ChartCard from "./Component/ChartCard";
 import BarChartH from "./Component/BarChartH";
 import LineChart from "./Component/LineChart";
 
-/* ──────────────────────────────────────────────────────────
-   DUMMY DATA — nanti tinggal diganti hasil API
-   ────────────────────────────────────────────────────────── */
-const SUMMARY = {
-    total: 380260000,
-    transaksi: 18,
-    laba: 18260000,
-    emas: 900,
-};
-
-const TREN = [
-    { label: "01", value: 45000000 },
-    { label: "02", value: 55000000 },
-    { label: "03", value: 31000000 },
-    { label: "04", value: 75000000 },
-    { label: "05", value: 22000000 },
-    { label: "06", value: 60000000 },
-    { label: "07", value: 62000000 },
-];
-
-const TOP_PRODUK = [
-    { id: 1, nama: "Kalung Italy Rantai", karat: "24K", berat: "12.1 gr", terjual: 160 },
-    { id: 2, nama: "Kalung Italy Rantai", karat: "24K", berat: "12.1 gr", terjual: 159 },
-    { id: 3, nama: "Kalung Italy Rantai", karat: "24K", berat: "12.1 gr", terjual: 150 },
-    { id: 4, nama: "Kalung Italy Rantai", karat: "24K", berat: "12.1 gr", terjual: 140 },
-    { id: 5, nama: "Kalung Italy Rantai", karat: "24K", berat: "12.1 gr", terjual: 100 },
-];
-
-const PER_KATEGORI = [
-    { label: "Perhiasan", value: 29000000 },
-    { label: "Logam Mulia", value: 23000000 },
-    { label: "Silver", value: 9000000 },
-    { label: "Berlian", value: 14000000 },
-    { label: "Cukim", value: 6000000 },
-];
-
-const PER_SUB_KATEGORI = [
-    { label: "Cincin", value: 29000000 },
-    { label: "Anting", value: 22000000 },
-    { label: "Kalung", value: 8000000 },
-    { label: "Gelang", value: 15000000 },
-    { label: "Liontin", value: 4000000 },
-];
-
-const PER_KARAT = [
-    { label: "24K", value: 30000000 },
-    { label: "23K", value: 29000000 },
-    { label: "22K", value: 7000000 },
-    { label: "21K", value: 16000000 },
-    { label: "20K", value: 13000000 },
-    { label: "18K", value: 9000000 },
-    { label: "17K", value: 8000000 },
-    { label: "16K", value: 7000000 },
-    { label: "14K", value: 9000000 },
-    { label: "10K", value: 6000000 },
-    { label: "9K", value: 5000000 },
-    { label: "8K", value: 4000000 },
-    { label: "6K", value: 5000000 },
-];
-
-const DETAIL = [
-    { id: 1, tanggal: "2026-05-11", orderId: "ORD-2605015", customer: "Siti Rahmawat", item: "Kalung Italy, Cincin..", berat: 50, nominal: 60000000, pembayaran: "Tunai", cabang: "BLOK M 1", user: "YanuarKasir Pratama" },
-    { id: 2, tanggal: "2026-05-11", orderId: "ORD-2605015", customer: "Siti Rahmawat", item: "Kalung Italy, Cincin..", berat: 50, nominal: 60000000, pembayaran: "Transfer", cabang: "BLOK M 1", user: "IndahKasir2" },
-];
-
-const CABANG_OPTIONS = [
-    { value: "", label: "Semua Cabang" },
-    { value: "blok-m-1", label: "Blok M 1" },
-    { value: "blok-m-2", label: "Blok M 2" },
-    { value: "blok-m-3", label: "Blok M 3" },
-];
-
 const ReportPenjualan = () => {
+    const setLoading = LoadingStore((s) => s.setLoading);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
+
     const [filter, setFilter] = useState({
-        dateRange: { mode: "range", start: "2026-06-01", end: "2026-06-15" },
+        dateRange: { mode: "all", start: "", end: "" },
         cabang: "",
     });
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+
+    const [branchOptions, setBranchOptions] = useState([{ value: "", label: "Semua Cabang" }]);
+
+    const [summary, setSummary] = useState({
+        total_penjualan: 0,
+        jumlah_transaksi: 0,
+        laba: 0,
+        emas_terjual: 0,
+    });
+
+    const [trend, setTrend] = useState([]);
+    const [topProduct, setTopProduct] = useState([]);
+    const [category, setCategory] = useState([]);
+    const [subcategory, setSubcategory] = useState([]);
+    const [karat, setKarat] = useState([]);
+    const [detail, setDetail] = useState({ data: [], current_page: 1, total: 0, per_page: 10 });
+
+    const buildParams = (extra = {}) => {
+        const q = new URLSearchParams();
+        const { mode, start, end } = filter.dateRange || {};
+        if (mode !== "all" && start && end) {
+            q.append("start_date", `${start} 00:00:00`);
+            q.append("end_date", `${end} 23:59:59`);
+        }
+        if (filter.cabang) q.append("branch_id", filter.cabang);
+        Object.entries(extra).forEach(([k, v]) => {
+            if (v !== "" && v !== undefined && v !== null) q.append(k, v);
+        });
+        return q;
+    };
+
+    const fetchCharts = async () => {
+        setLoading(true);
+        try {
+            const params = buildParams();
+            const qs = params.toString() ? `?${params.toString()}` : "";
+
+            const [summaryRes, trendRes, categoryRes] = await Promise.all([
+                ReportApis.GetSalesSummary(qs),
+                ReportApis.GetSalesTrend(qs),
+                ReportApis.GetSalesByCategory(qs),
+            ]);
+
+            if (summaryRes) {
+                setSummary({
+                    total_penjualan: Number(summaryRes.total_penjualan) || 0,
+                    jumlah_transaksi: Number(summaryRes.jumlah_transaksi) || 0,
+                    laba: Number(summaryRes.laba) || 0,
+                    emas_terjual: Number(summaryRes.emas_terjual) || 0,
+                });
+            }
+
+            if (trendRes) {
+                setTrend(
+                    Array.isArray(trendRes.trend)
+                        ? trendRes.trend.map((t) => ({
+                              label: t.trx_date ? new Date(t.trx_date).toLocaleDateString("id-ID", { day: "2-digit", month: "short" }) : "-",
+                              value: Number(t.total) || 0,
+                          }))
+                        : []
+                );
+                setTopProduct(Array.isArray(trendRes.top_product) ? trendRes.top_product : []);
+            }
+
+            if (categoryRes) {
+                setCategory(
+                    Array.isArray(categoryRes.category)
+                        ? categoryRes.category.map((c) => ({ label: c.category_name ?? "-", value: Number(c.total) || 0 }))
+                        : []
+                );
+                setSubcategory(
+                    Array.isArray(categoryRes.subcategory)
+                        ? categoryRes.subcategory.map((c) => ({ label: c.subcategory_name ?? "-", value: Number(c.total) || 0 }))
+                        : []
+                );
+                setKarat(
+                    Array.isArray(categoryRes.karat)
+                        ? categoryRes.karat.map((k) => ({ label: k.karat ?? "-", value: Number(k.total) || 0 }))
+                        : []
+                );
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchDetail = async (page = 1, perPage = 10) => {
+        setLoading(true);
+        try {
+            const params = buildParams({ page, per_page: perPage });
+            const res = await ReportApis.GetSalesDetail(`?${params.toString()}`);
+            setDetail({
+                data: Array.isArray(res?.data) ? res.data : [],
+                current_page: res?.current_page ?? 1,
+                total: res?.total ?? 0,
+                per_page: res?.per_page ?? perPage,
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        ensureBranches().then((branchList) => {
+            if (Array.isArray(branchList)) {
+                setBranchOptions([
+                    { value: "", label: "Semua Cabang" },
+                    ...HelperFunctions.formatDropdown(branchList?.data ?? branchList, "id", "branch_name"),
+                ]);
+            }
+        });
+    }, []);
+
+    useEffect(() => {
+        fetchCharts();
+        fetchDetail(1, detail.per_page);
+    }, [filter.dateRange, filter.cabang]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFilter((prev) => ({ ...prev, [name]: value }));
     };
 
-    const pagedDetail = useMemo(() => {
-        const start = (page - 1) * pageSize;
-        return DETAIL.slice(start, start + pageSize);
-    }, [page, pageSize]);
+    const itemsSummary = (row) => {
+        const details = row.details ?? [];
+        if (details.length === 0) return "-";
+        const names = details.map((d) => d.product?.product_name ?? "-");
+        const joined = names.slice(0, 2).join(", ");
+        return details.length > 2 ? `${joined}..` : joined;
+    };
+
+    const totalBerat = (row) => {
+        const details = row.details ?? [];
+        const total = details.reduce((acc, d) => acc + (Number(d.inventory?.berat) || 0), 0);
+        return total > 0 ? `${total} gr` : "-";
+    };
 
     const detailColumns = [
         {
-            header: "Tanggal", accessor: "tanggal",
-            render: (row) => new Date(row.tanggal).toLocaleDateString("id-ID"),
+            header: "Tanggal",
+            accessor: "created_at",
+            render: (row) =>
+                row.created_at
+                    ? new Date(row.created_at).toLocaleDateString("id-ID")
+                    : "-",
         },
-        { header: "Order ID", accessor: "orderId" },
-        { header: "Customer", accessor: "customer" },
-        { header: "Item Produk", accessor: "item" },
-        { header: "Total Berat", accessor: "berat", render: (row) => `${row.berat} gr` },
+        { header: "Order ID", accessor: "order_id" },
         {
-            header: "Nominal", accessor: "nominal",
-            render: (row) => HelperFunctions.formatCurrency(row.nominal),
+            header: "Customer",
+            accessor: "customer",
+            render: (row) => row.customer?.customer_name ?? "-",
         },
         {
-            header: "Pembayaran", accessor: "pembayaran",
-            render: (row) => (
-                <span className={`rounded-md border px-2.5 py-1 text-xs font-medium ${row.pembayaran === "Tunai"
-                    ? "border-success-200 bg-success-50 text-success-700"
-                    : "border-info-200 bg-info-50 text-info-700"}`}>
-                    {row.pembayaran}
-                </span>
-            ),
+            header: "Item Produk",
+            accessor: "details",
+            render: (row) => itemsSummary(row),
         },
-        { header: "Cabang", accessor: "cabang" },
-        { header: "User", accessor: "user" },
+        {
+            header: "Total Berat",
+            accessor: "berat",
+            render: (row) => totalBerat(row),
+        },
+        {
+            header: "Nominal",
+            accessor: "grand_total",
+            render: (row) => HelperFunctions.formatCurrency(Number(row.grand_total) || 0),
+        },
+        {
+            header: "Pembayaran",
+            accessor: "payment_type",
+            render: (row) => {
+                const type = row.payment_type;
+                const isCash = type === "CASH" || type === "Tunai";
+                return (
+                    <span
+                        className={`rounded-md border px-2.5 py-1 text-xs font-medium ${
+                            isCash
+                                ? "border-success-200 bg-success-50 text-success-700"
+                                : "border-info-200 bg-info-50 text-info-700"
+                        }`}
+                    >
+                        {isCash ? "Tunai" : "Transfer"}
+                    </span>
+                );
+            },
+        },
+        {
+            header: "Cabang",
+            accessor: "branch",
+            render: (row) => row.branch?.branch_name ?? "-",
+        },
+        {
+            header: "User",
+            accessor: "user",
+            render: (row) => row.user?.name ?? "-",
+        },
     ];
+
+    const onChangePage = (page) => fetchDetail(page, detail.per_page);
+    const onChangePageSize = (size) => fetchDetail(1, size);
 
     return (
         <div className="flex w-full flex-col gap-6">
@@ -151,7 +250,13 @@ const ReportPenjualan = () => {
                 </div>
                 <div className="w-full sm:w-[180px]">
                     <InputGroup
-                        fields={[{ name: "cabang", label: "", type: "dropdown", options: CABANG_OPTIONS, placeholder: "Pilih cabang" }]}
+                        fields={[{
+                            name: "cabang",
+                            label: "",
+                            type: "dropdown",
+                            options: branchOptions,
+                            placeholder: "Pilih cabang",
+                        }]}
                         formData={filter}
                         cols="1"
                         onChange={handleChange}
@@ -161,19 +266,19 @@ const ReportPenjualan = () => {
 
             {/* KPI cards */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard label="Total Penjualan" value={HelperFunctions.formatCurrency(SUMMARY.total)} icon={ReceiptIcon} tone="info" />
-                <StatCard label="Jumlah Transaksi" value={SUMMARY.transaksi.toLocaleString("id-ID")} icon={ChatTextIcon} tone="danger" />
-                <StatCard label="Laba" value={HelperFunctions.formatCurrency(SUMMARY.laba)} icon={TrendUpIcon} tone="success" />
-                <StatCard label="Emas Terjual" value={`${SUMMARY.emas.toLocaleString("id-ID")}gr`} icon={ScalesIcon} tone="warning" />
+                <StatCard label="Total Penjualan" value={HelperFunctions.formatCurrency(summary.total_penjualan)} icon={ReceiptIcon} tone="info" />
+                <StatCard label="Jumlah Transaksi" value={summary.jumlah_transaksi.toLocaleString("id-ID")} icon={ChatTextIcon} tone="danger" />
+                <StatCard label="Laba" value={HelperFunctions.formatCurrency(summary.laba)} icon={TrendUpIcon} tone="success" />
+                <StatCard label="Emas Terjual" value={`${Number(summary.emas_terjual).toLocaleString("id-ID")} gr`} icon={ScalesIcon} tone="warning" />
             </div>
 
             {/* Tren + Produk Terlaris */}
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <ChartCard title="Tren Penjualan" subtitle="Perkembangan omzet penjualan harian">
-                    <LineChart data={TREN} />
+                    <LineChart data={trend} />
                 </ChartCard>
 
-                <ChartCard title="Produk Terlaris" subtitle="Top 5 berdasarkan omzet berjalan">
+                <ChartCard title="Produk Terlaris" subtitle="Top 5 berdasarkan jumlah terjual">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
@@ -186,23 +291,29 @@ const ReportPenjualan = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {TOP_PRODUK.map((p, i) => (
-                                    <tr key={p.id} className="border-b border-gray-100 last:border-0">
-                                        <td className="py-3 pr-2">
-                                            {i < 3 ? (
-                                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-500 text-xs font-semibold text-neutral-white">
-                                                    {i + 1}
-                                                </span>
-                                            ) : (
-                                                <span className="pl-2 text-gray-500">{i + 1}</span>
-                                            )}
-                                        </td>
-                                        <td className="py-3 pr-2 text-gray-900">{p.nama}</td>
-                                        <td className="py-3 pr-2 text-gray-700">{p.karat}</td>
-                                        <td className="py-3 pr-2 text-gray-700">{p.berat}</td>
-                                        <td className="py-3 font-medium text-gray-900">{p.terjual}</td>
+                                {topProduct.length > 0 ? (
+                                    topProduct.map((p, i) => (
+                                        <tr key={i} className="border-b border-gray-100 last:border-0">
+                                            <td className="py-3 pr-2">
+                                                {i < 3 ? (
+                                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-500 text-xs font-semibold text-neutral-white">
+                                                        {i + 1}
+                                                    </span>
+                                                ) : (
+                                                    <span className="pl-2 text-gray-500">{i + 1}</span>
+                                                )}
+                                            </td>
+                                            <td className="py-3 pr-2 text-gray-900">{p.product_name ?? "-"}</td>
+                                            <td className="py-3 pr-2 text-gray-700">{p.karat ?? "-"}</td>
+                                            <td className="py-3 pr-2 text-gray-700">{p.berat ? `${Number(p.berat).toFixed(1)} gr` : "-"}</td>
+                                            <td className="py-3 font-medium text-gray-900">{p.terjual ?? 0}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={5} className="py-6 text-center text-gray-400">Belum ada data</td>
                                     </tr>
-                                ))}
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -213,14 +324,14 @@ const ReportPenjualan = () => {
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <div className="flex flex-col gap-4">
                     <ChartCard title="Penjualan per Kategori" subtitle="Distribusi penjualan berdasarkan kategori produk.">
-                        <BarChartH data={PER_KATEGORI} height={180} />
+                        <BarChartH data={category} height={Math.max(180, category.length * 40)} />
                     </ChartCard>
                     <ChartCard title="Penjualan per Sub Kategori" subtitle="Distribusi penjualan berdasarkan sub kategori produk.">
-                        <BarChartH data={PER_SUB_KATEGORI} height={180} />
+                        <BarChartH data={subcategory} height={Math.max(180, subcategory.length * 40)} />
                     </ChartCard>
                 </div>
                 <ChartCard title="Penjualan per Karat" subtitle="Distribusi penjualan berdasarkan karat emas.">
-                    <BarChartH data={PER_KARAT} height={400} />
+                    <BarChartH data={karat} height={Math.max(400, karat.length * 40)} />
                 </ChartCard>
             </div>
 
@@ -241,12 +352,12 @@ const ReportPenjualan = () => {
 
                 <Table
                     columns={detailColumns}
-                    data={pagedDetail}
-                    page={page}
-                    pageSize={pageSize}
-                    total={DETAIL.length}
-                    onPageChange={setPage}
-                    onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+                    data={detail.data}
+                    page={detail.current_page}
+                    pageSize={detail.per_page}
+                    total={detail.total}
+                    onPageChange={onChangePage}
+                    onPageSizeChange={onChangePageSize}
                 />
             </div>
         </div>

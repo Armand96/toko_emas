@@ -13,6 +13,9 @@ const BankApis = {
     GetBankBranch: (params) => {
         return Apis.Get(`/api/bankCabangs${params}`).then(({data}) => data);
     },
+    GetBankBranchSingle: (id) => {
+        return Apis.Get(`/api/bankCabangs/${id}`).then(({ data }) => data?.data ?? data);
+    },
     PostBankBranch: (body) => {
         return Apis.Post(`/api/bankCabangs`, body, );
     },

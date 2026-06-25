@@ -6,7 +6,7 @@ import SectionCard from "../../components/SectionCard";
 import ApprovalStatusCard from "../../components/ApprovalStatusCard";
 import InventoryItemCard from "../../components/InventoryItemCard";
 import HelperFunctions from "../../utils/HelperFunctions";
-import OptionsStore from "../../Store/OptionsStore";
+import BankApis from "../../Services/Bank.apis";
 
 const APPROVAL_VIEW = {
     'APPROVAL': { Icon: TimerIcon, iconColor: 'text-warning-500', statusText: 'Menunggu Approval oleh' },
@@ -18,23 +18,23 @@ const APPROVAL_VIEW = {
 };
 
 const ModalViewPenjualan = ({ isOpen, onClose, data }) => {
-    const ensureBanks = OptionsStore((s) => s.ensureBanks);
-    const [bankCabangs, setBankCabangs] = useState([]);
+    const [receiverBank, setReceiverBank] = useState(null);
 
     useEffect(() => {
-        if (isOpen && data?.payment_type === 'TRANSFER') {
-            ensureBanks()
-                .then((bankData) => setBankCabangs(bankData))
-                .catch((err) => console.error(err));
+        if (isOpen && data?.payment_type === 'TRANSFER' && data?.receiver_bank_id) {
+            BankApis.GetBankBranchSingle(data.receiver_bank_id)
+                .then((res) => setReceiverBank(res || null))
+                .catch(() => setReceiverBank(null));
+        } else {
+            setReceiverBank(null);
         }
-    }, [isOpen, data]);
+    }, [isOpen, data?.receiver_bank_id]);
 
     if (!data) return null;
 
     const { customer, user, details, approval_status } = data;
     const isTransfer = data.payment_type === 'TRANSFER';
     const approvalView = APPROVAL_VIEW[approval_status] || APPROVAL_VIEW['APPROVAL'];
-    const receiverBank = bankCabangs.find((b) => b.id === data.receiver_bank_id);
 
     return (
         <ModalCustom
@@ -87,30 +87,29 @@ const ModalViewPenjualan = ({ isOpen, onClose, data }) => {
                     <div className="flex flex-col">
                         <div className="flex justify-between py-2 border-b border-dashed border-neutral-200">
                             <span className="text-sm text-neutral-500">Sub Total</span>
-                            <span className="text-sm font-medium text-neutral-900">{HelperFunctions.formatCurrency(data.sub_total)}</span>
+                            <span className="text-sm text-neutral-900">{HelperFunctions.formatCurrency(data.sub_total)}</span>
                         </div>
                         <div className="flex justify-between pt-3">
-                            <span className="text-sm font-bold text-neutral-900">Total</span>
-                            <span className="text-sm font-bold text-neutral-900">{HelperFunctions.formatCurrency(data.grand_total)}</span>
+                            <span className="text-sm font-bold text-neutral-900 font-medium">Total</span>
+                            <span className="text-sm font-bold text-neutral-900 font-medium">{HelperFunctions.formatCurrency(data.grand_total)}</span>
                         </div>
                     </div>
 
                     {isTransfer ? (
                         <div className="flex flex-col p-4 border border-neutral-200 rounded-lg bg-neutral-50/50 gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-md flex items-center justify-center text-white font-extrabold italic text-sm shadow-sm flex-shrink-0 bg-neutral-500">
-                                    {receiverBank?.bank?.bank_code ?? receiverBank?.bank?.bank_name ?? '-'}
+                            {receiverBank && (
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 rounded-md flex items-center justify-center text-white font-extrabold italic text-sm shadow-sm flex-shrink-0 bg-neutral-500">
+                                        {receiverBank.bank?.bank_code ?? receiverBank.bank?.bank_name ?? '-'}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-bold text-neutral-900">{receiverBank.nama_pemilik ?? '-'}</span>
+                                        <span className="text-xs font-medium text-neutral-500 mt-0.5">{receiverBank.nomor_rekening ?? '-'} • {receiverBank.bank?.bank_name ?? '-'}</span>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-neutral-900">{receiverBank?.nama_pemilik ?? '-'}</span>
-                                    <span className="text-xs font-medium text-neutral-500 mt-0.5">{receiverBank?.nomor_rekening ?? '-'} • {receiverBank?.bank?.bank_name ?? '-'}</span>
-                                </div>
-                            </div>
-                            <div className="flex flex-col gap-1 text-xs text-neutral-600 border-t border-dashed border-neutral-200 pt-3">
-                                <div>Pengirim: <span className="font-bold text-neutral-900 uppercase">{data.sender_name ?? '-'}</span></div>
-                                {data.sender_rekening && (
-                                    <div>No. Rekening Pengirim: <span className="font-bold text-neutral-900">{data.sender_rekening}</span></div>
-                                )}
+                            )}
+                            <div className="text-xs text-neutral-600 border-t border-dashed border-neutral-200 pt-3">
+                                Pengirim: <span className="font-bold text-neutral-900 uppercase">{data.sender_name ?? '-'}</span>
                             </div>
                         </div>
                     ) : (
@@ -146,10 +145,10 @@ const ModalViewPenjualan = ({ isOpen, onClose, data }) => {
                     Icon={approvalView.Icon}
                     iconColor={approvalView.iconColor}
                     statusText={approvalView.statusText}
-                    pic="Owner"
+                    pic={approval_status === 'DIBATALKAN' ? (user?.name || '-') : 'Owner'}
                     date={data.updated_at ? dayjs(data.updated_at).format('DD MMMM YYYY, HH:mm') : '-'}
-                    reasonLabel="Alasan Penolakan"
-                    reason={approval_status === 'DITOLAK' ? data.note : null}
+                    reasonLabel={approval_status === 'DITOLAK' ? 'Alasan Penolakan' : approval_status === 'DIBATALKAN' ? 'Alasan Pembatalan' : null}
+                    reason={(approval_status === 'DITOLAK' || approval_status === 'DIBATALKAN') ? data.note : null}
                 />
             </div>
         </ModalCustom>
