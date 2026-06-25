@@ -79,6 +79,9 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
     Route::prefix('dashboard')->group(function() {
         Route::get('take-action-data', [DashboardController::class, 'takeAction']);
         Route::get('data-today', [DashboardController::class, 'dataToday']);
+        Route::get('sales-trend', [DashboardController::class, 'salesTrend']);
+        Route::get('sales-latest', [DashboardController::class, 'latestSales']);
+        Route::get('sales-status', [DashboardController::class, 'salesStatus']);
     });
 
     Route::prefix('report')->group(function() {

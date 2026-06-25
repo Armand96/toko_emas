@@ -140,4 +140,81 @@ class DashboardController extends Controller
 
         ], 'OK', 200);
     }
+
+    public function salesTrend(Request $request)
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Filter
+        |--------------------------------------------------------------------------
+        */
+
+        $days = $request->days ?? 7;
+
+        $startDate = Carbon::today()->subDays($days - 1);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Query
+        |--------------------------------------------------------------------------
+        */
+
+        $sales = TSales::selectRaw("
+            DATE(created_at) as trx_date,
+            SUM(grand_total) as total_sales
+        ")
+            ->whereIn('approval_status', [
+                SalesStatus::DISETUJUI,
+                SalesStatus::CETAK_KWITANSI,
+                SalesStatus::SELESAI
+            ])
+            ->whereDate('created_at', '>=', $startDate)
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->orderBy('trx_date')
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Fill Missing Dates
+        |--------------------------------------------------------------------------
+        */
+
+        $chartData = [];
+
+        for ($i = 0; $i < $days; $i++) {
+
+            $date = Carbon::today()->subDays(
+                ($days - 1) - $i
+            );
+
+            $found = $sales->firstWhere(
+                'trx_date',
+                $date->format('Y-m-d')
+            );
+
+            $chartData[] = [
+                'date' => $date->format('d M'),
+                'full_date' => $date->format('Y-m-d'),
+                'total_sales' => $found
+                    ? (float) $found->total_sales
+                    : 0
+            ];
+        }
+
+        return ApiResponse::success(
+            $chartData,
+            "OK",
+            200
+        );
+    }
+
+    public function latestSales()
+    {
+        return ApiResponse::success(TSales::orderBy('id', 'desc')->with(['branch', 'customer'])->get(), "OK", 200);
+    }
+
+    public function salesStatus()
+    {
+        return ApiResponse::success(TSales::selectRaw('approval_status, COUNT(approval_status) as count')->where('created_at', '>=', date('Y-m-d') . " 00:00:00")->groupBy('approval_status')->get(), "OK", 200);
+    }
 }
