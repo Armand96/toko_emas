@@ -125,22 +125,8 @@ const Main = ({ setCurentState }) => {
             const res = await InventoryApis.GetRemoveItemSingle(row.id);
             const item = res?.data || res;
 
-            const codes = (item.details || []).map(d => d.inventory_code).filter(Boolean);
-            let inventoryMap = {};
-            if (codes.length > 0) {
-                try {
-                    const results = await Promise.all(
-                        codes.map(code => InventoryApis.GetInventory(`?inventory_code=${encodeURIComponent(code)}`))
-                    );
-                    results.forEach(res => {
-                        const inv = res?.data?.[0];
-                        if (inv) inventoryMap[inv.inventory_code] = inv;
-                    });
-                } catch (_) {}
-            }
-
             const items = (item.details || []).map((d) => {
-                const inv = d.inventory || inventoryMap[d.inventory_code] || {};
+                const inv = d.inventory || {};
                 return {
                     kode: d.inventory_code,
                     image: inv.image_path ? HelperFunctions.getStorageUrl(inv.image_path) : null,
@@ -160,7 +146,7 @@ const Main = ({ setCurentState }) => {
                 jenis: jenisMap[item.jenis] || item.jenis,
                 catatan: item.note || '-',
                 diajukan_oleh: item.created_by_user?.name || item.user?.name || '-',
-                pic_approval: item.approved_by_user?.name || '-',
+                pic_approval: item.status === 'DIBATALKAN' ? (item.user?.name || '-') : 'Owner',
                 tanggal_approval: item.updated_at
                     ? new Date(item.updated_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                     : '-',

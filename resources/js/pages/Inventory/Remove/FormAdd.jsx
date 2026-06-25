@@ -263,7 +263,7 @@ const FormAdd = ({ setCurentState }) => {
                     <button
                         type="button"
                         onClick={() => setCurentState('main')}
-                        className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm cursor-pointer"
+                        className="btn-outline px-6 py-2.5 rounded-lg font-medium text-sm"
                     >
                         Batal
                     </button>
@@ -271,7 +271,7 @@ const FormAdd = ({ setCurentState }) => {
                         type="button"
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className="px-6 py-2.5 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors text-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="btn-primary px-6 py-2.5 rounded-lg font-medium text-sm"
                     >
                         {isSubmitting ? 'Menyimpan...' : 'Simpan & Ajukan'}
                     </button>

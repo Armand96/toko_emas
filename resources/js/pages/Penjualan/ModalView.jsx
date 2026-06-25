@@ -189,7 +189,7 @@ const ModalViewPenjualan = ({ isOpen, onClose, data }) => {
                     Icon={approvalView.Icon}
                     iconColor={approvalView.iconColor}
                     statusText={approvalView.statusText}
-                    pic={branch?.branch_name ?? '-'}
+                    pic={branch?.branch_name || 'Owner'}
                     date={data.updated_at ? dayjs(data.updated_at).format('DD MMMM YYYY, HH:mm') : '-'}
                     reasonLabel="Alasan Penolakan"
                     reason={approval_status === 'DITOLAK' ? data.note : null}

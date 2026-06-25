@@ -5,7 +5,7 @@ import HelperFunctions from '../../../utils/HelperFunctions';
 import CodeBadge from '../../../components/CodeBadge';
 
 const getApprovalCardProps = (data) => {
-    const pic = data?.pic_approval || '-';
+    const pic = data?.pic_approval || 'Owner';
     const date = data?.tanggal_approval || '-';
 
     switch (data?.status) {

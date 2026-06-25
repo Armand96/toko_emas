@@ -134,7 +134,7 @@ const Main = () => {
                 jenis: 'Repair',
                 catatan: item.note || '-',
                 diajukan_oleh: item.created_by_user?.name || item.user?.name || '-',
-                pic_approval: item.approved_by_user?.name || '-',
+                pic_approval: 'Owner',
                 tanggal_approval: item.updated_at
                     ? new Date(item.updated_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                     : '-',

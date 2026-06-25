@@ -141,7 +141,7 @@ const Main = ({ setCurentState }) => {
                 cabang_tujuan: item.branch_dest?.branch_name || item.branch_dest?.name || '-',
                 catatan: item.note || '-',
                 diajukan_oleh: item.user?.name || '-',
-                pic_approval: '-',
+                pic_approval: item.status === 'DIBATALKAN' ? (item.user?.name || '-') : 'Owner',
                 tanggal: item.created_at
                     ? new Date(item.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                     : '-',

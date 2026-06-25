@@ -316,7 +316,7 @@ const FormAdd = ({ setCurentState }) => {
                 <button
                     type="button"
                     onClick={() => setCurentState({ view: 'main' })}
-                    className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm cursor-pointer"
+                    className="btn-outline px-6 py-2.5 rounded-lg font-medium text-sm"
                 >
                     Kembali
                 </button>
