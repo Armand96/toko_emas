@@ -58,7 +58,7 @@ const Main = ({ setCurentState }) => {
                 const productNames = (item.details || [])
                     .map((d) => {
                         const name = productMap[d.product_id] || d.product?.product_name || d.product?.name || d.inventory_code;
-                        return `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ?? ''}`;
+                        return `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ? `${d.inventory.karat}K` : ''}`;
                     })
                     .join(', ');
 
@@ -129,7 +129,7 @@ const Main = ({ setCurentState }) => {
                     image: inv.image_path ? HelperFunctions.getStorageUrl(inv.image_path) : null,
                     nama: productMap[d.product_id] || d.product?.product_name || inv.product?.product_name || '-',
                     berat: inv.berat ? `${inv.berat}g` : '-',
-                    karat: inv.karat || '-',
+                    karat: inv.karat ? `${inv.karat}K` : '-',
                     harga_jual: inv.jual || 0,
                 };
             });
@@ -199,7 +199,7 @@ const Main = ({ setCurentState }) => {
                 const names = details
                     .map((d) => {
                         const name = d.product?.name || d.product?.product_name || productMap[d.product_id];
-                        return name ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ?? ''}` : d.inventory_code;
+                        return name ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ? `${d.inventory.karat}K` : ''}` : d.inventory_code;
                     })
                     .filter(Boolean);
                 if (names.length === 0) return '-';

@@ -191,7 +191,7 @@ const ApprovalTransfer = () => {
                 const names = items
                     .map((d) => {
                         const name = productMap[d.product_id] || d.product?.product_name || d.product?.name;
-                        return name ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ?? ''}` : d.inventory_code;
+                        return name ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ? `${d.inventory.karat}K` : ''}` : d.inventory_code;
                     })
                     .filter(Boolean);
                 return names.join(', ');

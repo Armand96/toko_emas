@@ -125,7 +125,7 @@ const Main = () => {
                 image: d.inventory?.image_path ? HelperFunctions.getStorageUrl(d.inventory.image_path) : null,
                 nama: d.product?.name || productMap[d.product_id] || '-',
                 berat: d.inventory?.berat ? `${d.inventory.berat}g` : '-',
-                karat: d.inventory?.karat || '-',
+                karat: d.inventory?.karat ? `${d.inventory.karat}K` : '-',
                 harga_jual: d.inventory?.jual || 0,
             }));
 

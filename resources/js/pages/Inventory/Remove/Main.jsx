@@ -57,7 +57,7 @@ const Main = ({ setCurentState }) => {
                 const productNames = (item.details || [])
                     .map((d) => {
                         const p = d.product;
-                        return p ? `${p.name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ?? ''}` : d.inventory_code;
+                        return p ? `${p.name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ? `${d.inventory.karat}K` : ''}` : d.inventory_code;
                     })
                     .join(', ');
 

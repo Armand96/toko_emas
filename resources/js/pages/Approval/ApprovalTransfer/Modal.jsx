@@ -27,7 +27,7 @@ export default function ModalDetailTransfer({
             image: inv.image_path ? HelperFunctions.getStorageUrl(inv.image_path) : null,
             nama: productMap[d.product_id] || d.product?.product_name || d.product?.name || inv.product?.product_name || '-',
             berat: inv.berat ? `${inv.berat}g` : '-',
-            karat: inv.karat || '-',
+            karat: inv.karat ? `${inv.karat}K` : '-',
             harga_jual: inv.jual || 0,
         };
     });

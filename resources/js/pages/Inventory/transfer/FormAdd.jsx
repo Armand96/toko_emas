@@ -70,7 +70,7 @@ const FormAdd = ({ setCurentState }) => {
             product_id: inv.product_id,
             name: productMap[inv.product_id] || inv.product?.product_name || inv.product?.name || inv.inventory_code,
             weight: inv.berat ? `${inv.berat}g` : '-',
-            karat: inv.karat || '-',
+            karat: inv.karat ? `${inv.karat}K` : '-',
             price: inv.jual || 0,
             image: inv.image_path ? HelperFunctions.getStorageUrl(inv.image_path) : null,
         }]);

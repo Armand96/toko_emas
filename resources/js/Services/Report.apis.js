@@ -56,6 +56,26 @@ const ReportApis = {
     GetPembelianDetail: (params = "") => {
         return Apis.Get(`api/report/pembelian-detail${params}`).then(({ data }) => data?.data ?? data);
     },
+
+    /* ── INVENTORY ────────────────────────────────────────────
+       Semua endpoint dibungkus ApiResponse::success → unwrap .data */
+
+    // { total_item_active, total_berat_active, total_modal, total_jual, item_repair, item_transit, item_lost, item_sold }
+    GetInventorySummary: (params = "") => {
+        return Apis.Get(`api/report/inventory-summary${params}`).then(({ data }) => data?.data ?? data);
+    },
+    // { category: [{category_name, total_item}], subcategory: [{subcategory_name, total_item}], karat: [{karat, total_item}] }
+    GetInventoryDistribution: (params = "") => {
+        return Apis.Get(`api/report/inventory-distribution${params}`).then(({ data }) => data?.data ?? data);
+    },
+    // { status: [{status, total}], aging: [{aging_group, total}] }
+    GetInventoryStatusAging: (params = "") => {
+        return Apis.Get(`api/report/inventory-status-aging${params}`).then(({ data }) => data?.data ?? data);
+    },
+    // paginated → { data, current_page, total, per_page }
+    GetInventoryDetail: (params = "") => {
+        return Apis.Get(`api/report/inventory-detail${params}`).then(({ data }) => data?.data ?? data);
+    },
 };
 
 export default ReportApis;
