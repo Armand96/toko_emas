@@ -36,7 +36,7 @@ class TSales extends Model
 
     public function branch()
     {
-        return $this->belongsTo(Mbranch::class, 'branch_id', 'id');
+        return $this->belongsTo(MBranch::class, 'branch_id', 'id');
     }
 
     public function customer()
