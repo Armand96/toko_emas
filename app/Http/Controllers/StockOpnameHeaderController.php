@@ -55,7 +55,7 @@ class StockOpnameHeaderController extends Controller
             $kodeSesi = 'OPN-' . $dataBranch->branch_code . '-' . date('Y') . "-" .date('m');
             $counter = StockOpnameHeader::where('kode_sesi', 'like', $kodeSesi . "%")->count();
             $counter++;
-            $kodeSesi = $kodeSesi . str_pad($counter, 4, "0", STR_PAD_LEFT);
+            $kodeSesi = $kodeSesi . "-" . str_pad($counter, 4, "0", STR_PAD_LEFT);
 
             $totalInventoryBranch = Inventory::where('branch_id', $dataBranch->id)->where('status', InventoryStatus::AVAILABLE)->count();
 
