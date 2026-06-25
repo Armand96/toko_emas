@@ -152,22 +152,21 @@ const MasterInventory = () => {
     };
 
     const mapInventory = (row, editHistories = null) => {
-        const product  = productOptions.find((p) => p.value === row.product_id)?.details;
-        const branch   = branchOptions.find((b) => b.value === row.branch_id)?.details;
-        const category = categoryOptions.find((c) => c.value === row.category_id)?.details;
+        const product  = row.product || productOptions.find((p) => p.value === row.product_id)?.details;
+        const branch   = row.branch || branchOptions.find((b) => b.value === row.branch_id)?.details;
 
-        const isSubCategory = category?.parent_id !== null && category?.parent_id !== undefined;
-        const parentCategory = isSubCategory
-            ? categoryOptions.find((c) => c.value === category.parent_id)?.details
-            : category;
+        const kategori = row.sub_category
+            ? (row.category?.category_name || '-')
+            : (row.category?.parent?.category_name || row.category?.category_name || '-');
+        const subKategori = row.sub_category?.category_name || '';
 
         return {
             id: row.id,
             kode: row.inventory_code,
             inventory_code: row.inventory_code,
             produk: product?.product_name || "-",
-            kategori: parentCategory?.category_name || "-",
-            sub_kategori: isSubCategory ? category?.category_name : "",
+            kategori,
+            sub_kategori: subKategori,
             berat: `${row.berat}g`,
             karat: `${row.karat}K`,
             modal: Number(row.modal),
@@ -450,22 +449,14 @@ const MasterInventory = () => {
             header: "Kategori",
             accessor: "kategori",
             render: (row) => {
-                const category = categoryOptions.find((c) => c.value === row.category_id)?.details;
-                const isSubCategory = category?.parent_id !== null && category?.parent_id !== undefined;
-                const parentCategory = isSubCategory
-                    ? categoryOptions.find((c) => c.value === category.parent_id)?.details
-                    : category;
-                return parentCategory?.category_name || "-";
+                if (row.sub_category) return row.category?.category_name || '-';
+                return row.category?.parent?.category_name || row.category?.category_name || '-';
             },
         },
         {
             header: "Sub Kategori",
             accessor: "sub_kategori",
-            render: (row) => {
-                const category = categoryOptions.find((c) => c.value === row.category_id)?.details;
-                const isSubCategory = category?.parent_id !== null && category?.parent_id !== undefined;
-                return isSubCategory ? category?.category_name : "-";
-            },
+            render: (row) => row.sub_category?.category_name || '-',
         },
         { header: "Berat", accessor: "berat", render: (row) => `${row.berat}g` },
         { header: "Karat", accessor: "karat", render: (row) => `${row.karat}K` },

@@ -51,7 +51,7 @@ class PembelianController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $pembelians = $query->with(['product', 'category', 'branch', 'bank', 'inventory', 'user'])->orderBy('id', 'desc')->paginate($perPage);
+        $pembelians = $query->with(['product', 'category', 'subcategory', 'supplier', 'branch', 'bank', 'inventory', 'user'])->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($pembelians);
     }
@@ -61,6 +61,8 @@ class PembelianController extends Controller
         return ApiResponse::success($pembelian->load([
             'product',
             'category',
+            'subcategory',
+            'supplier',
             'branch',
             'bank',
             'user'

@@ -231,7 +231,7 @@ const ApprovalTransfer = () => {
                             name: "search",
                             label: "",
                             type: "search",
-                            placeholder: "Cari transaksi..",
+                            placeholder: "Cari kode...",
                         }]}
                         formData={filter}
                         cols="1"

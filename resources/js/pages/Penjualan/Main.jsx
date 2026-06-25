@@ -188,7 +188,7 @@ const Main = ({ setCurentState }) => {
     };
 
     const searchFieldsPenjualan = [
-        { name: 'search', label: '', type: 'search', placeholder: 'Cari transaksi..' },
+        { name: 'search', label: '', type: 'search', placeholder: 'Cari kode...' },
     ];
 
     const columns = [

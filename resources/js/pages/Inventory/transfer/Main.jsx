@@ -233,7 +233,7 @@ const Main = ({ setCurentState }) => {
     ];
 
     return (
-        <div className="w-full h-full flex flex-col gap-6 bg-gray-50/50 p-6">
+        <div className="flex flex-col gap-6 w-full">
             <HeaderSection
                 title="Transfer Item"
                 description="Catat dan kelola transfer item inventory antar cabang."

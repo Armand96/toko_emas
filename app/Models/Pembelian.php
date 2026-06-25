@@ -49,6 +49,16 @@ class Pembelian extends Model
         return $this->belongsTo(MCategory::class, 'category_id', 'id');
     }
 
+    public function subcategory()
+    {
+        return $this->belongsTo(MCategory::class, 'subcategory_id', 'id');
+    }
+
+    public function supplier()
+    {
+        return $this->belongsTo(MSupplier::class, 'supplier_id', 'id');
+    }
+
     public function branch()
     {
         return $this->belongsTo(MBranch::class, 'branch_id', 'id');

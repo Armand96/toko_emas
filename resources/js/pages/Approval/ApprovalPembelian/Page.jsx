@@ -234,16 +234,15 @@ const ApprovalPembelian = () => {
         {
             header: 'Kategori',
             accessor: 'kategori',
-            render: (row) => row.category?.category_name ?? '-'
+            render: (row) => {
+                if (row.subcategory) return row.category?.category_name || '-';
+                return row.category?.parent?.category_name || row.category?.category_name || '-';
+            },
         },
         {
             header: 'Sub Kategori',
             accessor: 'subkategori',
-            render: (row) => {
-                if (!row.subcategory_id) return "-";
-                const sub = categoryOptions.find((c) => c.value === row.subcategory_id)?.details;
-                return sub?.category_name || "-";
-            },
+            render: (row) => row.subcategory?.category_name || '-',
         },
         {
             header: 'Deskripsi',

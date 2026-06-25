@@ -31,6 +31,12 @@ export default function ModalView({ isOpen, onClose, data }) {
     }, []);
 
     const resolvedCategory = (() => {
+        if (data?.subcategory) {
+            return {
+                kategori: data.category?.category_name || '-',
+                subKategori: data.subcategory.category_name || '-',
+            };
+        }
         const category = categoryOptions.find((c) => c.value === data?.category_id)?.details;
         const isSubCategory = category?.parent_id !== null && category?.parent_id !== undefined;
         const parentCategory = isSubCategory

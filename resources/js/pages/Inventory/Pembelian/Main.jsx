@@ -215,22 +215,14 @@ const MainPembelian = ({ setCurentState }) => {
             header: "Kategori",
             accessor: "category",
             render: (row) => {
-                const category = categoryOptions.find((c) => c.value === row.category_id)?.details;
-                const isSubCategory = category?.parent_id !== null && category?.parent_id !== undefined;
-                const parentCategory = isSubCategory
-                    ? categoryOptions.find((c) => c.value === category.parent_id)?.details
-                    : category;
-                return parentCategory?.category_name || "-";
+                if (row.subcategory) return row.category?.category_name || '-';
+                return row.category?.parent?.category_name || row.category?.category_name || '-';
             },
         },
         {
             header: "Sub Kategori",
             accessor: "sub_kategori",
-            render: (row) => {
-                if (!row.subcategory_id) return "-";
-                const sub = categoryOptions.find((c) => c.value === row.subcategory_id)?.details;
-                return sub?.category_name || "-";
-            },
+            render: (row) => row.subcategory?.category_name || '-',
         },
 
         { header: "Berat", accessor: "berat", render: (row) => (row.berat ? `${row.berat} g` : "-") },
