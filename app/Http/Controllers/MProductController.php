@@ -76,7 +76,7 @@ class MProductController extends Controller
                 Storage::disk('public')->put($validated['thumb_path'], $thumb->encodeUsingFileExtension($image->getClientOriginalExtension(), quality: 70));
             }
             $countData = MProduct::where('category_id', $validated['category_id'])->lockForUpdate()->count();
-            $category = MCategory::find($validated['category_id']);
+            $category = isset($validated['subcategory_id']) ? MCategory::find($validated['subcategory_id']) : MCategory::find($validated['category_id']);
             $validated['barcode'] = $category->category_code . "-" . str_pad($countData + 1, 5, "0", STR_PAD_LEFT);
             $branchIds = $validated['branch_id'];
             $validated['branch_id'] = 0;
