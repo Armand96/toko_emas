@@ -80,7 +80,7 @@ class PembelianController extends Controller
         try {
 
             $currentBatch = PembelianBatch::max('batch_sequence');
-            $batch = PembelianBatch::create(['batch_id' => $currentBatch+1]);
+            $batch = PembelianBatch::create(['batch_sequence' => $currentBatch+1]);
             $dateNow = date('Y-m-d H:i:s');
             $result = [];
 

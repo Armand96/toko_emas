@@ -22,6 +22,7 @@ return new class extends Migration
             $table->bigInteger('bank_id', false, true)->nullable();
             $table->bigInteger('supplier_id', false, true)->nullable();
             $table->enum('status', ['APPROVAL', 'DISETUJUI', 'DITOLAK', 'DIBATALKAN']);
+            $table->enum('tipe_pembayaran', ['TUNAI', 'TRANSFER']);
             $table->string('inventory_code', 60)->nullable();
             $table->string('image_path')->nullable();
             $table->string('thumb_path')->nullable();
