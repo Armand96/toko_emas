@@ -104,9 +104,12 @@ const FormPembelian = ({ setCurentState }) => {
     const selectBranch = (branchId, products = allProducts) => {
         setSelectedBranch(branchId);
 
-        const filtered = (products || []).filter(
-            (p) => String(p.branch_id) === String(branchId)
-        );
+        const filtered = (products || []).filter((p) => {
+            if (p.branches && Array.isArray(p.branches)) {
+                return p.branches.some((b) => String(b.branch_id) === String(branchId));
+            }
+            return String(p.branch_id) === String(branchId);
+        });
         setProductOptions(HelperFunctions.formatDropdown(filtered, "id", "product_name"));
 
         setItem({ ...emptyItem, branch_id: branchId });
@@ -241,7 +244,7 @@ const FormPembelian = ({ setCurentState }) => {
                 category_id: Number(b.category_id),
                 subcategory_id: Number(b.subcategory_id),
                 tipe_pembayaran: b.payment_method,
-                bank_id: b.bank_id ? Number(b.bank_id) : null,
+                bank_cabang_id: b.bank_id ? Number(b.bank_id) : null,
                 supplier_id: Number(b.supplier_id),
                 barcode: b.barcode,
                 berat: Number(b.berat),

@@ -18,11 +18,17 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
+let isLoggingOut = false;
+
 client.interceptors.response.use(
   (res) => res,
-  (error) => {
+  async (error) => {
     const isLoginRequest = error.config?.url?.includes('api/login');
-    if (error.response?.status === 401 && !isLoginRequest) {
+    if (error.response?.status === 401 && !isLoginRequest && !isLoggingOut) {
+      isLoggingOut = true;
+      try {
+        await client.get("api/logout");
+      } catch (_) {}
       Cookies.remove(authConfig.tokenKey);
       Cookies.remove(authConfig.userKey);
       AuthStore.getState().clearAuth();

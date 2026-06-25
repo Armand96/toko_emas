@@ -30,7 +30,7 @@ const ApprovalRemoveItem = () => {
         per_page: 10,
     });
 
-    const [filter, setFilter] = useState({ search: '', cabang: '', status: '' });
+    const [filter, setFilter] = useState({ search: '', cabang: '', status: 'APPROVAL' });
     const [filterBounce] = useDebounce(filter, 500);
     const [firstLoading, setFirstLoading] = useState(false);
     const [branchOptions, setBranchOptions] = useState([]);

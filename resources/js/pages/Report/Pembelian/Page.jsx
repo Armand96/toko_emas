@@ -169,7 +169,7 @@ const ReportPembelian = () => {
             />
 
             {/* Filter bar */}
-            <div className="flex flex-wrap items-start gap-3 px-4">
+            <div className="flex flex-wrap items-start gap-3">
                 <div className="w-full sm:w-[260px]">
                     <InputGroup
                         fields={[{ name: "dateRange", label: "", type: "daterange" }]}
@@ -189,14 +189,14 @@ const ReportPembelian = () => {
             </div>
 
             {/* KPI cards */}
-            <div className="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <StatCard label="Total Item Dibeli" value={summary.totalItem.toLocaleString("id-ID")} icon={PackageIcon} tone="info" />
                 <StatCard label="Total Berat" value={`${summary.totalBerat.toLocaleString("id-ID")} gr`} icon={ScalesIcon} tone="success" />
                 <StatCard label="Total Nilai Pembelian" value={HelperFunctions.formatCurrency(summary.totalNilai)} icon={CurrencyCircleDollarIcon} tone="warning" />
             </div>
 
             {/* Per Kategori/Sub Kategori + Per Karat */}
-            <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <div className="flex flex-col gap-4">
                     <ChartCard title="Pembelian per Kategori" subtitle="Distribusi pembelian berdasarkan kategori produk.">
                         <BarChartH data={perKategori} height={180} />
@@ -211,7 +211,7 @@ const ReportPembelian = () => {
             </div>
 
             {/* Detail table */}
-            <div className="mx-4 rounded-lg border border-gray-200 bg-neutral-white p-5">
+            <div className="rounded-lg border border-gray-200 bg-neutral-white p-5">
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                         <h3 className="text-base font-semibold text-gray-950">Detail Pembelian</h3>

@@ -14,6 +14,11 @@ import OptionsStore from "../../../Store/OptionsStore";
 import PermissionStore from "../../../Store/PermissionStore";
 import AuthStore from "../../../Store/AuthStore";
 
+const normalizeStatus = (status) => {
+    if (status === 'RETURN' || status === 'Return') return 'Disetujui';
+    return status;
+};
+
 const Main = () => {
     const can = PermissionStore((s) => s.can);
     const isKasir = PermissionStore((s) => s.isKasir);
@@ -171,7 +176,7 @@ const Main = () => {
     };
 
     const filterFields = [
-        { name: 'search', label: '', type: 'search', placeholder: 'Cari produk...' },
+        { name: 'search', label: '', type: 'search', placeholder: 'Cari kode/nama produk...' },
     ];
 
     const columns = [
@@ -197,7 +202,11 @@ const Main = () => {
         { header: 'Cabang', accessor: 'cabang' },
         {
             header: 'Status', accessor: 'status',
-            render: () => <Badge tone="info">Repair</Badge>
+            render: (row) => {
+                const display = normalizeStatus(row._raw?.status || row.status);
+                const tone = display === 'Disetujui' ? 'success' : 'info';
+                return <Badge tone={tone}>{display}</Badge>;
+            }
         },
         {
             header: 'Aksi', accessor: 'aksi',
@@ -213,7 +222,7 @@ const Main = () => {
     ];
 
     return (
-        <div className="w-full h-full flex flex-col gap-6 bg-gray-50/50 p-6">
+        <div className="flex flex-col gap-6 w-full">
             <HeaderSection
                 title="Item Repair"
                 description="Kelola item inventory yang sedang dalam proses perbaikan dan kembalikan ke inventory aktif setelah repair selesai."

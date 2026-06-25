@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import { TimerIcon, CheckCircleIcon, XCircleIcon, ReceiptIcon } from '@phosphor-icons/react';
 import ModalCustom from '../../../components/modalCustom';
+import SectionCard from '../../../components/SectionCard';
 import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
 import HelperFunctions from "../../../utils/HelperFunctions";
 import InventoryItemCard from '../../../components/InventoryItemCard';
@@ -26,10 +27,11 @@ export default function ModalDetailPenjualan({
     const { customer, user, details, branch, approval_status, payment_type } = data;
     const isTransfer = payment_type === 'TRANSFER';
 
-    // Footer aksi hanya tampil saat transaksi masih menunggu approval
     const isPending = approval_status === 'APPROVAL';
     const approvalView = APPROVAL_VIEW[approval_status] || APPROVAL_VIEW['APPROVAL'];
     const customerBadge = customer?.id ? 'Member Terdaftar' : 'Customer Baru';
+
+    const receiverBank = data?.receiver_bank ?? data?.bankCabang ?? data?.bank_cabang;
 
     return (
         <ModalCustom
@@ -51,7 +53,7 @@ export default function ModalDetailPenjualan({
                             onClick={onSubmitReject}
                             className="px-6 py-2 bg-danger-500 text-white font-medium rounded-lg hover:bg-danger-600 transition-colors"
                         >
-                            Tolak
+                            Tolak 
                         </button>
                         <button
                             onClick={onSubmitApprove}
@@ -64,16 +66,7 @@ export default function ModalDetailPenjualan({
             }
         >
             <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-3 border border-[#E2E8F0] p-6">
-                    <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                            <div className="w-1 h-4 bg-primary-500 rounded-full"></div>
-                            <h3 className="font-bold text-neutral-900">Data Customer</h3>
-                        </div>
-                        <span className="px-3 py-1 bg-neutral-100 text-neutral-600 text-xs font-medium rounded-md">
-                            {customerBadge}
-                        </span>
-                    </div>
+                <SectionCard title="Data Customer" badge={customerBadge}>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                             <span className="text-xs text-neutral-500">ID Customer</span>
@@ -92,21 +85,9 @@ export default function ModalDetailPenjualan({
                             <span className="text-sm font-medium text-neutral-900">{customer?.address ?? '-'}</span>
                         </div>
                     </div>
-                </div>
+                </SectionCard>
 
-                <hr className="border-neutral-200" />
-
-                <div className="flex flex-col gap-3">
-                    <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                            <div className="w-1 h-4 bg-primary-500 rounded-full"></div>
-                            <h3 className="font-bold text-neutral-900">Keranjang Penjualan</h3>
-                        </div>
-                        <span className="px-3 py-1 bg-neutral-100 text-neutral-600 text-xs font-medium rounded-md">
-                            {details?.length || 0} item
-                        </span>
-                    </div>
-
+                <SectionCard title="Keranjang Penjualan" badge={`${details?.length || 0} item`}>
                     <div className="flex flex-col gap-2">
                         {(details || []).map((item, index) => (
                             <InventoryItemCard
@@ -122,27 +103,14 @@ export default function ModalDetailPenjualan({
                             />
                         ))}
                     </div>
-                </div>
+                </SectionCard>
 
-                <hr className="border-neutral-200" />
-
-                <div className="flex flex-col gap-3 border border-[#E2E8F0] p-6 rounded-lg">
-                    <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2 ">
-                            <div className="w-1 h-4 bg-primary-500 rounded-full"></div>
-                            <h3 className="font-bold text-neutral-900">Pembayaran</h3>
-                        </div>
-                        <span className="px-3 py-1 bg-neutral-100 text-neutral-600 text-xs font-medium rounded-md">
-                            {isTransfer ? 'Transfer' : 'Tunai'}
-                        </span>
-                    </div>
-
+                <SectionCard title="Pembayaran" badge={isTransfer ? 'Transfer' : 'Tunai'}>
                     <div className="flex justify-between items-center text-sm">
                         <span className="text-neutral-500">Sub Total</span>
                         <span className="font-medium text-neutral-900">{HelperFunctions.formatCurrency(data?.sub_total)}</span>
                     </div>
-                    <hr className="border-dashed border-neutral-200" />
-                    <div className="flex justify-between items-center text-sm font-bold">
+                    <div className="flex justify-between items-center text-sm font-bold border-t border-dashed border-neutral-200 pt-3">
                         <span className="text-neutral-900">Total</span>
                         <span className="text-neutral-900">{HelperFunctions.formatCurrency(data?.grand_total)}</span>
                     </div>
@@ -161,21 +129,36 @@ export default function ModalDetailPenjualan({
                     )}
 
                     {isTransfer && (
-                        <div className="text-xs text-neutral-600 border-t border-dashed border-neutral-200 pt-3 flex flex-col gap-1">
-                            <div>Pengirim: <span className="font-bold text-neutral-900 uppercase">{data?.sender_name ?? '-'}</span></div>
-                            <div>No. Rekening Pengirim: <span className="font-bold text-neutral-900">{data?.sender_rekening ?? '-'}</span></div>
+                        <div className="border-t border-dashed border-neutral-200 pt-3 flex flex-col gap-3">
+                            {receiverBank && (
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-neutral-500 rounded-md flex items-center justify-center text-white font-extrabold italic text-sm shadow-sm flex-shrink-0">
+                                        {receiverBank.bank?.bank_code ?? receiverBank.bank?.bank_name?.slice(0, 3)?.toUpperCase() ?? '-'}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-bold text-neutral-900">{receiverBank.nama_pemilik ?? '-'}</span>
+                                        <span className="text-xs text-neutral-500">{receiverBank.nomor_rekening ?? '-'} • {receiverBank.bank?.bank_name ?? '-'}</span>
+                                    </div>
+                                </div>
+                            )}
+                            <div className="flex flex-col gap-1 text-xs text-neutral-600">
+                                <div>Pengirim: <span className="font-bold text-neutral-900 uppercase">{data?.sender_name ?? '-'}</span></div>
+                                {data?.sender_rekening && (
+                                    <div>No. Rekening Pengirim: <span className="font-bold text-neutral-900">{data.sender_rekening}</span></div>
+                                )}
+                            </div>
                         </div>
                     )}
-                </div>
+                </SectionCard>
 
-                <div className="flex gap-4 text-xs text-neutral-500 border border-[#E2E8F0] p-6 rounded-lg py-3 mt-2">
+                <div className="flex gap-4 text-xs text-neutral-500 border border-gray-200 rounded-lg px-6 py-3">
                     <div className="flex-1 border-r border-neutral-200 pr-4">
-                        Order ID <span className="font-medium text-neutral-900 ml-1">{data?.order_id || '-'}</span>
+                        Order ID <span className="font-bold text-neutral-900 ml-1">{data?.order_id || '-'}</span>
                     </div>
                     <div className="flex-1 border-r border-neutral-200 px-4">
-                        Diajukan oleh <span className="font-medium text-neutral-900 ml-1">{user?.name || '-'}</span>
+                        Diajukan oleh <span className="font-bold text-neutral-900 ml-1">{user?.name || '-'}</span>
                     </div>
-                    <div className="flex-1 pl-4 font-medium text-neutral-900">
+                    <div className="flex-1 pl-4 font-bold text-neutral-900">
                         {data?.created_at ? dayjs(data.created_at).format('DD MMMM YYYY, HH:mm') : '-'}
                     </div>
                 </div>
@@ -185,7 +168,7 @@ export default function ModalDetailPenjualan({
                     Icon={approvalView.Icon}
                     iconColor={approvalView.iconColor}
                     statusText={approvalView.statusText}
-                    pic={branch?.branch_name || 'Owner'}
+                    pic="Owner"
                     date={data?.updated_at ? dayjs(data.updated_at).format('DD MMMM YYYY, HH:mm') : '-'}
                     reasonLabel="Alasan Penolakan"
                     reason={approval_status === 'DITOLAK' ? data?.note : null}

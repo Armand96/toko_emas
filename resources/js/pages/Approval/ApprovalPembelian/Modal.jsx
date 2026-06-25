@@ -122,11 +122,15 @@ export default function Modal({
                     <div className="grid grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                             <span className="text-sm text-neutral-500">Kategori</span>
-                            <span className="text-sm font-medium text-neutral-900">{data?.category?.category_name || '-'}</span>
+                            <span className="text-sm font-medium text-neutral-900">
+                                {data?.subcategory
+                                    ? (data?.category?.category_name || '-')
+                                    : (data?.category?.parent?.category_name || data?.category?.category_name || '-')}
+                            </span>
                         </div>
                         <div className="flex flex-col gap-1">
                             <span className="text-sm text-neutral-500">Sub Kategori</span>
-                            <span className="text-sm font-medium text-neutral-900">{data?.category?.parent_id ? data?.category?.category_name : '-'}</span>
+                            <span className="text-sm font-medium text-neutral-900">{data?.subcategory?.category_name || '-'}</span>
                         </div>
                     </div>
 
@@ -164,9 +168,22 @@ export default function Modal({
                             <span className="text-sm font-medium text-neutral-900">{data?.branch?.branch_name || '-'}</span>
                         </div>
                         <div className="flex flex-col gap-1">
-                            <span className="text-sm text-neutral-500">Bank Keluar</span>
-                            <span className="text-sm font-medium text-neutral-900">{data?.bank?.bank_name || '-'}</span>
+                            <span className="text-sm text-neutral-500">Supplier</span>
+                            <span className="text-sm font-medium text-neutral-900">{data?.supplier?.supplier_name || '-'}</span>
                         </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-sm text-neutral-500">Metode Bayar</span>
+                            <span className="text-sm font-medium text-neutral-900">{data?.tipe_pembayaran === 'TUNAI' ? 'Tunai' : data?.tipe_pembayaran === 'TRANSFER' ? 'Transfer' : data?.tipe_pembayaran || '-'}</span>
+                        </div>
+                        {data?.tipe_pembayaran === 'TRANSFER' && (
+                            <div className="flex flex-col gap-1">
+                                <span className="text-sm text-neutral-500">Bank Keluar</span>
+                                <span className="text-sm font-medium text-neutral-900">{data?.bank?.bank_name || '-'}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 

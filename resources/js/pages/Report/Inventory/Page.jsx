@@ -255,7 +255,7 @@ const ReportInventory = () => {
             />
 
             {/* Filter bar */}
-            <div className="flex flex-wrap items-start gap-3 px-4">
+            <div className="flex flex-wrap items-start gap-3">
                 <div className="w-full sm:w-[180px]">
                     <InputGroup
                         fields={[{ name: "cabang", label: "", type: "dropdown", options: branchOptions, placeholder: "Semua Cabang" }]}
@@ -275,7 +275,7 @@ const ReportInventory = () => {
             </div>
 
             {/* KPI cards */}
-            <div className="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard label="Total Item Aktif" value={summary.totalItem.toLocaleString("id-ID")} icon={CubeIcon} tone="primary" />
                 <StatCard label="Total Berat Aktif" value={`${summary.totalBerat.toLocaleString("id-ID")} gr`} icon={ScalesIcon} tone="warning" />
                 <StatCard label="Total Nilai Modal" value={HelperFunctions.formatCurrency(summary.nilaiModal)} icon={CoinsIcon} tone="danger" />
@@ -289,14 +289,14 @@ const ReportInventory = () => {
             </div>
 
             {/* Status sekunder */}
-            <div className="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {statusSecondary.map((s) => (
                     <MiniStatCard key={s.key} label={s.label} value={s.value.toLocaleString("id-ID")} tone={s.tone} />
                 ))}
             </div>
 
             {/* Distribusi kategori/sub + karat */}
-            <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <div className="flex flex-col gap-4">
                     <ChartCard title="Item per Kategori" subtitle="Distribusi item aktif berdasarkan kategori produk.">
                         <BarChartH data={perKategori} height={180} currency={false} />
@@ -311,7 +311,7 @@ const ReportInventory = () => {
             </div>
 
             {/* Status inventory + Aging */}
-            <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <ChartCard title="Status Inventory" subtitle="Distribusi item berdasarkan status inventory.">
                     <DonutChart
                         data={statusInventory}
@@ -325,7 +325,7 @@ const ReportInventory = () => {
             </div>
 
             {/* Detail table */}
-            <div className="mx-4 rounded-lg border border-gray-200 bg-neutral-white p-5">
+            <div className="rounded-lg border border-gray-200 bg-neutral-white p-5">
                 <div className="mb-4 flex flex-col gap-1">
                     <h3 className="text-base font-semibold text-gray-950">Detail Inventory</h3>
                     <p className="text-[13px] text-gray-500">Menampilkan detail item inventory sesuai filter yang dipilih.</p>

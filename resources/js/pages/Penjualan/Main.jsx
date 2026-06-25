@@ -21,6 +21,7 @@ const STATUS_OPTIONS = [
     { value: 'CETAK KWITANSI', label: 'Cetak Kwitansi' },
     { value: 'SELESAI', label: 'Selesai' },
     { value: 'DITOLAK', label: 'Ditolak' },
+    { value: 'DIBATALKAN', label: 'Dibatalkan' },
 ];
 
 const STATUS_TONE = {
@@ -29,6 +30,7 @@ const STATUS_TONE = {
     'CETAK KWITANSI': 'info',
     'APPROVAL': 'warning',
     'DITOLAK': 'danger',
+    'DIBATALKAN': 'danger',
 };
 
 const STATUS_LABEL = {
@@ -37,6 +39,7 @@ const STATUS_LABEL = {
     'CETAK KWITANSI': 'Cetak Kwitansi',
     'APPROVAL': 'Approval',
     'DITOLAK': 'Ditolak',
+    'DIBATALKAN': 'Dibatalkan',
 };
 
 const Main = ({ setCurentState }) => {
@@ -122,29 +125,29 @@ const Main = ({ setCurentState }) => {
         showAlert({
             icon: 'warning',
             isAutoClose: false,
-            title: 'Tolak Transaksi Penjualan',
-            message: `Apakah Anda yakin ingin menolak transaksi ${row.order_id}?`,
-            confirmText: 'Ya, Tolak',
-            cancelText: 'Batal',
+            title: 'Batalkan Transaksi Penjualan',
+            message: `Apakah Anda yakin ingin membatalkan transaksi ${row.order_id}? Transaksi yang dibatalkan tidak dapat diproses kembali.`,
+            confirmText: 'Ya, Batalkan',
+            cancelText: 'Kembali',
         }).then((res) => {
             if (res.confirmed) {
                 PenjualanApis.PutPenjualanApproval({
                     penjualan_id: row.id,
-                    status: 'DITOLAK',
+                    status: 'DIBATALKAN',
                 }).then(() => {
                     fetchData(paramFetch.current_page, paramFetch.per_page, searchBounce);
                     showAlert({
                         icon: 'success',
-                        isAutoClose: false,
-                        title: 'Berhasil',
-                        message: 'Transaksi telah ditolak',
+                        isAutoClose: true,
+                        title: 'Berhasil Dibatalkan',
+                        message: 'Transaksi penjualan telah dibatalkan.',
                     });
                 }).catch((error) => {
                     console.error(error);
                     showAlert({
                         icon: 'error',
                         title: 'Gagal',
-                        message: 'Gagal menolak transaksi',
+                        message: 'Gagal membatalkan transaksi',
                     });
                 });
             }
@@ -227,8 +230,8 @@ const Main = ({ setCurentState }) => {
             accessor: 'aksi',
             render: (row) => (
                 <ActionButtonGroup>
-                    {row.approval_status === 'APPROVAL' && can('delete', 'transaksi.penjualan') && (
-                        <ActionButton variant="cancel" title="Tolak" onClick={() => handleCancel(row)} />
+                    {['APPROVAL', 'DISETUJUI'].includes(row.approval_status) && can('delete', 'transaksi.penjualan') && (
+                        <ActionButton variant="cancel" title="Batalkan" onClick={() => handleCancel(row)} />
                     )}
                     <ActionButton variant="view" title="Lihat Detail" onClick={() => handleViewTransaction(row)} />
                     {(row.approval_status === 'SELESAI' || row.approval_status === 'DISETUJUI' || row.approval_status === 'CETAK KWITANSI') && (

@@ -29,7 +29,7 @@ const ApprovalPembelian = () => {
         per_page: 10,
     });
 
-    const [search, setSearch] = useState({ search: '', status: '' });
+    const [search, setSearch] = useState({ search: '', status: 'APPROVAL' });
     const [searchBounce] = useDebounce(search, 500);
     const [firstLoading, setFirstLoading] = useState(false);
 

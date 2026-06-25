@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ScanIcon, PackageIcon, CheckCircleIcon, ClockCountdownIcon, PlusCircleIcon } from "@phosphor-icons/react";
+import { ScanIcon, PackageIcon, CheckCircleIcon, ClockCountdownIcon, PlusCircleIcon, CaretLeftIcon } from "@phosphor-icons/react";
 import ModalScanBarcode from "../../../components/ModaScanBarcode";
 import StatCards from "./StatCards";
 import InventoryApis from "../../../Services/Inventory.apis";
@@ -197,8 +197,8 @@ const FormAdd = ({ setCurentState }) => {
     ];
 
     return (
-        <div className="w-full h-full flex flex-col gap-6 bg-gray-50/50 p-6 min-h-screen">
-            <div className="flex flex-col lg:flex-row gap-y-3 lg:items-center justify-between p-4">
+        <div className="flex flex-col gap-6 w-full">
+            <div className="flex flex-col lg:flex-row gap-y-3 lg:items-center justify-between">
                 <div className="flex flex-col gap-0.5">
                     <span className="text-[24px] font-semibold text-gray-950">Stock Opname Item</span>
                     <span className="text-[13px] text-gray-500">Lakukan pengecekan stok fisik untuk memastikan data inventory sesuai dengan kondisi aktual.</span>
@@ -316,9 +316,9 @@ const FormAdd = ({ setCurentState }) => {
                 <button
                     type="button"
                     onClick={() => setCurentState({ view: 'main' })}
-                    className="btn-outline px-6 py-2.5 rounded-lg font-medium text-sm"
+                    className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 w-fit cursor-pointer"
                 >
-                    Kembali
+                    <CaretLeftIcon size={18} /> Kembali
                 </button>
             </div>
 
@@ -339,6 +339,7 @@ const InventoryRows = ({ rows, statusLabel, lost = false }) => (
                     <th className="px-4 py-3 font-semibold">Kode</th>
                     <th className="px-4 py-3 font-semibold">Produk</th>
                     <th className="px-4 py-3 font-semibold">Kategori</th>
+                    <th className="px-4 py-3 font-semibold">Sub Kategori</th>
                     <th className="px-4 py-3 font-semibold">Berat</th>
                     <th className="px-4 py-3 font-semibold">Karat</th>
                     <th className="px-4 py-3 font-semibold">Status</th>
@@ -346,30 +347,37 @@ const InventoryRows = ({ rows, statusLabel, lost = false }) => (
             </thead>
             <tbody>
                 {rows.length === 0 ? (
-                    <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Belum ada item.</td></tr>
-                ) : rows.map((row, idx) => (
-                    <tr key={row.inventory_code || idx} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3">
-                            <CodeBadge>{row.inventory_code}</CodeBadge>
-                        </td>
-                        <td className="px-4 py-3">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-amber-50 rounded-md border border-gray-100 flex-shrink-0 overflow-hidden">
-                                    {row.image_path && <img src={HelperFunctions.getStorageUrl(row.image_path)} alt="" className="w-full h-full object-cover" />}
+                    <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Belum ada item.</td></tr>
+                ) : rows.map((row, idx) => {
+                    const kategori = row.sub_category
+                        ? (row.category?.category_name || '-')
+                        : (row.category?.parent?.category_name || row.category?.category_name || '-');
+                    const subKategori = row.sub_category?.category_name || '-';
+                    return (
+                        <tr key={row.inventory_code || idx} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-3">
+                                <CodeBadge>{row.inventory_code}</CodeBadge>
+                            </td>
+                            <td className="px-4 py-3">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-amber-50 rounded-md border border-gray-100 flex-shrink-0 overflow-hidden">
+                                        {row.image_path && <img src={HelperFunctions.getStorageUrl(row.image_path)} alt="" className="w-full h-full object-cover" />}
+                                    </div>
+                                    <span className="text-sm font-medium text-gray-800">{row.product?.product_name || row.product?.name || '-'}</span>
                                 </div>
-                                <span className="text-sm font-medium text-gray-800">{row.product?.product_name || row.product?.name || '-'}</span>
-                            </div>
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">{row.category?.category_name || row.category?.name || '-'}</td>
-                        <td className="px-4 py-3 text-gray-600">{row.berat ? `${row.berat}g` : '-'}</td>
-                        <td className="px-4 py-3 text-gray-600">{row.karat ? `${row.karat}K` : '-'}</td>
-                        <td className="px-4 py-3">
-                            <Badge tone={lost ? 'danger' : 'success'}>
-                                {statusLabel}
-                            </Badge>
-                        </td>
-                    </tr>
-                ))}
+                            </td>
+                            <td className="px-4 py-3 text-gray-600">{kategori}</td>
+                            <td className="px-4 py-3 text-gray-600">{subKategori}</td>
+                            <td className="px-4 py-3 text-gray-600">{row.berat ? `${row.berat}g` : '-'}</td>
+                            <td className="px-4 py-3 text-gray-600">{row.karat ? `${row.karat}K` : '-'}</td>
+                            <td className="px-4 py-3">
+                                <Badge tone={lost ? 'danger' : 'success'}>
+                                    {statusLabel}
+                                </Badge>
+                            </td>
+                        </tr>
+                    );
+                })}
             </tbody>
         </table>
     </div>

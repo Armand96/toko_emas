@@ -140,7 +140,7 @@ const ReportPenjualan = () => {
             />
 
             {/* Filter bar */}
-            <div className="flex flex-wrap items-start gap-3 px-4">
+            <div className="flex flex-wrap items-start gap-3">
                 <div className="w-full sm:w-[260px]">
                     <InputGroup
                         fields={[{ name: "dateRange", label: "", type: "daterange" }]}
@@ -160,7 +160,7 @@ const ReportPenjualan = () => {
             </div>
 
             {/* KPI cards */}
-            <div className="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard label="Total Penjualan" value={HelperFunctions.formatCurrency(SUMMARY.total)} icon={ReceiptIcon} tone="info" />
                 <StatCard label="Jumlah Transaksi" value={SUMMARY.transaksi.toLocaleString("id-ID")} icon={ChatTextIcon} tone="danger" />
                 <StatCard label="Laba" value={HelperFunctions.formatCurrency(SUMMARY.laba)} icon={TrendUpIcon} tone="success" />
@@ -168,7 +168,7 @@ const ReportPenjualan = () => {
             </div>
 
             {/* Tren + Produk Terlaris */}
-            <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <ChartCard title="Tren Penjualan" subtitle="Perkembangan omzet penjualan harian">
                     <LineChart data={TREN} />
                 </ChartCard>
@@ -210,7 +210,7 @@ const ReportPenjualan = () => {
             </div>
 
             {/* Per Kategori/Sub Kategori + Per Karat */}
-            <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <div className="flex flex-col gap-4">
                     <ChartCard title="Penjualan per Kategori" subtitle="Distribusi penjualan berdasarkan kategori produk.">
                         <BarChartH data={PER_KATEGORI} height={180} />
@@ -225,7 +225,7 @@ const ReportPenjualan = () => {
             </div>
 
             {/* Detail table */}
-            <div className="mx-4 rounded-lg border border-gray-200 bg-neutral-white p-5">
+            <div className="rounded-lg border border-gray-200 bg-neutral-white p-5">
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                         <h3 className="text-base font-semibold text-gray-950">Detail Penjualan</h3>

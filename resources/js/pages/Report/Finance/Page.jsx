@@ -259,7 +259,7 @@ const ReportFinance = () => {
             />
 
             {/* KPI cards */}
-            <div className="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <StatCard
                     label="Total Kas & Bank (semua cabang)"
                     value={HelperFunctions.formatCurrency(totals.total_all)}
@@ -284,7 +284,7 @@ const ReportFinance = () => {
             </div>
 
             {/* Saldo per cabang (accordion) */}
-            <div className="px-4">
+            <div>
                 {branches.length > 0 ? (
                     <BranchAccountAccordion branches={branches} defaultOpenId={branches[0]?.id} />
                 ) : (
@@ -295,7 +295,7 @@ const ReportFinance = () => {
             </div>
 
             {/* Section title + filter bar */}
-            <div className="px-4">
+            <div>
                 <div className="mb-3">
                     <h2 className="text-lg font-semibold text-gray-950">Laporan Transaksi</h2>
                     <p className="text-[13px] text-gray-500">Menyajikan rincian aktivitas keuangan dalam bentuk visual dan data.</p>
@@ -329,7 +329,7 @@ const ReportFinance = () => {
             </div>
 
             {/* Period KPI */}
-            <div className="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard label="Saldo Awal" value={HelperFunctions.formatCurrency(period.opening_balance)} subLabel={periodLabel} icon={CalendarBlankIcon} tone="info" />
                 <StatCard label="Total Cash In" value={HelperFunctions.formatCurrency(period.cash_in)} icon={ArrowCircleDownIcon} tone="success" />
                 <StatCard label="Total Cash Out" value={HelperFunctions.formatCurrency(period.cash_out)} icon={ArrowCircleUpIcon} tone="danger" />
@@ -337,7 +337,7 @@ const ReportFinance = () => {
             </div>
 
             {/* Donut charts */}
-            <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <ChartCard title="Cash In per Kategori">
                     <DonutChart data={cashIn} colors={["#0079d3", "#f9a220", "#00c951", "#7cc8fd"]} />
                 </ChartCard>
@@ -347,7 +347,7 @@ const ReportFinance = () => {
             </div>
 
             {/* Detail table */}
-            <div className="mx-4 rounded-lg border border-gray-200 bg-neutral-white p-5">
+            <div className="rounded-lg border border-gray-200 bg-neutral-white p-5">
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                         <h3 className="text-base font-semibold text-gray-950">Detail Transaksi</h3>

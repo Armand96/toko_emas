@@ -183,14 +183,14 @@ const ReportCustomer = () => {
             />
 
             {/* KPI cards */}
-            <div className="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <StatCard label="Total Customer" value={summary.total.toLocaleString("id-ID")} icon={UsersThreeIcon} tone="info" />
                 <StatCard label="Customer Aktif" value={summary.aktif.toLocaleString("id-ID")} icon={UserCircleCheckIcon} tone="success" />
                 <StatCard label="Customer Baru" value={summary.baru.toLocaleString("id-ID")} icon={UserPlusIcon} tone="warning" />
             </div>
 
             {/* Section title + date filter (filter di bawah title) */}
-            <div className="flex flex-col gap-3 px-4">
+            <div className="flex flex-col gap-3">
                 <div>
                     <h2 className="text-lg font-semibold text-gray-950">Laporan Transaksi Customer</h2>
                     <p className="text-[13px] text-gray-500">Menyajikan rincian aktivitas pelanggan dalam bentuk visual dan data.</p>
@@ -206,7 +206,7 @@ const ReportCustomer = () => {
             </div>
 
             {/* Charts grid */}
-            <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {/* Top customer */}
                 <ChartCard
                     title="Top Customer"
@@ -275,7 +275,7 @@ const ReportCustomer = () => {
             </div>
 
             {/* Detail table */}
-            <div className="mx-4 rounded-lg border border-gray-200 bg-neutral-white p-5">
+            <div className="rounded-lg border border-gray-200 bg-neutral-white p-5">
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                         <h3 className="text-base font-semibold text-gray-950">Detail Customer</h3>
