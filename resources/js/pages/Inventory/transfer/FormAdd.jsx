@@ -153,7 +153,7 @@ const FormAdd = ({ setCurentState }) => {
     };
 
     return (
-        <div className="w-full h-full flex flex-col gap-6 bg-gray-50/50 p-6 min-h-screen">
+        <div className="flex flex-col gap-6 w-full">
             <HeaderSection
                 title="Input Transfer"
                 description="Lengkapi informasi transfer dan pilih item inventory yang akan ditransfer antar cabang."

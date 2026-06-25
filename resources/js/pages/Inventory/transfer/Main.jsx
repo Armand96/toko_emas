@@ -23,7 +23,7 @@ const Main = ({ setCurentState }) => {
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
 
-    const [filterData, setFilterData] = useState({ search: '', status: '' });
+    const [filterData, setFilterData] = useState({ search: '', status: 'APPROVAL' });
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -244,7 +244,7 @@ const Main = ({ setCurentState }) => {
             <div className="flex flex-wrap items-end gap-3">
                 <div className="flex-1 min-w-[220px] max-w-xs">
                     <InputGroup
-                        fields={[{ name: 'search', label: '', type: 'search', placeholder: 'Cari produk...' }]}
+                        fields={[{ name: 'search', label: '', type: 'search', placeholder: 'Cari kode...' }]}
                         formData={filterData}
                         cols="1"
                         onChange={handleFilterChange}

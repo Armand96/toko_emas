@@ -46,7 +46,7 @@ const ApprovalPenjualan = () => {
         per_page: 10,
     });
 
-    const [filter, setFilter] = useState({ search: '', cabang: '' });
+    const [filter, setFilter] = useState({ search: '', cabang: '', status: 'APPROVAL' });
     const [filterBounce] = useDebounce(filter, 500);
     const [firstLoading, setFirstLoading] = useState(false);
 
@@ -59,9 +59,11 @@ const ApprovalPenjualan = () => {
             const query = new URLSearchParams({
                 page,
                 per_page: pageSize,
-                approval_status: 'APPROVAL',
-                status: 'APPROVAL',
             });
+            if (params.status) {
+                query.append('approval_status', params.status);
+                query.append('status', params.status);
+            }
             if (params.search) query.append('order_id', params.search);
             if (params.cabang) query.append('branch_id', params.cabang);
 
@@ -89,10 +91,7 @@ const ApprovalPenjualan = () => {
 
 
 
-    const filteredData = (paramFetch.data || []).filter((row) => {
-        const matchCabang = !filter.cabang || row.branch?.branch_name === filter.cabang;
-        return matchCabang;
-    });
+    const filteredData = paramFetch.data || [];
 
     const handleOpenModal = async (row) => {
         setLoading(true);
@@ -243,6 +242,27 @@ const ApprovalPenjualan = () => {
                             label: "",
                             type: "search",
                             placeholder: "Cari kode...",
+                        }]}
+                        formData={filter}
+                        cols="1"
+                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
+                    />
+                </div>
+                <div className="w-[160px]">
+                    <InputGroup
+                        fields={[{
+                            name: "status",
+                            label: "",
+                            type: "dropdown",
+                            placeholder: "Pilih status",
+                            options: [
+                                { value: 'APPROVAL', label: 'Approval' },
+                                { value: 'DISETUJUI', label: 'Disetujui' },
+                                { value: 'CETAK KWITANSI', label: 'Cetak Kwitansi' },
+                                { value: 'SELESAI', label: 'Selesai' },
+                                { value: 'DITOLAK', label: 'Ditolak' },
+                                { value: 'DIBATALKAN', label: 'Dibatalkan' },
+                            ],
                         }]}
                         formData={filter}
                         cols="1"

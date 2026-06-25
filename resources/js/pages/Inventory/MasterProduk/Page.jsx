@@ -98,19 +98,36 @@ const MasterProduk = () => {
             is_active: record.is_active === 1,
             category,
             sub_category,
-            branch: record.branch_id,
+            branch: record.branch_id ? [record.branch_id] : [],
         };
     };
 
-    const handleOpenModal = (mode, record = null) => {
+    const handleOpenModal = async (mode, record = null) => {
         if (mode === 'add') {
             setFormData({ is_active: false, branch: [] });
             setIsView(false);
+            setIsModalOpen(true);
         } else if (mode === 'edit' || mode === 'view') {
-            setFormData(buildEditFormData(record));
             setIsView(mode === 'view');
+            setFormData(buildEditFormData(record));
+            setIsModalOpen(true);
+
+            try {
+                setLoading(true);
+                const detail = await InventoryApis.GetProductSingle(record.id);
+                if (detail) {
+                    const branchIds = (detail.branches || []).map((b) => b.branch_id).filter(Boolean);
+                    setFormData((prev) => ({
+                        ...prev,
+                        branch: branchIds.length > 0 ? branchIds : (record.branch_id ? [record.branch_id] : []),
+                    }));
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
         }
-        setIsModalOpen(true);
     };
 
     console.log(formData)
@@ -193,26 +210,25 @@ const MasterProduk = () => {
                 subcategory_id: submitData.sub_category || 0,
             };
 
+            const branchIds = Array.isArray(submitData.branch) ? submitData.branch : [submitData.branch];
+
             if (formData?.id) {
                 await InventoryApis.PutProducts(formData.id, {
                     ...payload,
-                    branch_id: submitData.branch,
+                    branch_id: branchIds,
                     barcode: formData.barcode,
                 });
             } else {
                 await InventoryApis.PostProducts({
                     ...payload,
-                    branch_id: Array.isArray(submitData.branch) ? submitData.branch : [submitData.branch],
+                    branch_id: branchIds,
                 });
             }
 
             OptionsStore.getState().invalidate('products');
-            setTimeout(() => {
-                showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
-                handleCloseModal();
-                setLoading(false);
-                fetchData();
-            }, 1000);
+            handleCloseModal();
+            fetchData();
+            showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
         } catch (error) {
             showAlert({ title: 'Gagal', message: 'Gagal menyimpan data', icon: 'error' });
         } finally {

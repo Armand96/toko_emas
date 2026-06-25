@@ -4,6 +4,9 @@ const InventoryApis = {
     GetProducts: (params) => {
         return Apis.Get(`/api/products${params}`).then(({ data }) => data);
     },
+    GetProductSingle: (id) => {
+        return Apis.Get(`/api/products/${id}`).then(({ data }) => data?.data ?? data);
+    },
     PostProducts: (body) => {
         return Apis.Post(`/api/products`, body,  );
     },

@@ -36,7 +36,7 @@ const MainPembelian = ({ setCurentState }) => {
         total: 0,
         per_page: 10,
     });
-    const [search, setSearch] = useState({ search: "", status: "", category_id: "" });
+    const [search, setSearch] = useState({ search: "", status: "APPROVAL", category_id: "" });
     const [searchBounce] = useDebounce(search, 500);
     const [firstLoading, setFirstLoading] = useState(false);
 

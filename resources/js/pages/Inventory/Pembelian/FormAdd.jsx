@@ -104,9 +104,12 @@ const FormPembelian = ({ setCurentState }) => {
     const selectBranch = (branchId, products = allProducts) => {
         setSelectedBranch(branchId);
 
-        const filtered = (products || []).filter(
-            (p) => String(p.branch_id) === String(branchId)
-        );
+        const filtered = (products || []).filter((p) => {
+            if (p.branches && Array.isArray(p.branches)) {
+                return p.branches.some((b) => String(b.branch_id) === String(branchId));
+            }
+            return String(p.branch_id) === String(branchId);
+        });
         setProductOptions(HelperFunctions.formatDropdown(filtered, "id", "product_name"));
 
         setItem({ ...emptyItem, branch_id: branchId });

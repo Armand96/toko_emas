@@ -133,7 +133,7 @@ const FormAdd = ({ setCurentState }) => {
     };
 
     return (
-        <div className="w-full h-full flex flex-col gap-6 bg-gray-50/50 p-6 min-h-screen">
+        <div className="flex flex-col gap-6 w-full">
             <HeaderSection
                 title="Input Remove Item"
                 description="Lengkapi informasi dan pilih item inventory yang akan dikeluarkan dari inventory aktif."

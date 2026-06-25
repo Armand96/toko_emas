@@ -71,7 +71,20 @@ const MasterKategori = () => {
         }
     }, [searchBounce]);
 
+    const refreshParentOptions = () => {
+        ensureCategories(true).then((data) => {
+            setAllParentOptions(
+                HelperFunctions.formatDropdown(
+                    (data || []).filter((item) => !item.parent_id),
+                    "id",
+                    "category_name",
+                )
+            );
+        });
+    };
+
     const handleOpenModal = (mode, record = null) => {
+        refreshParentOptions();
         setFormData(mode === "add" ? {} : { ...record });
         setIsView(mode === "view");
         setShowModalAdd(true);

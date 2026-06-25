@@ -1,12 +1,25 @@
 import { useState, useEffect } from 'react';
-import { PackageIcon, CheckCircleIcon, WarningCircleIcon, PlusCircleIcon } from "@phosphor-icons/react";
+import { PackageIcon, CheckCircleIcon, WarningCircleIcon, PlusCircleIcon, CaretLeftIcon } from "@phosphor-icons/react";
 import StatCards from "./StatCards";
 import InventoryApis from "../../../Services/Inventory.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import CodeBadge from "../../../components/CodeBadge";
 import Badge from "../../../components/Badge";
 
-const ItemTable = ({ rows, lost = false }) => (
+const STATUS_TONE = {
+    Available: 'success',
+    Transit: 'warning',
+    Sold: 'gray',
+    Repair: 'info',
+    Lost: 'danger',
+};
+
+const toTitleCase = (status) => {
+    if (!status) return '-';
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+};
+
+const ItemTable = ({ rows }) => (
     <div className="overflow-x-auto">
         <table className="w-full text-sm text-left text-gray-900">
             <thead className="text-xs text-gray-600 border-b border-gray-200">
@@ -14,6 +27,7 @@ const ItemTable = ({ rows, lost = false }) => (
                     <th className="px-4 py-3 font-semibold">Kode</th>
                     <th className="px-4 py-3 font-semibold">Produk</th>
                     <th className="px-4 py-3 font-semibold">Kategori</th>
+                    <th className="px-4 py-3 font-semibold">Sub Kategori</th>
                     <th className="px-4 py-3 font-semibold">Berat</th>
                     <th className="px-4 py-3 font-semibold">Karat</th>
                     <th className="px-4 py-3 font-semibold">Status Terakhir</th>
@@ -21,30 +35,33 @@ const ItemTable = ({ rows, lost = false }) => (
             </thead>
             <tbody>
                 {rows.length === 0 ? (
-                    <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Tidak ada item.</td></tr>
-                ) : rows.map((row, idx) => (
-                    <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3">
-                            <CodeBadge>{row.kode}</CodeBadge>
-                        </td>
-                        <td className="px-4 py-3">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-amber-50 rounded-md border border-gray-100 flex-shrink-0 overflow-hidden">
-                                    {row.image && <img src={row.image} alt="" className="w-full h-full object-cover" />}
+                    <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Tidak ada item.</td></tr>
+                ) : rows.map((row, idx) => {
+                    const statusLabel = toTitleCase(row.last_status);
+                    const tone = STATUS_TONE[statusLabel] || 'gray';
+                    return (
+                        <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-3">
+                                <CodeBadge>{row.kode}</CodeBadge>
+                            </td>
+                            <td className="px-4 py-3">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-amber-50 rounded-md border border-gray-100 flex-shrink-0 overflow-hidden">
+                                        {row.image && <img src={row.image} alt="" className="w-full h-full object-cover" />}
+                                    </div>
+                                    <span className="text-sm font-medium text-gray-800">{row.produk}</span>
                                 </div>
-                                <span className="text-sm font-medium text-gray-800">{row.produk}</span>
-                            </div>
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">{row.kategori}</td>
-                        <td className="px-4 py-3 text-gray-600">{row.berat}</td>
-                        <td className="px-4 py-3 text-gray-600">{row.karat}</td>
-                        <td className="px-4 py-3">
-                            <Badge tone={lost ? 'danger' : 'success'}>
-                                {row.last_status}
-                            </Badge>
-                        </td>
-                    </tr>
-                ))}
+                            </td>
+                            <td className="px-4 py-3 text-gray-600">{row.kategori}</td>
+                            <td className="px-4 py-3 text-gray-600">{row.sub_kategori || '-'}</td>
+                            <td className="px-4 py-3 text-gray-600">{row.berat}</td>
+                            <td className="px-4 py-3 text-gray-600">{row.karat}</td>
+                            <td className="px-4 py-3">
+                                <Badge tone={tone}>{statusLabel}</Badge>
+                            </td>
+                        </tr>
+                    );
+                })}
             </tbody>
         </table>
     </div>
@@ -68,11 +85,16 @@ const Detail = ({ id, setCurentState }) => {
 
     const mapDetail = (d) => {
         const inv = d.inventory || {};
+        const kategori = inv.sub_category
+            ? (inv.category?.category_name || '-')
+            : (inv.category?.parent?.category_name || inv.category?.category_name || '-');
+        const sub_kategori = inv.sub_category?.category_name || '';
         return {
             kode: d.inventory_code,
             image: inv.image_path ? HelperFunctions.getStorageUrl(inv.image_path) : null,
             produk: d.product?.product_name || d.product?.name || '-',
-            kategori: inv.category?.category_name || inv.category?.name || '-',
+            kategori,
+            sub_kategori,
             berat: inv.berat ? `${inv.berat}g` : '-',
             karat: inv.karat ? `${inv.karat}K` : '-',
             last_status: d.last_status,
@@ -107,8 +129,8 @@ const Detail = ({ id, setCurentState }) => {
     ];
 
     return (
-        <div className="w-full h-full flex flex-col gap-6 bg-gray-50/50 p-6 min-h-screen">
-            <div className="flex flex-col gap-0.5 p-4">
+        <div className="flex flex-col gap-6 w-full">
+            <div className="flex flex-col gap-0.5">
                 <span className="text-[24px] font-semibold text-gray-950">Stock Opname Item</span>
                 <span className="text-[13px] text-gray-500">Detail hasil pengecekan stok fisik terhadap data inventory sistem.</span>
             </div>
@@ -119,11 +141,12 @@ const Detail = ({ id, setCurentState }) => {
             <div className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col gap-5">
                 <div className="flex flex-col gap-0.5">
                     <h2 className="text-lg font-semibold text-gray-900">
-                        {isLoading ? 'Memuat...' : `Sesi: ${header?.kode_sesi || '-'}`}
+                        {isLoading ? 'Memuat...' : `Sesi Selesai: ${header?.kode_sesi || '-'}`}
                     </h2>
                     <span className="text-sm text-gray-500">
                         {header?.branch?.branch_name || '-'}
-                        {header?.created_at ? ` · ${new Date(header.created_at).toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}
+                        {header?.created_at ? ` · Mulai: ${new Date(header.created_at).toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}
+                        {header?.updated_at ? ` · Selesai: ${new Date(header.updated_at).toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}
                     </span>
                 </div>
 
@@ -158,7 +181,7 @@ const Detail = ({ id, setCurentState }) => {
                 </div>
 
                 {activeTab === 'sesuai' && <ItemTable rows={sesuaiRows} />}
-                {activeTab === 'lost' && <ItemTable rows={lostRows} lost />}
+                {activeTab === 'lost' && <ItemTable rows={lostRows} />}
                 {activeTab === 'extra' && (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left text-gray-900">
@@ -191,9 +214,9 @@ const Detail = ({ id, setCurentState }) => {
                 <button
                     type="button"
                     onClick={() => setCurentState({ view: 'main' })}
-                    className="btn-outline px-6 py-2.5 rounded-lg font-medium text-sm"
+                    className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 w-fit cursor-pointer"
                 >
-                    Kembali
+                    <CaretLeftIcon size={18} /> Kembali
                 </button>
             </div>
         </div>

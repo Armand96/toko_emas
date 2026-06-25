@@ -278,7 +278,7 @@ const FormAdd = ({ setCurentState }) => {
     };
 
     return (
-        <div className="flex flex-col gap-6 w-full pb-6">
+        <div className="flex flex-col gap-6 w-full">
             <HeaderSection
                 title="Input Penjualan"
                 description="Masukkan detail transaksi penjualan dan pilih item yang akan dijual."
