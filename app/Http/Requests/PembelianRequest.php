@@ -34,12 +34,12 @@ class PembelianRequest extends FormRequest
             'data.*.supplier_id' => ['nullable', 'integer'],
             'data.*.batch' => ['nullable', 'integer'],
             'data.*.barcode' => ['required', 'string'],
-            'data.*.bank_id' => ['nullable', 'integer'],
+            'data.*.bank_cabang_id' => ['nullable', 'integer'],
             'data.*.berat' => ['required', 'numeric'],
             'data.*.karat' => ['required', 'numeric'],
             'data.*.modal' => ['required', 'numeric'],
             'data.*.tipe_pembayaran' => ['required', 'string'],
-            'data.*.serial_number' => ['required', 'string'],
+            'data.*.serial_number' => ['nullable', 'string'],
             'data.*.jual' => ['required', 'numeric'],
         ];
     }
