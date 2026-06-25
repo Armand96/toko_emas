@@ -244,7 +244,7 @@ const FormPembelian = ({ setCurentState }) => {
                 category_id: Number(b.category_id),
                 subcategory_id: Number(b.subcategory_id),
                 tipe_pembayaran: b.payment_method,
-                bank_id: b.bank_id ? Number(b.bank_id) : null,
+                bank_cabang_id: b.bank_id ? Number(b.bank_id) : null,
                 supplier_id: Number(b.supplier_id),
                 barcode: b.barcode,
                 berat: Number(b.berat),
