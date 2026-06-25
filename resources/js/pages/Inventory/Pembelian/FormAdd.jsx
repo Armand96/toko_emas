@@ -340,7 +340,7 @@ const FormPembelian = ({ setCurentState }) => {
             header: "Pembayaran",
             accessor: "payment_method",
             render: (row) =>
-                row.payment_method === "CASH"
+                row.payment_method === "TUNAI"
                     ? "Tunai"
                     : bankOptions.find((b) => b.value === row.bank_id)?.label || "Transfer",
         },
