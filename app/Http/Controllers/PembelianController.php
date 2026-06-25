@@ -31,8 +31,10 @@ class PembelianController extends Controller
     {
         $query = Pembelian::query();
 
-        if ($request->has('product_name') && $request->product_name != "") {
-            $query->where('product.product_name', 'like', '%' . $request->product_name . '%');
+        if ($request->has('search') && $request->search != "") {
+            $query->whereHas('product.product_name', function($qry) use($request) {
+                $qry->where('product_name', 'like', '%'.$request->search.'%');
+            });
         }
         if ($request->has('product_id') && $request->product_id != "") {
             $query->where('product_id', $request->product_id);
