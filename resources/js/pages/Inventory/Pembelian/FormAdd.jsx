@@ -488,7 +488,7 @@ const FormPembelian = ({ setCurentState }) => {
                             name="payment_method"
                             value={item.payment_method}
                             options={[
-                                { value: 'CASH', label: 'Tunai' },
+                                { value: 'TUNAI', label: 'Tunai' },
                                 { value: 'TRANSFER', label: 'Transfer' },
                             ]}
                             placeholder="Pilih metode"
