@@ -412,7 +412,7 @@ const FormPembelian = ({ setCurentState }) => {
                             label="Foto Item"
                             name="foto"
                             value={item.foto}
-                            helperText="Foto berformat JPG, JPEG, PNG, atau GIF."
+                            helperText="Foto berformat JPG, JPEG, PNG, atau GIF. Maksimal 3 MB."
                             accept="image/jpeg,image/png,image/gif"
                             onChange={handleChange}
                         />
@@ -495,7 +495,7 @@ const FormPembelian = ({ setCurentState }) => {
                             isRequired
                             onChange={(e) => {
                                 const val = e.target.value;
-                                setItem((prev) => ({ ...prev, payment_method: val, ...(val === 'CASH' ? { bank_id: null } : {}) }));
+                                setItem((prev) => ({ ...prev, payment_method: val, ...(val === 'TUNAI' ? { bank_id: null } : {}) }));
                             }}
                         />
 

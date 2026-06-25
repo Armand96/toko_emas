@@ -224,9 +224,9 @@ const MainPembelian = ({ setCurentState }) => {
             header: "Sub Kategori",
             accessor: "sub_kategori",
             render: (row) => {
-                const category = categoryOptions.find((c) => c.value === row.category_id)?.details;
-                const isSubCategory = category?.parent_id !== null && category?.parent_id !== undefined;
-                return isSubCategory ? category?.category_name : "-";
+                if (!row.subcategory_id) return "-";
+                const sub = categoryOptions.find((c) => c.value === row.subcategory_id)?.details;
+                return sub?.category_name || "-";
             },
         },
 

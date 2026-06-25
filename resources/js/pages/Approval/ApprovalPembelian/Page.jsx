@@ -238,12 +238,11 @@ const ApprovalPembelian = () => {
         {
             header: 'Sub Kategori',
             accessor: 'subkategori',
-            render: (row) => row.category?.parent_id ? row.category?.category_name : '-'
-        },
-        {
-            header: 'Deskripsi',
-            accessor: 'deskripsi',
-            render: (row) => row.product?.description ?? '-'
+            render: (row) => {
+                if (!row.subcategory_id) return "-";
+                const sub = categoryOptions.find((c) => c.value === row.subcategory_id)?.details;
+                return sub?.category_name || "-";
+            },
         },
         {
             header: 'Cabang',
