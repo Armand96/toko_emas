@@ -32,8 +32,8 @@ class PembelianController extends Controller
         $query = Pembelian::query();
 
         if ($request->has('search') && $request->search != "") {
-            $query->whereHas('product.product_name', function($qry) use($request) {
-                $qry->where('product_name', 'like', '%'.$request->search.'%');
+            $query->whereHas('product.product_name', function ($qry) use ($request) {
+                $qry->where('product_name', 'like', '%' . $request->search . '%');
             });
         }
         if ($request->has('product_id') && $request->product_id != "") {
@@ -80,7 +80,7 @@ class PembelianController extends Controller
         try {
 
             $currentBatch = PembelianBatch::max('batch_sequence');
-            $batch = PembelianBatch::create(['batch_sequence' => $currentBatch+1]);
+            $batch = PembelianBatch::create(['batch_sequence' => $currentBatch + 1]);
             $dateNow = date('Y-m-d H:i:s');
             $result = [];
 
@@ -133,6 +133,18 @@ class PembelianController extends Controller
                     $value->inventory_code = $value->barcode . "-" . str_pad($data + 1, 4, "0", STR_PAD_LEFT);
                     $value->update();
 
+                    // if (count($batchInsert) > 0) Inventory::insert($batchInsert);
+                    // TO DO INSERT KE FINANCE
+                    $categoryFinance = MCategoryFinance::where('category_name', 'like', '%Pembelian%')->first();
+                    Finance::create(array(
+                        'branch_id' => $value->branch_id,
+                        'category_finance_id' => $categoryFinance->id,
+                        'bank_cabang_id' => $value->bank_cabang_id == null ? 0 : $value->bank_cabang_id,
+                        'type' => FinanceType::CASHOUT,
+                        'payment_method' => $value->tipe_pembayaran,
+                        'nominal' => $value->modal
+                    ));
+
                     Inventory::create(array(
                         'inventory_code' => $value->barcode . "-" . str_pad($data + 1, 4, "0", STR_PAD_LEFT),
                         'pembelian_id' => $value->id,
@@ -152,18 +164,6 @@ class PembelianController extends Controller
                         'status' => InventoryStatus::AVAILABLE
                     ));
                 }
-
-                // if (count($batchInsert) > 0) Inventory::insert($batchInsert);
-                // TO DO INSERT KE FINANCE
-                $categoryFinance = MCategoryFinance::where('category_name', 'like', '%Pembelian%')->first();
-                Finance::create(array(
-                    'branch_id' => $value->branch_id,
-                    'category_finance_id' => $categoryFinance->id,
-                    'bank_cabang_id' => $value->bank_cabang_id,
-                    'type' => FinanceType::CASHOUT,
-                    'payment_method' => FinancePaymentMethod::TRANSFER,
-                    'nominal' => $value->modal
-                ));
             }
 
             DB::commit();

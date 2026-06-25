@@ -7,6 +7,7 @@ use App\Helpers\InventoryStatus;
 use App\Helpers\TransferItemStatus;
 use App\Http\Requests\TransferItemRequest;
 use App\Http\Requests\UpdateStatusTransferItemRequest;
+use App\Models\BranchProduct;
 use App\Models\Inventory;
 use App\Models\TransferItem;
 use App\Models\TransferItemDetail;
@@ -124,6 +125,7 @@ class TransferItemController extends Controller
             $products = TransferItemDetail::where('transfer_item_id', $validated['transfer_item_id'])->pluck('inventory_code')->toArray();
 
             if ($status == TransferItemStatus::DISETUJUI) {
+                // $mproducts = BranchProduct::whereIn('product_id', $products)->select(['branch_id'])->toArray();
                 Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow, 'branch_id' => $data->branch_dest_id));
             } else if ($status == TransferItemStatus::DIBATALKAN) {
                 Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow));
