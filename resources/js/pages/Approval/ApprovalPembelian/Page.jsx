@@ -218,12 +218,12 @@ const ApprovalPembelian = () => {
         { header: 'Batch', accessor: 'batch' },
         {
             header: 'Kode',
-            accessor: 'barcode',
-            render: (row) => (
+            accessor: 'inventory_code',
+            render: (row) => row.status === 'DISETUJUI' && row.inventory_code ? (
                 <span className="px-2 py-1 bg-neutral-50 border border-neutral-200 rounded-md text-xs font-medium text-neutral-700">
-                    {row.barcode}
+                    {row.inventory_code}
                 </span>
-            )
+            ) : '-'
         },
         {
             header: 'Produk',
@@ -243,6 +243,11 @@ const ApprovalPembelian = () => {
                 const sub = categoryOptions.find((c) => c.value === row.subcategory_id)?.details;
                 return sub?.category_name || "-";
             },
+        },
+        {
+            header: 'Deskripsi',
+            accessor: 'deskripsi',
+            render: (row) => row.product?.description ?? '-'
         },
         {
             header: 'Cabang',
