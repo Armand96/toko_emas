@@ -227,7 +227,7 @@ const Main = ({ setCurentState }) => {
             accessor: 'aksi',
             render: (row) => (
                 <ActionButtonGroup>
-                    {row.approval_status === 'APPROVAL' && can('delete', 'penjualan') && (
+                    {row.approval_status === 'APPROVAL' && can('delete', 'transaksi.penjualan') && (
                         <ActionButton variant="cancel" title="Tolak" onClick={() => handleCancel(row)} />
                     )}
                     <ActionButton variant="view" title="Lihat Detail" onClick={() => handleViewTransaction(row)} />
@@ -251,7 +251,7 @@ const Main = ({ setCurentState }) => {
                 title="Penjualan"
                 description="Catat dan kelola transaksi penjualan barang kepada pelanggan."
                 icon={PlusCircleIcon}
-                onClick={can('create', 'penjualan') ? () => setCurentState('form') : undefined}
+                onClick={can('create', 'transaksi.penjualan') ? () => setCurentState('form') : undefined}
                 textButton="Transaksi Baru"
             />
 
