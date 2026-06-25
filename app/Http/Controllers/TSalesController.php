@@ -126,7 +126,7 @@ class TSalesController extends Controller
                 'note' => isset($validated['note']) ? $validated['note'] : null
             ]);
 
-            if ($status == SalesStatus::DISETUJUI) {
+            if ($status == SalesStatus::CETAK_KWITANSI) {
                 $products = TSalesDetail::where('sales_id', $validated['penjualan_id'])->pluck('inventory_code')->toArray();
                 $dateNow = date('Y-m-d H:i:s');
 
