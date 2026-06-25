@@ -33,6 +33,13 @@ class StockOpnameHeaderController extends Controller
             $query->where('status', $request->status);
         }
 
+        if ($request->has('start_date') && $request->start_date != "") {
+            $query->where('created_at', '>=', $request->start_date . " 00:00:00");
+        }
+        if ($request->has('end_date') && $request->end_date != "") {
+            $query->where('created_at', '<=', $request->end_date . " 23:59:59");
+        }
+
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
         $opnames = $query->orderBy('id', 'desc')->with(['branch'])->paginate($perPage);
 
@@ -52,7 +59,7 @@ class StockOpnameHeaderController extends Controller
         try {
 
             $dataBranch = MBranch::find($validated['branch_id']);
-            $kodeSesi = 'OPN-' . $dataBranch->branch_code . '-' . date('Y') . "-" .date('m');
+            $kodeSesi = 'OPN-' . $dataBranch->branch_code . '-' . date('y') . date('m');
             $counter = StockOpnameHeader::where('kode_sesi', 'like', $kodeSesi . "%")->count();
             $counter++;
             $kodeSesi = $kodeSesi . "-" . str_pad($counter, 4, "0", STR_PAD_LEFT);
