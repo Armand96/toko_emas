@@ -147,6 +147,7 @@ class PembelianController extends Controller
                         'jual' => $value->jual,
                         'image_path' => $value->image_path,
                         'thumb_path' => $value->thumb_path,
+                        'serial_number' => $value->serial_number,
                         'created_at' => $dateNow,
                         'status' => InventoryStatus::AVAILABLE
                     ));

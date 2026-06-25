@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Model;
     'modal',
     'jual',
     'tipe_pembayaran',
+    'serial_number',
     'note',
 ])]
 class Pembelian extends Model

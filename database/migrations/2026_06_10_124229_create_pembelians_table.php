@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('inventory_code', 60)->nullable();
             $table->string('image_path')->nullable();
             $table->string('thumb_path')->nullable();
+            $table->string('serial_number', 100)->nullable();
             $table->string('barcode');
             $table->float('berat');
             $table->integer('karat');
