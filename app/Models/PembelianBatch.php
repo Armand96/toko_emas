@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable([])]
+#[Fillable([
+    'batch_sequence'
+])]
 class PembelianBatch extends Model
 {
     //

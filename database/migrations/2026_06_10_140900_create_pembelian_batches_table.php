@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('pembelian_batches', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('batch_sequence', false, true);
             $table->timestamps();
         });
     }
