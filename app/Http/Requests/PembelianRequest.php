@@ -38,6 +38,7 @@ class PembelianRequest extends FormRequest
             'data.*.berat' => ['required', 'numeric'],
             'data.*.karat' => ['required', 'numeric'],
             'data.*.modal' => ['required', 'numeric'],
+            'data.*.tipe_pembayaran' => ['required', 'string'],
             'data.*.jual' => ['required', 'numeric'],
         ];
     }

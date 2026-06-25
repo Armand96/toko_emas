@@ -145,6 +145,15 @@ const FormPembelian = ({ setCurentState }) => {
                 });
                 return;
             }
+            const MAX_SIZE_MB = 3;
+            if (file && file.size > MAX_SIZE_MB * 1024 * 1024) {
+                showAlert({
+                    title: "Ukuran file terlalu besar",
+                    message: `Ukuran foto maksimal ${MAX_SIZE_MB} MB`,
+                    type: "warning",
+                });
+                return;
+            }
             setItem((prev) => ({ ...prev, foto: file ?? null }));
             return;
         }
@@ -231,7 +240,7 @@ const FormPembelian = ({ setCurentState }) => {
                 product_id: Number(b.product_id),
                 category_id: Number(b.category_id),
                 subcategory_id: Number(b.subcategory_id),
-                payment_method: b.payment_method,
+                tipe_pembayaran: b.payment_method,
                 bank_id: b.bank_id ? Number(b.bank_id) : null,
                 supplier_id: Number(b.supplier_id),
                 barcode: b.barcode,

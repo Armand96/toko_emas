@@ -31,7 +31,7 @@ class PembelianImageRequest extends FormRequest
             'images.*' => [
                 'image',
                 'mimes:jpeg,png,jpg,gif',
-                'max:2048',
+                'max:3072',
             ],
         ];
     }

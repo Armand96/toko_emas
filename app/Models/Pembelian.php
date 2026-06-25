@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
     'karat',
     'modal',
     'jual',
+    'tipe_pembayaran',
     'note',
 ])]
 class Pembelian extends Model
