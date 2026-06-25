@@ -34,7 +34,7 @@ class PembelianRequest extends FormRequest
             'data.*.supplier_id' => ['nullable', 'integer'],
             'data.*.batch' => ['nullable', 'integer'],
             'data.*.barcode' => ['required', 'string'],
-            'data.*.bank_id' => ['required', 'integer'],
+            'data.*.bank_id' => ['nullable', 'integer'],
             'data.*.berat' => ['required', 'numeric'],
             'data.*.karat' => ['required', 'numeric'],
             'data.*.modal' => ['required', 'numeric'],

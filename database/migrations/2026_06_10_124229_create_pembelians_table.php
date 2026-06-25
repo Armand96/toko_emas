@@ -19,7 +19,7 @@ return new class extends Migration
             $table->bigInteger('category_id', false, true);
             $table->bigInteger('subcategory_id', false, true);
             $table->bigInteger('branch_id', false, true);
-            $table->bigInteger('bank_id', false, true);
+            $table->bigInteger('bank_id', false, true)->nullable();
             $table->bigInteger('supplier_id', false, true)->nullable();
             $table->enum('status', ['APPROVAL', 'DISETUJUI', 'DITOLAK', 'DIBATALKAN']);
             $table->string('inventory_code', 60)->nullable();
