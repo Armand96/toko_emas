@@ -151,7 +151,7 @@ class PembelianController extends Controller
 
                 // if (count($batchInsert) > 0) Inventory::insert($batchInsert);
                 // TO DO INSERT KE FINANCE
-                $categoryFinance = MCategoryFinance::where('category_name', 'like', '%Penjualan%')->first();
+                $categoryFinance = MCategoryFinance::where('category_name', 'like', '%Pembelian%')->first();
                 Finance::create(array(
                     'branch_id' => $value->branch_id,
                     'category_finance_id' => $categoryFinance->id,
