@@ -48,7 +48,7 @@ class StockOpnameHeaderController extends Controller
 
     public function single(StockOpnameHeader $header)
     {
-        return ApiResponse::success($header->load(['details.inventory', 'details.product', 'branch']), "OK", 200);
+        return ApiResponse::success($header->load(['details.inventory.category.parent', 'details.inventory.subCategory', 'details.product', 'branch']), "OK", 200);
     }
 
     public function createOpname(StockOpnameRequest $request)

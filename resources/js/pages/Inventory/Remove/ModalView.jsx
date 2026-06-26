@@ -1,4 +1,4 @@
-import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@phosphor-icons/react';
+import { CheckCircleIcon, XCircleIcon, ClockIcon, ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import ModalCustom from '../../../components/modalCustom';
 import SectionCard from '../../../components/SectionCard';
 import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
@@ -11,6 +11,8 @@ const getApprovalCardProps = (data) => {
     switch (data?.status) {
         case 'Disetujui':
             return { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh', pic, date, reason: null };
+        case 'Return':
+            return { Icon: ArrowCounterClockwiseIcon, iconColor: 'text-info-500', statusText: 'Dikembalikan ke inventory oleh', pic, date, reason: data?.alasan, reasonLabel: 'Catatan Return' };
         case 'Dibatalkan':
             return { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Dibatalkan oleh', pic, date, reason: data?.alasan, reasonLabel: 'Alasan Pembatalan' };
         case 'Ditolak':

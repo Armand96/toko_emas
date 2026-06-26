@@ -18,7 +18,7 @@ return new class extends Migration
             $table->bigInteger('created_by', false, true);
             $table->string('note')->nullable(true);
             $table->enum('jenis', ['HILANG', 'REPAIR']);
-            $table->enum('status', ['APPROVAL', 'DISETUJUI', 'DITOALK', 'DIBATALKAN', 'RETURN']);
+            $table->enum('status', ['APPROVAL', 'DISETUJUI', 'DITOLAK', 'DIBATALKAN', 'RETURN']);
             $table->timestamps();
         });
     }

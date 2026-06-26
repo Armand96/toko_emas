@@ -4,25 +4,19 @@ import path from 'path';
 const workbook = new ExcelJS.Workbook();
 workbook.creator = 'Claude Code QA';
 workbook.created = new Date();
+workbook.modified = new Date();
 
 // ═══════════════════════════════════════════════
 // STYLE HELPERS
 // ═══════════════════════════════════════════════
 const COLOR = {
-    header:    'FF1F2937',
-    headerFg:  'FFFFFFFF',
-    pass:      'FF16A34A',
-    passBg:    'FFDCFCE7',
-    fail:      'FFDC2626',
-    failBg:    'FFFEE2E2',
-    skip:      'FFD97706',
-    skipBg:    'FFFFFBEB',
-    fixed:     'FF2563EB',
-    fixedBg:   'FFEFF6FF',
-    border:    'FFD1D5DB',
-    stripe:    'FFF9FAFB',
-    sectionBg: 'FFF3F4F6',
-    sectionFg: 'FF111827',
+    header: 'FF1F2937', headerFg: 'FFFFFFFF',
+    pass: 'FF16A34A', passBg: 'FFDCFCE7',
+    fail: 'FFDC2626', failBg: 'FFFEE2E2',
+    skip: 'FFD97706', skipBg: 'FFFFFBEB',
+    fixed: 'FF2563EB', fixedBg: 'FFEFF6FF',
+    border: 'FFD1D5DB', stripe: 'FFF9FAFB',
+    sectionBg: 'FFEEF2FF', sectionFg: 'FF1E40AF',
 };
 
 const thinBorder = { style: 'thin', color: { argb: COLOR.border } };
@@ -48,237 +42,344 @@ function statusStyle(status) {
 }
 
 function applyRowStyle(row, idx) {
-    row.eachCell((cell, colNumber) => {
+    row.eachCell((cell) => {
         cell.border = allBorders;
         cell.alignment = { vertical: 'middle', wrapText: true };
-        if (idx % 2 === 0) {
-            cell.fill = cell.fill?.fgColor ? cell.fill : { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR.stripe } };
+        if (idx % 2 === 0 && !cell.fill?.fgColor) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR.stripe } };
         }
     });
 }
 
-// ═══════════════════════════════════════════════
-// SHEET 1 — RINGKASAN (Summary)
-// ═══════════════════════════════════════════════
-const wsSummary = workbook.addWorksheet('Ringkasan', { properties: { tabColor: { argb: 'FF2563EB' } } });
+function addSectionRow(ws, colCount, title) {
+    const row = ws.addRow([title]);
+    ws.mergeCells(row.number, 1, row.number, colCount);
+    const cell = row.getCell(1);
+    cell.font = { bold: true, color: { argb: COLOR.sectionFg }, size: 11 };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR.sectionBg } };
+    cell.alignment = { vertical: 'middle' };
+    cell.border = allBorders;
+    row.height = 24;
+}
 
-wsSummary.columns = [
-    { header: 'Metrik', key: 'metric', width: 35 },
-    { header: 'Jumlah', key: 'value', width: 15 },
+function addTestRows(ws, tests) {
+    tests.forEach((d, i) => {
+        if (d._section) { addSectionRow(ws, 5, d._section); return; }
+        const row = ws.addRow(d);
+        const sc = row.getCell('status');
+        Object.assign(sc, statusStyle(d.status));
+        sc.alignment = { vertical: 'middle', horizontal: 'center' };
+        applyRowStyle(row, i);
+    });
+}
+
+const stdCols = [
+    { header: 'No', key: 'no', width: 5 },
+    { header: 'Komponen', key: 'component', width: 20 },
+    { header: 'Test Case', key: 'testCase', width: 55 },
+    { header: 'Status', key: 'status', width: 10 },
+    { header: 'Catatan / Fix', key: 'notes', width: 60 },
 ];
-styleHeader(wsSummary.getRow(1));
 
-const summaryData = [
-    { metric: 'Total Test Case', value: 38 },
-    { metric: 'PASS', value: 27 },
-    { metric: 'FIXED (diperbaiki sesi ini)', value: 8 },
-    { metric: 'BACKLOG (ditunda)', value: 3 },
-    { metric: 'Pass Rate', value: '92.1%' },
-    { metric: '', value: '' },
-    { metric: 'Tanggal Testing', value: '26 Juni 2026' },
-    { metric: 'Tester', value: 'Claude Code (Automated)' },
-    { metric: 'Branch', value: 'dev-faldi' },
-    { metric: 'Environment', value: 'Local (Laravel 13 + Vite 8 + React 19)' },
+// ═══════════════════════════════════════════════
+// SHEET 1 — RINGKASAN
+// ═══════════════════════════════════════════════
+const ws1 = workbook.addWorksheet('Ringkasan', { properties: { tabColor: { argb: 'FF2563EB' } } });
+ws1.columns = [
+    { header: 'Metrik', key: 'metric', width: 40 },
+    { header: 'Jumlah / Detail', key: 'value', width: 35 },
+];
+styleHeader(ws1.getRow(1));
+
+const summary = [
+    ['Test Summary', null],
+    ['Total Test Case', 78],
+    ['PASS', 48],
+    ['FIXED (diperbaiki sesi ini)', 18],
+    ['BACKLOG (ditunda)', 3],
+    ['E2E Flow Test', 9],
+    ['Pass Rate (excl. Backlog)', '88%'],
+    ['', ''],
+    ['Data Skenario', null],
+    ['Kategori', '27 (5 parent + 22 sub)'],
+    ['Produk', '12 (tersebar di 4 cabang)'],
+    ['Pembelian', '60 (15/cabang, mix tunai/transfer)'],
+    ['  - Disetujui → Inventory', '32'],
+    ['  - Ditolak', '12'],
+    ['  - Pending', '16'],
+    ['Customer', '8 (3 existing + 5 baru)'],
+    ['Penjualan', '8 transaksi, 8 cetak kwitansi'],
+    ['Transfer Item', '3 pengajuan (1 approve, 2 batal)'],
+    ['Remove Item', '3 pengajuan (1 hilang, 1 repair→return, 1 tolak)'],
+    ['Stock Opname', '8 sesi (4 cabang × 2 round)'],
+    ['Inventory AVAILABLE', '15'],
+    ['Inventory SOLD', '16'],
+    ['Inventory LOST', '1'],
+    ['', ''],
+    ['Saldo Finance', null],
+    ['Modal Awal', 'Rp 200.000.000 (50jt × 4 cabang)'],
+    ['Cash In (penjualan)', '~Rp 37.687.026'],
+    ['Cash Out (pembelian)', '~Rp 60.339.000'],
+    ['Saldo Akhir', '~Rp 177.348.026'],
+    ['', ''],
+    ['Info Testing', null],
+    ['Tanggal Testing', '26 Juni 2026'],
+    ['Terakhir Diupdate', new Date().toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
+    ['Tester', 'Claude Code (Automated via API)'],
+    ['Branch', 'dev-faldi'],
+    ['Environment', 'Laravel 13 + Vite 8 + React 19 + MySQL'],
 ];
 
-summaryData.forEach((d, i) => {
-    const row = wsSummary.addRow(d);
+summary.forEach(([metric, value]) => {
+    if (value === null) { addSectionRow(ws1, 2, metric); return; }
+    const row = ws1.addRow({ metric, value });
     row.eachCell((cell) => { cell.border = allBorders; cell.alignment = { vertical: 'middle' }; });
-    if (d.metric === 'PASS')  row.getCell(2).font = { bold: true, color: { argb: COLOR.pass } };
-    if (d.metric === 'FIXED (diperbaiki sesi ini)') row.getCell(2).font = { bold: true, color: { argb: COLOR.fixed } };
-    if (d.metric === 'Pass Rate') { row.getCell(2).font = { bold: true, color: { argb: COLOR.pass }, size: 12 }; }
+    if (metric === 'PASS') row.getCell(2).font = { bold: true, color: { argb: COLOR.pass } };
+    if (metric.includes('FIXED')) row.getCell(2).font = { bold: true, color: { argb: COLOR.fixed } };
+    if (metric.includes('Pass Rate')) row.getCell(2).font = { bold: true, color: { argb: COLOR.pass }, size: 13 };
 });
 
 // ═══════════════════════════════════════════════
 // SHEET 2 — PEMBELIAN
 // ═══════════════════════════════════════════════
-const wsPembelian = workbook.addWorksheet('Pembelian', { properties: { tabColor: { argb: 'FF16A34A' } } });
+const ws2 = workbook.addWorksheet('Pembelian', { properties: { tabColor: { argb: 'FF16A34A' } } });
+ws2.columns = stdCols;
+styleHeader(ws2.getRow(1));
 
-wsPembelian.columns = [
-    { header: 'No', key: 'no', width: 5 },
-    { header: 'Komponen', key: 'component', width: 18 },
-    { header: 'Test Case', key: 'testCase', width: 50 },
-    { header: 'Status', key: 'status', width: 10 },
-    { header: 'Catatan / Fix yang Dilakukan', key: 'notes', width: 55 },
-];
-styleHeader(wsPembelian.getRow(1));
-
-const pembelianTests = [
-    // --- Backend ---
-    { no: 1, component: 'BE - Model', testCase: 'Field bank_cabang_id tersimpan dengan benar saat create pembelian', status: 'FIXED', notes: 'Typo di fillable model: bank_cabank_id → bank_cabang_id' },
-    { no: 2, component: 'BE - Controller', testCase: 'Search produk berdasarkan nama produk berfungsi', status: 'FIXED', notes: 'Bug: whereHas(\'product.product_name\') → whereHas(\'product\') + support param product_name & search' },
-    { no: 3, component: 'BE - Controller', testCase: 'Detail pembelian menampilkan relasi user (created_by)', status: 'PASS', notes: 'Relasi user sudah di-load via single() endpoint' },
-    { no: 4, component: 'BE - Controller', testCase: 'Detail pembelian menampilkan relasi supplier', status: 'PASS', notes: 'Relasi supplier sudah di-load' },
-    { no: 5, component: 'BE - Model', testCase: 'Relasi bankCabang mengarah ke model BankCabang (bukan MBank)', status: 'FIXED', notes: 'belongsTo(MBank) → belongsTo(BankCabang) agar nested bank.bank_name bisa diakses' },
-    { no: 6, component: 'BE - Controller', testCase: 'serial_number tersimpan saat create pembelian', status: 'PASS', notes: 'Validasi sudah ada di PembelianRequest, field sudah di fillable' },
-    // --- Frontend ---
-    { no: 7, component: 'FE - Form Input', testCase: 'Field no_seri (serial_number) terkirim dalam payload API', status: 'FIXED', notes: 'Tambah serial_number: b.no_seri ke payload handleSubmitBatch' },
-    { no: 8, component: 'FE - Form Input', testCase: 'Metode bayar Tunai & Transfer berfungsi', status: 'PASS', notes: 'Dropdown metode bayar + bank keluar conditional sudah benar' },
-    { no: 9, component: 'FE - Form Input', testCase: 'Bank keluar hilang ketika pilih Tunai', status: 'PASS', notes: 'Sudah ada logic: val === TUNAI ? { bank_id: null }' },
-    { no: 10, component: 'FE - Main List', testCase: 'Auto refresh setelah submit pembelian berhasil', status: 'FIXED', notes: 'Tambah refreshKey + key prop di Page.jsx agar Main re-mount' },
-    { no: 11, component: 'FE - Main List', testCase: 'Search produk berfungsi', status: 'PASS', notes: 'BE fix di atas menyelesaikan masalah ini' },
-    { no: 12, component: 'FE - Main List', testCase: 'Filter status berfungsi', status: 'PASS', notes: '' },
-    { no: 13, component: 'FE - Main List', testCase: 'Filter kategori (parent only) berfungsi', status: 'PASS', notes: '' },
-    { no: 14, component: 'FE - Detail Modal', testCase: 'Info Metode Bayar ditampilkan', status: 'PASS', notes: 'Tunai / Transfer sudah muncul' },
-    { no: 15, component: 'FE - Detail Modal', testCase: 'Info Supplier ditampilkan', status: 'PASS', notes: 'data?.supplier?.supplier_name sudah ada' },
-    { no: 16, component: 'FE - Detail Modal', testCase: 'Info Bank Keluar (nama bank + no rekening + a.n.) ditampilkan saat Transfer', status: 'FIXED', notes: 'Fix path: data?.bank_cabang?.bank?.bank_name, hapus extra API call' },
-    { no: 17, component: 'FE - Detail Modal', testCase: 'Diajukan oleh (nama user) muncul di section batch', status: 'PASS', notes: 'data?.user?.name dari relasi created_by' },
-    { no: 18, component: 'FE - Detail Modal', testCase: 'No. Seri ditampilkan dari field serial_number', status: 'PASS', notes: 'Fallback: data?.serial_number || data?.no_seri' },
-    { no: 19, component: 'FE - Detail Modal', testCase: 'Section title "Informasi Detail" ukuran 14 medium (konsisten)', status: 'FIXED', notes: 'font-bold → font-semibold text-sm di modal & ApprovalStatusCard' },
-    { no: 20, component: 'FE - Detail Modal', testCase: 'Status DIBATALKAN: icon, warna, dan alasan tampil benar', status: 'PASS', notes: 'Sudah di-handle di ApprovalStatusCard (reasonLabel + reason)' },
-];
-
-pembelianTests.forEach((d, i) => {
-    const row = wsPembelian.addRow(d);
-    const statusCell = row.getCell('status');
-    Object.assign(statusCell, statusStyle(d.status));
-    statusCell.alignment = { vertical: 'middle', horizontal: 'center' };
-    applyRowStyle(row, i);
-});
+addTestRows(ws2, [
+    { _section: 'Backend' },
+    { no: 1,  component: 'BE - Model',      testCase: 'Fillable bank_cabang_id tersimpan benar',                               status: 'FIXED', notes: 'Typo bank_cabank_id → bank_cabang_id' },
+    { no: 2,  component: 'BE - Model',      testCase: 'Relasi bankCabang() → BankCabang (nested bank)',                         status: 'FIXED', notes: 'belongsTo(MBank) → belongsTo(BankCabang)' },
+    { no: 3,  component: 'BE - Controller',  testCase: 'Search produk by nama berfungsi',                                       status: 'FIXED', notes: 'whereHas(product.product_name) → whereHas(product)' },
+    { no: 4,  component: 'BE - Controller',  testCase: 'serial_number tersimpan saat create',                                   status: 'PASS',  notes: '' },
+    { no: 5,  component: 'BE - Controller',  testCase: 'Detail load relasi user, supplier, bankCabang.bank',                    status: 'PASS',  notes: '' },
+    { no: 6,  component: 'BE - Controller',  testCase: 'Approve → create Inventory + Finance (payment_method = TUNAI)',          status: 'PASS',  notes: '' },
+    { _section: 'Frontend' },
+    { no: 7,  component: 'FE - Form',        testCase: 'serial_number terkirim dalam payload API',                              status: 'FIXED', notes: 'Tambah serial_number: b.no_seri di payload' },
+    { no: 8,  component: 'FE - Form',        testCase: 'Metode bayar Tunai/Transfer + conditional bank',                        status: 'PASS',  notes: '' },
+    { no: 9,  component: 'FE - Main',        testCase: 'Auto refresh setelah submit',                                           status: 'FIXED', notes: 'refreshKey + key prop di Page.jsx' },
+    { no: 10, component: 'FE - Main',        testCase: 'Search, filter status, filter kategori berfungsi',                      status: 'PASS',  notes: '' },
+    { no: 11, component: 'FE - Detail',      testCase: 'Supplier ditampilkan',                                                  status: 'PASS',  notes: '' },
+    { no: 12, component: 'FE - Detail',      testCase: 'Bank Keluar (nama + no rek + a.n.) saat Transfer',                      status: 'FIXED', notes: 'Fix path: bank_cabang?.bank?.bank_name' },
+    { no: 13, component: 'FE - Detail',      testCase: 'Diajukan oleh (nama user) muncul',                                     status: 'PASS',  notes: '' },
+    { no: 14, component: 'FE - Detail',      testCase: 'No. Seri ditampilkan (serial_number)',                                  status: 'PASS',  notes: '' },
+    { no: 15, component: 'FE - Detail',      testCase: 'Section title konsisten (text-sm font-semibold)',                        status: 'FIXED', notes: '' },
+    { no: 16, component: 'FE - Detail',      testCase: 'DIBATALKAN: icon, warna, alasan tampil',                                status: 'PASS',  notes: '' },
+]);
 
 // ═══════════════════════════════════════════════
 // SHEET 3 — APPROVAL PEMBELIAN
 // ═══════════════════════════════════════════════
-const wsApproval = workbook.addWorksheet('Approval Pembelian', { properties: { tabColor: { argb: 'FFEAB308' } } });
+const ws3 = workbook.addWorksheet('Approval Pembelian', { properties: { tabColor: { argb: 'FFEAB308' } } });
+ws3.columns = stdCols;
+styleHeader(ws3.getRow(1));
 
-wsApproval.columns = [
-    { header: 'No', key: 'no', width: 5 },
-    { header: 'Komponen', key: 'component', width: 18 },
-    { header: 'Test Case', key: 'testCase', width: 50 },
-    { header: 'Status', key: 'status', width: 10 },
-    { header: 'Catatan / Fix yang Dilakukan', key: 'notes', width: 55 },
-];
-styleHeader(wsApproval.getRow(1));
-
-const approvalTests = [
-    { no: 1, component: 'FE - Filter', testCase: 'Filter status berfungsi (default: APPROVAL)', status: 'FIXED', notes: 'Initial fetchData() dipanggil tanpa params → sekarang passing search state' },
-    { no: 2, component: 'FE - Filter', testCase: 'Reset filter status menampilkan semua data (termasuk DISETUJUI, DITOLAK)', status: 'PASS', notes: 'Setelah fix initial fetch, clear filter mengirim status kosong → BE return semua' },
-    { no: 3, component: 'FE - Tabel', testCase: 'Image produk ditampilkan di kolom Produk', status: 'FIXED', notes: 'Tambah <img> tag dengan src /storage/{image_path} di kolom Produk' },
-    { no: 4, component: 'FE - Tabel', testCase: 'Kode kosong saat APPROVAL, muncul setelah DISETUJUI', status: 'PASS', notes: 'Logic sudah ada: row.status === DISETUJUI && row.inventory_code' },
-    { no: 5, component: 'FE - Tabel', testCase: 'Kategori & Sub Kategori data sesuai', status: 'PASS', notes: 'Menggunakan subcategory relation untuk resolve parent/child' },
-    { no: 6, component: 'FE - Detail Modal', testCase: 'Info Metode Bayar ditampilkan', status: 'PASS', notes: '' },
-    { no: 7, component: 'FE - Detail Modal', testCase: 'Info Supplier ditampilkan', status: 'PASS', notes: '' },
-    { no: 8, component: 'FE - Detail Modal', testCase: 'Info Bank Keluar (dengan nomor rekening) saat Transfer', status: 'FIXED', notes: 'Fix path: data?.bank_cabang?.bank?.bank_name + nomor_rekening + nama_pemilik' },
-    { no: 9, component: 'FE - Detail Modal', testCase: 'Status DIBATALKAN: icon XCircle, warna danger, alasan tampil', status: 'FIXED', notes: 'Tambah handling DIBATALKAN di Icon, iconColor, statusText, reasonLabel, reason' },
-    { no: 10, component: 'FE - Detail Modal', testCase: 'Section title Approval ukuran konsisten (text-sm font-semibold)', status: 'PASS', notes: 'ApprovalStatusCard sudah di-fix' },
-];
-
-approvalTests.forEach((d, i) => {
-    const row = wsApproval.addRow(d);
-    const statusCell = row.getCell('status');
-    Object.assign(statusCell, statusStyle(d.status));
-    statusCell.alignment = { vertical: 'middle', horizontal: 'center' };
-    applyRowStyle(row, i);
-});
+addTestRows(ws3, [
+    { no: 1,  component: 'FE - Filter',  testCase: 'Initial fetch pakai search state (default APPROVAL)',                     status: 'FIXED', notes: 'fetchData() tanpa params → passing search' },
+    { no: 2,  component: 'FE - Filter',  testCase: 'Reset filter tampilkan semua data',                                       status: 'PASS',  notes: '' },
+    { no: 3,  component: 'FE - Tabel',   testCase: 'Image produk di kolom Produk',                                            status: 'FIXED', notes: 'Tambah <img> di render kolom' },
+    { no: 4,  component: 'FE - Tabel',   testCase: 'Kode kosong saat APPROVAL, muncul setelah DISETUJUI',                     status: 'PASS',  notes: '' },
+    { no: 5,  component: 'FE - Detail',  testCase: 'Bank Keluar path benar (bank_cabang.bank.bank_name)',                     status: 'FIXED', notes: '' },
+    { no: 6,  component: 'FE - Detail',  testCase: 'DIBATALKAN: icon + alasan + reasonLabel',                                 status: 'FIXED', notes: '' },
+    { no: 7,  component: 'FE - Detail',  testCase: 'Section title Approval konsisten',                                        status: 'PASS',  notes: '' },
+    { no: 8,  component: 'BE - Flow',    testCase: 'Bulk approve/reject berhasil',                                            status: 'PASS',  notes: '32 approved, 12 rejected' },
+]);
 
 // ═══════════════════════════════════════════════
 // SHEET 4 — STOCK OPNAME
 // ═══════════════════════════════════════════════
-const wsOpname = workbook.addWorksheet('Stock Opname', { properties: { tabColor: { argb: 'FF8B5CF6' } } });
+const ws4 = workbook.addWorksheet('Stock Opname', { properties: { tabColor: { argb: 'FF8B5CF6' } } });
+ws4.columns = stdCols;
+styleHeader(ws4.getRow(1));
 
-wsOpname.columns = [
-    { header: 'No', key: 'no', width: 5 },
-    { header: 'Komponen', key: 'component', width: 18 },
-    { header: 'Test Case', key: 'testCase', width: 55 },
-    { header: 'Status', key: 'status', width: 10 },
-    { header: 'Catatan / Fix yang Dilakukan', key: 'notes', width: 55 },
-];
-styleHeader(wsOpname.getRow(1));
-
-const opnameTests = [
-    { no: 1, component: 'FE - Main List', testCase: 'Filter periode (date range) tersedia dan berfungsi', status: 'FIXED', notes: 'Tambah daterange input + kirim start_date/end_date ke API' },
-    { no: 2, component: 'FE - Main List', testCase: 'Filter status (Sesuai/Selisih) berfungsi', status: 'PASS', notes: '' },
-    { no: 3, component: 'FE - Main List', testCase: 'Filter cabang berfungsi (owner)', status: 'PASS', notes: '' },
-    { no: 4, component: 'FE - Form Sesi', testCase: 'Scan/input kode item cabang sendiri → status AVAILABLE (INSTOCK)', status: 'PASS', notes: 'inventoryMap lookup O(1), langsung set AVAILABLE' },
-    { no: 5, component: 'FE - Form Sesi', testCase: 'Scan/input kode item cabang LAIN → prompt Extra + textarea', status: 'PASS', notes: 'Kode tidak ditemukan di inventoryMap → showAlert textarea wajib → EXTRA' },
-    { no: 6, component: 'FE - Form Sesi', testCase: 'Scan kode yang sudah pernah di-scan → warning "Sudah Discan"', status: 'PASS', notes: 'Check scanned[code] sebelum proses' },
-    { no: 7, component: 'FE - Form Sesi', testCase: 'Tab Sesuai menampilkan kolom Waktu Opname per item', status: 'FIXED', notes: 'Tambah kolom Waktu Opname di InventoryRows, render fmtWaktuRow(row._waktu)' },
-    { no: 8, component: 'FE - Form Sesi', testCase: 'Finalisasi opname mengirim payload INSTOCK + MISSING + EXTRA', status: 'PASS', notes: 'availableList→INSTOCK, lostPreview→MISSING, extraList→EXTRA' },
-    { no: 9, component: 'BE - API', testCase: 'POST /api/stock-opname berhasil create header + detail', status: 'PASS', notes: 'Tested: kode_sesi OPN-DKIJKT-2606-0001 terbentuk' },
-    { no: 10, component: 'BE - API', testCase: 'Status SESUAI jika in_stock == total_item', status: 'PASS', notes: 'Tested: 1 item INSTOCK dari 1 total → SESUAI' },
-    { no: 11, component: 'BE - API', testCase: 'Item EXTRA dari cabang lain tercatat dengan note', status: 'PASS', notes: 'Tested: KLG-00001-0001 (cabang Bogor) di opname cabang Jakarta → EXTRA + note' },
-    { no: 12, component: 'BE - API', testCase: 'GET /api/stock-opname filter start_date & end_date berfungsi', status: 'PASS', notes: 'Tested: tanggal hari ini → 1 result, tanggal kemarin → 0 result' },
-    { no: 13, component: 'FE - Detail', testCase: 'Tab Sesuai, Lost, Extra tampil dengan data benar', status: 'PASS', notes: 'Detail endpoint load details.inventory + details.product' },
-    { no: 14, component: 'FE - Detail', testCase: 'Tab Sesuai: kolom Waktu Opname ditampilkan', status: 'FIXED', notes: 'Tambah kolom Waktu Opname di ItemTable (Detail.jsx)' },
-    { no: 15, component: 'FE - Detail', testCase: 'Info cabang dan waktu start/selesai ditampilkan', status: 'PASS', notes: 'header.branch.branch_name + created_at + updated_at' },
-    // Backlog
-    { no: 16, component: 'FE - Form', testCase: 'Kode ngasal (tidak ada di DB) jangan masuk ke Extra', status: 'BACKLOG', notes: 'Perlu API lookup global inventory. Status Backlog di notes.' },
-    { no: 17, component: 'FE - Detail', testCase: 'Button "Kembali" style disesuaikan kaya di Pembelian', status: 'BACKLOG', notes: 'Status Backlog di notes. Style minor.' },
-    { no: 18, component: 'FE - Main', testCase: 'Kode sesi format OPN-{branch}-{YYMM}-{seq}', status: 'BACKLOG', notes: 'Format saat ini: OPN-DKIJKT-2606-0001 (sudah benar). Catatan di notes minta format 3 digit seq.' },
-];
-
-opnameTests.forEach((d, i) => {
-    const row = wsOpname.addRow(d);
-    const statusCell = row.getCell('status');
-    Object.assign(statusCell, statusStyle(d.status));
-    statusCell.alignment = { vertical: 'middle', horizontal: 'center' };
-    applyRowStyle(row, i);
-});
+addTestRows(ws4, [
+    { _section: 'Main List' },
+    { no: 1,  component: 'FE - Main',    testCase: 'Filter periode (daterange) tersedia & berfungsi',                          status: 'FIXED', notes: 'Tambah daterange + start_date/end_date' },
+    { no: 2,  component: 'FE - Main',    testCase: 'Filter status & cabang berfungsi',                                        status: 'PASS',  notes: '' },
+    { _section: 'Form Sesi Opname' },
+    { no: 3,  component: 'FE - Form',    testCase: 'Scan kode cabang sendiri → INSTOCK',                                      status: 'PASS',  notes: '' },
+    { no: 4,  component: 'FE - Form',    testCase: 'Scan kode cabang lain → EXTRA + prompt textarea',                         status: 'PASS',  notes: '' },
+    { no: 5,  component: 'FE - Form',    testCase: 'Scan kode duplikat → warning',                                            status: 'PASS',  notes: '' },
+    { no: 6,  component: 'FE - Form',    testCase: 'Tab Sesuai: kolom Waktu Opname per item',                                 status: 'FIXED', notes: 'Tambah kolom di InventoryRows' },
+    { no: 7,  component: 'FE - Form',    testCase: 'Finalisasi: payload INSTOCK + MISSING + EXTRA',                           status: 'PASS',  notes: '' },
+    { _section: 'Detail / History' },
+    { no: 8,  component: 'FE - Detail',  testCase: 'Kategori & Sub Kategori muncul di tabel item',                            status: 'FIXED', notes: 'BE: tambah eager load category.parent + subCategory' },
+    { no: 9,  component: 'FE - Detail',  testCase: 'Kolom Waktu Opname di tab Sesuai',                                       status: 'FIXED', notes: 'Tambah kolom di ItemTable' },
+    { no: 10, component: 'FE - Detail',  testCase: 'Tab Sesuai/Lost/Extra data benar',                                        status: 'PASS',  notes: '' },
+    { no: 11, component: 'FE - Detail',  testCase: 'Info cabang + waktu start/selesai',                                       status: 'PASS',  notes: '' },
+    { _section: 'Backend' },
+    { no: 12, component: 'BE - API',     testCase: 'POST create header + detail berhasil',                                    status: 'PASS',  notes: '8 sesi terbentuk' },
+    { no: 13, component: 'BE - API',     testCase: 'Status SESUAI/SELISIH logic benar',                                       status: 'PASS',  notes: '' },
+    { no: 14, component: 'BE - API',     testCase: 'Extra item cross-branch + note tersimpan',                                status: 'PASS',  notes: '' },
+    { no: 15, component: 'BE - API',     testCase: 'Filter start_date & end_date berfungsi',                                  status: 'PASS',  notes: '' },
+    { no: 16, component: 'BE - API',     testCase: 'Detail endpoint load inventory.category.parent + subCategory',            status: 'FIXED', notes: 'Tambah eager load di single()' },
+    { _section: 'Backlog' },
+    { no: 17, component: 'FE - Form',    testCase: 'Kode ngasal jangan masuk Extra',                                          status: 'BACKLOG', notes: 'Perlu API lookup global' },
+    { no: 18, component: 'FE',           testCase: 'Button Kembali style konsisten',                                          status: 'BACKLOG', notes: 'Minor styling' },
+    { no: 19, component: 'BE',           testCase: 'Kode sesi format 3 digit seq',                                            status: 'BACKLOG', notes: 'Saat ini 4 digit' },
+]);
 
 // ═══════════════════════════════════════════════
-// SHEET 5 — FLOW TEST (End-to-End)
+// SHEET 5 — FINANCE
 // ═══════════════════════════════════════════════
-const wsFlow = workbook.addWorksheet('Flow Test E2E', { properties: { tabColor: { argb: 'FFEF4444' } } });
+const ws5 = workbook.addWorksheet('Finance', { properties: { tabColor: { argb: 'FF059669' } } });
+ws5.columns = stdCols;
+styleHeader(ws5.getRow(1));
 
-wsFlow.columns = [
+addTestRows(ws5, [
+    { _section: 'Backend' },
+    { no: 1,  component: 'BE - Report',  testCase: 'totalCount query: TUNAI bukan CASH',                                     status: 'FIXED', notes: 'SQL hardcode CASH → TUNAI di FinanceReportController' },
+    { no: 2,  component: 'BE - Report',  testCase: 'Opening balance = 0 saat semua periode',                                  status: 'FIXED', notes: 'when(start_date) tanpa filter = ambil semua → fix jadi 0' },
+    { no: 3,  component: 'BE - Report',  testCase: 'Opening balance: operator =< → <',                                       status: 'FIXED', notes: '' },
+    { no: 4,  component: 'BE - Report',  testCase: 'Opening balance apply filter branch & payment_method',                    status: 'FIXED', notes: '' },
+    { no: 5,  component: 'BE - Enum',    testCase: 'FinancePaymentMethod: CASH → TUNAI',                                      status: 'FIXED', notes: '' },
+    { no: 6,  component: 'BE - Sales',   testCase: 'Cetak kwitansi: bank_cabang_id dari receiver_bank_id',                    status: 'FIXED', notes: 'branch->bankcabang->id crash → $data->receiver_bank_id' },
+    { no: 7,  component: 'BE - Migration', testCase: 'finances payment_method ENUM = TUNAI,TRANSFER',                         status: 'PASS',  notes: 'Sudah benar di migration' },
+    { _section: 'Frontend' },
+    { no: 8,  component: 'FE - Modal',   testCase: 'METODE_OPTIONS value = TUNAI (bukan CASH)',                               status: 'FIXED', notes: 'Finance/Modal.jsx' },
+    { no: 9,  component: 'FE - Page',    testCase: 'Kolom tabel Metode Bayar: TUNAI → Tunai',                                 status: 'FIXED', notes: 'Finance/Page.jsx' },
+    { no: 10, component: 'FE - Report',  testCase: 'Report Finance: METODE_OPTIONS TUNAI',                                    status: 'FIXED', notes: 'Report/Finance/Page.jsx (3 tempat)' },
+    { no: 11, component: 'FE - Report',  testCase: 'KAS Tunai summary menampilkan angka (bukan Rp 0)',                        status: 'PASS',  notes: 'Setelah fix BE query' },
+    { no: 12, component: 'FE - Report',  testCase: 'Saldo Awal benar (0 saat semua periode)',                                 status: 'PASS',  notes: '' },
+    { no: 13, component: 'FE - Report',  testCase: 'Saldo Akhir = Saldo Awal + Cash In - Cash Out',                          status: 'PASS',  notes: '' },
+]);
+
+// ═══════════════════════════════════════════════
+// SHEET 6 — PENJUALAN
+// ═══════════════════════════════════════════════
+const ws6 = workbook.addWorksheet('Penjualan', { properties: { tabColor: { argb: 'FFEF4444' } } });
+ws6.columns = stdCols;
+styleHeader(ws6.getRow(1));
+
+addTestRows(ws6, [
+    { no: 1,  component: 'BE - Sales',    testCase: 'Customer eager load withCount(sales)',                                    status: 'FIXED', notes: 'Tambah withCount di index() & single()' },
+    { no: 2,  component: 'BE - Sales',    testCase: 'Cetak kwitansi → inventory SOLD + finance CASH IN',                      status: 'PASS',  notes: '' },
+    { no: 3,  component: 'BE - Sales',    testCase: 'bank_cabang_id pakai receiver_bank_id (bukan branch.bankcabang)',         status: 'FIXED', notes: 'Fix crash Property [id] not exist' },
+    { no: 4,  component: 'FE - Detail',   testCase: 'Badge Customer Baru / Member Terdaftar (sales_count)',                    status: 'FIXED', notes: 'sales_count > 1 → Member, else → Baru' },
+    { no: 5,  component: 'FE - Detail',   testCase: 'Approval card: CETAK KWITANSI tampil "Disetujui oleh"',                  status: 'FIXED', notes: 'Hapus "siap cetak kwitansi", cukup Disetujui' },
+    { no: 6,  component: 'FE - Approval', testCase: 'Badge customer dinamis di Approval Penjualan',                           status: 'FIXED', notes: 'Modal.jsx: sales_count > 1 check' },
+    { no: 7,  component: 'FE - Form',     testCase: 'Create penjualan tunai & transfer berhasil',                             status: 'PASS',  notes: '8 transaksi, 4 tunai + 4 transfer' },
+    { no: 8,  component: 'FE - Form',     testCase: 'Customer baru bisa dipakai langsung di penjualan',                       status: 'PASS',  notes: '5 customer baru dibuat + dipakai' },
+]);
+
+// ═══════════════════════════════════════════════
+// SHEET 7 — INVENTORY (Transfer, Remove, Repair)
+// ═══════════════════════════════════════════════
+const ws7 = workbook.addWorksheet('Inventory Operations', { properties: { tabColor: { argb: 'FF7C3AED' } } });
+ws7.columns = stdCols;
+styleHeader(ws7.getRow(1));
+
+addTestRows(ws7, [
+    { _section: 'Transfer Item' },
+    { no: 1,  component: 'BE - Transfer', testCase: 'Create transfer → item jadi TRANSIT',                                    status: 'PASS',  notes: '' },
+    { no: 2,  component: 'BE - Transfer', testCase: 'Approve → item pindah branch + AVAILABLE',                               status: 'PASS',  notes: 'Jakarta→Bogor: 2 item' },
+    { no: 3,  component: 'BE - Transfer', testCase: 'Batalkan → item kembali AVAILABLE di branch asal',                       status: 'PASS',  notes: '2 transfer dibatalkan' },
+    { _section: 'Remove Item (Hilang)' },
+    { no: 4,  component: 'BE - Remove',   testCase: 'Create remove jenis HILANG + approve → LOST',                            status: 'PASS',  notes: '1 item Jakarta → LOST' },
+    { no: 5,  component: 'BE - Remove',   testCase: 'Tolak remove → item tetap AVAILABLE',                                    status: 'FIXED', notes: 'Migration typo DITOALK → DITOLAK' },
+    { _section: 'Remove Item (Repair)' },
+    { no: 6,  component: 'BE - Remove',   testCase: 'Create remove jenis REPAIR + approve → REPAIR',                          status: 'PASS',  notes: '2 item Bogor → REPAIR' },
+    { no: 7,  component: 'BE - Remove',   testCase: 'Status RETURN → item kembali AVAILABLE',                                 status: 'PASS',  notes: '' },
+    { _section: 'FE Remove Item' },
+    { no: 8,  component: 'FE - Tabel',    testCase: 'Badge status Return → tone info (biru)',                                  status: 'FIXED', notes: 'Tambah handling Return di badge' },
+    { no: 9,  component: 'FE - Filter',   testCase: 'Dropdown filter punya opsi Return',                                      status: 'FIXED', notes: 'Tambah { value: RETURN, label: Return }' },
+    { no: 10, component: 'FE - Detail',   testCase: 'Approval card Return: icon + "Dikembalikan ke inventory oleh Owner"',     status: 'FIXED', notes: 'Tambah case Return di getApprovalCardProps' },
+    { _section: 'UI Konsistensi' },
+    { no: 11, component: 'FE - Component', testCase: 'SectionCard title: text-sm font-semibold',                               status: 'FIXED', notes: 'font-bold → font-semibold text-sm' },
+    { no: 12, component: 'FE - Component', testCase: 'SectionTitle title: text-sm font-semibold',                              status: 'FIXED', notes: '' },
+    { no: 13, component: 'FE - Penjualan', testCase: 'Inline section title konsisten di FormAdd',                              status: 'FIXED', notes: 'text-lg → text-sm, h-5 → h-4' },
+    { no: 14, component: 'FE - Remove',   testCase: 'Inline section title konsisten di FormAdd',                               status: 'FIXED', notes: '' },
+    { _section: 'Stock Opname Post-Changes' },
+    { no: 15, component: 'BE - Opname',   testCase: 'Opname setelah transfer/remove: semua cabang SESUAI',                    status: 'PASS',  notes: '4 sesi, scan semua AVAILABLE' },
+]);
+
+// ═══════════════════════════════════════════════
+// SHEET 8 — FLOW TEST E2E
+// ═══════════════════════════════════════════════
+const ws8 = workbook.addWorksheet('Flow Test E2E', { properties: { tabColor: { argb: 'FFEF4444' } } });
+ws8.columns = [
     { header: 'No', key: 'no', width: 5 },
-    { header: 'Flow', key: 'flow', width: 25 },
+    { header: 'Flow', key: 'flow', width: 22 },
     { header: 'Step', key: 'step', width: 55 },
     { header: 'Status', key: 'status', width: 10 },
-    { header: 'Hasil / Data', key: 'result', width: 55 },
+    { header: 'Hasil', key: 'result', width: 55 },
 ];
-styleHeader(wsFlow.getRow(1));
+styleHeader(ws8.getRow(1));
 
-const flowTests = [
-    { no: 1, flow: 'Pembelian → Inventory', step: 'Create product (Cincin Emas 1 gram) untuk branch Jakarta', status: 'PASS', result: 'Product ID: 1, barcode: CI-00001' },
-    { no: 2, flow: 'Pembelian → Inventory', step: 'Create pembelian dengan serial_number, metode TUNAI', status: 'PASS', result: 'Pembelian ID: 1, serial_number: SN-TEST-001, status: APPROVAL' },
-    { no: 3, flow: 'Pembelian → Inventory', step: 'Approve pembelian → otomatis buat inventory + finance', status: 'PASS', result: 'Inventory code: CI-00001-0001, status: AVAILABLE, Finance: CASHOUT 500.000' },
-    { no: 4, flow: 'Pembelian → Inventory', step: 'Create pembelian metode TRANSFER dengan bank_cabang_id', status: 'PASS', result: 'Pembelian ID: 2, tipe_pembayaran: TRANSFER, bank_cabang_id: 1 (BCA)' },
-    { no: 5, flow: 'Pembelian → Inventory', step: 'Detail pembelian: bank_cabang.bank.bank_name muncul', status: 'PASS', result: 'Bank Central Asia (00338227) a.n. Jono' },
-    { no: 6, flow: 'Cross-Branch Setup', step: 'Create product + pembelian + approve untuk branch Bogor', status: 'PASS', result: 'Inventory code: KLG-00001-0001, branch_id: 2 (Bogor)' },
-    { no: 7, flow: 'Stock Opname (Normal)', step: 'Opname branch Jakarta: scan CI-00001-0001 (milik Jakarta)', status: 'PASS', result: 'OPN-DKIJKT-2606-0001, in_stock: 1, missing: 0, status: SESUAI' },
-    { no: 8, flow: 'Stock Opname (Extra)', step: 'Opname branch Jakarta: scan KLG-00001-0001 (milik Bogor) → EXTRA', status: 'PASS', result: 'OPN-DKIJKT-2606-0002, in_stock: 1, extra: 1, note: "Item dari cabang Bogor..."' },
-    { no: 9, flow: 'Stock Opname (Extra)', step: 'Detail opname: tab Extra menampilkan item + catatan', status: 'PASS', result: 'inventory_code: KLG-00001-0001, opname_status: EXTRA, note tersimpan' },
-    { no: 10, flow: 'Date Filter', step: 'Filter stock opname tanggal hari ini → data muncul', status: 'PASS', result: 'start_date=2026-06-26, end_date=2026-06-26 → total: 2' },
-    { no: 11, flow: 'Date Filter', step: 'Filter stock opname tanggal kemarin → data kosong', status: 'PASS', result: 'start_date=2026-06-25, end_date=2026-06-25 → total: 0' },
+const flows = [
+    { _section: 'FLOW 1: Modal Awal → Finance' },
+    { no: 1,  flow: 'Modal Awal',     step: '50jt/cabang (25jt tunai + 25jt transfer) × 4 cabang',       status: 'PASS', result: 'Total Rp 200.000.000' },
+    { _section: 'FLOW 2: Pembelian → Approval → Inventory' },
+    { no: 2,  flow: 'Pembelian',       step: '60 item (15/cabang, 3 batch × 5) mix tunai/transfer',       status: 'PASS', result: '60 created, batch 1-15' },
+    { no: 3,  flow: 'Approve 50%',     step: '8/cabang disetujui, ~3/cabang ditolak',                     status: 'PASS', result: '32 inventory, 12 ditolak, 16 pending' },
+    { _section: 'FLOW 3: Customer Baru → Penjualan → Kwitansi' },
+    { no: 4,  flow: 'Customer',        step: '5 customer baru (Siti, Budi, Dewi, Ahmad, Ratna)',           status: 'PASS', result: 'ID 14-18' },
+    { no: 5,  flow: 'Penjualan',       step: '8 transaksi (2/cabang), ~50% inventory dijual',             status: 'PASS', result: '16 item terjual' },
+    { no: 6,  flow: 'Cetak Kwitansi',  step: '8 penjualan approve + cetak → finance CASH IN',             status: 'PASS', result: 'Semua berhasil setelah fix BE' },
+    { _section: 'FLOW 4: Transfer Item' },
+    { no: 7,  flow: 'Transfer Approve', step: 'Jakarta → Bogor (2 item) disetujui',                       status: 'PASS', result: 'Item pindah branch_id, status AVAILABLE' },
+    { no: 8,  flow: 'Transfer Batal',   step: 'Bogor → Cibitung dibatalkan + KLA → JKT dibatalkan',       status: 'PASS', result: 'Item kembali AVAILABLE di asal' },
+    { _section: 'FLOW 5: Remove Item (Hilang + Repair)' },
+    { no: 9,  flow: 'Hilang Approve',   step: '1 item Jakarta → LOST',                                    status: 'PASS', result: 'inventory status = LOST' },
+    { no: 10, flow: 'Repair + Return',  step: '2 item Bogor → REPAIR → RETURN → AVAILABLE',               status: 'PASS', result: 'Item kembali AVAILABLE' },
+    { no: 11, flow: 'Hilang Tolak',     step: '1 item Cibitung ditolak',                                   status: 'PASS', result: 'Item tetap AVAILABLE (setelah fix ENUM)' },
+    { _section: 'FLOW 6: Stock Opname Final' },
+    { no: 12, flow: 'Opname Final',     step: 'Audit 4 cabang setelah semua perubahan',                    status: 'PASS', result: '4 sesi SESUAI' },
 ];
 
-flowTests.forEach((d, i) => {
-    const row = wsFlow.addRow(d);
-    const statusCell = row.getCell('status');
-    Object.assign(statusCell, statusStyle(d.status));
-    statusCell.alignment = { vertical: 'middle', horizontal: 'center' };
+flows.forEach((d, i) => {
+    if (d._section) { addSectionRow(ws8, 5, d._section); return; }
+    const row = ws8.addRow(d);
+    const sc = row.getCell('status');
+    Object.assign(sc, statusStyle(d.status));
+    sc.alignment = { vertical: 'middle', horizontal: 'center' };
     applyRowStyle(row, i);
 });
 
 // ═══════════════════════════════════════════════
-// SHEET 6 — DAFTAR FIX (Changes Log)
+// SHEET 9 — DAFTAR FIX
 // ═══════════════════════════════════════════════
-const wsFix = workbook.addWorksheet('Daftar Fix', { properties: { tabColor: { argb: 'FF059669' } } });
-
-wsFix.columns = [
+const ws9 = workbook.addWorksheet('Daftar Fix', { properties: { tabColor: { argb: 'FF059669' } } });
+ws9.columns = [
     { header: 'No', key: 'no', width: 5 },
-    { header: 'File', key: 'file', width: 55 },
-    { header: 'Perubahan', key: 'change', width: 65 },
+    { header: 'File', key: 'file', width: 58 },
+    { header: 'Perubahan', key: 'change', width: 70 },
 ];
-styleHeader(wsFix.getRow(1));
+styleHeader(ws9.getRow(1));
 
 const fixes = [
-    { no: 1, file: 'app/Models/Pembelian.php', change: 'Fix typo fillable: bank_cabank_id → bank_cabang_id\nFix relasi bankCabang(): MBank → BankCabang' },
-    { no: 2, file: 'app/Http/Controllers/PembelianController.php', change: 'Fix search: whereHas(\'product.product_name\') → whereHas(\'product\')\nSupport query param product_name selain search' },
-    { no: 3, file: 'resources/js/pages/Inventory/Pembelian/FormAdd.jsx', change: 'Tambah serial_number: b.no_seri ke payload handleSubmitBatch' },
-    { no: 4, file: 'resources/js/pages/Inventory/Pembelian/Page.jsx', change: 'Tambah refreshKey + handleSetState agar Main re-mount setelah form submit' },
-    { no: 5, file: 'resources/js/pages/Inventory/Pembelian/modalView.jsx', change: 'Fix display No. Seri: serial_number || no_seri\nFix bank display: bank_cabang?.bank?.bank_name\nHapus extra BankApis call, pakai relasi langsung' },
-    { no: 6, file: 'resources/js/pages/Approval/ApprovalPembelian/Page.jsx', change: 'Fix initial fetchData() → passing search state\nTambah image produk di kolom tabel' },
-    { no: 7, file: 'resources/js/pages/Approval/ApprovalPembelian/Modal.jsx', change: 'Tambah handling DIBATALKAN (icon, color, reasonLabel, reason)\nFix section title: font-bold → font-semibold text-sm\nFix bank display path: bank_cabang?.bank?.bank_name + nomor_rekening' },
-    { no: 8, file: 'resources/js/components/ApprovalStatusCard.jsx', change: 'Fix section title: font-bold → font-semibold text-sm' },
-    { no: 9, file: 'resources/js/pages/Inventory/StockOpname/FormAdd.jsx', change: 'Tambah kolom "Waktu Opname" di InventoryRows (tab Sesuai)' },
-    { no: 10, file: 'resources/js/pages/Inventory/StockOpname/Detail.jsx', change: 'Tambah kolom "Waktu Opname" di ItemTable' },
-    { no: 11, file: 'resources/js/pages/Inventory/StockOpname/Main.jsx', change: 'Tambah filter dateRange (date range picker)\nKirim start_date/end_date ke API' },
+    { no: 1,  file: 'app/Models/Pembelian.php',                                    change: 'Fix typo fillable bank_cabank_id → bank_cabang_id | Fix relasi bankCabang() → BankCabang' },
+    { no: 2,  file: 'app/Http/Controllers/PembelianController.php',                 change: 'Fix search whereHas | Support param product_name & search' },
+    { no: 3,  file: 'app/Http/Controllers/FinanceReportController.php',             change: 'SQL CASH → TUNAI | Fix opening balance (=< → <, 0 saat semua periode, apply filters)' },
+    { no: 4,  file: 'app/Http/Controllers/TSalesController.php',                    change: 'Fix cetak kwitansi bank_cabang_id → receiver_bank_id | withCount(sales) di customer' },
+    { no: 5,  file: 'app/Http/Controllers/StockOpnameHeaderController.php',         change: 'Tambah eager load inventory.category.parent + subCategory di single()' },
+    { no: 6,  file: 'app/Helpers/FinancePaymentMethod.php',                         change: 'CASH → TUNAI' },
+    { no: 7,  file: 'database/migrations/create_finances_table.php',                change: 'Confirm ENUM = TUNAI,TRANSFER' },
+    { no: 8,  file: 'database/migrations/create_remove_items_table.php',            change: 'Fix typo ENUM DITOALK → DITOLAK' },
+    { no: 9,  file: 'resources/js/pages/Inventory/Pembelian/FormAdd.jsx',           change: 'Tambah serial_number ke payload' },
+    { no: 10, file: 'resources/js/pages/Inventory/Pembelian/Page.jsx',              change: 'refreshKey untuk auto-refresh' },
+    { no: 11, file: 'resources/js/pages/Inventory/Pembelian/modalView.jsx',         change: 'Fix No. Seri, bank path, hapus extra API call' },
+    { no: 12, file: 'resources/js/pages/Approval/ApprovalPembelian/Page.jsx',       change: 'Fix initial fetch + image produk kolom' },
+    { no: 13, file: 'resources/js/pages/Approval/ApprovalPembelian/Modal.jsx',      change: 'DIBATALKAN handling + section title + bank path' },
+    { no: 14, file: 'resources/js/pages/Approval/ApprovalPenjualan/Modal.jsx',      change: 'Customer badge sales_count + CETAK KWITANSI → Disetujui' },
+    { no: 15, file: 'resources/js/pages/Penjualan/ModalView.jsx',                   change: 'Customer badge sales_count + CETAK KWITANSI → Disetujui' },
+    { no: 16, file: 'resources/js/pages/Finance/Modal.jsx',                         change: 'METODE_OPTIONS CASH → TUNAI' },
+    { no: 17, file: 'resources/js/pages/Finance/Page.jsx',                          change: 'Kolom tabel + inline CASH → TUNAI' },
+    { no: 18, file: 'resources/js/pages/Report/Finance/Page.jsx',                   change: 'METODE_OPTIONS + accountLabel + kolom: CASH → TUNAI' },
+    { no: 19, file: 'resources/js/pages/Inventory/StockOpname/FormAdd.jsx',         change: 'Tambah kolom Waktu Opname di InventoryRows' },
+    { no: 20, file: 'resources/js/pages/Inventory/StockOpname/Detail.jsx',          change: 'Tambah kolom Waktu Opname di ItemTable' },
+    { no: 21, file: 'resources/js/pages/Inventory/StockOpname/Main.jsx',            change: 'Tambah filter dateRange' },
+    { no: 22, file: 'resources/js/pages/Inventory/Remove/Main.jsx',                 change: 'Badge Return tone info + filter dropdown Return' },
+    { no: 23, file: 'resources/js/pages/Inventory/Remove/ModalView.jsx',            change: 'Approval card case Return' },
+    { no: 24, file: 'resources/js/pages/Inventory/Remove/FormAdd.jsx',              change: 'Section title konsisten text-sm' },
+    { no: 25, file: 'resources/js/pages/Penjualan/FormAdd.jsx',                     change: 'Section title konsisten text-sm' },
+    { no: 26, file: 'resources/js/components/SectionCard.jsx',                      change: 'font-bold → font-semibold text-sm' },
+    { no: 27, file: 'resources/js/components/SectionTitle.jsx',                     change: 'font-bold → font-semibold text-sm' },
+    { no: 28, file: 'resources/js/components/ApprovalStatusCard.jsx',               change: 'font-bold → font-semibold text-sm' },
 ];
 
 fixes.forEach((d, i) => {
-    const row = wsFix.addRow(d);
+    const row = ws9.addRow(d);
     applyRowStyle(row, i);
     row.getCell('file').font = { name: 'Consolas', size: 9 };
 });
@@ -289,3 +390,4 @@ fixes.forEach((d, i) => {
 const outputPath = path.resolve('QA_TEST_REPORT.xlsx');
 await workbook.xlsx.writeFile(outputPath);
 console.log(`✅ Report berhasil dibuat: ${outputPath}`);
+console.log(`   9 sheets, ${fixes.length} files fixed, 78 test cases`);
