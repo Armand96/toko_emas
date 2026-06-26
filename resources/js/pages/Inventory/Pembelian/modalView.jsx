@@ -5,11 +5,9 @@ import ModalCustom from '../../../components/modalCustom';
 import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
 import Badge from '../../../components/Badge';
 import HelperFunctions from '../../../utils/HelperFunctions';
-import BankApis from '../../../Services/Bank.apis';
 import OptionsStore from '../../../Store/OptionsStore';
 
 export default function ModalView({ isOpen, onClose, data }) {
-    const [bankCabang, setBankCabang] = useState(null);
     const ensureCategories = OptionsStore((s) => s.ensureCategories);
     const [categoryOptions, setCategoryOptions] = useState([]);
 
@@ -48,15 +46,7 @@ export default function ModalView({ isOpen, onClose, data }) {
         };
     })();
 
-    useEffect(() => {
-        if (isOpen && data?.bank_id && data?.branch_id) {
-            BankApis.GetBankBranch(`?bank_id=${data.bank_id}&branch_id=${data.branch_id}`)
-                .then((res) => setBankCabang(res?.data?.[0] || null))
-                .catch(() => setBankCabang(null));
-        } else {
-            setBankCabang(null);
-        }
-    }, [isOpen, data?.bank_id, data?.branch_id]);
+    const bankCabang = data?.bank_cabang || null;
 
     return (
         <ModalCustom
@@ -101,7 +91,7 @@ export default function ModalView({ isOpen, onClose, data }) {
                             </div>
                             <div className="flex">
                                 <span className="w-24 text-neutral-500">No. Seri</span>
-                                <span className="font-medium text-neutral-800">{data?.no_seri || '-'}</span>
+                                <span className="font-medium text-neutral-800">{data?.serial_number || data?.no_seri || '-'}</span>
                             </div>
                         </div>
                     </div>
@@ -172,7 +162,7 @@ export default function ModalView({ isOpen, onClose, data }) {
                             <div className="flex flex-col gap-1">
                                 <span className="text-sm text-neutral-500">Bank Keluar</span>
                                 <span className="text-sm font-medium text-neutral-900">
-                                    {data?.bank?.bank_name || '-'}
+                                    {bankCabang?.bank?.bank_name || '-'}
                                     {bankCabang?.nomor_rekening ? ` (${bankCabang.nomor_rekening})` : ''}
                                 </span>
                                 {bankCabang?.nama_pemilik && (

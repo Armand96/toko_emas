@@ -77,7 +77,7 @@ const ApprovalPembelian = () => {
     };
 
     useEffect(() => {
-        fetchData();
+        fetchData(1, 10, search);
         fetchOptions();
     }, []);
 
@@ -229,7 +229,17 @@ const ApprovalPembelian = () => {
         {
             header: 'Produk',
             accessor: 'produk',
-            render: (row) => row.product?.product_name ?? '-'
+            render: (row) => (
+                <div className="flex items-center gap-2">
+                    <img
+                        src={row.image_path ? `/storage/${row.image_path}` : ""}
+                        alt={row.product?.product_name ?? ""}
+                        className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                    <span className="text-gray-900">{row.product?.product_name ?? '-'}</span>
+                </div>
+            )
         },
         {
             header: 'Kategori',

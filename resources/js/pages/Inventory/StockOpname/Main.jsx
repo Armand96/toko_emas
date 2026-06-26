@@ -16,7 +16,7 @@ const Main = ({ setCurentState }) => {
     const can = PermissionStore((s) => s.can);
     const isKasir = PermissionStore((s) => s.isKasir);
     const user = AuthStore((s) => s.user);
-    const [filterData, setFilterData] = useState({ search: '', status: '', cabang: '' });
+    const [filterData, setFilterData] = useState({ search: '', status: '', cabang: '', dateRange: null });
     const [isLoading, setIsLoading] = useState(false);
     const [branchOptions, setBranchOptions] = useState([]);
 
@@ -42,6 +42,11 @@ const Main = ({ setCurentState }) => {
             if (filters.status) params.append('status', filters.status);
             const effectiveBranch = isKasir() && user?.branch_id ? user.branch_id : filters.cabang;
             if (effectiveBranch) params.append('branch_id', effectiveBranch);
+            const { mode, start, end } = filters.dateRange || {};
+            if (mode !== 'all' && start && end) {
+                params.append('start_date', start);
+                params.append('end_date', end);
+            }
 
             const res = await InventoryApis.GetStockOpname(`?${params.toString()}`);
             const raw = res?.data || [];
@@ -141,6 +146,14 @@ const Main = ({ setCurentState }) => {
                 onClick={can('create', 'inventory.stock_opname') ? () => setCurentState({ view: 'form' }) : undefined}
             />
             <div className="flex flex-wrap items-end gap-3">
+                <div className="min-w-[220px]">
+                    <InputGroup
+                        fields={[{ name: 'dateRange', label: '', type: 'daterange' }]}
+                        formData={filterData}
+                        cols="1"
+                        onChange={handleFilterChange}
+                    />
+                </div>
                 <div className="flex-1 min-w-[220px] max-w-xs">
                     <InputGroup
                         fields={[{ name: 'search', label: '', type: 'search', placeholder: 'Cari kode sesi...' }]}

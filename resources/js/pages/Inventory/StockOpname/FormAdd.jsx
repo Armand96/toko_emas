@@ -331,6 +331,9 @@ const FormAdd = ({ setCurentState }) => {
     );
 };
 
+const fmtWaktuRow = (iso) =>
+    iso ? new Date(iso).toLocaleString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+
 const InventoryRows = ({ rows, statusLabel, lost = false }) => (
     <div className="overflow-x-auto">
         <table className="w-full text-sm text-left text-gray-900">
@@ -343,11 +346,12 @@ const InventoryRows = ({ rows, statusLabel, lost = false }) => (
                     <th className="px-4 py-3 font-semibold">Berat</th>
                     <th className="px-4 py-3 font-semibold">Karat</th>
                     <th className="px-4 py-3 font-semibold">Status</th>
+                    <th className="px-4 py-3 font-semibold">Waktu Opname</th>
                 </tr>
             </thead>
             <tbody>
                 {rows.length === 0 ? (
-                    <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Belum ada item.</td></tr>
+                    <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">Belum ada item.</td></tr>
                 ) : rows.map((row, idx) => {
                     const kategori = row.sub_category
                         ? (row.category?.category_name || '-')
@@ -375,6 +379,7 @@ const InventoryRows = ({ rows, statusLabel, lost = false }) => (
                                     {statusLabel}
                                 </Badge>
                             </td>
+                            <td className="px-4 py-3 text-gray-600">{fmtWaktuRow(row._waktu)}</td>
                         </tr>
                     );
                 })}

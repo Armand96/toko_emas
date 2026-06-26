@@ -247,6 +247,7 @@ const FormPembelian = ({ setCurentState }) => {
                 bank_cabang_id: b.bank_id ? Number(b.bank_id) : null,
                 supplier_id: Number(b.supplier_id),
                 barcode: b.barcode,
+                serial_number: b.no_seri || null,
                 berat: Number(b.berat),
                 karat: Number(b.karat),
                 modal: Number(b.modal),
