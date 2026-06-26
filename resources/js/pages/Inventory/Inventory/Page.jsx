@@ -89,6 +89,7 @@ const MasterInventory = () => {
         const product = productOptions.find(p => p.value === history.product_id)?.label;
         if (product) changes.push({ label: "Produk", to: product });
         if (history.note) changes.push({ label: "Keterangan", to: history.note });
+        if (history.serial_number) changes.push({ label: "No. Seri", to: history.serial_number });
         return changes;
     };
 
@@ -108,6 +109,8 @@ const MasterInventory = () => {
             changes.push({ label: "Karat", from: `${before.karat}K`, to: `${after.karat}K` });
         if ((before.note || "") !== (after.note || ""))
             changes.push({ label: "Keterangan", from: before.note || "-", to: after.note || "-" });
+        if ((before.serial_number || "") !== (after.serial_number || ""))
+            changes.push({ label: "No. Seri", from: before.serial_number || "-", to: after.serial_number || "-" });
         if (before.status !== after.status)
             changes.push({ label: "Status", from: toTitleCase(before.status), to: toTitleCase(after.status) });
         if (before.branch_id !== after.branch_id) {
@@ -123,34 +126,38 @@ const MasterInventory = () => {
         if (!editHistories || editHistories.length === 0) return [];
 
         const sorted = [...editHistories].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        const result = [];
 
-        return sorted.map((history, idx) => {
-            const isFirst = idx === sorted.length - 1;
+        sorted.forEach((history, idx) => {
+            const isOldest = idx === sorted.length - 1;
 
-            if (isFirst) {
-                return {
+            // Setiap edit_history = snapshot SEBELUM edit.
+            // Perubahan = diff(snapshot, state sesudahnya).
+            const after = idx === 0 ? currentInventory : sorted[idx - 1];
+            const changes = after ? diffSnapshot(history, after) : [];
+
+            result.push({
+                title: "Edit item",
+                actor: buildActor(history),
+                date: formatDateTime(history.created_at),
+                description: changes.length > 0 ? null : "Tidak ada perubahan field",
+                changes,
+            });
+
+            // Entry paling lama = "Input awal item" (snapshot nilai awal)
+            if (isOldest) {
+                result.push({
                     title: "Input awal item",
                     actor: buildActor(history),
                     date: formatDateTime(history.created_at),
                     description: null,
                     changes: buildInitialSnapshot(history),
                     initial: true,
-                };
+                });
             }
-
-            // history = snapshot SEBELUM edit ini terjadi
-            // after = state SESUDAH edit → snapshot berikutnya (lebih baru), atau current inventory
-            const after = idx === 0 ? currentInventory : sorted[idx - 1];
-            const changes = after ? diffSnapshot(history, after) : [];
-
-            return {
-                title: "Edit item",
-                actor: buildActor(history),
-                date: formatDateTime(history.created_at),
-                description: changes.length > 0 ? null : "Tidak ada perubahan field",
-                changes,
-            };
         });
+
+        return result;
     };
 
     const mapInventory = (row, editHistories = null, currentData = null) => {
