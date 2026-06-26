@@ -258,7 +258,16 @@ const MasterProduk = () => {
         {
             header: 'Cabang',
             accessor: 'branch',
-            render: (row) => row.branch?.branch_name || '-'
+            render: (row) => {
+                const list = (row.branches || []).map((b) => b.branch?.branch_name).filter(Boolean);
+                if (list.length === 0) return row.branch?.branch_name || '-';
+                if (list.length === 1) return list[0];
+                return (
+                    <span>
+                        {list[0]} <span className="text-xs text-gray-400">+{list.length - 1} lainnya</span>
+                    </span>
+                );
+            }
         },
         {
             header: 'Status',

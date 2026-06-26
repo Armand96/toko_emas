@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { PlusIcon, TrashIcon } from "@phosphor-icons/react";
 import ModalCustom from "../../../components/modalCustom";
 import InputGroup from "../../../components/FormElement/InputGroup";
+import Input from "../../../components/FormElement/SingleElement/Input";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import OptionsStore from "../../../Store/OptionsStore";
 
@@ -36,8 +37,9 @@ export default function Modal({
     };
 
     const handlePhoneChange = (index, value) => {
+        const filtered = value.replace(/[^0-9 ]/g, "");
         const next = [...phoneList];
-        next[index] = value;
+        next[index] = filtered;
         emitPhones(next);
     };
 
@@ -155,42 +157,38 @@ export default function Modal({
                 />
 
                 {/* No Telepon — bisa lebih dari satu */}
-                <div className="flex flex-col gap-1 w-full">
-                    <label className="flex items-center gap-1 text-sm font-medium text-gray-900">
-                        No Telepon
-                    </label>
-                    <div className="flex flex-col gap-2">
-                        {phoneList.map((phone, index) => (
-                            <div key={index} className="flex items-center gap-2">
-                                <input
-                                    type="text"
+                <div className="flex flex-col gap-2 w-full">
+                    {phoneList.map((phone, index) => (
+                        <div key={index} className="flex items-end gap-2">
+                            <div className="flex-1">
+                                <Input
+                                    label={index === 0 ? "No Telepon" : undefined}
+                                    type="tel"
+                                    inputMode="numeric"
+                                    name={`phone_${index}`}
                                     value={phone}
-                                    onChange={(e) => handlePhoneChange(index, e.target.value)}
-                                    disabled={isView}
                                     placeholder="Contoh: 08xxxxxxxxxxxx"
-                                    className={`flex-1 px-3 py-2 text-sm border rounded-lg outline-none transition-all duration-200 ${isView
-                                        ? "!bg-[#F3F4F6] border-[#E2E8F0] text-[#45556C] cursor-not-allowed"
-                                        : "bg-white border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 text-neutral-black"
-                                        }`}
+                                    isDisable={isView}
+                                    onChange={(e) => handlePhoneChange(index, e.target.value)}
                                 />
-                                {!isView && phoneList.length > 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemovePhone(index)}
-                                        title="Hapus nomor"
-                                        className="p-2 btn-outline !text-danger-500 !border-danger-200 hover:bg-danger-50 rounded-lg shrink-0"
-                                    >
-                                        <TrashIcon size={18} />
-                                    </button>
-                                )}
                             </div>
-                        ))}
-                    </div>
+                            {!isView && phoneList.length > 1 && (
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemovePhone(index)}
+                                    title="Hapus nomor"
+                                    className="p-2 mb-[1px] btn-outline !text-danger-500 !border-danger-200 hover:bg-danger-50 rounded-lg shrink-0"
+                                >
+                                    <TrashIcon size={18} />
+                                </button>
+                            )}
+                        </div>
+                    ))}
                     {!isView && (
                         <button
                             type="button"
                             onClick={handleAddPhone}
-                            className="mt-1 flex items-center gap-1 self-start text-sm font-medium text-primary-600 hover:text-primary-700"
+                            className="flex items-center gap-1 self-start text-sm font-medium text-primary-600 hover:text-primary-700"
                         >
                             <PlusIcon size={16} weight="bold" /> Tambah Nomor
                         </button>

@@ -15,6 +15,7 @@ import HelperFunctions from "../../../utils/HelperFunctions";
 import LoadingStore from "../../../Store/LoadingStore";
 import OptionsStore from "../../../Store/OptionsStore";
 import ReportApis from "../../../Services/Report.apis";
+import BankApis from "../../../Services/Bank.apis";
 import StatCard from "./Component/StatCard";
 import ChartCard from "./Component/ChartCard";
 import DonutChart from "./Component/DonutChart";
@@ -87,9 +88,11 @@ const ReportFinance = () => {
         cabang: "",
         metode: "",
         tipe: "",
+        bank_cabang: "",
     });
 
     const [branchOptions, setBranchOptions] = useState([{ value: "", label: "Semua Cabang" }]);
+    const [bankCabangOptions, setBankCabangOptions] = useState([{ value: "", label: "Semua Bank" }]);
 
     // KPI total (semua cabang) + accordion saldo per cabang
     const [totals, setTotals] = useState({ total_all: 0, total_cash: 0, total_transfer: 0 });
@@ -116,6 +119,7 @@ const ReportFinance = () => {
         }
         if (filter.cabang) q.append("branch_id", filter.cabang);
         if (filter.metode) q.append("payment_method", filter.metode);
+        if (filter.bank_cabang) q.append("bank_cabang_id", filter.bank_cabang);
         Object.entries(extra).forEach(([k, v]) => {
             if (v !== "" && v !== undefined && v !== null) q.append(k, v);
         });
@@ -150,6 +154,34 @@ const ReportFinance = () => {
         })();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    /* ── Fetch bank cabang saat metode = TRANSFER ── */
+    useEffect(() => {
+        if (filter.metode !== "TRANSFER") {
+            setBankCabangOptions([{ value: "", label: "Semua Bank" }]);
+            setFilter((prev) => ({ ...prev, bank_cabang: "" }));
+            return;
+        }
+        (async () => {
+            try {
+                const params = filter.cabang
+                    ? `?per_page=10000000&branch_id=${filter.cabang}`
+                    : "?per_page=10000000";
+                const res = await BankApis.GetBankBranch(params);
+                const list = res?.data || [];
+                setBankCabangOptions([
+                    { value: "", label: "Semua Bank" },
+                    ...list.map((bc) => ({
+                        value: bc.id,
+                        label: `${bc.bank?.bank_name ?? "Bank"} - ${bc.nomor_rekening ?? ""}`,
+                    })),
+                ]);
+            } catch (err) {
+                console.error(err);
+            }
+        })();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filter.metode, filter.cabang]);
 
     /* ── Ringkasan periode + donut (refetch saat filter berubah) ── */
     const fetchSummary = async () => {
@@ -196,7 +228,7 @@ const ReportFinance = () => {
         fetchSummary();
         fetchDetail(1, detail.per_page);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filter.dateRange, filter.cabang, filter.metode, filter.tipe]);
+    }, [filter.dateRange, filter.cabang, filter.metode, filter.tipe, filter.bank_cabang]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -325,6 +357,16 @@ const ReportFinance = () => {
                             onChange={handleChange}
                         />
                     </div>
+                    {filter.metode === "TRANSFER" && (
+                        <div className="w-full sm:w-[220px]">
+                            <InputGroup
+                                fields={[{ name: "bank_cabang", label: "", type: "dropdown", options: bankCabangOptions, placeholder: "Pilih bank" }]}
+                                formData={filter}
+                                cols="1"
+                                onChange={handleChange}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 

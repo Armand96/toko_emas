@@ -20,12 +20,20 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function takeAction()
+    public function takeAction(Request $request)
     {
-        $penjualan = TSales::where('approval_status', SalesStatus::APPROVAL)->count();
-        $pembelian = Pembelian::where('status', PembelianStatus::APPROVAL)->count();
-        $removeItem = RemoveItem::where('status', RemoveItemStatus::APPROVAL)->count();
-        $transferItem = TransferItem::where('status', TransferItemStatus::APPROVAL)->count();
+        $penjualan = TSales::where('approval_status', SalesStatus::APPROVAL)
+            ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
+            ->count();
+        $pembelian = Pembelian::where('status', PembelianStatus::APPROVAL)
+            ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
+            ->count();
+        $removeItem = RemoveItem::where('status', RemoveItemStatus::APPROVAL)
+            ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
+            ->count();
+        $transferItem = TransferItem::where('status', TransferItemStatus::APPROVAL)
+            ->when($request->branch_id, fn($q) => $q->where('branch_source_id', $request->branch_id))
+            ->count();
 
         return ApiResponse::success([
             'count_penjualan' => $penjualan,
@@ -35,26 +43,14 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function dataToday()
+    public function dataToday(Request $request)
     {
         $today = Carbon::today();
+        $branchId = $request->branch_id;
 
-        /*
-    |--------------------------------------------------------------------------
-    | Inventory
-    |--------------------------------------------------------------------------
-    */
-
-        $availableInventoryCount = Inventory::where(
-            'status',
-            InventoryStatus::AVAILABLE
-        )->count();
-
-        /*
-    |--------------------------------------------------------------------------
-    | Sales Summary
-    |--------------------------------------------------------------------------
-    */
+        $availableInventoryCount = Inventory::where('status', InventoryStatus::AVAILABLE)
+            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+            ->count();
 
         $sales = TSales::whereIn('approval_status', [
             SalesStatus::DISETUJUI,
@@ -62,43 +58,29 @@ class DashboardController extends Controller
             SalesStatus::SELESAI
         ])
             ->where('updated_at', '>=', $today)
+            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
             ->selectRaw("
             COUNT(*) as total_item_sold,
             COALESCE(SUM(grand_total), 0) as total_sales
-        ")
-            ->first();
+        ")->first();
 
-        /*
-    |--------------------------------------------------------------------------
-    | Pembelian Summary
-    |--------------------------------------------------------------------------
-    */
-
-        $pembelian = Pembelian::where(
-            'status',
-            PembelianStatus::DISETUJUI
-        )
+        $pembelian = Pembelian::where('status', PembelianStatus::DISETUJUI)
             ->where('updated_at', '>=', $today)
+            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
             ->selectRaw("
             COUNT(*) as total_item_bought,
             COALESCE(SUM(modal), 0) as total_pembelian
-        ")
-            ->first();
+        ")->first();
 
-        /*
-    |--------------------------------------------------------------------------
-    | Finance Summary
-    |--------------------------------------------------------------------------
-    */
-
-        $finance = Finance::selectRaw("
+        $finance = Finance::when($branchId, fn($q) => $q->where('branch_id', $branchId))
+            ->selectRaw("
             COALESCE(SUM(
                 CASE
-                    WHEN payment_method = 'CASH'
+                    WHEN payment_method = 'TUNAI'
                         AND type = 'CASH IN'
                         THEN nominal
 
-                    WHEN payment_method = 'CASH'
+                    WHEN payment_method = 'TUNAI'
                         AND type = 'CASH OUT'
                         THEN -nominal
 
@@ -169,6 +151,7 @@ class DashboardController extends Controller
                 SalesStatus::SELESAI
             ])
             ->whereDate('created_at', '>=', $startDate)
+            ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
             ->groupBy(DB::raw('DATE(created_at)'))
             ->orderBy('trx_date')
             ->get();
@@ -208,13 +191,26 @@ class DashboardController extends Controller
         );
     }
 
-    public function latestSales()
+    public function latestSales(Request $request)
     {
-        return ApiResponse::success(TSales::orderBy('id', 'desc')->with(['branch', 'customer'])->get(), "OK", 200);
+        return ApiResponse::success(
+            TSales::orderBy('id', 'desc')
+                ->with(['branch', 'customer'])
+                ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
+                ->get(),
+            "OK", 200
+        );
     }
 
-    public function salesStatus()
+    public function salesStatus(Request $request)
     {
-        return ApiResponse::success(TSales::selectRaw('approval_status, COUNT(approval_status) as count')->where('created_at', '>=', date('Y-m-d') . " 00:00:00")->groupBy('approval_status')->get(), "OK", 200);
+        return ApiResponse::success(
+            TSales::selectRaw('approval_status, COUNT(approval_status) as count')
+                ->where('created_at', '>=', date('Y-m-d') . " 00:00:00")
+                ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
+                ->groupBy('approval_status')
+                ->get(),
+            "OK", 200
+        );
     }
 }
