@@ -282,9 +282,9 @@ const ReportInventory = () => {
                 <StatCard
                     label="Total Nilai Jual"
                     value={HelperFunctions.formatCurrency(summary.nilaiJual)}
-                    subLabel={`Margin ${HelperFunctions.formatCurrency(summary.margin)} • ${summary.marginPct}%`}
+                    subLabel={`Margin ${summary.margin >= 0 ? "" : "-"}${HelperFunctions.formatCurrency(Math.abs(summary.margin))} • ${summary.margin >= 0 ? "" : "-"}${Math.abs(summary.marginPct)}%`}
                     icon={TrendUpIcon}
-                    tone="success"
+                    tone={summary.margin >= 0 ? "success" : "danger"}
                 />
             </div>
 

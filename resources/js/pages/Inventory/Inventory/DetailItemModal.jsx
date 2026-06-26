@@ -137,8 +137,8 @@ const DetailItemModal = ({ isOpen, onClose, item }) => {
                                     <p className="text-xs text-gray-500">Harga Modal</p>
                                     <p className="text-sm text-gray-700">{HelperFunctions.formatCurrency(item.modal)}</p>
                                 </div>
-                                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success-700">
-                                    Margin keuntungan {"↗"} {HelperFunctions.formatCurrency(margin)} (+{marginPct}%)
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${margin >= 0 ? "bg-success-100 text-success-700" : "bg-danger-100 text-danger-700"}`}>
+                                    Margin keuntungan {margin >= 0 ? "↗" : "↘"} {HelperFunctions.formatCurrency(Math.abs(margin))} ({margin >= 0 ? "+" : "-"}{Math.abs(marginPct)}%)
                                 </span>
                             </div>
                         </div>
