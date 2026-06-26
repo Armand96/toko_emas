@@ -67,6 +67,7 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
 
     Route::get('remove-item/{removeItem}', [RemoveItemController::class, 'single']);
     Route::get('remove-item', [RemoveItemController::class, 'index']);
+    Route::get('remove-item-detail', [RemoveItemController::class, 'indexDetail']);
     Route::post('remove-item', [RemoveItemController::class, 'createRemoveItem']);
     Route::put('update-remove-item', [RemoveItemController::class, 'changeApproval']);
     Route::put('update-remove-item-detail', [RemoveItemController::class, 'changeApprovalDetail']);

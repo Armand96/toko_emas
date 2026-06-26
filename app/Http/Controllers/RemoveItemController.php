@@ -48,6 +48,61 @@ class RemoveItemController extends Controller
         return ApiResponse::success($removeItem->load(['branch', 'user', 'details.inventory', 'details.product']));
     }
 
+    public function indexDetail(Request $request)
+    {
+        $query = RemoveItemDetail::query()
+            ->with(['header.branch', 'header.user', 'product', 'inventory']);
+
+        // Filter by specific header
+        if ($request->has('remove_header_id') && $request->remove_header_id != "") {
+            $query->where('remove_header_id', $request->remove_header_id);
+        }
+
+        // Filter by detail-level status (APPROVAL / DISETUJUI / DITOLAK / DIBATALKAN / RETURN)
+        if ($request->has('status') && $request->status != "") {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by inventory code
+        if ($request->has('inventory_code') && $request->inventory_code != "") {
+            $query->where('inventory_code', 'like', '%' . $request->inventory_code . '%');
+        }
+
+        // Filter by product
+        if ($request->has('product_id') && $request->product_id != "") {
+            $query->where('product_id', $request->product_id);
+        }
+
+        // Filter through header relationship
+        $hasHeaderFilter =
+            ($request->has('branch_id')     && $request->branch_id     != "") ||
+            ($request->has('jenis')          && $request->jenis          != "") ||
+            ($request->has('header_status')  && $request->header_status  != "") ||
+            ($request->has('code')           && $request->code           != "");
+
+        if ($hasHeaderFilter) {
+            $query->whereHas('header', function ($q) use ($request) {
+                if ($request->has('branch_id') && $request->branch_id != "") {
+                    $q->where('branch_id', $request->branch_id);
+                }
+                if ($request->has('jenis') && $request->jenis != "") {
+                    $q->where('jenis', $request->jenis);
+                }
+                if ($request->has('header_status') && $request->header_status != "") {
+                    $q->where('status', $request->header_status);
+                }
+                if ($request->has('code') && $request->code != "") {
+                    $q->where('code', 'like', '%' . $request->code . '%');
+                }
+            });
+        }
+
+        $perPage = $request->input('per_page', 10);
+        $details = $query->orderBy('id', 'desc')->paginate($perPage);
+
+        return response()->json($details);
+    }
+
     public function createRemoveItem(RemoveItemRequest $request)
     {
         $validated = $request->validated();
