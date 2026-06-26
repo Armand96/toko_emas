@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PembelianExport;
 use App\Helpers\ApiResponse;
 use App\Helpers\PembelianStatus;
 use App\Models\Pembelian;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PembelianReportController extends Controller
 {
@@ -170,5 +172,11 @@ class PembelianReportController extends Controller
             'OK',
             200
         );
+    }
+
+    public function exportPembelian(Request $request)
+    {
+        $filename = 'pembelian-report-' . date('Ymd-His') . '.xlsx';
+        return Excel::download(new PembelianExport($request), $filename);
     }
 }

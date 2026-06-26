@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\CustomerExport;
 use App\Helpers\ApiResponse;
 use App\Models\MCustomer;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerReportController extends Controller
 {
@@ -166,5 +168,11 @@ class CustomerReportController extends Controller
         }
 
         return $result;
+    }
+
+    public function exportCustomer(Request $request)
+    {
+        $filename = 'customer-report-' . date('Ymd-His') . '.xlsx';
+        return Excel::download(new CustomerExport($request), $filename);
     }
 }

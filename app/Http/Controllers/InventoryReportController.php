@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\InventoryExport;
 use App\Helpers\ApiResponse;
 use App\Models\Inventory;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class InventoryReportController extends Controller
 {
@@ -268,5 +270,11 @@ class InventoryReportController extends Controller
             'OK',
             200
         );
+    }
+
+    public function exportInventory(Request $request)
+    {
+        $filename = 'inventory-report-' . date('Ymd-His') . '.xlsx';
+        return Excel::download(new InventoryExport($request), $filename);
     }
 }

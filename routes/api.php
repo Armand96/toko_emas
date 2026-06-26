@@ -1,9 +1,13 @@
 <?php
 
 use App\Http\Controllers\BankCabangController;
+use App\Http\Controllers\CustomerReportController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EnumController;
 use App\Http\Controllers\FinanceController;
+use App\Http\Controllers\FinanceReportController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\InventoryReportController;
 use App\Http\Controllers\MBankController;
 use App\Http\Controllers\MBranchController;
 use App\Http\Controllers\MCategoryController;
@@ -12,12 +16,8 @@ use App\Http\Controllers\MCustomerController;
 use App\Http\Controllers\MProductController;
 use App\Http\Controllers\MSupplierController;
 use App\Http\Controllers\PembelianController;
-use App\Http\Controllers\RemoveItemController;
-use App\Http\Controllers\CustomerReportController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\FinanceReportController;
-use App\Http\Controllers\InventoryReportController;
 use App\Http\Controllers\PembelianReportController;
+use App\Http\Controllers\RemoveItemController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\StockOpnameHeaderController;
@@ -26,8 +26,6 @@ use App\Http\Controllers\TransferItemController;
 use App\Http\Controllers\TSalesController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-
-
 
 Route::post('login', [UserController::class, 'login']);
 
@@ -78,7 +76,7 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
 
     Route::get('roles', [RoleController::class, 'index']);
 
-    Route::prefix('dashboard')->group(function() {
+    Route::prefix('dashboard')->group(function () {
         Route::get('take-action-data', [DashboardController::class, 'takeAction']);
         Route::get('data-today', [DashboardController::class, 'dataToday']);
         Route::get('sales-trend', [DashboardController::class, 'salesTrend']);
@@ -86,7 +84,7 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
         Route::get('sales-status', [DashboardController::class, 'salesStatus']);
     });
 
-    Route::prefix('report')->group(function() {
+    Route::prefix('report')->group(function () {
         // CUSTOMER
         Route::get('customer-count', [CustomerReportController::class, 'customerCount']);
         Route::get('top-customer', [CustomerReportController::class, 'topCustomer']);
@@ -116,6 +114,13 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
         Route::get('inventory-distribution', [InventoryReportController::class, 'inventoryDistribution']);
         Route::get('inventory-status-aging', [InventoryReportController::class, 'inventoryStatusAndAging']);
         Route::get('inventory-detail', [InventoryReportController::class, 'inventoryDetail']);
+
+        // EXPORTS
+        Route::get('export-sales', [SalesReportController::class, 'exportSales']);
+        Route::get('export-pembelian', [PembelianReportController::class, 'exportPembelian']);
+        Route::get('export-finance', [FinanceReportController::class, 'exportFinance']);
+        Route::get('export-inventory', [InventoryReportController::class, 'exportInventory']);
+        Route::get('export-customer', [CustomerReportController::class, 'exportCustomer']);
     });
 
     Route::get('profile', [UserController::class, 'profile']);

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\SalesExport;
 use App\Helpers\ApiResponse;
 use App\Models\TSales;
 use App\Models\TSalesDetail;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SalesReportController extends Controller
 {
@@ -259,5 +261,11 @@ class SalesReportController extends Controller
             'OK',
             200
         );
+    }
+
+    public function exportSales(Request $request)
+    {
+        $filename = 'sales-report-' . date('Ymd-His') . '.xlsx';
+        return Excel::download(new SalesExport($request), $filename);
     }
 }

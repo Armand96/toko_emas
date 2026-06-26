@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\FinanceExport;
 use App\Helpers\ApiResponse;
 use App\Models\Finance;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class FinanceReportController extends Controller
 {
@@ -238,5 +240,11 @@ class FinanceReportController extends Controller
             'OK',
             200
         );
+    }
+
+    public function exportFinance(Request $request)
+    {
+        $filename = 'finance-report-' . date('Ymd-His') . '.xlsx';
+        return Excel::download(new FinanceExport($request), $filename);
     }
 }
