@@ -88,7 +88,7 @@ const ROLE_PERMISSIONS = {
         'approval.pembelian': RU,
         'approval.remove_item': RU,
         'approval.transfer': RU,
-        'inventory.master_kategori': READ,
+        'inventory.master_kategori': CRUD,
         'inventory.master_produk': CRUD,
         'inventory.item_inventory': READ,
         'inventory.remove': READ,
@@ -115,8 +115,6 @@ const ROLE_PERMISSIONS = {
 
     [ROLES.KASIR]: {
         dashboard: READ,
-        'inventory.master_kategori': READ,
-        'inventory.master_produk': READ,
         'inventory.pembelian': CRUD,
         'inventory.item_inventory': CRUD,
         'inventory.remove': CRUD,
