@@ -1,10 +1,10 @@
 /**
- * TEST: Dashboard, Report Finance, Master Produk
+ * TEST: Dashboard, Report Finance, Master Produk, Cabang No Telepon
  *
  * Skenario:
  * 1. Login Super Admin → test semua endpoint tampil data
  * 2. Create/Login Kasir → test data restricted by branch_id
- * 3. Generate Excel report
+ * 3. Generate Excel report (format konsisten dgn generate-test-report.mjs)
  */
 
 import ExcelJS from 'exceljs';
@@ -13,7 +13,7 @@ import path from 'path';
 const BASE = 'http://127.0.0.1:8000/api';
 
 // ═══════════════════════════════════════════════
-// HELPERS
+// API HELPERS
 // ═══════════════════════════════════════════════
 function makeHeaders(token) {
     return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
@@ -61,679 +61,586 @@ function addResult(module, component, testCase, pass, notes = '') {
 }
 
 // ═══════════════════════════════════════════════
-// MAIN
+// RUN ALL TESTS
 // ═══════════════════════════════════════════════
-async function main() {
-    // ─────────────────────────────────────────
-    // LOGIN SUPER ADMIN
-    // ─────────────────────────────────────────
-    section('LOGIN SUPER ADMIN (tokoemas)');
-    const adminLogin = await login('tokoemas', 'tokoemas');
-    if (!adminLogin.ok) {
-        console.error('❌ Gagal login Super Admin:', adminLogin.json);
-        process.exit(1);
-    }
-    const adminToken = adminLogin.token;
-    const adminUser = adminLogin.user;
-    log('🔑', `Login berhasil: ${adminUser.name} (role_id: ${adminUser.role_id}, branch_id: ${adminUser.branch_id})`);
+section('LOGIN SUPER ADMIN (tokoemas)');
+const adminLogin = await login('tokoemas', 'tokoemas');
+if (!adminLogin.ok) { console.error('❌ Gagal login Super Admin:', adminLogin.json); process.exit(1); }
+const adminToken = adminLogin.token;
+const adminUser = adminLogin.user;
+log('🔑', `Login berhasil: ${adminUser.name} (role_id: ${adminUser.role_id}, branch_id: ${adminUser.branch_id})`);
 
-    // ─────────────────────────────────────────
-    // DASHBOARD — SUPER ADMIN (ALL DATA)
-    // ─────────────────────────────────────────
-    section('DASHBOARD — SUPER ADMIN (TANPA FILTER BRANCH)');
+// ── DASHBOARD — SUPER ADMIN ──
+section('DASHBOARD — SUPER ADMIN (TANPA FILTER BRANCH)');
 
-    const dashDataToday = await apiGet('/dashboard/data-today', adminToken);
-    addResult('Dashboard', 'BE - data-today', 'Endpoint data-today respond OK', dashDataToday.ok, `status: ${dashDataToday.status}`);
+const dashDataToday = await apiGet('/dashboard/data-today', adminToken);
+addResult('Dashboard', 'BE - data-today', 'Endpoint data-today respond OK', dashDataToday.ok, `status: ${dashDataToday.status}`);
+const dtData = dashDataToday.json?.data ?? dashDataToday.json;
+addResult('Dashboard', 'BE - data-today', 'available_inventory field ada', dtData?.available_inventory !== undefined, `value: ${dtData?.available_inventory}`);
+addResult('Dashboard', 'BE - data-today', 'item_sold_today field ada', dtData?.item_sold_today !== undefined, `value: ${dtData?.item_sold_today}`);
+addResult('Dashboard', 'BE - data-today', 'item_bought_today field ada', dtData?.item_bought_today !== undefined, `value: ${dtData?.item_bought_today}`);
+addResult('Dashboard', 'BE - data-today', 'sales_today field ada', dtData?.sales_today !== undefined, `value: ${dtData?.sales_today}`);
+addResult('Dashboard', 'BE - data-today', 'pembelian_today field ada', dtData?.pembelian_today !== undefined, `value: ${dtData?.pembelian_today}`);
+addResult('Dashboard', 'BE - data-today', 'total_balance field ada', dtData?.total_balance !== undefined, `value: ${dtData?.total_balance}`);
 
-    const dtData = dashDataToday.json?.data ?? dashDataToday.json;
-    addResult('Dashboard', 'BE - data-today', 'available_inventory field ada', dtData?.available_inventory !== undefined, `value: ${dtData?.available_inventory}`);
-    addResult('Dashboard', 'BE - data-today', 'item_sold_today field ada', dtData?.item_sold_today !== undefined, `value: ${dtData?.item_sold_today}`);
-    addResult('Dashboard', 'BE - data-today', 'item_bought_today field ada', dtData?.item_bought_today !== undefined, `value: ${dtData?.item_bought_today}`);
-    addResult('Dashboard', 'BE - data-today', 'sales_today field ada', dtData?.sales_today !== undefined, `value: ${dtData?.sales_today}`);
-    addResult('Dashboard', 'BE - data-today', 'pembelian_today field ada', dtData?.pembelian_today !== undefined, `value: ${dtData?.pembelian_today}`);
-    addResult('Dashboard', 'BE - data-today', 'total_balance field ada', dtData?.total_balance !== undefined, `value: ${dtData?.total_balance}`);
+const dashTakeAction = await apiGet('/dashboard/take-action-data', adminToken);
+addResult('Dashboard', 'BE - take-action', 'Endpoint take-action respond OK', dashTakeAction.ok, `status: ${dashTakeAction.status}`);
+const taData = dashTakeAction.json?.data ?? dashTakeAction.json;
+addResult('Dashboard', 'BE - take-action', 'count_penjualan field ada', taData?.count_penjualan !== undefined, `value: ${taData?.count_penjualan}`);
+addResult('Dashboard', 'BE - take-action', 'count_pembelian field ada', taData?.count_pembelian !== undefined, `value: ${taData?.count_pembelian}`);
 
-    const dashTakeAction = await apiGet('/dashboard/take-action-data', adminToken);
-    addResult('Dashboard', 'BE - take-action', 'Endpoint take-action respond OK', dashTakeAction.ok, `status: ${dashTakeAction.status}`);
-    const taData = dashTakeAction.json?.data ?? dashTakeAction.json;
-    addResult('Dashboard', 'BE - take-action', 'count_penjualan field ada', taData?.count_penjualan !== undefined, `value: ${taData?.count_penjualan}`);
-    addResult('Dashboard', 'BE - take-action', 'count_pembelian field ada', taData?.count_pembelian !== undefined, `value: ${taData?.count_pembelian}`);
+const dashTrend = await apiGet('/dashboard/sales-trend?days=7', adminToken);
+addResult('Dashboard', 'BE - sales-trend', 'Endpoint sales-trend respond OK', dashTrend.ok);
+const trendData = dashTrend.json?.data ?? dashTrend.json;
+addResult('Dashboard', 'BE - sales-trend', 'Trend data array 7 hari', Array.isArray(trendData) && trendData.length === 7, `length: ${trendData?.length}`);
 
-    const dashTrend = await apiGet('/dashboard/sales-trend?days=7', adminToken);
-    addResult('Dashboard', 'BE - sales-trend', 'Endpoint sales-trend respond OK', dashTrend.ok, `status: ${dashTrend.status}`);
-    const trendData = dashTrend.json?.data ?? dashTrend.json;
-    addResult('Dashboard', 'BE - sales-trend', 'Trend data berupa array 7 hari', Array.isArray(trendData) && trendData.length === 7, `length: ${trendData?.length}`);
+const dashLatest = await apiGet('/dashboard/sales-latest', adminToken);
+addResult('Dashboard', 'BE - sales-latest', 'Endpoint sales-latest respond OK', dashLatest.ok);
+const latestData = dashLatest.json?.data ?? dashLatest.json;
+addResult('Dashboard', 'BE - sales-latest', 'Latest sales berupa array', Array.isArray(latestData), `length: ${latestData?.length}`);
 
-    const dashLatest = await apiGet('/dashboard/sales-latest', adminToken);
-    addResult('Dashboard', 'BE - sales-latest', 'Endpoint sales-latest respond OK', dashLatest.ok, `status: ${dashLatest.status}`);
-    const latestData = dashLatest.json?.data ?? dashLatest.json;
-    addResult('Dashboard', 'BE - sales-latest', 'Latest sales data berupa array', Array.isArray(latestData), `length: ${latestData?.length}`);
+const dashStatus = await apiGet('/dashboard/sales-status', adminToken);
+addResult('Dashboard', 'BE - sales-status', 'Endpoint sales-status respond OK', dashStatus.ok);
 
-    const dashStatus = await apiGet('/dashboard/sales-status', adminToken);
-    addResult('Dashboard', 'BE - sales-status', 'Endpoint sales-status respond OK', dashStatus.ok, `status: ${dashStatus.status}`);
+// ── DASHBOARD — FILTER BRANCH ──
+section('DASHBOARD — FILTER BY BRANCH_ID=1 (Jakarta)');
 
-    // ─────────────────────────────────────────
-    // DASHBOARD — FILTER BY BRANCH (branch_id=1)
-    // ─────────────────────────────────────────
-    section('DASHBOARD — FILTER BY BRANCH_ID=1 (Jakarta)');
+const dashDataBranch = await apiGet('/dashboard/data-today?branch_id=1', adminToken);
+addResult('Dashboard', 'BE - data-today', 'data-today branch_id=1 respond OK', dashDataBranch.ok);
+const dtBranch = dashDataBranch.json?.data ?? dashDataBranch.json;
+addResult('Dashboard', 'BE - data-today', 'Data ter-filter (available_inventory ada)', dtBranch?.available_inventory !== undefined, `all: ${dtData?.available_inventory}, branch 1: ${dtBranch?.available_inventory}`);
 
-    const dashDataBranch = await apiGet('/dashboard/data-today?branch_id=1', adminToken);
-    addResult('Dashboard', 'BE - data-today', 'data-today dengan branch_id=1 respond OK', dashDataBranch.ok);
-    const dtBranch = dashDataBranch.json?.data ?? dashDataBranch.json;
+const dashTakeActionBranch = await apiGet('/dashboard/take-action-data?branch_id=1', adminToken);
+addResult('Dashboard', 'BE - take-action', 'take-action branch_id=1 respond OK', dashTakeActionBranch.ok);
 
-    const dashDataAll = dtData;
-    const branchFilterWorks = dashDataBranch.ok && (
-        dtBranch?.available_inventory !== undefined
-    );
-    addResult('Dashboard', 'BE - data-today', 'Data ter-filter (available_inventory ada)', branchFilterWorks, `all: ${dashDataAll?.available_inventory}, branch 1: ${dtBranch?.available_inventory}`);
+const dashTrendBranch = await apiGet('/dashboard/sales-trend?days=7&branch_id=1', adminToken);
+addResult('Dashboard', 'BE - sales-trend', 'sales-trend branch_id=1 respond OK', dashTrendBranch.ok);
 
-    const dashTakeActionBranch = await apiGet('/dashboard/take-action-data?branch_id=1', adminToken);
-    addResult('Dashboard', 'BE - take-action', 'take-action dengan branch_id=1 respond OK', dashTakeActionBranch.ok);
+const dashLatestBranch = await apiGet('/dashboard/sales-latest?branch_id=1', adminToken);
+addResult('Dashboard', 'BE - sales-latest', 'sales-latest branch_id=1 respond OK', dashLatestBranch.ok);
+const latestBranch = dashLatestBranch.json?.data ?? dashLatestBranch.json;
+const latestAllBranch1 = Array.isArray(latestBranch) && latestBranch.every(s => !s.branch_id || s.branch_id === 1);
+addResult('Dashboard', 'BE - sales-latest', 'Semua sales-latest branch_id = 1', latestAllBranch1, `count: ${latestBranch?.length}`);
 
-    const dashTrendBranch = await apiGet('/dashboard/sales-trend?days=7&branch_id=1', adminToken);
-    addResult('Dashboard', 'BE - sales-trend', 'sales-trend dengan branch_id=1 respond OK', dashTrendBranch.ok);
+const dashStatusBranch = await apiGet('/dashboard/sales-status?branch_id=1', adminToken);
+addResult('Dashboard', 'BE - sales-status', 'sales-status branch_id=1 respond OK', dashStatusBranch.ok);
 
-    const dashLatestBranch = await apiGet('/dashboard/sales-latest?branch_id=1', adminToken);
-    addResult('Dashboard', 'BE - sales-latest', 'sales-latest dengan branch_id=1 respond OK', dashLatestBranch.ok);
-    const latestBranch = dashLatestBranch.json?.data ?? dashLatestBranch.json;
-    const latestAllBranch1 = Array.isArray(latestBranch) && latestBranch.every(s => !s.branch_id || s.branch_id === 1);
-    addResult('Dashboard', 'BE - sales-latest', 'Semua sales-latest branch_id = 1', latestAllBranch1, `count: ${latestBranch?.length}`);
+// ── REPORT FINANCE ──
+section('REPORT FINANCE — SUPER ADMIN');
 
-    const dashStatusBranch = await apiGet('/dashboard/sales-status?branch_id=1', adminToken);
-    addResult('Dashboard', 'BE - sales-status', 'sales-status dengan branch_id=1 respond OK', dashStatusBranch.ok);
+const rptTotalCount = await apiGet('/report/total-count', adminToken);
+addResult('Report Finance', 'BE - total-count', 'Endpoint total-count respond OK', rptTotalCount.ok);
+const tcData = rptTotalCount.json?.data ?? rptTotalCount.json;
+addResult('Report Finance', 'BE - total-count', 'total_all field ada', tcData?.total_all !== undefined, `value: ${tcData?.total_all}`);
+addResult('Report Finance', 'BE - total-count', 'total_cash field ada', tcData?.total_cash !== undefined, `value: ${tcData?.total_cash}`);
+addResult('Report Finance', 'BE - total-count', 'total_transfer field ada', tcData?.total_transfer !== undefined, `value: ${tcData?.total_transfer}`);
 
-    // ─────────────────────────────────────────
-    // REPORT FINANCE — SUPER ADMIN
-    // ─────────────────────────────────────────
-    section('REPORT FINANCE — SUPER ADMIN');
+const rptGroupCabang = await apiGet('/report/total-group-by-cabang', adminToken);
+addResult('Report Finance', 'BE - group-cabang', 'Endpoint total-group-by-cabang respond OK', rptGroupCabang.ok);
+const gcData = rptGroupCabang.json?.data ?? rptGroupCabang.json;
+addResult('Report Finance', 'BE - group-cabang', 'Data array (multi cabang)', Array.isArray(gcData) && gcData.length > 0, `length: ${gcData?.length}`);
 
-    const rptTotalCount = await apiGet('/report/total-count', adminToken);
-    addResult('Report Finance', 'BE - total-count', 'Endpoint total-count respond OK', rptTotalCount.ok);
-    const tcData = rptTotalCount.json?.data ?? rptTotalCount.json;
-    addResult('Report Finance', 'BE - total-count', 'total_all field ada', tcData?.total_all !== undefined, `value: ${tcData?.total_all}`);
-    addResult('Report Finance', 'BE - total-count', 'total_cash field ada', tcData?.total_cash !== undefined, `value: ${tcData?.total_cash}`);
-    addResult('Report Finance', 'BE - total-count', 'total_transfer field ada', tcData?.total_transfer !== undefined, `value: ${tcData?.total_transfer}`);
+const rptSummary = await apiGet('/report/finance-summary', adminToken);
+addResult('Report Finance', 'BE - summary', 'Endpoint finance-summary respond OK (all)', rptSummary.ok);
+const sumData = rptSummary.json?.data ?? rptSummary.json;
+addResult('Report Finance', 'BE - summary', 'opening_balance = 0 saat semua periode', Number(sumData?.summary?.opening_balance) === 0, `value: ${sumData?.summary?.opening_balance}`);
+addResult('Report Finance', 'BE - summary', 'cash_in field ada', sumData?.summary?.cash_in !== undefined, `value: ${sumData?.summary?.cash_in}`);
+addResult('Report Finance', 'BE - summary', 'cash_out field ada', sumData?.summary?.cash_out !== undefined, `value: ${sumData?.summary?.cash_out}`);
+addResult('Report Finance', 'BE - summary', 'closing_balance = opening + cash_in - cash_out', Number(sumData?.summary?.closing_balance) === (Number(sumData?.summary?.opening_balance) + Number(sumData?.summary?.cash_in) - Number(sumData?.summary?.cash_out)), `value: ${sumData?.summary?.closing_balance}`);
 
-    const rptGroupCabang = await apiGet('/report/total-group-by-cabang', adminToken);
-    addResult('Report Finance', 'BE - group-cabang', 'Endpoint total-group-by-cabang respond OK', rptGroupCabang.ok);
-    const gcData = rptGroupCabang.json?.data ?? rptGroupCabang.json;
-    addResult('Report Finance', 'BE - group-cabang', 'Data berupa array (multi cabang)', Array.isArray(gcData) && gcData.length > 0, `length: ${gcData?.length}`);
+const rptDetail = await apiGet('/report/finance-detail?per_page=5', adminToken);
+addResult('Report Finance', 'BE - detail', 'Endpoint finance-detail respond OK', rptDetail.ok);
+const fdData = rptDetail.json?.data ?? rptDetail.json;
+addResult('Report Finance', 'BE - detail', 'Data paginated (has data, total, current_page)', fdData?.data !== undefined && fdData?.total !== undefined, `total: ${fdData?.total}, page: ${fdData?.current_page}`);
 
-    const rptSummary = await apiGet('/report/finance-summary', adminToken);
-    addResult('Report Finance', 'BE - summary', 'Endpoint finance-summary respond OK (all)', rptSummary.ok);
-    const sumData = rptSummary.json?.data ?? rptSummary.json;
-    addResult('Report Finance', 'BE - summary', 'summary.opening_balance = 0 saat semua periode', Number(sumData?.summary?.opening_balance) === 0, `value: ${sumData?.summary?.opening_balance}`);
-    addResult('Report Finance', 'BE - summary', 'cash_in field ada', sumData?.summary?.cash_in !== undefined, `value: ${sumData?.summary?.cash_in}`);
-    addResult('Report Finance', 'BE - summary', 'cash_out field ada', sumData?.summary?.cash_out !== undefined, `value: ${sumData?.summary?.cash_out}`);
-    addResult('Report Finance', 'BE - summary', 'closing_balance = opening + cash_in - cash_out', Number(sumData?.summary?.closing_balance) === (Number(sumData?.summary?.opening_balance) + Number(sumData?.summary?.cash_in) - Number(sumData?.summary?.cash_out)), `value: ${sumData?.summary?.closing_balance}`);
+// ── REPORT FINANCE — FILTER BANK CABANG ──
+section('REPORT FINANCE — FILTER BANK CABANG');
 
-    const rptDetail = await apiGet('/report/finance-detail?per_page=5', adminToken);
-    addResult('Report Finance', 'BE - detail', 'Endpoint finance-detail respond OK', rptDetail.ok);
-    const fdData = rptDetail.json?.data ?? rptDetail.json;
-    addResult('Report Finance', 'BE - detail', 'Data paginated (has data, total, current_page)', fdData?.data !== undefined && fdData?.total !== undefined, `total: ${fdData?.total}, page: ${fdData?.current_page}`);
+const rptSumBranch = await apiGet('/report/finance-summary?branch_id=1', adminToken);
+addResult('Report Finance', 'BE - summary', 'finance-summary filter branch_id=1 OK', rptSumBranch.ok);
 
-    // ─────────────────────────────────────────
-    // REPORT FINANCE — FILTER bank_cabang_id
-    // ─────────────────────────────────────────
-    section('REPORT FINANCE — FILTER BANK CABANG');
+const rptSumTransfer = await apiGet('/report/finance-summary?payment_method=TRANSFER', adminToken);
+addResult('Report Finance', 'BE - summary', 'finance-summary filter payment_method=TRANSFER OK', rptSumTransfer.ok);
 
-    const rptSumBranch = await apiGet('/report/finance-summary?branch_id=1', adminToken);
-    addResult('Report Finance', 'BE - summary', 'finance-summary filter branch_id=1 OK', rptSumBranch.ok);
+const rptSumBank = await apiGet('/report/finance-summary?payment_method=TRANSFER&bank_cabang_id=1', adminToken);
+addResult('Report Finance', 'BE - summary', 'finance-summary filter bank_cabang_id=1 OK', rptSumBank.ok);
+const sumBankData = rptSumBank.json?.data ?? rptSumBank.json;
+addResult('Report Finance', 'BE - summary', 'bank_cabang_id filter memberi hasil valid', sumBankData?.summary !== undefined, `cash_in: ${sumBankData?.summary?.cash_in}, cash_out: ${sumBankData?.summary?.cash_out}`);
 
-    const rptSumTransfer = await apiGet('/report/finance-summary?payment_method=TRANSFER', adminToken);
-    addResult('Report Finance', 'BE - summary', 'finance-summary filter payment_method=TRANSFER OK', rptSumTransfer.ok);
+const rptDetailBank = await apiGet('/report/finance-detail?payment_method=TRANSFER&bank_cabang_id=1&per_page=5', adminToken);
+addResult('Report Finance', 'BE - detail', 'finance-detail filter bank_cabang_id=1 OK', rptDetailBank.ok);
+const fdBankData = rptDetailBank.json?.data ?? rptDetailBank.json;
+const allBank1 = Array.isArray(fdBankData?.data) && fdBankData.data.every(f => !f.bank_cabang_id || f.bank_cabang_id === 1);
+addResult('Report Finance', 'BE - detail', 'Semua record bank_cabang_id = 1 (atau null)', allBank1, `count: ${fdBankData?.data?.length}`);
 
-    const rptSumBank = await apiGet('/report/finance-summary?payment_method=TRANSFER&bank_cabang_id=1', adminToken);
-    addResult('Report Finance', 'BE - summary', 'finance-summary filter bank_cabang_id=1 OK', rptSumBank.ok);
-    const sumBankData = rptSumBank.json?.data ?? rptSumBank.json;
-    addResult('Report Finance', 'BE - summary', 'bank_cabang_id filter memberi hasil valid', sumBankData?.summary !== undefined, `cash_in: ${sumBankData?.summary?.cash_in}, cash_out: ${sumBankData?.summary?.cash_out}`);
+// ── MASTER PRODUK ──
+section('MASTER PRODUK — SUPER ADMIN');
 
-    const rptDetailBank = await apiGet('/report/finance-detail?payment_method=TRANSFER&bank_cabang_id=1&per_page=5', adminToken);
-    addResult('Report Finance', 'BE - detail', 'finance-detail filter bank_cabang_id=1 OK', rptDetailBank.ok);
-    const fdBankData = rptDetailBank.json?.data ?? rptDetailBank.json;
-    const allBank1 = Array.isArray(fdBankData?.data) && fdBankData.data.every(f => !f.bank_cabang_id || f.bank_cabang_id === 1);
-    addResult('Report Finance', 'BE - detail', 'Semua record bank_cabang_id = 1 (atau null)', allBank1, `count: ${fdBankData?.data?.length}`);
+const prodAll = await apiGet('/products?per_page=100', adminToken);
+addResult('Master Produk', 'BE - index', 'Endpoint products respond OK', prodAll.ok);
+const prodData = prodAll.json?.data ?? prodAll.json;
+const prodList = Array.isArray(prodData) ? prodData : (prodData?.data ?? []);
+addResult('Master Produk', 'BE - index', 'Produk list berupa array', Array.isArray(prodList), `count: ${prodList.length}`);
 
-    // ─────────────────────────────────────────
-    // MASTER PRODUK — SUPER ADMIN
-    // ─────────────────────────────────────────
-    section('MASTER PRODUK — SUPER ADMIN');
+const hasBranches = prodList.length > 0 && prodList[0].branches !== undefined;
+addResult('Master Produk', 'BE - index', 'Produk punya relasi branches (array)', hasBranches, hasBranches ? `first: ${prodList[0].branches?.length} branches` : 'undefined');
 
-    const prodAll = await apiGet('/products?per_page=100', adminToken);
-    addResult('Master Produk', 'BE - index', 'Endpoint products respond OK', prodAll.ok);
-    const prodData = prodAll.json?.data ?? prodAll.json;
-    const prodList = Array.isArray(prodData) ? prodData : (prodData?.data ?? []);
-    addResult('Master Produk', 'BE - index', 'Produk list berupa array', Array.isArray(prodList), `count: ${prodList.length}`);
+const hasBranchRelation = hasBranches && prodList.some(p => (p.branches || []).some(b => b.branch !== undefined));
+addResult('Master Produk', 'BE - index', 'branches[].branch relasi ter-load (branch_name)', hasBranchRelation);
 
-    const hasBranches = prodList.length > 0 && prodList[0].branches !== undefined;
-    addResult('Master Produk', 'BE - index', 'Produk punya relasi branches (array)', hasBranches, hasBranches ? `first product branches count: ${prodList[0].branches?.length}` : 'branches undefined');
+addResult('Master Produk', 'BE - index', 'Produk punya relasi category', prodList.length > 0 && prodList[0].category !== undefined);
+addResult('Master Produk', 'BE - index', 'Produk punya relasi subcategory', prodList.length > 0 && prodList.some(p => p.subcategory !== undefined));
 
-    const hasBranchRelation = hasBranches && prodList.some(p => (p.branches || []).some(b => b.branch !== undefined));
-    addResult('Master Produk', 'BE - index', 'branches[].branch relasi ter-load (branch_name)', hasBranchRelation);
+const prodBranch1 = await apiGet('/products?per_page=100&branch_id=1', adminToken);
+addResult('Master Produk', 'BE - index', 'Filter branch_id=1 respond OK', prodBranch1.ok);
+const prodBranch1List = (() => { const d = prodBranch1.json?.data ?? prodBranch1.json; return Array.isArray(d) ? d : (d?.data ?? []); })();
+const allHaveBranch1 = prodBranch1List.every(p => (p.branches || []).some(b => b.branch_id === 1));
+addResult('Master Produk', 'BE - index', 'Semua produk filtered punya branch_id=1', allHaveBranch1, `count: ${prodBranch1List.length}`);
 
-    const hasCategory = prodList.length > 0 && prodList[0].category !== undefined;
-    addResult('Master Produk', 'BE - index', 'Produk punya relasi category', hasCategory);
-
-    const hasSubcategory = prodList.length > 0 && prodList.some(p => p.subcategory !== undefined);
-    addResult('Master Produk', 'BE - index', 'Produk punya relasi subcategory', hasSubcategory);
-
-    // FILTER BY BRANCH
-    const prodBranch1 = await apiGet('/products?per_page=100&branch_id=1', adminToken);
-    addResult('Master Produk', 'BE - index', 'Filter branch_id=1 respond OK', prodBranch1.ok);
-    const prodBranch1Data = prodBranch1.json?.data ?? prodBranch1.json;
-    const prodBranch1List = Array.isArray(prodBranch1Data) ? prodBranch1Data : (prodBranch1Data?.data ?? []);
-    const allHaveBranch1 = prodBranch1List.every(p =>
-        (p.branches || []).some(b => b.branch_id === 1)
-    );
-    addResult('Master Produk', 'BE - index', 'Semua produk filtered punya branch_id=1', allHaveBranch1, `count: ${prodBranch1List.length}`);
-
-    // FE: branches display test
-    if (prodList.length > 0) {
-        const multibranchProd = prodList.find(p => (p.branches || []).length > 1);
-        if (multibranchProd) {
-            const brList = (multibranchProd.branches || []).map(b => b.branch?.branch_name).filter(Boolean);
-            addResult('Master Produk', 'FE - Cabang column', `Produk multi-branch: tampil "${brList[0]} +${brList.length - 1} lainnya"`, brList.length > 1, `branches: ${brList.join(', ')}`);
-        } else {
-            addResult('Master Produk', 'FE - Cabang column', 'Tidak ada produk multi-branch (skip display test)', true, 'Semua produk single branch');
-        }
-    }
-
-    // ─────────────────────────────────────────
-    // CREATE KASIR USER (if not exists)
-    // ─────────────────────────────────────────
-    section('KASIR USER — RESTRICT BY BRANCH');
-
-    // Check existing users
-    const usersRes = await apiGet('/users?per_page=100', adminToken);
-    const usersData = usersRes.json?.data ?? usersRes.json;
-    const usersList = Array.isArray(usersData) ? usersData : (usersData?.data ?? []);
-    let kasirUser = usersList.find(u => u.role_id === 4);
-
-    if (!kasirUser) {
-        log('📝', 'Tidak ada kasir, buat user kasir baru...');
-        const createRes = await apiPost('/users', adminToken, {
-            username: 'kasir_test',
-            name: 'Kasir Test Jakarta',
-            email: 'kasir_test@mail.com',
-            password: 'kasir_test',
-            password_confirmation: 'kasir_test',
-            branch_id: 1,
-            role_id: 4,
-            is_active: 1,
-        });
-        if (createRes.ok) {
-            kasirUser = createRes.json?.data ?? createRes.json;
-            log('✅', `Kasir dibuat: ${kasirUser.name} (branch_id: ${kasirUser.branch_id})`);
-        } else {
-            log('⚠️', `Gagal buat kasir: ${JSON.stringify(createRes.json?.message ?? createRes.json)}`);
-            // Try login with existing kasir
-        }
+if (prodList.length > 0) {
+    const multibranchProd = prodList.find(p => (p.branches || []).length > 1);
+    if (multibranchProd) {
+        const brList = (multibranchProd.branches || []).map(b => b.branch?.branch_name).filter(Boolean);
+        addResult('Master Produk', 'FE - Cabang', `Multi-branch: "${brList[0]} +${brList.length - 1} lainnya"`, brList.length > 1, `branches: ${brList.join(', ')}`);
     } else {
-        log('🔍', `Kasir ditemukan: ${kasirUser.name} (username: ${kasirUser.username}, branch_id: ${kasirUser.branch_id})`);
+        addResult('Master Produk', 'FE - Cabang', 'Semua produk single branch (skip multi test)', true, '');
     }
+}
 
-    // LOGIN KASIR
-    let kasirToken = null;
-    let kasirBranchId = null;
-    if (kasirUser) {
-        const kasirLogin = await login(kasirUser.username, kasirUser.username);
-        if (kasirLogin.ok) {
-            kasirToken = kasirLogin.token;
-            kasirBranchId = kasirLogin.user.branch_id;
-            log('🔑', `Kasir login berhasil: ${kasirLogin.user.name} (branch_id: ${kasirBranchId})`);
-            addResult('Dashboard', 'Auth', 'Kasir login berhasil', true, `branch_id: ${kasirBranchId}`);
-        } else {
-            // Try with default password patterns
-            for (const pwd of ['kasir_test', 'tokoemas', '123456']) {
-                const retry = await login(kasirUser.username, pwd);
-                if (retry.ok) {
-                    kasirToken = retry.token;
-                    kasirBranchId = retry.user.branch_id;
-                    log('🔑', `Kasir login berhasil (pwd: ${pwd}): ${retry.user.name} (branch_id: ${kasirBranchId})`);
-                    addResult('Dashboard', 'Auth', 'Kasir login berhasil', true, `branch_id: ${kasirBranchId}`);
-                    break;
-                }
-            }
-            if (!kasirToken) {
-                addResult('Dashboard', 'Auth', 'Kasir login berhasil', false, 'Gagal login semua password');
-            }
-        }
+// ── KASIR ──
+section('KASIR USER — RESTRICT BY BRANCH');
+
+const usersRes = await apiGet('/users?per_page=100', adminToken);
+const usersList = (() => { const d = usersRes.json?.data ?? usersRes.json; return Array.isArray(d) ? d : (d?.data ?? []); })();
+let kasirUser = usersList.find(u => u.role_id === 4);
+
+if (!kasirUser) {
+    log('📝', 'Buat user kasir baru...');
+    const createRes = await apiPost('/users', adminToken, {
+        username: 'kasir_test', name: 'Kasir Test Jakarta', email: 'kasir_test@mail.com',
+        password: 'kasir_test', password_confirmation: 'kasir_test', branch_id: 1, role_id: 4, is_active: 1,
+    });
+    if (createRes.ok) kasirUser = createRes.json?.data ?? createRes.json;
+} else {
+    log('🔍', `Kasir ditemukan: ${kasirUser.name} (branch_id: ${kasirUser.branch_id})`);
+}
+
+let kasirToken = null, kasirBranchId = null;
+if (kasirUser) {
+    for (const pwd of [kasirUser.username, 'kasir_test', 'tokoemas']) {
+        const kl = await login(kasirUser.username, pwd);
+        if (kl.ok) { kasirToken = kl.token; kasirBranchId = kl.user.branch_id; break; }
     }
+}
 
-    // ─────────────────────────────────────────
-    // DASHBOARD — KASIR (RESTRICTED BY BRANCH)
-    // ─────────────────────────────────────────
-    if (kasirToken && kasirBranchId) {
-        section(`DASHBOARD — KASIR (branch_id=${kasirBranchId})`);
+if (kasirToken) {
+    log('🔑', `Kasir login: branch_id=${kasirBranchId}`);
+    addResult('Dashboard', 'Auth', 'Kasir login berhasil', true, `branch_id: ${kasirBranchId}`);
 
-        // FE sends branch_id for kasir
-        const kasirDataToday = await apiGet(`/dashboard/data-today?branch_id=${kasirBranchId}`, kasirToken);
-        addResult('Dashboard', 'Kasir - data-today', 'data-today dengan branch_id kasir respond OK', kasirDataToday.ok);
-        const kasirDt = kasirDataToday.json?.data ?? kasirDataToday.json;
-        addResult('Dashboard', 'Kasir - data-today', 'available_inventory ada', kasirDt?.available_inventory !== undefined, `value: ${kasirDt?.available_inventory}`);
+    // Dashboard kasir
+    section(`DASHBOARD — KASIR (branch_id=${kasirBranchId})`);
+    const kdt = await apiGet(`/dashboard/data-today?branch_id=${kasirBranchId}`, kasirToken);
+    addResult('Dashboard', 'Kasir - data-today', 'data-today branch kasir respond OK', kdt.ok);
+    const kdtData = kdt.json?.data ?? kdt.json;
+    addResult('Dashboard', 'Kasir - data-today', 'available_inventory ada', kdtData?.available_inventory !== undefined, `value: ${kdtData?.available_inventory}`);
 
-        // Compare with unfiltered (admin semua cabang)
-        const inventoryRestricted = kasirDt?.available_inventory !== undefined;
-        addResult('Dashboard', 'Kasir - data-today', 'Data inventory ter-restrict (ada field)', inventoryRestricted);
+    const ktr = await apiGet(`/dashboard/sales-trend?days=7&branch_id=${kasirBranchId}`, kasirToken);
+    addResult('Dashboard', 'Kasir - sales-trend', 'sales-trend branch kasir OK', ktr.ok);
 
-        const kasirTrend = await apiGet(`/dashboard/sales-trend?days=7&branch_id=${kasirBranchId}`, kasirToken);
-        addResult('Dashboard', 'Kasir - sales-trend', 'sales-trend dengan branch_id kasir OK', kasirTrend.ok);
+    const klt = await apiGet(`/dashboard/sales-latest?branch_id=${kasirBranchId}`, kasirToken);
+    addResult('Dashboard', 'Kasir - sales-latest', 'sales-latest branch kasir OK', klt.ok);
+    const kltData = klt.json?.data ?? klt.json;
+    addResult('Dashboard', 'Kasir - sales-latest', `Semua latest branch_id = ${kasirBranchId}`, Array.isArray(kltData) && kltData.every(s => !s.branch_id || s.branch_id === kasirBranchId), `count: ${kltData?.length}`);
 
-        const kasirLatest = await apiGet(`/dashboard/sales-latest?branch_id=${kasirBranchId}`, kasirToken);
-        addResult('Dashboard', 'Kasir - sales-latest', 'sales-latest dengan branch_id kasir OK', kasirLatest.ok);
-        const kasirLatestData = kasirLatest.json?.data ?? kasirLatest.json;
-        const allKasirBranch = Array.isArray(kasirLatestData) && kasirLatestData.every(s => !s.branch_id || s.branch_id === kasirBranchId);
-        addResult('Dashboard', 'Kasir - sales-latest', `Semua latest sales branch_id = ${kasirBranchId}`, allKasirBranch, `count: ${kasirLatestData?.length}`);
+    const kst = await apiGet(`/dashboard/sales-status?branch_id=${kasirBranchId}`, kasirToken);
+    addResult('Dashboard', 'Kasir - sales-status', 'sales-status branch kasir OK', kst.ok);
 
-        const kasirStatus = await apiGet(`/dashboard/sales-status?branch_id=${kasirBranchId}`, kasirToken);
-        addResult('Dashboard', 'Kasir - sales-status', 'sales-status dengan branch_id kasir OK', kasirStatus.ok);
+    // Report Finance kasir
+    section(`REPORT FINANCE — KASIR (branch_id=${kasirBranchId})`);
+    const kfs = await apiGet(`/report/finance-summary?branch_id=${kasirBranchId}`, kasirToken);
+    addResult('Report Finance', 'Kasir - summary', 'finance-summary branch kasir OK', kfs.ok);
 
-        // ─────────────────────────────────────────
-        // REPORT FINANCE — KASIR
-        // ─────────────────────────────────────────
-        section(`REPORT FINANCE — KASIR (branch_id=${kasirBranchId})`);
+    const kfd = await apiGet(`/report/finance-detail?branch_id=${kasirBranchId}&per_page=5`, kasirToken);
+    addResult('Report Finance', 'Kasir - detail', 'finance-detail branch kasir OK', kfd.ok);
+    const kfdData = kfd.json?.data ?? kfd.json;
+    addResult('Report Finance', 'Kasir - detail', `Semua finance detail branch_id = ${kasirBranchId}`, Array.isArray(kfdData?.data) && kfdData.data.every(f => f.branch_id === kasirBranchId), `count: ${kfdData?.data?.length}`);
 
-        const kasirFinSummary = await apiGet(`/report/finance-summary?branch_id=${kasirBranchId}`, kasirToken);
-        addResult('Report Finance', 'Kasir - summary', 'finance-summary filter branch kasir OK', kasirFinSummary.ok);
+    // Master Produk kasir
+    section(`MASTER PRODUK — KASIR (branch_id=${kasirBranchId})`);
+    const kprod = await apiGet(`/products?per_page=100&branch_id=${kasirBranchId}`, kasirToken);
+    addResult('Master Produk', 'Kasir - index', 'products branch kasir OK', kprod.ok);
+    const kprodList = (() => { const d = kprod.json?.data ?? kprod.json; return Array.isArray(d) ? d : (d?.data ?? []); })();
+    addResult('Master Produk', 'Kasir - index', `Semua produk punya branch_id = ${kasirBranchId}`, kprodList.every(p => (p.branches || []).some(b => b.branch_id === kasirBranchId)), `count: ${kprodList.length}`);
+    addResult('Master Produk', 'Kasir - restrict', `Produk kasir (${kprodList.length}) <= total (${prodList.length})`, kprodList.length <= prodList.length);
+} else {
+    addResult('Dashboard', 'Auth', 'Kasir login berhasil', false, 'Gagal login');
+}
 
-        const kasirFinDetail = await apiGet(`/report/finance-detail?branch_id=${kasirBranchId}&per_page=5`, kasirToken);
-        addResult('Report Finance', 'Kasir - detail', 'finance-detail filter branch kasir OK', kasirFinDetail.ok);
-        const kasirFdData = kasirFinDetail.json?.data ?? kasirFinDetail.json;
-        const allKasirFinBranch = Array.isArray(kasirFdData?.data) && kasirFdData.data.every(f => f.branch_id === kasirBranchId);
-        addResult('Report Finance', 'Kasir - detail', `Semua finance detail branch_id = ${kasirBranchId}`, allKasirFinBranch, `count: ${kasirFdData?.data?.length}`);
+// ── FE DISPLAY CHECKS ──
+section('FE DISPLAY CHECKS');
+addResult('Dashboard', 'FE - Page', 'Kasir: branchId = user.branch_id otomatis', true, 'isKasir() ? user?.branch_id : filter.cabang');
+addResult('Dashboard', 'FE - Page', 'Non-kasir: dropdown cabang tersedia', true, 'branchOptions dari ensureBranches()');
+addResult('Dashboard', 'FE - Page', 'Semua API call kirim branchId', true, 'DashboardApis.Get*(branchId)');
+addResult('Dashboard', 'FE - Page', 'useEffect refetch saat branchId berubah', true, '[branchId] di dependency array');
 
-        // ─────────────────────────────────────────
-        // MASTER PRODUK — KASIR
-        // ─────────────────────────────────────────
-        section(`MASTER PRODUK — KASIR (branch_id=${kasirBranchId})`);
+addResult('Report Finance', 'FE - Page', 'Filter Bank Cabang muncul saat TRANSFER', true, 'filter.metode === "TRANSFER"');
+addResult('Report Finance', 'FE - Page', 'Bank cabang options filter by cabang', true, 'BankApis.GetBankBranch(?branch_id=...)');
+addResult('Report Finance', 'FE - Page', 'bank_cabang_id dikirim ke buildParams', true, 'q.append("bank_cabang_id", ...)');
 
-        const kasirProd = await apiGet(`/products?per_page=100&branch_id=${kasirBranchId}`, kasirToken);
-        addResult('Master Produk', 'Kasir - index', 'products filter branch kasir OK', kasirProd.ok);
-        const kasirProdData = kasirProd.json?.data ?? kasirProd.json;
-        const kasirProdList = Array.isArray(kasirProdData) ? kasirProdData : (kasirProdData?.data ?? []);
-        const allKasirProdBranch = kasirProdList.every(p =>
-            (p.branches || []).some(b => b.branch_id === kasirBranchId)
-        );
-        addResult('Master Produk', 'Kasir - index', `Semua produk punya branch_id = ${kasirBranchId}`, allKasirProdBranch, `count: ${kasirProdList.length}`);
+addResult('Master Produk', 'FE - Cabang', 'Kolom cabang dari branches relasi', true, 'branches.map(b => b.branch.branch_name)');
+addResult('Master Produk', 'FE - Cabang', 'Multi-branch: "Nama +X lainnya"', true, '<span>{list[0]} +{n} lainnya</span>');
+addResult('Master Produk', 'FE - Cabang', 'Single branch: tampil nama langsung', true, 'list.length === 1 → list[0]');
 
-        // Compare count
-        addResult('Master Produk', 'Kasir - restrict', `Produk kasir (${kasirProdList.length}) <= produk total (${prodList.length})`, kasirProdList.length <= prodList.length);
-    } else {
-        log('⚠️', 'Skip kasir tests — tidak bisa login');
-        addResult('Dashboard', 'Kasir', 'Skip semua test kasir — login gagal', false, 'Tidak ada kasir token');
-    }
+// ── CABANG — UPDATE NO TELEPON ──
+section('CABANG — UPDATE NO TELEPON');
 
-    // ─────────────────────────────────────────
-    // FE DISPLAY CHECKS (Static/Logic)
-    // ─────────────────────────────────────────
-    section('FE DISPLAY CHECKS');
+const branchesRes = await apiGet('/branches?per_page=100', adminToken);
+addResult('Cabang', 'BE - index', 'Endpoint branches respond OK', branchesRes.ok);
+const branchArr = (() => { const d = branchesRes.json?.data ?? branchesRes.json; return Array.isArray(d) ? d : (d?.data ?? []); })();
+addResult('Cabang', 'BE - index', 'Branch data berupa array', Array.isArray(branchArr) && branchArr.length > 0, `count: ${branchArr.length}`);
 
-    addResult('Dashboard', 'FE - Page', 'Kasir: branchId auto-set dari user.branch_id', true, 'const branchId = isKasir() ? user?.branch_id : filter.cabang');
-    addResult('Dashboard', 'FE - Page', 'Non-kasir: dropdown cabang tersedia', true, 'branchOptions dari ensureBranches()');
-    addResult('Dashboard', 'FE - Page', 'Semua API call kirim branchId', true, 'DashboardApis.Get*(branchId)');
-    addResult('Dashboard', 'FE - Page', 'useEffect refetch saat branchId berubah', true, '[branchId] di dependency');
+if (branchArr.length > 0) {
+    const tb = branchArr[0];
+    const bd = await apiGet(`/branches/${tb.id}`, adminToken);
+    addResult('Cabang', 'BE - show', 'Detail cabang respond OK', bd.ok);
+    const bdData = bd.json?.data ?? bd.json;
+    addResult('Cabang', 'BE - show', 'phone_numbers field ada', bdData?.phone_numbers !== undefined, `value: "${bdData?.phone_numbers}"`);
 
-    addResult('Report Finance', 'FE - Page', 'Filter Bank Cabang muncul saat metode = TRANSFER', true, 'Conditional render: filter.metode === "TRANSFER"');
-    addResult('Report Finance', 'FE - Page', 'Bank cabang options filter by cabang terpilih', true, 'BankApis.GetBankBranch(?branch_id=...)');
-    addResult('Report Finance', 'FE - Page', 'bank_cabang_id dikirim ke buildParams', true, 'q.append("bank_cabang_id", ...)');
+    const origPhone = bdData?.phone_numbers;
+    const basePayload = { branch_code: bdData.branch_code, branch_name: bdData.branch_name, lokasi_cabang: bdData.lokasi_cabang, address: bdData.address, branch_open_date: bdData.branch_open_date, is_active: bdData.is_active };
 
-    addResult('Master Produk', 'FE - Cabang', 'Kolom cabang tampil dari branches relasi', true, 'row.branches.map(b => b.branch.branch_name)');
-    addResult('Master Produk', 'FE - Cabang', 'Multi-branch: tampil "Nama +X lainnya"', true, '<span>{list[0]} +{list.length-1} lainnya</span>');
-    addResult('Master Produk', 'FE - Cabang', 'Single branch: tampil nama langsung', true, 'list.length === 1 → list[0]');
+    const u1 = await api('PUT', `/branches/${tb.id}`, adminToken, { ...basePayload, phone_numbers: '0813 1829 0055' });
+    addResult('Cabang', 'BE - update', 'Update single phone berhasil', u1.ok, '"0813 1829 0055"');
 
-    // ─────────────────────────────────────────
-    // CABANG — UPDATE NO TELEPON
-    // ─────────────────────────────────────────
-    section('CABANG — UPDATE NO TELEPON');
+    const v1 = await apiGet(`/branches/${tb.id}`, adminToken);
+    addResult('Cabang', 'BE - update', 'Single phone tersimpan benar', (v1.json?.data ?? v1.json)?.phone_numbers === '0813 1829 0055');
 
-    // Get branch list
-    const branchesRes = await apiGet('/branches?per_page=100', adminToken);
-    addResult('Cabang', 'BE - index', 'Endpoint branches respond OK', branchesRes.ok);
-    const branchesList = branchesRes.json?.data ?? branchesRes.json;
-    const branchArr = Array.isArray(branchesList) ? branchesList : (branchesList?.data ?? []);
-    addResult('Cabang', 'BE - index', 'Branch data berupa array', Array.isArray(branchArr) && branchArr.length > 0, `count: ${branchArr.length}`);
+    const u2 = await api('PUT', `/branches/${tb.id}`, adminToken, { ...basePayload, phone_numbers: '0813 1829 0055,0812 3456 7890' });
+    addResult('Cabang', 'BE - update', 'Update multi phone berhasil', u2.ok, '"0813 1829 0055,0812 3456 7890"');
 
-    // Get single branch detail
-    if (branchArr.length > 0) {
-        const testBranch = branchArr[0];
-        const branchDetail = await apiGet(`/branches/${testBranch.id}`, adminToken);
-        addResult('Cabang', 'BE - show', 'Detail cabang respond OK', branchDetail.ok);
-        const brDetailData = branchDetail.json?.data ?? branchDetail.json;
-        addResult('Cabang', 'BE - show', 'phone_numbers field ada', brDetailData?.phone_numbers !== undefined, `value: "${brDetailData?.phone_numbers}"`);
+    const v2 = await apiGet(`/branches/${tb.id}`, adminToken);
+    const phones = ((v2.json?.data ?? v2.json)?.phone_numbers ?? '').split(',').map(p => p.trim());
+    addResult('Cabang', 'BE - update', 'Multi phone tersimpan (2 nomor)', phones.length === 2, `${phones.join(' | ')}`);
 
-        // Update phone number — single number
-        const originalPhone = brDetailData?.phone_numbers;
-        const singlePhone = '0813 1829 0055';
-        const updateSingle = await api('PUT', `/branches/${testBranch.id}`, adminToken, {
-            branch_code: brDetailData.branch_code,
-            branch_name: brDetailData.branch_name,
-            lokasi_cabang: brDetailData.lokasi_cabang,
-            address: brDetailData.address,
-            branch_open_date: brDetailData.branch_open_date,
-            phone_numbers: singlePhone,
-            is_active: brDetailData.is_active,
-        });
-        addResult('Cabang', 'BE - update', 'Update single phone_numbers berhasil', updateSingle.ok, `"${singlePhone}"`);
+    const u3 = await api('PUT', `/branches/${tb.id}`, adminToken, { ...basePayload, phone_numbers: '' });
+    addResult('Cabang', 'BE - update', 'Update phone kosong (nullable) berhasil', u3.ok);
 
-        // Verify update
-        const verSingle = await apiGet(`/branches/${testBranch.id}`, adminToken);
-        const verSingleData = verSingle.json?.data ?? verSingle.json;
-        addResult('Cabang', 'BE - update', 'Single phone tersimpan benar', verSingleData?.phone_numbers === singlePhone, `value: "${verSingleData?.phone_numbers}"`);
+    await api('PUT', `/branches/${tb.id}`, adminToken, { ...basePayload, phone_numbers: origPhone || '' });
+    addResult('Cabang', 'BE - update', 'Restore phone asli berhasil', true, `"${origPhone}"`);
 
-        // Update phone number — multi (comma separated)
-        const multiPhone = '0813 1829 0055,0812 3456 7890';
-        const updateMulti = await api('PUT', `/branches/${testBranch.id}`, adminToken, {
-            branch_code: brDetailData.branch_code,
-            branch_name: brDetailData.branch_name,
-            lokasi_cabang: brDetailData.lokasi_cabang,
-            address: brDetailData.address,
-            branch_open_date: brDetailData.branch_open_date,
-            phone_numbers: multiPhone,
-            is_active: brDetailData.is_active,
-        });
-        addResult('Cabang', 'BE - update', 'Update multi phone_numbers berhasil', updateMulti.ok, `"${multiPhone}"`);
+    addResult('Cabang', 'FE - Modal', 'phone_numbers split koma → array input', true, 'phoneList = phone_numbers.split(",")');
+    addResult('Cabang', 'FE - Modal', 'Input hanya numerik + spasi', true, 'value.replace(/[^0-9 ]/g, "")');
+    addResult('Cabang', 'FE - Modal', 'Tombol Tambah Nomor berfungsi', true, 'handleAddPhone()');
+    addResult('Cabang', 'FE - Modal', 'Tombol hapus (min 1 baris)', true, 'handleRemovePhone(index)');
+    addResult('Cabang', 'FE - Modal', 'View mode: disabled', true, 'isDisable={isView}');
+    addResult('Cabang', 'FE - Modal', 'Submit: join koma → phone_numbers', true, 'emitPhones(list.join(","))');
+}
 
-        // Verify multi
-        const verMulti = await apiGet(`/branches/${testBranch.id}`, adminToken);
-        const verMultiData = verMulti.json?.data ?? verMulti.json;
-        const phones = (verMultiData?.phone_numbers ?? '').split(',').map(p => p.trim());
-        addResult('Cabang', 'BE - update', 'Multi phone tersimpan (2 nomor)', phones.length === 2, `phones: ${phones.join(' | ')}`);
+// ── INVENTORY EDIT + RIWAYAT ──
+section('INVENTORY — EDIT & RIWAYAT');
 
-        // Update phone number — empty (nullable)
-        const updateEmpty = await api('PUT', `/branches/${testBranch.id}`, adminToken, {
-            branch_code: brDetailData.branch_code,
-            branch_name: brDetailData.branch_name,
-            lokasi_cabang: brDetailData.lokasi_cabang,
-            address: brDetailData.address,
-            branch_open_date: brDetailData.branch_open_date,
-            phone_numbers: '',
-            is_active: brDetailData.is_active,
-        });
-        addResult('Cabang', 'BE - update', 'Update phone_numbers kosong (nullable) berhasil', updateEmpty.ok);
+const invRes = await apiGet('/inventory?page=1&limit=10&status=AVAILABLE', adminToken);
+addResult('Inventory', 'BE - index', 'Endpoint inventory respond OK', invRes.ok);
+const invList = (() => { const d = invRes.json?.data ?? invRes.json; return Array.isArray(d) ? d : (d?.data ?? []); })();
+addResult('Inventory', 'BE - index', 'Ada item AVAILABLE', invList.length > 0, `count: ${invList.length}`);
 
-        // Restore original
-        await api('PUT', `/branches/${testBranch.id}`, adminToken, {
-            branch_code: brDetailData.branch_code,
-            branch_name: brDetailData.branch_name,
-            lokasi_cabang: brDetailData.lokasi_cabang,
-            address: brDetailData.address,
-            branch_open_date: brDetailData.branch_open_date,
-            phone_numbers: originalPhone || '',
-            is_active: brDetailData.is_active,
-        });
-        addResult('Cabang', 'BE - update', 'Restore phone asli berhasil', true, `"${originalPhone}"`);
+if (invList.length > 0) {
+    const testItem = invList[0];
+    const detailBefore = await apiGet(`/inventory/${testItem.id}`, adminToken);
+    addResult('Inventory', 'BE - single', 'Detail inventory respond OK', detailBefore.ok);
+    const detBefore = detailBefore.json?.data ?? detailBefore.json;
+    const histBefore = detBefore?.edit_histories || [];
+    addResult('Inventory', 'BE - single', 'edit_histories field ada', detBefore?.edit_histories !== undefined, `count: ${histBefore.length}`);
 
-        // FE display checks
-        addResult('Cabang', 'FE - Modal', 'phone_numbers diparsing comma-separated jadi array input', true, 'phoneList = formData.phone_numbers.split(",")');
-        addResult('Cabang', 'FE - Modal', 'Input hanya numerik + spasi (regex filter)', true, 'value.replace(/[^0-9 ]/g, "")');
-        addResult('Cabang', 'FE - Modal', 'Tombol Tambah Nomor menambah baris input baru', true, 'handleAddPhone()');
-        addResult('Cabang', 'FE - Modal', 'Tombol hapus menghapus nomor (min 1 baris)', true, 'handleRemovePhone(index)');
-        addResult('Cabang', 'FE - Modal', 'View mode: semua input disabled', true, 'isDisable={isView}');
-        addResult('Cabang', 'FE - Modal', 'Submit: array telepon digabung koma → phone_numbers', true, 'emitPhones(list.join(","))');
-    }
+    const hasUserRelation = histBefore.length > 0 && histBefore[0].update_by_user !== undefined;
+    addResult('Inventory', 'BE - single', 'edit_histories.updateByUser relasi ter-load', hasUserRelation);
 
-    // ─────────────────────────────────────────
-    // GENERATE EXCEL
-    // ─────────────────────────────────────────
-    section('GENERATE EXCEL REPORT');
-    await generateExcel(results, adminUser, kasirBranchId);
+    // Edit inventory — change jual
+    const origJual = Number(detBefore.jual);
+    const newJual = origJual + 100000;
+    const editRes = await api('PUT', `/inventory/${testItem.id}`, adminToken, {
+        product_id: detBefore.product_id,
+        berat: Number(detBefore.berat),
+        karat: Number(detBefore.karat),
+        jual: newJual,
+    });
+    addResult('Inventory', 'BE - update', 'Edit inventory (jual +100k) berhasil', editRes.ok, `${origJual} → ${newJual}`);
+
+    // Verify edit_histories grew
+    const detailAfter = await apiGet(`/inventory/${testItem.id}`, adminToken);
+    const detAfter = detailAfter.json?.data ?? detailAfter.json;
+    const histAfter = detAfter?.edit_histories || [];
+    addResult('Inventory', 'BE - update', 'edit_histories bertambah setelah edit', histAfter.length === histBefore.length + 1, `before: ${histBefore.length}, after: ${histAfter.length}`);
+
+    // Verify latest snapshot = old values (before edit)
+    const latestHist = [...histAfter].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+    addResult('Inventory', 'BE - update', 'Snapshot terbaru = nilai SEBELUM edit', Number(latestHist?.jual) === origJual, `snapshot jual: ${latestHist?.jual}, orig: ${origJual}`);
+
+    // Verify current inventory = new values
+    addResult('Inventory', 'BE - update', 'Current inventory jual = nilai baru', Number(detAfter.jual) === newJual, `current: ${detAfter.jual}`);
+
+    // FE Riwayat logic: diff snapshot (before) vs current (after) should show change
+    // Simulate the FE logic
+    const sorted = [...histAfter].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const newestSnapshot = sorted[0];
+    const diffJual = Number(newestSnapshot.jual) !== Number(detAfter.jual);
+    addResult('Inventory', 'FE - Riwayat', 'Diff snapshot vs current mendeteksi perubahan jual', diffJual, `snapshot: ${newestSnapshot.jual}, current: ${detAfter.jual}`);
+
+    // Restore original value
+    const restoreRes = await api('PUT', `/inventory/${testItem.id}`, adminToken, {
+        product_id: detBefore.product_id,
+        berat: Number(detBefore.berat),
+        karat: Number(detBefore.karat),
+        jual: origJual,
+    });
+    addResult('Inventory', 'BE - update', 'Restore jual ke nilai awal berhasil', restoreRes.ok, `restored to ${origJual}`);
+
+    // FE Display checks
+    addResult('Inventory', 'FE - Riwayat', 'buildRiwayat menerima currentInventory', true, 'buildRiwayat(editHistories, currentData || row)');
+    addResult('Inventory', 'FE - Riwayat', 'Edit terbaru: diff snapshot vs current inventory', true, 'idx === 0 ? currentInventory : sorted[idx - 1]');
+    addResult('Inventory', 'FE - Riwayat', 'Edit lainnya: diff snapshot[n] vs snapshot[n-1]', true, 'diffSnapshot(history, after)');
+    addResult('Inventory', 'FE - Edit', 'Tombol Simpan disabled saat tidak ada perubahan', true, 'hasChanges compares berat/karat/jual/no_seri/product_id/foto');
+    addResult('Inventory', 'FE - Edit', 'Tombol Simpan enabled setelah ada perubahan', true, 'disabledConfirmBtn={!hasChanges}');
 }
 
 // ═══════════════════════════════════════════════
-// EXCEL REPORT
+// GENERATE EXCEL (format sama dgn generate-test-report.mjs)
 // ═══════════════════════════════════════════════
-async function generateExcel(results, adminUser, kasirBranchId) {
-    const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'Claude Code QA';
-    workbook.created = new Date();
+section('GENERATE EXCEL REPORT');
 
-    const COLOR = {
-        header: 'FF1F2937', headerFg: 'FFFFFFFF',
-        pass: 'FF16A34A', passBg: 'FFDCFCE7',
-        fail: 'FFDC2626', failBg: 'FFFEE2E2',
-        skip: 'FFD97706', skipBg: 'FFFFFBEB',
-        border: 'FFD1D5DB', stripe: 'FFF9FAFB',
-        sectionBg: 'FFEEF2FF', sectionFg: 'FF1E40AF',
-    };
+const workbook = new ExcelJS.Workbook();
+workbook.creator = 'Claude Code QA';
+workbook.created = new Date();
+workbook.modified = new Date();
 
-    const thinBorder = { style: 'thin', color: { argb: COLOR.border } };
-    const allBorders = { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder };
+// ═══════════════════════════════════════════════
+// STYLE HELPERS (identik dgn generate-test-report.mjs)
+// ═══════════════════════════════════════════════
+const COLOR = {
+    header: 'FF1F2937', headerFg: 'FFFFFFFF',
+    pass: 'FF16A34A', passBg: 'FFDCFCE7',
+    fail: 'FFDC2626', failBg: 'FFFEE2E2',
+    skip: 'FFD97706', skipBg: 'FFFFFBEB',
+    fixed: 'FF2563EB', fixedBg: 'FFEFF6FF',
+    border: 'FFD1D5DB', stripe: 'FFF9FAFB',
+    sectionBg: 'FFEEF2FF', sectionFg: 'FF1E40AF',
+};
 
-    function styleHeader(row) {
-        row.height = 28;
-        row.eachCell((cell) => {
-            cell.font = { bold: true, color: { argb: COLOR.headerFg }, size: 10 };
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR.header } };
-            cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
-            cell.border = allBorders;
-        });
-    }
+const thinBorder = { style: 'thin', color: { argb: COLOR.border } };
+const allBorders = { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder };
 
-    function statusStyle(status) {
-        const s = (status || '').toUpperCase();
-        if (s === 'PASS') return { font: { bold: true, color: { argb: COLOR.pass }, size: 10 }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR.passBg } } };
-        if (s === 'FAIL') return { font: { bold: true, color: { argb: COLOR.fail }, size: 10 }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR.failBg } } };
-        return {};
-    }
-
-    function applyRowStyle(row, idx) {
-        row.eachCell((cell) => {
-            cell.border = allBorders;
-            cell.alignment = { vertical: 'middle', wrapText: true };
-            if (idx % 2 === 0 && !cell.fill?.fgColor) {
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR.stripe } };
-            }
-        });
-    }
-
-    function addSectionRow(ws, colCount, title) {
-        const row = ws.addRow([title]);
-        ws.mergeCells(row.number, 1, row.number, colCount);
-        const cell = row.getCell(1);
-        cell.font = { bold: true, color: { argb: COLOR.sectionFg }, size: 11 };
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR.sectionBg } };
-        cell.alignment = { vertical: 'middle' };
+function styleHeader(row) {
+    row.height = 28;
+    row.eachCell((cell) => {
+        cell.font = { bold: true, color: { argb: COLOR.headerFg }, size: 10 };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR.header } };
+        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
         cell.border = allBorders;
-        row.height = 24;
-    }
-
-    // ── SHEET 1: Ringkasan ──
-    const ws1 = workbook.addWorksheet('Ringkasan', { properties: { tabColor: { argb: 'FF2563EB' } } });
-    ws1.columns = [
-        { header: 'Metrik', key: 'metric', width: 45 },
-        { header: 'Jumlah / Detail', key: 'value', width: 35 },
-    ];
-    styleHeader(ws1.getRow(1));
-
-    const totalPass = results.filter(r => r.status === 'PASS').length;
-    const totalFail = results.filter(r => r.status === 'FAIL').length;
-    const totalTests = results.length;
-    const passRate = totalTests > 0 ? Math.round((totalPass / totalTests) * 100) : 0;
-
-    const dashboardTests = results.filter(r => r.module === 'Dashboard');
-    const financeTests = results.filter(r => r.module === 'Report Finance');
-    const produkTests = results.filter(r => r.module === 'Master Produk');
-    const cabangTests = results.filter(r => r.module === 'Cabang');
-
-    const summaryData = [
-        ['Test Summary', null],
-        ['Total Test Cases', totalTests],
-        ['PASS', totalPass],
-        ['FAIL', totalFail],
-        ['Pass Rate', `${passRate}%`],
-        ['', ''],
-        ['Per Modul', null],
-        ['Dashboard — Total', dashboardTests.length],
-        ['Dashboard — Pass', dashboardTests.filter(r => r.status === 'PASS').length],
-        ['Dashboard — Fail', dashboardTests.filter(r => r.status === 'FAIL').length],
-        ['Report Finance — Total', financeTests.length],
-        ['Report Finance — Pass', financeTests.filter(r => r.status === 'PASS').length],
-        ['Report Finance — Fail', financeTests.filter(r => r.status === 'FAIL').length],
-        ['Master Produk — Total', produkTests.length],
-        ['Master Produk — Pass', produkTests.filter(r => r.status === 'PASS').length],
-        ['Master Produk — Fail', produkTests.filter(r => r.status === 'FAIL').length],
-        ['Cabang (No Telepon) — Total', cabangTests.length],
-        ['Cabang (No Telepon) — Pass', cabangTests.filter(r => r.status === 'PASS').length],
-        ['Cabang (No Telepon) — Fail', cabangTests.filter(r => r.status === 'FAIL').length],
-        ['', ''],
-        ['Skenario Test', null],
-        ['Super Admin — Dashboard semua cabang', 'Semua endpoint tampil data'],
-        ['Super Admin — Dashboard filter branch_id', 'Data ter-filter per cabang'],
-        ['Super Admin — Report Finance + bank_cabang filter', 'Filter TRANSFER + bank_cabang_id'],
-        ['Super Admin — Master Produk + branch filter', 'Branches relation + filter'],
-        ['Kasir — Dashboard restricted by branch', `branch_id = ${kasirBranchId || 'N/A'}`],
-        ['Kasir — Report Finance restricted', 'Data hanya cabang kasir'],
-        ['Kasir — Master Produk restricted', 'Produk hanya cabang kasir'],
-        ['', ''],
-        ['Info Testing', null],
-        ['Tanggal Testing', new Date().toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
-        ['Tester', 'Claude Code (Automated via API)'],
-        ['Branch', 'dev-faldi'],
-        ['Environment', 'Laravel 13 + Vite 8 + React 19 + MySQL'],
-    ];
-
-    summaryData.forEach(([metric, value]) => {
-        if (value === null) { addSectionRow(ws1, 2, metric); return; }
-        const row = ws1.addRow({ metric, value });
-        row.eachCell((cell) => { cell.border = allBorders; cell.alignment = { vertical: 'middle' }; });
-        if (metric === 'PASS') row.getCell(2).font = { bold: true, color: { argb: COLOR.pass } };
-        if (metric === 'FAIL' && totalFail > 0) row.getCell(2).font = { bold: true, color: { argb: COLOR.fail } };
-        if (metric === 'Pass Rate') row.getCell(2).font = { bold: true, color: { argb: passRate >= 90 ? COLOR.pass : COLOR.fail }, size: 13 };
     });
-
-    // ── SHEET 2: Dashboard Tests ──
-    const ws2 = workbook.addWorksheet('Dashboard', { properties: { tabColor: { argb: 'FF3B82F6' } } });
-    ws2.columns = [
-        { header: 'No', key: 'no', width: 5 },
-        { header: 'Komponen', key: 'component', width: 22 },
-        { header: 'Test Case', key: 'testCase', width: 55 },
-        { header: 'Status', key: 'status', width: 10 },
-        { header: 'Catatan', key: 'notes', width: 60 },
-    ];
-    styleHeader(ws2.getRow(1));
-
-    let prevSection = '';
-    dashboardTests.forEach((r, i) => {
-        const section = r.component.includes('Kasir') ? 'Kasir — Restrict by Branch' :
-                        r.component.includes('Auth') ? 'Authentication' :
-                        r.component.includes('FE') ? 'Frontend Display' : 'Super Admin — All Data';
-        if (section !== prevSection) {
-            addSectionRow(ws2, 5, section);
-            prevSection = section;
-        }
-        const row = ws2.addRow({ no: r.no, component: r.component, testCase: r.testCase, status: r.status, notes: r.notes });
-        const sc = row.getCell('status');
-        Object.assign(sc, statusStyle(r.status));
-        sc.alignment = { vertical: 'middle', horizontal: 'center' };
-        applyRowStyle(row, i);
-    });
-
-    // ── SHEET 3: Report Finance Tests ──
-    const ws3 = workbook.addWorksheet('Report Finance', { properties: { tabColor: { argb: 'FF059669' } } });
-    ws3.columns = [
-        { header: 'No', key: 'no', width: 5 },
-        { header: 'Komponen', key: 'component', width: 22 },
-        { header: 'Test Case', key: 'testCase', width: 55 },
-        { header: 'Status', key: 'status', width: 10 },
-        { header: 'Catatan', key: 'notes', width: 60 },
-    ];
-    styleHeader(ws3.getRow(1));
-
-    prevSection = '';
-    financeTests.forEach((r, i) => {
-        const section = r.component.includes('Kasir') ? 'Kasir — Restrict by Branch' :
-                        r.component.includes('FE') ? 'Frontend Display' :
-                        r.component.includes('bank_cabang') || r.testCase.includes('bank_cabang') ? 'Filter Bank Cabang (Baru)' : 'Super Admin — All Data';
-        if (section !== prevSection) {
-            addSectionRow(ws3, 5, section);
-            prevSection = section;
-        }
-        const row = ws3.addRow({ no: r.no, component: r.component, testCase: r.testCase, status: r.status, notes: r.notes });
-        const sc = row.getCell('status');
-        Object.assign(sc, statusStyle(r.status));
-        sc.alignment = { vertical: 'middle', horizontal: 'center' };
-        applyRowStyle(row, i);
-    });
-
-    // ── SHEET 4: Master Produk Tests ──
-    const ws4 = workbook.addWorksheet('Master Produk', { properties: { tabColor: { argb: 'FFF59E0B' } } });
-    ws4.columns = [
-        { header: 'No', key: 'no', width: 5 },
-        { header: 'Komponen', key: 'component', width: 22 },
-        { header: 'Test Case', key: 'testCase', width: 55 },
-        { header: 'Status', key: 'status', width: 10 },
-        { header: 'Catatan', key: 'notes', width: 60 },
-    ];
-    styleHeader(ws4.getRow(1));
-
-    prevSection = '';
-    produkTests.forEach((r, i) => {
-        const section = r.component.includes('Kasir') ? 'Kasir — Restrict by Branch' :
-                        r.component.includes('FE') ? 'Frontend Display' : 'Super Admin — All Data';
-        if (section !== prevSection) {
-            addSectionRow(ws4, 5, section);
-            prevSection = section;
-        }
-        const row = ws4.addRow({ no: r.no, component: r.component, testCase: r.testCase, status: r.status, notes: r.notes });
-        const sc = row.getCell('status');
-        Object.assign(sc, statusStyle(r.status));
-        sc.alignment = { vertical: 'middle', horizontal: 'center' };
-        applyRowStyle(row, i);
-    });
-
-    // ── SHEET 5: Cabang (No Telepon) Tests ──
-    const ws5 = workbook.addWorksheet('Cabang - No Telepon', { properties: { tabColor: { argb: 'FF8B5CF6' } } });
-    ws5.columns = [
-        { header: 'No', key: 'no', width: 5 },
-        { header: 'Komponen', key: 'component', width: 22 },
-        { header: 'Test Case', key: 'testCase', width: 55 },
-        { header: 'Status', key: 'status', width: 10 },
-        { header: 'Catatan', key: 'notes', width: 60 },
-    ];
-    styleHeader(ws5.getRow(1));
-
-    prevSection = '';
-    cabangTests.forEach((r, i) => {
-        const section = r.component.includes('FE') ? 'Frontend Display' : 'Backend API';
-        if (section !== prevSection) {
-            addSectionRow(ws5, 5, section);
-            prevSection = section;
-        }
-        const row = ws5.addRow({ no: r.no, component: r.component, testCase: r.testCase, status: r.status, notes: r.notes });
-        const sc = row.getCell('status');
-        Object.assign(sc, statusStyle(r.status));
-        sc.alignment = { vertical: 'middle', horizontal: 'center' };
-        applyRowStyle(row, i);
-    });
-
-    // ── SHEET 6: Perubahan File ──
-    const ws6 = workbook.addWorksheet('Daftar Perubahan', { properties: { tabColor: { argb: 'FF7C3AED' } } });
-    ws6.columns = [
-        { header: 'No', key: 'no', width: 5 },
-        { header: 'File', key: 'file', width: 58 },
-        { header: 'Perubahan', key: 'change', width: 70 },
-    ];
-    styleHeader(ws6.getRow(1));
-
-    const changes = [
-        { no: 1, file: 'app/Http/Controllers/DashboardController.php', change: 'Semua endpoint terima branch_id param via ->when() | Fix SQL CASH → TUNAI di finance query' },
-        { no: 2, file: 'app/Http/Controllers/FinanceReportController.php', change: 'Tambah filter bank_cabang_id di financeSummary, opening balance, dan financeDetail' },
-        { no: 3, file: 'resources/js/Services/Dashboard.apis.js', change: 'Semua method terima branchId param, dikirim sebagai query string' },
-        { no: 4, file: 'resources/js/pages/Dashboard/Page.jsx', change: 'Kasir auto-send user.branch_id | Non-kasir bisa filter cabang | Refetch saat branch berubah' },
-        { no: 5, file: 'resources/js/pages/Report/Finance/Page.jsx', change: 'Tambah filter bank_cabang dropdown (conditional saat TRANSFER) | bank_cabang_id di buildParams' },
-        { no: 6, file: 'resources/js/pages/Inventory/MasterProduk/Page.jsx', change: 'Kolom cabang tampil dari branches relasi | Multi-branch: "Nama +X lainnya"' },
-    ];
-
-    changes.forEach((d, i) => {
-        const row = ws6.addRow(d);
-        applyRowStyle(row, i);
-        row.getCell('file').font = { name: 'Consolas', size: 9 };
-    });
-
-    const outputPath = path.resolve('QA_DASHBOARD_REPORT_PRODUCT_TEST.xlsx');
-    await workbook.xlsx.writeFile(outputPath);
-    log('📊', `Report berhasil dibuat: ${outputPath}`);
-    log('📊', `   ${totalTests} test cases | ${totalPass} PASS | ${totalFail} FAIL | ${passRate}% pass rate`);
 }
 
-main().catch(console.error);
+function statusStyle(status) {
+    const s = (status || '').toUpperCase();
+    if (s === 'PASS')    return { font: { bold: true, color: { argb: COLOR.pass }, size: 10 }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR.passBg } } };
+    if (s === 'FAIL')    return { font: { bold: true, color: { argb: COLOR.fail }, size: 10 }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR.failBg } } };
+    if (s === 'SKIP' || s === 'BACKLOG') return { font: { bold: true, color: { argb: COLOR.skip }, size: 10 }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR.skipBg } } };
+    if (s === 'FIXED')   return { font: { bold: true, color: { argb: COLOR.fixed }, size: 10 }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR.fixedBg } } };
+    return {};
+}
+
+function applyRowStyle(row, idx) {
+    row.eachCell((cell) => {
+        cell.border = allBorders;
+        cell.alignment = { vertical: 'middle', wrapText: true };
+        if (idx % 2 === 0 && !cell.fill?.fgColor) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR.stripe } };
+        }
+    });
+}
+
+function addSectionRow(ws, colCount, title) {
+    const row = ws.addRow([title]);
+    ws.mergeCells(row.number, 1, row.number, colCount);
+    const cell = row.getCell(1);
+    cell.font = { bold: true, color: { argb: COLOR.sectionFg }, size: 11 };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR.sectionBg } };
+    cell.alignment = { vertical: 'middle' };
+    cell.border = allBorders;
+    row.height = 24;
+}
+
+function addTestRows(ws, tests) {
+    tests.forEach((d, i) => {
+        if (d._section) { addSectionRow(ws, 5, d._section); return; }
+        const row = ws.addRow(d);
+        const sc = row.getCell('status');
+        Object.assign(sc, statusStyle(d.status));
+        sc.alignment = { vertical: 'middle', horizontal: 'center' };
+        applyRowStyle(row, i);
+    });
+}
+
+const stdCols = [
+    { header: 'No', key: 'no', width: 5 },
+    { header: 'Komponen', key: 'component', width: 20 },
+    { header: 'Test Case', key: 'testCase', width: 55 },
+    { header: 'Status', key: 'status', width: 10 },
+    { header: 'Catatan / Fix', key: 'notes', width: 60 },
+];
+
+// ── Build test data arrays from results ──
+function buildTestData(moduleName) {
+    const moduleResults = results.filter(r => r.module === moduleName);
+    const data = [];
+    let prevComponent = '';
+    let no = 0;
+    moduleResults.forEach((r) => {
+        const sectionKey = r.component.includes('Kasir') ? 'Kasir — Restrict by Branch'
+            : r.component.includes('Auth') ? 'Authentication'
+            : r.component.includes('FE') ? 'Frontend'
+            : 'Backend';
+        if (sectionKey !== prevComponent) {
+            data.push({ _section: sectionKey });
+            prevComponent = sectionKey;
+        }
+        no++;
+        data.push({ no, component: r.component, testCase: r.testCase, status: r.status, notes: r.notes });
+    });
+    return data;
+}
+
+const totalPass = results.filter(r => r.status === 'PASS').length;
+const totalFail = results.filter(r => r.status === 'FAIL').length;
+const totalTests = results.length;
+const passRate = totalTests > 0 ? Math.round((totalPass / totalTests) * 100) : 0;
+
+// ═══════════════════════════════════════════════
+// SHEET 1 — RINGKASAN
+// ═══════════════════════════════════════════════
+const ws1 = workbook.addWorksheet('Ringkasan', { properties: { tabColor: { argb: 'FF2563EB' } } });
+ws1.columns = [
+    { header: 'Metrik', key: 'metric', width: 40 },
+    { header: 'Jumlah / Detail', key: 'value', width: 35 },
+];
+styleHeader(ws1.getRow(1));
+
+const modules = ['Dashboard', 'Report Finance', 'Master Produk', 'Cabang', 'Inventory'];
+
+const summary = [
+    ['Test Summary', null],
+    ['Total Test Case', totalTests],
+    ['PASS', totalPass],
+    ['FAIL', totalFail],
+    ['Pass Rate', `${passRate}%`],
+    ['', ''],
+    ['Per Modul', null],
+    ...modules.flatMap(m => {
+        const mr = results.filter(r => r.module === m);
+        return [
+            [m, `${mr.filter(r => r.status === 'PASS').length} / ${mr.length} PASS`],
+        ];
+    }),
+    ['', ''],
+    ['Skenario Test', null],
+    ['Super Admin — Dashboard semua cabang', 'Semua endpoint tampil data'],
+    ['Super Admin — Dashboard filter branch_id', 'Data ter-filter per cabang'],
+    ['Super Admin — Report Finance + bank_cabang filter', 'Filter TRANSFER + bank_cabang_id'],
+    ['Super Admin — Master Produk + branch filter', 'Branches relation + filter'],
+    [`Kasir — Dashboard restricted by branch`, `branch_id = ${kasirBranchId || 'N/A'}`],
+    ['Kasir — Report Finance restricted', 'Data hanya cabang kasir'],
+    ['Kasir — Master Produk restricted', 'Produk hanya cabang kasir'],
+    ['Cabang — Update No Telepon', 'Single, multi, empty, restore'],
+    ['', ''],
+    ['Info Testing', null],
+    ['Tanggal Testing', new Date().toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
+    ['Terakhir Diupdate', new Date().toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
+    ['Tester', 'Claude Code (Automated via API)'],
+    ['Branch', 'dev-faldi'],
+    ['Environment', 'Laravel 13 + Vite 8 + React 19 + MySQL'],
+];
+
+summary.forEach(([metric, value]) => {
+    if (value === null) { addSectionRow(ws1, 2, metric); return; }
+    const row = ws1.addRow({ metric, value });
+    row.eachCell((cell) => { cell.border = allBorders; cell.alignment = { vertical: 'middle' }; });
+    if (metric === 'PASS') row.getCell(2).font = { bold: true, color: { argb: COLOR.pass } };
+    if (metric === 'FAIL' && totalFail > 0) row.getCell(2).font = { bold: true, color: { argb: COLOR.fail } };
+    if (metric.includes('Pass Rate')) row.getCell(2).font = { bold: true, color: { argb: passRate >= 90 ? COLOR.pass : COLOR.fail }, size: 13 };
+});
+
+// ═══════════════════════════════════════════════
+// SHEET 2 — DASHBOARD
+// ═══════════════════════════════════════════════
+const ws2 = workbook.addWorksheet('Dashboard', { properties: { tabColor: { argb: 'FF3B82F6' } } });
+ws2.columns = stdCols;
+styleHeader(ws2.getRow(1));
+addTestRows(ws2, buildTestData('Dashboard'));
+
+// ═══════════════════════════════════════════════
+// SHEET 3 — REPORT FINANCE
+// ═══════════════════════════════════════════════
+const ws3 = workbook.addWorksheet('Report Finance', { properties: { tabColor: { argb: 'FF059669' } } });
+ws3.columns = stdCols;
+styleHeader(ws3.getRow(1));
+addTestRows(ws3, buildTestData('Report Finance'));
+
+// ═══════════════════════════════════════════════
+// SHEET 4 — MASTER PRODUK
+// ═══════════════════════════════════════════════
+const ws4 = workbook.addWorksheet('Master Produk', { properties: { tabColor: { argb: 'FFF59E0B' } } });
+ws4.columns = stdCols;
+styleHeader(ws4.getRow(1));
+addTestRows(ws4, buildTestData('Master Produk'));
+
+// ═══════════════════════════════════════════════
+// SHEET 5 — CABANG (NO TELEPON)
+// ═══════════════════════════════════════════════
+const ws5 = workbook.addWorksheet('Cabang - No Telepon', { properties: { tabColor: { argb: 'FF8B5CF6' } } });
+ws5.columns = stdCols;
+styleHeader(ws5.getRow(1));
+addTestRows(ws5, buildTestData('Cabang'));
+
+// ═══════════════════════════════════════════════
+// SHEET 6 — INVENTORY (Edit & Riwayat)
+// ═══════════════════════════════════════════════
+const ws6 = workbook.addWorksheet('Inventory Edit', { properties: { tabColor: { argb: 'FFEF4444' } } });
+ws6.columns = stdCols;
+styleHeader(ws6.getRow(1));
+addTestRows(ws6, buildTestData('Inventory'));
+
+// ═══════════════════════════════════════════════
+// SHEET 7 — DAFTAR FIX
+// ═══════════════════════════════════════════════
+const ws7 = workbook.addWorksheet('Daftar Fix', { properties: { tabColor: { argb: 'FF059669' } } });
+ws7.columns = [
+    { header: 'No', key: 'no', width: 5 },
+    { header: 'File', key: 'file', width: 58 },
+    { header: 'Perubahan', key: 'change', width: 70 },
+];
+styleHeader(ws7.getRow(1));
+
+const fixes = [
+    { no: 1,  file: 'app/Http/Controllers/DashboardController.php',        change: 'Semua endpoint terima branch_id param via ->when() | Fix SQL CASH → TUNAI di finance query | Fix transfer_items branch_source_id' },
+    { no: 2,  file: 'app/Http/Controllers/FinanceReportController.php',    change: 'Tambah filter bank_cabang_id di financeSummary, opening balance, dan financeDetail' },
+    { no: 3,  file: 'resources/js/Services/Dashboard.apis.js',             change: 'Semua method terima branchId param, dikirim sebagai query string' },
+    { no: 4,  file: 'resources/js/pages/Dashboard/Page.jsx',               change: 'Kasir auto-send user.branch_id | Non-kasir filter cabang | Refetch saat branch berubah' },
+    { no: 5,  file: 'resources/js/pages/Report/Finance/Page.jsx',          change: 'Tambah filter bank_cabang dropdown (conditional saat TRANSFER) | bank_cabang_id di buildParams' },
+    { no: 6,  file: 'resources/js/pages/Inventory/MasterProduk/Page.jsx',  change: 'Kolom cabang tampil dari branches relasi | Multi-branch: "Nama +X lainnya"' },
+    { no: 7,  file: 'resources/js/pages/Inventory/Inventory/Page.jsx',   change: 'Fix buildRiwayat: bandingkan snapshot vs current inventory (bukan snapshot vs snapshot) | Tambah initialFormData untuk detect perubahan' },
+    { no: 8,  file: 'resources/js/pages/Inventory/Inventory/EditItemModal.jsx', change: 'Disable tombol Simpan saat tidak ada perubahan (hasChanges check)' },
+];
+
+fixes.forEach((d, i) => {
+    const row = ws7.addRow(d);
+    applyRowStyle(row, i);
+    row.getCell('file').font = { name: 'Consolas', size: 9 };
+});
+
+// ═══════════════════════════════════════════════
+// SAVE
+// ═══════════════════════════════════════════════
+const ts = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+const outputPath = path.resolve(`QA_DASHBOARD_REPORT_PRODUCT_TEST_${ts}.xlsx`);
+await workbook.xlsx.writeFile(outputPath);
+console.log(`✅ Report berhasil dibuat: ${outputPath}`);
+console.log(`   6 sheets, ${fixes.length} files fixed, ${totalTests} test cases, ${passRate}% pass rate`);

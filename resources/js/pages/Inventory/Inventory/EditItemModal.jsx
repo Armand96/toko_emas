@@ -61,8 +61,17 @@ const PhotoUploadBox = ({ name, value, onChange }) => {
     );
 };
 
-const EditItemModal = ({ isOpen, onClose, formData, errors = {}, onChange, onSubmit, productOptions = [], branchOptions = [] }) => {
+const EditItemModal = ({ isOpen, onClose, formData, initialFormData, errors = {}, onChange, onSubmit, productOptions = [], branchOptions = [] }) => {
     if (!formData) return null;
+
+    const hasChanges = initialFormData && (
+        String(formData.berat) !== String(initialFormData.berat) ||
+        String(formData.karat) !== String(initialFormData.karat) ||
+        Number(formData.jual) !== Number(initialFormData.jual) ||
+        (formData.no_seri || "") !== (initialFormData.no_seri || "") ||
+        formData.product_id !== initialFormData.product_id ||
+        (formData.foto instanceof File)
+    );
 
     return (
         <ModalCustom
@@ -73,6 +82,7 @@ const EditItemModal = ({ isOpen, onClose, formData, errors = {}, onChange, onSub
             confirmTextButton="Simpan"
             cancelTextButton="Batal"
             handleOnSubmit={onSubmit}
+            disabledConfirmBtn={!hasChanges}
         >
             <div className="flex flex-col sm:flex-row gap-x-6 gap-y-4 min-w-0">
                 <div className="w-full sm:w-44 flex flex-col gap-2 flex-shrink-0 min-w-0">
