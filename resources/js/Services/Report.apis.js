@@ -37,6 +37,26 @@ const ReportApis = {
         return Apis.Get(`api/report/finance-detail${params}`).then(({ data }) => data?.data ?? data);
     },
 
+    /* ── PENJUALAN / SALES ────────────────────────────────────
+       Semua endpoint dibungkus ApiResponse::success → unwrap .data */
+
+    // { total_penjualan, jumlah_transaksi, laba, emas_terjual }
+    GetSalesSummary: (params = "") => {
+        return Apis.Get(`api/report/sales-summary${params}`).then(({ data }) => data?.data ?? data);
+    },
+    // { trend: [{trx_date, total}], top_product: [{product_name, karat, berat, terjual}] }
+    GetSalesTrend: (params = "") => {
+        return Apis.Get(`api/report/sales-trend${params}`).then(({ data }) => data?.data ?? data);
+    },
+    // { category: [{category_name, total}], subcategory: [{subcategory_name, total}], karat: [{karat, total}] }
+    GetSalesByCategory: (params = "") => {
+        return Apis.Get(`api/report/sales-by-category-karat${params}`).then(({ data }) => data?.data ?? data);
+    },
+    // paginated → { data, current_page, total, per_page }
+    GetSalesDetail: (params = "") => {
+        return Apis.Get(`api/report/sales-detail${params}`).then(({ data }) => data?.data ?? data);
+    },
+
     /* ── PEMBELIAN ────────────────────────────────────────────
        Semua endpoint dibungkus ApiResponse::success → unwrap .data */
 

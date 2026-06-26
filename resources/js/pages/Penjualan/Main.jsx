@@ -230,7 +230,7 @@ const Main = ({ setCurentState }) => {
             accessor: 'aksi',
             render: (row) => (
                 <ActionButtonGroup>
-                    {['APPROVAL', 'DISETUJUI'].includes(row.approval_status) && can('delete', 'transaksi.penjualan') && (
+                    {['APPROVAL', 'DISETUJUI'].includes(row.approval_status) && isKasir() && can('delete', 'transaksi.penjualan') && (
                         <ActionButton variant="cancel" title="Batalkan" onClick={() => handleCancel(row)} />
                     )}
                     <ActionButton variant="view" title="Lihat Detail" onClick={() => handleViewTransaction(row)} />

@@ -31,11 +31,12 @@ const ItemTable = ({ rows }) => (
                     <th className="px-4 py-3 font-semibold">Berat</th>
                     <th className="px-4 py-3 font-semibold">Karat</th>
                     <th className="px-4 py-3 font-semibold">Status Terakhir</th>
+                    <th className="px-4 py-3 font-semibold">Waktu Opname</th>
                 </tr>
             </thead>
             <tbody>
                 {rows.length === 0 ? (
-                    <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Tidak ada item.</td></tr>
+                    <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">Tidak ada item.</td></tr>
                 ) : rows.map((row, idx) => {
                     const statusLabel = toTitleCase(row.last_status);
                     const tone = STATUS_TONE[statusLabel] || 'gray';
@@ -46,7 +47,7 @@ const ItemTable = ({ rows }) => (
                             </td>
                             <td className="px-4 py-3">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-amber-50 rounded-md border border-gray-100 flex-shrink-0 overflow-hidden">
+                                    <div className="w-8 h-8 bg-amber-50 rounded-md border border-gray-100 shrink-0 overflow-hidden">
                                         {row.image && <img src={row.image} alt="" className="w-full h-full object-cover" />}
                                     </div>
                                     <span className="text-sm font-medium text-gray-800">{row.produk}</span>
@@ -59,6 +60,7 @@ const ItemTable = ({ rows }) => (
                             <td className="px-4 py-3">
                                 <Badge tone={tone}>{statusLabel}</Badge>
                             </td>
+                            <td className="px-4 py-3 text-gray-600">{row.waktu}</td>
                         </tr>
                     );
                 })}

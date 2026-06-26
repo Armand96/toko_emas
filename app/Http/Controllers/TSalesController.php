@@ -71,6 +71,7 @@ class TSalesController extends Controller
                 'sender_name' => isset($validated['sender_bank_name']) ? $validated['sender_bank_name'] : null,
                 'sender_rekening' => isset($validated['sender_rekening']) ? $validated['sender_rekening'] : null,
                 'sender_bank_id' => isset($validated['sender_bank_id']) ? $validated['sender_bank_id'] : null,
+                'receiver_bank_id' => isset($validated['receiver_bank_id']) ? $validated['receiver_bank_id'] : null,
                 'approval_status' => SalesStatus::APPROVAL,
                 'nominal_paid' => isset($validated['nominal_paid']) ? $validated['nominal_paid'] : null,
                 'exchange' => isset($validated['exchange']) ? $validated['exchange'] : null,

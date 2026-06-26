@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { TimerIcon, CheckCircleIcon, XCircleIcon, ReceiptIcon } from '@phosphor-icons/react';
 import ModalCustom from '../../../components/modalCustom';
@@ -5,6 +6,7 @@ import SectionCard from '../../../components/SectionCard';
 import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
 import HelperFunctions from "../../../utils/HelperFunctions";
 import InventoryItemCard from '../../../components/InventoryItemCard';
+import BankApis from '../../../Services/Bank.apis';
 
 const APPROVAL_VIEW = {
     'APPROVAL': { Icon: TimerIcon, iconColor: 'text-warning-500', statusText: 'Menunggu Approval oleh' },
@@ -22,6 +24,18 @@ export default function ModalDetailPenjualan({
     onSubmitReject,
     data
 }) {
+    const [receiverBank, setReceiverBank] = useState(null);
+
+    useEffect(() => {
+        if (isOpen && data?.payment_type === 'TRANSFER' && data?.receiver_bank_id) {
+            BankApis.GetBankBranchSingle(data.receiver_bank_id)
+                .then((res) => setReceiverBank(res || null))
+                .catch(() => setReceiverBank(null));
+        } else {
+            setReceiverBank(null);
+        }
+    }, [isOpen, data?.receiver_bank_id]);
+
     if (!data) return null;
 
     const { customer, user, details, branch, approval_status, payment_type } = data;
@@ -30,8 +44,6 @@ export default function ModalDetailPenjualan({
     const isPending = approval_status === 'APPROVAL';
     const approvalView = APPROVAL_VIEW[approval_status] || APPROVAL_VIEW['APPROVAL'];
     const customerBadge = customer?.id ? 'Member Terdaftar' : 'Customer Baru';
-
-    const receiverBank = data?.receiver_bank ?? data?.bankCabang ?? data?.bank_cabang;
 
     return (
         <ModalCustom
@@ -108,11 +120,11 @@ export default function ModalDetailPenjualan({
                 <SectionCard title="Pembayaran" badge={isTransfer ? 'Transfer' : 'Tunai'}>
                     <div className="flex justify-between items-center text-sm">
                         <span className="text-neutral-500">Sub Total</span>
-                        <span className="font-medium text-neutral-900">{HelperFunctions.formatCurrency(data?.sub_total)}</span>
+                        <span className=" text-neutral-900">{HelperFunctions.formatCurrency(data?.sub_total)}</span>
                     </div>
                     <div className="flex justify-between items-center text-sm font-bold border-t border-dashed border-neutral-200 pt-3">
-                        <span className="text-neutral-900">Total</span>
-                        <span className="text-neutral-900">{HelperFunctions.formatCurrency(data?.grand_total)}</span>
+                        <span className="text-neutral-900 font-medium">Total</span>
+                        <span className="text-neutral-900 font-medium">{HelperFunctions.formatCurrency(data?.grand_total)}</span>
                     </div>
 
                     {!isTransfer && (
@@ -129,23 +141,20 @@ export default function ModalDetailPenjualan({
                     )}
 
                     {isTransfer && (
-                        <div className="border-t border-dashed border-neutral-200 pt-3 flex flex-col gap-3">
+                        <div className="flex flex-col p-4 border border-neutral-200 rounded-lg bg-neutral-50/50 gap-4">
                             {receiverBank && (
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-neutral-500 rounded-md flex items-center justify-center text-white font-extrabold italic text-sm shadow-sm flex-shrink-0">
-                                        {receiverBank.bank?.bank_code ?? receiverBank.bank?.bank_name?.slice(0, 3)?.toUpperCase() ?? '-'}
+                                    <div className="w-12 h-12 rounded-md flex items-center justify-center text-white font-extrabold italic text-sm shadow-sm flex-shrink-0 bg-neutral-500">
+                                        {receiverBank.bank?.bank_code ?? receiverBank.bank?.bank_name ?? '-'}
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-sm font-bold text-neutral-900">{receiverBank.nama_pemilik ?? '-'}</span>
-                                        <span className="text-xs text-neutral-500">{receiverBank.nomor_rekening ?? '-'} • {receiverBank.bank?.bank_name ?? '-'}</span>
+                                        <span className="text-xs font-medium text-neutral-500 mt-0.5">{receiverBank.nomor_rekening ?? '-'} • {receiverBank.bank?.bank_name ?? '-'}</span>
                                     </div>
                                 </div>
                             )}
-                            <div className="flex flex-col gap-1 text-xs text-neutral-600">
-                                <div>Pengirim: <span className="font-bold text-neutral-900 uppercase">{data?.sender_name ?? '-'}</span></div>
-                                {data?.sender_rekening && (
-                                    <div>No. Rekening Pengirim: <span className="font-bold text-neutral-900">{data.sender_rekening}</span></div>
-                                )}
+                            <div className="text-xs text-neutral-600 border-t border-dashed border-neutral-200 pt-3">
+                                Pengirim: <span className="font-bold text-neutral-900 uppercase">{data?.sender_name ?? '-'}</span>
                             </div>
                         </div>
                     )}

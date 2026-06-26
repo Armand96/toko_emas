@@ -77,7 +77,7 @@ const ApprovalPembelian = () => {
     };
 
     useEffect(() => {
-        fetchData();
+        fetchData(1, 10, search);
         fetchOptions();
     }, []);
 
@@ -95,7 +95,7 @@ const ApprovalPembelian = () => {
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
-            const allIds = paramFetch.data.map(item => item.id);
+            const allIds = paramFetch.data.filter(item => item.status == 'APPROVAL').map(item => item.id);
             setSelectedRows(allIds);
         } else {
             setSelectedRows([]);
@@ -203,18 +203,18 @@ const ApprovalPembelian = () => {
                     type="checkbox"
                     className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
                     onChange={handleSelectAll}
-                    checked={selectedRows.length === paramFetch.data.length && paramFetch.data.length > 0}
+                    checked={selectedRows.length > 0 && selectedRows.length === paramFetch.data.filter(item => item.status === 'APPROVAL').length}
                 />
             ),
             accessor: 'checkbox',
-            render: (row) => (
+            render: (row) => row.status === 'APPROVAL' ? (
                 <input
                     type="checkbox"
                     className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
                     checked={selectedRows.includes(row.id)}
                     onChange={() => handleSelectRow(row.id)}
                 />
-            )
+            ) : null
         },
         { header: 'Batch', accessor: 'batch' },
         {
@@ -229,7 +229,17 @@ const ApprovalPembelian = () => {
         {
             header: 'Produk',
             accessor: 'produk',
-            render: (row) => row.product?.product_name ?? '-'
+            render: (row) => (
+                <div className="flex items-center gap-2">
+                    <img
+                        src={row.image_path ? `/storage/${row.image_path}` : ""}
+                        alt={row.product?.product_name ?? ""}
+                        className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                    <span className="text-gray-900">{row.product?.product_name ?? '-'}</span>
+                </div>
+            )
         },
         {
             header: 'Kategori',

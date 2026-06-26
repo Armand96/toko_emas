@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Model;
     'thumb_path',
     'branch_id',
     'status',
-    'bank_cabank_id',
+    'bank_cabang_id',
     'barcode',
     'berat',
     'karat',
@@ -67,6 +67,6 @@ class Pembelian extends Model
 
     public function bankCabang()
     {
-        return $this->belongsTo(MBank::class, 'bank_cabang_id', 'id');
+        return $this->belongsTo(BankCabang::class, 'bank_cabang_id', 'id');
     }
 }
