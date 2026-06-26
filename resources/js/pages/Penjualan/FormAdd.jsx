@@ -287,8 +287,8 @@ const FormAdd = ({ setCurentState }) => {
             {/* SECTION 1: DATA CUSTOMER */}
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-6">
-                    <div className="w-1 h-5 bg-primary-500 rounded-full"></div>
-                    <h3 className="text-lg font-semibold text-gray-800">Data Customer</h3>
+                    <div className="w-1 h-4 bg-primary-500 rounded-full"></div>
+                    <h3 className="text-sm font-semibold text-neutral-900">Data Customer</h3>
                 </div>
 
                 <div className="flex gap-2 p-1 bg-gray-50 border border-gray-200 rounded-lg w-full mb-6">
@@ -408,8 +408,8 @@ const FormAdd = ({ setCurentState }) => {
             {/* SECTION 2: KERANJANG PENJUALAN */}
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-6">
-                    <div className="w-1 h-5 bg-primary-500 rounded-full"></div>
-                    <h3 className="text-lg font-semibold text-gray-800">Keranjang Penjualan</h3>
+                    <div className="w-1 h-4 bg-primary-500 rounded-full"></div>
+                    <h3 className="text-sm font-semibold text-neutral-900">Keranjang Penjualan</h3>
                 </div>
 
                 <div className="flex items-center gap-4 mb-6">
@@ -455,8 +455,8 @@ const FormAdd = ({ setCurentState }) => {
             {/* SECTION 3: PEMBAYARAN */}
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-6">
-                    <div className="w-1 h-5 bg-primary-500 rounded-full"></div>
-                    <h3 className="text-lg font-semibold text-gray-800">Pembayaran</h3>
+                    <div className="w-1 h-4 bg-primary-500 rounded-full"></div>
+                    <h3 className="text-sm font-semibold text-neutral-900">Pembayaran</h3>
                 </div>
 
                 <div className="flex flex-col mb-6">

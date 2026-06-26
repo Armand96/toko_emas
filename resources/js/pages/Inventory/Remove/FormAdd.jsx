@@ -144,8 +144,8 @@ const FormAdd = ({ setCurentState }) => {
                 {/* CARD 1: INFORMASI PENGELUARAN */}
                 <div className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center gap-2 mb-6">
-                        <div className="w-1 h-5 bg-primary-500 rounded-full"></div>
-                        <h2 className="text-lg font-semibold text-gray-900">Informasi Pengeluaran</h2>
+                        <div className="w-1 h-4 bg-primary-500 rounded-full"></div>
+                        <h2 className="text-sm font-semibold text-neutral-900">Informasi Pengeluaran</h2>
                     </div>
 
                     <div className="flex flex-col gap-5">
@@ -192,8 +192,8 @@ const FormAdd = ({ setCurentState }) => {
                 {/* CARD 2: DAFTAR BARANG */}
                 <div className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center gap-2 mb-6">
-                        <div className="w-1 h-5 bg-primary-500 rounded-full"></div>
-                        <h2 className="text-lg font-semibold text-gray-900">Daftar Barang</h2>
+                        <div className="w-1 h-4 bg-primary-500 rounded-full"></div>
+                        <h2 className="text-sm font-semibold text-neutral-900">Daftar Barang</h2>
                     </div>
 
                     <div className="flex flex-col gap-6">

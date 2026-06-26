@@ -38,14 +38,20 @@ class TSalesController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $sales = $query->orderBy('id', 'desc')->with(['customer', 'user', 'details.inventory', 'details.product', 'branch'])->paginate($perPage);
+        $sales = $query->orderBy('id', 'desc')->with([
+            'customer' => fn($q) => $q->withCount('sales'),
+            'user', 'details.inventory', 'details.product', 'branch',
+        ])->paginate($perPage);
 
         return response()->json($sales);
     }
 
     public function single(TSales $sales)
     {
-        return ApiResponse::success($sales->load(['customer', 'user', 'details.inventory', 'details.product', 'branch']));
+        return ApiResponse::success($sales->load([
+            'customer' => fn($q) => $q->withCount('sales'),
+            'user', 'details.inventory', 'details.product', 'branch',
+        ]));
     }
 
     public function createTrx(SalesRequest $request)
@@ -121,7 +127,7 @@ class TSalesController extends Controller
 
             // $dateNow = date('Y-m-d H:i:s');
             $status = SalesStatus::from($validated['status']);
-            $data = TSales::where('id', $validated['penjualan_id'])->with(['branch.bankcabang'])->first();
+            $data = TSales::where('id', $validated['penjualan_id'])->first();
             $data->update([
                 'approval_status' => $validated['status'],
                 'note' => isset($validated['note']) ? $validated['note'] : null
@@ -138,9 +144,9 @@ class TSalesController extends Controller
                 Finance::create(array(
                     'branch_id' => $data->branch_id,
                     'category_finance_id' => $categoryFinance->id,
-                    'bank_cabang_id' => $salesPaymentMethod == SalesPaymentMethod::TUNAI ? 0 : $data->branch->bankcabang->id,
+                    'bank_cabang_id' => $salesPaymentMethod == SalesPaymentMethod::TUNAI ? 0 : ($data->receiver_bank_id ?? 0),
                     'type' => FinanceType::CASHIN,
-                    'payment_method' => $salesPaymentMethod == SalesPaymentMethod::TUNAI ? FinancePaymentMethod::CASH : FinancePaymentMethod::TRANSFER,
+                    'payment_method' => $salesPaymentMethod == SalesPaymentMethod::TUNAI ? FinancePaymentMethod::TUNAI : FinancePaymentMethod::TRANSFER,
                     'nominal' => $data->grand_total
                 ));
             }

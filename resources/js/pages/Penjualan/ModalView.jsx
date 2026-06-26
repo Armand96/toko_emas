@@ -11,7 +11,7 @@ import BankApis from "../../Services/Bank.apis";
 const APPROVAL_VIEW = {
     'APPROVAL': { Icon: TimerIcon, iconColor: 'text-warning-500', statusText: 'Menunggu Approval oleh' },
     'DISETUJUI': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh' },
-    'CETAK KWITANSI': { Icon: ReceiptIcon, iconColor: 'text-info-500', statusText: 'Disetujui, siap cetak kwitansi oleh' },
+    'CETAK KWITANSI': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh' },
     'SELESAI': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh' },
     'DITOLAK': { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Ditolak oleh' },
     'DIBATALKAN': { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Dibatalkan oleh' },
@@ -35,6 +35,7 @@ const ModalViewPenjualan = ({ isOpen, onClose, data }) => {
     const { customer, user, details, approval_status } = data;
     const isTransfer = data.payment_type === 'TRANSFER';
     const approvalView = APPROVAL_VIEW[approval_status] || APPROVAL_VIEW['APPROVAL'];
+    const customerBadge = (customer?.sales_count ?? 0) > 1 ? 'Member Terdaftar' : 'Customer Baru';
 
     return (
         <ModalCustom
@@ -44,7 +45,7 @@ const ModalViewPenjualan = ({ isOpen, onClose, data }) => {
             footer={false}
         >
             <div className="flex flex-col gap-5 py-1">
-                <SectionCard title="Data Customer" badge="Member Terdaftar">
+                <SectionCard title="Data Customer" badge={customerBadge}>
                     <div className="grid grid-cols-2 gap-y-4 gap-x-6">
                         <div className="flex flex-col gap-1">
                             <span className="text-xs text-neutral-500">ID Customer</span>

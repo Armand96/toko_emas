@@ -184,8 +184,9 @@ const Main = ({ setCurentState }) => {
     };
 
     const REMOVE_STATUS_OPTIONS = [
-        { label: 'Disetujui', value: 'DISETUJUI' },
         { label: 'Approval', value: 'APPROVAL' },
+        { label: 'Disetujui', value: 'DISETUJUI' },
+        { label: 'Return', value: 'RETURN' },
         { label: 'Ditolak', value: 'DITOLAK' },
         { label: 'Dibatalkan', value: 'DIBATALKAN' },
     ];
@@ -218,6 +219,7 @@ const Main = ({ setCurentState }) => {
                 let tone = 'gray';
                 if (row.status === 'Disetujui') tone = 'success';
                 else if (row.status === 'Approval') tone = 'warning';
+                else if (row.status === 'Return') tone = 'info';
                 else if (row.status === 'Ditolak' || row.status === 'Dibatalkan') tone = 'danger';
                 return <Badge tone={tone}>{row.status}</Badge>;
             }

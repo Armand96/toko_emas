@@ -20,11 +20,11 @@ class FinanceReportController extends Controller
             ), 0) as total_all,
             COALESCE(SUM(
                 CASE
-                    WHEN payment_method = 'CASH'
+                    WHEN payment_method = 'TUNAI'
                         AND type = 'CASH IN'
                         THEN nominal
 
-                    WHEN payment_method = 'CASH'
+                    WHEN payment_method = 'TUNAI'
                         AND type = 'CASH OUT'
                         THEN -nominal
 
@@ -117,23 +117,27 @@ class FinanceReportController extends Controller
                 ), 0) as total_cash_out
             ")->first();
 
-            $openingBalance = Finance::when($request->start_date, function($quiry) use($request) {
-                $quiry->where(
-                    'finances.created_at',
-                    '=<',
-                    $request->start_date . " 00:00:00"
-                );
-            })->selectRaw("
-                COALESCE(SUM(
-                    CASE
-                        WHEN finances.type = 'CASH IN'
-                            THEN nominal
-                        WHEN finances.type = 'CASH OUT'
-                            THEN -nominal
-                        ELSE 0
-                    END
-                ), 0) as balance
-            ")->value('balance');
+            $openingBalance = 0;
+            if ($request->start_date) {
+                $obQuery = Finance::where('finances.created_at', '<', $request->start_date . " 00:00:00");
+                if ($request->branch_id) {
+                    $obQuery->where('branch_id', $request->branch_id);
+                }
+                if ($request->payment_method) {
+                    $obQuery->where('payment_method', $request->payment_method);
+                }
+                $openingBalance = $obQuery->selectRaw("
+                    COALESCE(SUM(
+                        CASE
+                            WHEN finances.type = 'CASH IN'
+                                THEN nominal
+                            WHEN finances.type = 'CASH OUT'
+                                THEN -nominal
+                            ELSE 0
+                        END
+                    ), 0) as balance
+                ")->value('balance');
+            }
 
             $closingBalance = $openingBalance + $summary->total_cash_in - $summary->total_cash_out;
 

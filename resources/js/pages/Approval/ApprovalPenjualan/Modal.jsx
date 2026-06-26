@@ -10,7 +10,7 @@ import BankApis from '../../../Services/Bank.apis';
 
 const APPROVAL_VIEW = {
     'APPROVAL': { Icon: TimerIcon, iconColor: 'text-warning-500', statusText: 'Menunggu Approval oleh' },
-    'CETAK KWITANSI': { Icon: ReceiptIcon, iconColor: 'text-info-500', statusText: 'Disetujui, siap cetak kwitansi oleh' },
+    'CETAK KWITANSI': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh' },
     'DISETUJUI': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh' },
     'SELESAI': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh' },
     'DITOLAK': { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Ditolak oleh' },
@@ -43,7 +43,7 @@ export default function ModalDetailPenjualan({
 
     const isPending = approval_status === 'APPROVAL';
     const approvalView = APPROVAL_VIEW[approval_status] || APPROVAL_VIEW['APPROVAL'];
-    const customerBadge = customer?.id ? 'Member Terdaftar' : 'Customer Baru';
+    const customerBadge = (customer?.sales_count ?? 0) > 1 ? 'Member Terdaftar' : 'Customer Baru';
 
     return (
         <ModalCustom

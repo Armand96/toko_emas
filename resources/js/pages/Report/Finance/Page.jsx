@@ -28,7 +28,7 @@ const TIPE_OPTIONS = [
 
 const METODE_OPTIONS = [
     { value: "", label: "Semua Metode" },
-    { value: "CASH", label: "Tunai" },
+    { value: "TUNAI", label: "Tunai" },
     { value: "TRANSFER", label: "Transfer" },
 ];
 
@@ -40,7 +40,7 @@ const toChartData = (arr) =>
 
 /** Bentuk teks rekening dari relasi bankCabang. */
 const accountLabel = (row) => {
-    if (row.payment_method === "CASH") return "Tunai";
+    if (row.payment_method === "TUNAI") return "Tunai";
     const bc = row.bankCabang ?? row.bank_cabang;
     if (!bc) return "Transfer";
     const bankName = bc.bank?.bank_name ?? "";
@@ -230,7 +230,7 @@ const ReportFinance = () => {
         { header: "Kategori", accessor: "category", render: (row) => row.category?.category_name ?? "-" },
         {
             header: "Metode Bayar", accessor: "payment_method",
-            render: (row) => row.payment_method === "CASH" ? "Tunai" : "Transfer",
+            render: (row) => row.payment_method === "TUNAI" ? "Tunai" : "Transfer",
         },
         {
             header: "Bank", accessor: "bankCabang",

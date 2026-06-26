@@ -4,6 +4,6 @@ namespace App\Helpers;
 
 enum FinancePaymentMethod: string
 {
-    case CASH = 'CASH';
+    case TUNAI = 'TUNAI';
     case TRANSFER = 'TRANSFER';
 }
