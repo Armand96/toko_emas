@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
     'inventory_code',
     'remove_header_id',
     'product_id',
+    'status',
 ])]
 class RemoveItemDetail extends Model
 {

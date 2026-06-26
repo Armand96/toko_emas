@@ -7,6 +7,7 @@ use App\Helpers\InventoryStatus;
 use App\Helpers\RemoveItemJenis;
 use App\Helpers\RemoveItemStatus;
 use App\Http\Requests\RemoveItemRequest;
+use App\Http\Requests\UpdateStatusRemoveItemDetailRequest;
 use App\Http\Requests\UpdateStatusRemoveItemRequest;
 use App\Models\Inventory;
 use App\Models\RemoveItem;
@@ -124,6 +125,47 @@ class RemoveItemController extends Controller
             DB::commit();
 
             return ApiResponse::success([], "Sukses update status removal", 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return ApiResponse::error($th->getMessage(), $th, 500);
+        }
+    }
+
+    public function changeApprovalDetail(UpdateStatusRemoveItemDetailRequest $request)
+    {
+        $validated = $request->validated();
+
+        DB::beginTransaction();
+
+        try {
+
+            $dateNow = date('Y-m-d H:i:s');
+            $status = RemoveItemStatus::from($validated['status']);
+
+            $detail = RemoveItemDetail::findOrFail($validated['remove_detail_id']);
+
+            $detail->update([
+                'status'     => $status,
+                'updated_at' => $dateNow,
+            ]);
+
+            if ($status == RemoveItemStatus::DISETUJUI) {
+                $removeItemData = RemoveItem::find($detail->remove_header_id);
+                $jenis = RemoveItemJenis::from($removeItemData->jenis);
+                Inventory::where('inventory_code', $detail->inventory_code)->update([
+                    'status'     => $jenis == RemoveItemJenis::HILANG ? InventoryStatus::LOST : InventoryStatus::REPAIR,
+                    'updated_at' => $dateNow,
+                ]);
+            } elseif ($status == RemoveItemStatus::DITOLAK) {
+                Inventory::where('inventory_code', $detail->inventory_code)->update([
+                    'status'     => InventoryStatus::AVAILABLE,
+                    'updated_at' => $dateNow,
+                ]);
+            }
+
+            DB::commit();
+
+            return ApiResponse::success([], "Sukses update status item removal", 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             return ApiResponse::error($th->getMessage(), $th, 500);

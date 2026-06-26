@@ -69,6 +69,7 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
     Route::get('remove-item', [RemoveItemController::class, 'index']);
     Route::post('remove-item', [RemoveItemController::class, 'createRemoveItem']);
     Route::put('update-remove-item', [RemoveItemController::class, 'changeApproval']);
+    Route::put('update-remove-item-detail', [RemoveItemController::class, 'changeApprovalDetail']);
 
     Route::get('stock-opname/{header}', [StockOpnameHeaderController::class, 'single']);
     Route::get('stock-opname', [StockOpnameHeaderController::class, 'index']);
