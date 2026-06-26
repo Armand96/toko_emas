@@ -53,6 +53,7 @@ const MasterInventory = () => {
     const [showEditModal, setShowEditModal]     = useState(false);
     const [selectedItem, setSelectedItem]       = useState(null);
     const [formData, setFormData]               = useState(null);
+    const [initialFormData, setInitialFormData] = useState(null);
     const [formErrors, setFormErrors]           = useState({});
     const [selectedRows, setSelectedRows]       = useState([]);
 
@@ -91,14 +92,40 @@ const MasterInventory = () => {
         return changes;
     };
 
-    const buildRiwayat = (editHistories) => {
+    // edit_histories = snapshot SEBELUM edit (old values).
+    // Untuk tahu apa yang berubah di setiap edit, kita bandingkan snapshot
+    // dengan state SESUDAH edit tsb: yaitu snapshot berikutnya, atau current
+    // inventory data untuk edit terakhir.
+    const diffSnapshot = (before, after) => {
+        const changes = [];
+        if (Number(before.jual) !== Number(after.jual))
+            changes.push({ label: "Harga Jual", from: HelperFunctions.formatCurrency(before.jual), to: HelperFunctions.formatCurrency(after.jual) });
+        if (Number(before.modal) !== Number(after.modal))
+            changes.push({ label: "Harga Modal", from: HelperFunctions.formatCurrency(before.modal), to: HelperFunctions.formatCurrency(after.modal) });
+        if (Number(before.berat) !== Number(after.berat))
+            changes.push({ label: "Berat", from: `${before.berat}g`, to: `${after.berat}g` });
+        if (Number(before.karat) !== Number(after.karat))
+            changes.push({ label: "Karat", from: `${before.karat}K`, to: `${after.karat}K` });
+        if ((before.note || "") !== (after.note || ""))
+            changes.push({ label: "Keterangan", from: before.note || "-", to: after.note || "-" });
+        if (before.status !== after.status)
+            changes.push({ label: "Status", from: toTitleCase(before.status), to: toTitleCase(after.status) });
+        if (before.branch_id !== after.branch_id) {
+            changes.push({ label: "Cabang", from: branchOptions.find(b => b.value === before.branch_id)?.label || "-", to: branchOptions.find(b => b.value === after.branch_id)?.label || "-" });
+        }
+        if (before.product_id !== after.product_id) {
+            changes.push({ label: "Produk", from: productOptions.find(p => p.value === before.product_id)?.label || "-", to: productOptions.find(p => p.value === after.product_id)?.label || "-" });
+        }
+        return changes;
+    };
+
+    const buildRiwayat = (editHistories, currentInventory) => {
         if (!editHistories || editHistories.length === 0) return [];
 
         const sorted = [...editHistories].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
         return sorted.map((history, idx) => {
             const isFirst = idx === sorted.length - 1;
-            const prev = isFirst ? null : sorted[idx + 1];
 
             if (isFirst) {
                 return {
@@ -111,35 +138,10 @@ const MasterInventory = () => {
                 };
             }
 
-            const changes = [];
-            if (prev && Number(prev.jual) !== Number(history.jual)) {
-                changes.push({ label: "Harga Jual", from: HelperFunctions.formatCurrency(prev.jual), to: HelperFunctions.formatCurrency(history.jual) });
-            }
-            if (prev && Number(prev.modal) !== Number(history.modal)) {
-                changes.push({ label: "Harga Modal", from: HelperFunctions.formatCurrency(prev.modal), to: HelperFunctions.formatCurrency(history.modal) });
-            }
-            if (prev && Number(prev.berat) !== Number(history.berat)) {
-                changes.push({ label: "Berat", from: `${prev.berat}g`, to: `${history.berat}g` });
-            }
-            if (prev && Number(prev.karat) !== Number(history.karat)) {
-                changes.push({ label: "Karat", from: `${prev.karat}K`, to: `${history.karat}K` });
-            }
-            if (prev && prev.note !== history.note) {
-                changes.push({ label: "Keterangan", from: prev.note || "-", to: history.note || "-" });
-            }
-            if (prev && prev.status !== history.status) {
-                changes.push({ label: "Status", from: toTitleCase(prev.status), to: toTitleCase(history.status) });
-            }
-            if (prev && prev.branch_id !== history.branch_id) {
-                const fromBranch = branchOptions.find(b => b.value === prev.branch_id)?.label || "-";
-                const toBranch = branchOptions.find(b => b.value === history.branch_id)?.label || "-";
-                changes.push({ label: "Cabang", from: fromBranch, to: toBranch });
-            }
-            if (prev && prev.product_id !== history.product_id) {
-                const fromProduct = productOptions.find(p => p.value === prev.product_id)?.label || "-";
-                const toProduct = productOptions.find(p => p.value === history.product_id)?.label || "-";
-                changes.push({ label: "Produk", from: fromProduct, to: toProduct });
-            }
+            // history = snapshot SEBELUM edit ini terjadi
+            // after = state SESUDAH edit → snapshot berikutnya (lebih baru), atau current inventory
+            const after = idx === 0 ? currentInventory : sorted[idx - 1];
+            const changes = after ? diffSnapshot(history, after) : [];
 
             return {
                 title: "Edit item",
@@ -151,7 +153,7 @@ const MasterInventory = () => {
         });
     };
 
-    const mapInventory = (row, editHistories = null) => {
+    const mapInventory = (row, editHistories = null, currentData = null) => {
         const product  = row.product || productOptions.find((p) => p.value === row.product_id)?.details;
         const branch   = row.branch || branchOptions.find((b) => b.value === row.branch_id)?.details;
 
@@ -179,7 +181,7 @@ const MasterInventory = () => {
             product_id: row.product_id,
             branch_id: row.branch_id,
             category_id: row.category_id,
-            riwayat: editHistories ? buildRiwayat(editHistories) : [],
+            riwayat: editHistories ? buildRiwayat(editHistories, currentData || row) : [],
         };
     };
 
@@ -251,7 +253,7 @@ const MasterInventory = () => {
             const res = await InventoryApis.GetInventorySingle(row.id);
             const detail = res?.data || res;
             const editHistories = detail?.edit_histories || [];
-            setSelectedItem({ ...row, ...mapInventory(row, editHistories) });
+            setSelectedItem({ ...row, ...mapInventory(row, editHistories, detail) });
             setShowDetailModal(true);
         } catch (error) {
             console.error(error);
@@ -273,7 +275,7 @@ const MasterInventory = () => {
             const res = await InventoryApis.GetInventorySingle(row.id);
             const detail = res?.data || res;
             const mapped = mapInventory(detail);
-            setFormData({
+            const fd = {
                 ...mapped,
                 berat: detail.berat ?? row.berat,
                 karat: detail.karat ?? row.karat,
@@ -282,12 +284,14 @@ const MasterInventory = () => {
                 note: detail.note ?? row.note ?? "",
                 no_seri: detail.note ?? row.note ?? "",
                 foto: mapped.image,
-            });
+            };
+            setFormData(fd);
+            setInitialFormData(fd);
             setFormErrors({});
             setShowEditModal(true);
         } catch (error) {
             console.error(error);
-            setFormData({
+            const fd = {
                 ...mapInventory(row),
                 berat: row.berat,
                 karat: row.karat,
@@ -296,7 +300,9 @@ const MasterInventory = () => {
                 note: row.note ?? "",
                 no_seri: row.note ?? "",
                 foto: row.image_path ? `/storage/${row.image_path}` : null,
-            });
+            };
+            setFormData(fd);
+            setInitialFormData(fd);
             setFormErrors({});
             setShowEditModal(true);
         } finally {
@@ -307,6 +313,7 @@ const MasterInventory = () => {
     const handleCloseEdit = () => {
         setShowEditModal(false);
         setFormData(null);
+        setInitialFormData(null);
         setFormErrors({});
     };
 
@@ -586,6 +593,7 @@ const MasterInventory = () => {
                 isOpen={showEditModal}
                 onClose={handleCloseEdit}
                 formData={formData}
+                initialFormData={initialFormData}
                 errors={formErrors}
                 onChange={handleEditChange}
                 onSubmit={handleSubmitEdit}
