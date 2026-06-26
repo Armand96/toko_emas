@@ -217,11 +217,11 @@ const Main = ({ setCurentState }) => {
             header: 'Status', accessor: 'status',
             render: (row) => {
                 let tone = 'gray';
-                if (row.status === 'Disetujui') tone = 'success';
+                if (row.status === 'Disetujui' || row.status === 'Return') tone = 'success';
                 else if (row.status === 'Approval') tone = 'warning';
-                else if (row.status === 'Return') tone = 'info';
+                // else if (row.status === 'Return') tone = 'info';
                 else if (row.status === 'Ditolak' || row.status === 'Dibatalkan') tone = 'danger';
-                return <Badge tone={tone}>{row.status}</Badge>;
+                return <Badge tone={tone}>{row.status == "Return" ? "Disetujui" : row.status}</Badge>;
             }
         },
         {

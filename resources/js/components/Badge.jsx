@@ -17,6 +17,8 @@ const TONE_CLASSES = {
     info: "bg-info-50 text-info-700 border-info-200",
     primary: "bg-primary-50 text-primary-700 border-primary-200",
     gray: "bg-gray-50 text-gray-700 border-gray-200",
+    purple: "bg-purple-50 text-[#BA2CA9] border-[#FFC9F1]",
+    orange: "bg-orange-50 text-orange-700 border-orange-200",
 };
 
 const Badge = ({ tone = "gray", children, className = "", ...rest }) => {

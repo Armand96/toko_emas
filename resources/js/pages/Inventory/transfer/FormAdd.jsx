@@ -164,8 +164,8 @@ const FormAdd = ({ setCurentState }) => {
                 {/* --- CARD 1: INFORMASI TRANSFER --- */}
                 <div className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center gap-2 mb-6">
-                        <div className="w-1 h-5 bg-blue-500 rounded-full"></div>
-                        <h2 className="text-lg font-semibold text-gray-900">Informasi Transfer</h2>
+                        <div className="w-1 h-4 bg-primary-500 rounded-full"></div>
+                        <h2 className="text-sm font-semibold text-neutral-900">Informasi Transfer</h2>
                     </div>
 
                     <div className="flex flex-col gap-5">
@@ -208,7 +208,7 @@ const FormAdd = ({ setCurentState }) => {
                                 onChange={handleInputChange}
                                 placeholder="Tuliskan keterangan transfer item"
                                 rows="3"
-                                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none ${errors.catatan ? 'border-danger-500' : 'border-gray-300'}`}
+                                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-700 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 resize-none ${errors.catatan ? 'border-danger-500' : 'border-gray-300'}`}
                             ></textarea>
                             {errors.catatan && <span className="text-xs text-danger-500">{errors.catatan}</span>}
                         </div>
@@ -218,8 +218,8 @@ const FormAdd = ({ setCurentState }) => {
                 {/* --- CARD 2: DAFTAR BARANG --- */}
                 <div className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center gap-2 mb-6">
-                        <div className="w-1 h-5 bg-blue-500 rounded-full"></div>
-                        <h2 className="text-lg font-semibold text-gray-900">Daftar Barang</h2>
+                        <div className="w-1 h-4 bg-primary-500 rounded-full"></div>
+                        <h2 className="text-sm font-semibold text-neutral-900">Daftar Barang</h2>
                     </div>
 
                     <div className="flex flex-col gap-6">
@@ -227,7 +227,7 @@ const FormAdd = ({ setCurentState }) => {
                             <button
                                 type="button"
                                 onClick={() => setIsScanModalOpen(true)}
-                                className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 border border-blue-500 text-blue-500 bg-white rounded-lg hover:bg-blue-50 transition-colors font-medium text-sm cursor-pointer"
+                                className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 border border-primary-500 text-primary-500 bg-white rounded-lg hover:bg-primary-50 transition-colors font-medium text-sm cursor-pointer"
                             >
                                 <Scan size={20} />
                                 Scan QR Code
@@ -256,7 +256,7 @@ const FormAdd = ({ setCurentState }) => {
                                     specs={`${item.weight} • ${item.karat}`}
                                     image={item.image}
                                     price={item.price}
-                                    codeBadgeVariant="blue"
+                                    codeBadgeVariant="default"
                                     onRemove={() => handleRemoveItem(item.inventory_code)}
                                 />
                             ))}

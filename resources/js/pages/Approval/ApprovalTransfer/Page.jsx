@@ -44,7 +44,7 @@ const ApprovalTransfer = () => {
         per_page: 10,
     });
 
-    const [filter, setFilter] = useState({ search: '', status: 'APPROVAL', branch_id: '' });
+    const [filter, setFilter] = useState({ search: '', status: 'Approval', branch_id: '' });
     const [filterBounce] = useDebounce(filter, 500);
     const [firstLoading, setFirstLoading] = useState(false);
     const [productMap, setProductMap] = useState({});

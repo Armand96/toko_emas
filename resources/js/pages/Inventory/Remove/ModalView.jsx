@@ -5,21 +5,20 @@ import ApprovalStatusCard from '../../../components/ApprovalStatusCard';
 import InventoryItemCard from '../../../components/InventoryItemCard';
 
 const getApprovalCardProps = (data) => {
-    const pic = 'Owner';
     const date = data?.tanggal_approval || '-';
 
     switch (data?.status) {
         case 'Disetujui':
-            return { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh', pic, date, reason: null };
+            return { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh', pic: 'Owner', date, reason: null };
         case 'Return':
-            return { Icon: ArrowCounterClockwiseIcon, iconColor: 'text-info-500', statusText: 'Dikembalikan ke inventory oleh', pic, date, reason: data?.alasan, reasonLabel: 'Catatan Return' };
+            return { Icon: ArrowCounterClockwiseIcon, iconColor: 'text-info-500', statusText: 'Dikembalikan ke inventory oleh', pic: data?.diajukan_oleh || '-', date, reason: data?.alasan, reasonLabel: 'Catatan Return' };
         case 'Dibatalkan':
-            return { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Dibatalkan oleh', pic, date, reason: data?.alasan, reasonLabel: 'Alasan Pembatalan' };
+            return { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Dibatalkan oleh', pic: 'Owner', date, reason: data?.alasan, reasonLabel: 'Alasan Pembatalan' };
         case 'Ditolak':
-            return { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Ditolak oleh', pic, date, reason: data?.alasan, reasonLabel: 'Alasan Penolakan' };
+            return { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Ditolak oleh', pic: 'Owner', date, reason: data?.alasan, reasonLabel: 'Alasan Penolakan' };
         case 'Approval':
         case 'Menunggu Approval':
-            return { Icon: ClockIcon, iconColor: 'text-warning-400', statusText: 'Menunggu Approval oleh', pic, date, reason: null };
+            return { Icon: ClockIcon, iconColor: 'text-warning-400', statusText: 'Menunggu Approval oleh', pic: 'Owner', date, reason: null };
         default:
             return null;
     }

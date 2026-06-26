@@ -23,7 +23,7 @@ const Main = ({ setCurentState }) => {
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
 
-    const [filterData, setFilterData] = useState({ search: '', status: 'APPROVAL' });
+    const [filterData, setFilterData] = useState({ search: '', status: '' });
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);

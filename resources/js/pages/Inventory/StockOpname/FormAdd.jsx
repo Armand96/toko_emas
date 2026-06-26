@@ -27,8 +27,8 @@ const FormAdd = ({ setCurentState }) => {
         return map;
     }, [branchInventory]);
 
-    // Hasil scan/input: kode -> { status: 'AVAILABLE' | 'EXTRA', inv, waktu }
     const [scanned, setScanned] = useState({});
+    const [sessionStart] = useState(() => new Date().toISOString().slice(0, 19).replace('T', ' '));
 
     useEffect(() => {
         if (!user?.branch_id) return;
@@ -93,24 +93,40 @@ const FormAdd = ({ setCurentState }) => {
             return;
         }
 
-        // Barang discan tapi tidak terdaftar di cabang ini -> EXTRA.
-        // Minta keterangan dulu (textarea wajib) sebelum item disimpan.
-        const { confirmed, value } = await showAlert({
-            title: 'Item Extra',
-            message: `Kode ${code} tidak terdaftar di cabang ini. Jelaskan kenapa barang ini ada.`,
-            icon: 'warning',
-            textarea: true,
-            placeholder: 'Contoh: titipan dari cabang lain, retur pelanggan, dll.',
-            confirmText: 'Simpan',
-            cancelText: 'Batal',
-        });
-        if (!confirmed) return;
+        try {
+            const res = await InventoryApis.GetInventory(`?inventory_code=${encodeURIComponent(code)}`);
+            const found = res?.data || [];
+            if (found.length === 0) {
+                showAlert({ title: 'Tidak Ditemukan', message: `Kode ${code} tidak ditemukan di sistem.`, icon: 'error', confirmText: 'OK' });
+                return;
+            }
 
-        setScanned((prev) => ({
-            ...prev,
-            [code]: { status: 'EXTRA', inv: null, note: (value || '').trim(), waktu: new Date().toISOString() },
-        }));
-        setActiveTab('extra');
+            const remoteInv = found[0];
+            if (remoteInv.status === 'SOLD' || remoteInv.status === 'LOST') {
+                showAlert({ title: 'Item Tidak Valid', message: `Kode ${code} berstatus ${remoteInv.status} dan tidak bisa diverifikasi.`, icon: 'error', confirmText: 'OK' });
+                return;
+            }
+
+            const { confirmed, value } = await showAlert({
+                title: 'Item Extra',
+                message: `Kode ${code} tidak terdaftar di cabang ini (cabang: ${remoteInv.branch?.branch_name || '-'}, status: ${remoteInv.status}). Jelaskan kenapa barang ini ada.`,
+                icon: 'warning',
+                textarea: true,
+                placeholder: 'Contoh: titipan dari cabang lain, retur pelanggan, dll.',
+                confirmText: 'Simpan',
+                cancelText: 'Batal',
+            });
+            if (!confirmed) return;
+
+            setScanned((prev) => ({
+                ...prev,
+                [code]: { status: 'EXTRA', inv: remoteInv, note: (value || '').trim(), waktu: new Date().toISOString() },
+            }));
+            setActiveTab('extra');
+        } catch (err) {
+            console.error(err);
+            showAlert({ title: 'Gagal', message: 'Gagal memvalidasi kode inventory.', icon: 'error', confirmText: 'OK' });
+        }
     };
 
     const handleScanSuccess = (code) => {
@@ -174,7 +190,13 @@ const FormAdd = ({ setCurentState }) => {
 
         setIsSubmitting(true);
         try {
-            await InventoryApis.PostStockOpname({ branch_id: user.branch_id, item });
+            const endDateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            await InventoryApis.PostStockOpname({
+                branch_id: user.branch_id,
+                start_date_time: sessionStart,
+                end_date_time: endDateTime,
+                item,
+            });
             await showAlert({ title: 'Berhasil', message: 'Stock opname berhasil difinalisasi.', icon: 'success', confirmText: 'OK' });
             setCurentState({ view: 'main' });
         } catch (err) {
@@ -198,6 +220,14 @@ const FormAdd = ({ setCurentState }) => {
 
     return (
         <div className="flex flex-col gap-6 w-full">
+            <button
+                type="button"
+                onClick={() => setCurentState({ view: 'main' })}
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 w-fit cursor-pointer"
+            >
+                <CaretLeftIcon size={18} /> Kembali
+            </button>
+
             <div className="flex flex-col lg:flex-row gap-y-3 lg:items-center justify-between">
                 <div className="flex flex-col gap-0.5">
                     <span className="text-[24px] font-semibold text-gray-950">Stock Opname Item</span>
@@ -310,16 +340,6 @@ const FormAdd = ({ setCurentState }) => {
                         </table>
                     </div>
                 )}
-            </div>
-
-            <div className="flex items-center justify-start mb-8">
-                <button
-                    type="button"
-                    onClick={() => setCurentState({ view: 'main' })}
-                    className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 w-fit cursor-pointer"
-                >
-                    <CaretLeftIcon size={18} /> Kembali
-                </button>
             </div>
 
             <ModalScanBarcode

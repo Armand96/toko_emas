@@ -116,7 +116,7 @@ export default function ModalDetailRemoveItem({
                     Icon={statusView.Icon}
                     iconColor={statusView.iconColor}
                     statusText={statusView.statusText}
-                    pic="Owner"
+                    pic={status === 'RETURN' ? (user?.name || '-') : 'Owner'}
                     date={data?.updated_at ? dayjs(data.updated_at).format('DD MMMM YYYY, HH:mm') : '-'}
                     reasonLabel="Alasan Penolakan"
                     reason={status === 'DITOLAK' ? data?.note : null}

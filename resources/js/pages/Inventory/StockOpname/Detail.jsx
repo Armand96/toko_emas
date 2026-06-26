@@ -19,7 +19,7 @@ const toTitleCase = (status) => {
     return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 };
 
-const ItemTable = ({ rows }) => (
+const ItemTable = ({ rows, hideWaktu = false }) => (
     <div className="overflow-x-auto">
         <table className="w-full text-sm text-left text-gray-900">
             <thead className="text-xs text-gray-600 border-b border-gray-200">
@@ -31,12 +31,12 @@ const ItemTable = ({ rows }) => (
                     <th className="px-4 py-3 font-semibold">Berat</th>
                     <th className="px-4 py-3 font-semibold">Karat</th>
                     <th className="px-4 py-3 font-semibold">Status Terakhir</th>
-                    <th className="px-4 py-3 font-semibold">Waktu Opname</th>
+                    {!hideWaktu && <th className="px-4 py-3 font-semibold">Waktu Opname</th>}
                 </tr>
             </thead>
             <tbody>
                 {rows.length === 0 ? (
-                    <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">Tidak ada item.</td></tr>
+                    <tr><td colSpan={hideWaktu ? 7 : 8} className="px-4 py-8 text-center text-gray-400">Tidak ada item.</td></tr>
                 ) : rows.map((row, idx) => {
                     const statusLabel = toTitleCase(row.last_status);
                     const tone = STATUS_TONE[statusLabel] || 'gray';
@@ -60,7 +60,7 @@ const ItemTable = ({ rows }) => (
                             <td className="px-4 py-3">
                                 <Badge tone={tone}>{statusLabel}</Badge>
                             </td>
-                            <td className="px-4 py-3 text-gray-600">{row.waktu}</td>
+                            {!hideWaktu && <td className="px-4 py-3 text-gray-600">{row.waktu}</td>}
                         </tr>
                     );
                 })}
@@ -132,6 +132,14 @@ const Detail = ({ id, setCurentState }) => {
 
     return (
         <div className="flex flex-col gap-6 w-full">
+            <button
+                type="button"
+                onClick={() => setCurentState({ view: 'main' })}
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 w-fit cursor-pointer"
+            >
+                <CaretLeftIcon size={18} /> Kembali
+            </button>
+
             <div className="flex flex-col gap-0.5">
                 <span className="text-[24px] font-semibold text-gray-950">Stock Opname Item</span>
                 <span className="text-[13px] text-gray-500">Detail hasil pengecekan stok fisik terhadap data inventory sistem.</span>
@@ -147,8 +155,8 @@ const Detail = ({ id, setCurentState }) => {
                     </h2>
                     <span className="text-sm text-gray-500">
                         {header?.branch?.branch_name || '-'}
-                        {header?.created_at ? ` · Mulai: ${new Date(header.created_at).toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}
-                        {header?.updated_at ? ` · Selesai: ${new Date(header.updated_at).toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}
+                        {(header?.start_date_time || header?.created_at) ? ` · Mulai: ${new Date(header.start_date_time || header.created_at).toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}
+                        {(header?.end_date_time || header?.updated_at) ? ` · Selesai: ${new Date(header.end_date_time || header.updated_at).toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}
                     </span>
                 </div>
 
@@ -183,7 +191,7 @@ const Detail = ({ id, setCurentState }) => {
                 </div>
 
                 {activeTab === 'sesuai' && <ItemTable rows={sesuaiRows} />}
-                {activeTab === 'lost' && <ItemTable rows={lostRows} />}
+                {activeTab === 'lost' && <ItemTable rows={lostRows} hideWaktu />}
                 {activeTab === 'extra' && (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left text-gray-900">
@@ -212,15 +220,6 @@ const Detail = ({ id, setCurentState }) => {
                 )}
             </div>
 
-            <div className="flex items-center justify-start mb-8">
-                <button
-                    type="button"
-                    onClick={() => setCurentState({ view: 'main' })}
-                    className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 w-fit cursor-pointer"
-                >
-                    <CaretLeftIcon size={18} /> Kembali
-                </button>
-            </div>
         </div>
     );
 };

@@ -143,10 +143,6 @@ const ReportPembelian = () => {
         },
         { header: "Batch", accessor: "batch" },
         {
-            header: "Supplier", accessor: "supplier",
-            render: (row) => row.supplier?.supplier_name ?? row.supplier_id ?? "-",
-        },
-        {
             header: "Cabang", accessor: "branch",
             render: (row) => row.branch?.branch_name ?? "-",
         },
