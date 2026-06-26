@@ -27,13 +27,16 @@ class StockOpnameRequest extends FormRequest
         return [
             'branch_id' => ['required', 'integer'],
 
+            'start_date_time' => ['nullable', 'date_format:Y-m-d H:i:s'],
+            'end_date_time'   => ['nullable', 'date_format:Y-m-d H:i:s', 'after_or_equal:start_date_time'],
+
             'item' => ['required', 'array', 'min:1'],
 
             'item.*.inventory_code' => ['required', 'string'],
-            'item.*.product_id' => ['required', 'integer'],
-            'item.*.last_status' => ['required', 'string'],
-            'item.*.opname_status' => ['required', 'string'],
-            'item.*.note' => ['nullable', 'string'],
+            'item.*.product_id'     => ['required', 'integer'],
+            'item.*.last_status'    => ['required', 'string'],
+            'item.*.opname_status'  => ['required', 'string'],
+            'item.*.note'           => ['nullable', 'string'],
         ];
     }
 

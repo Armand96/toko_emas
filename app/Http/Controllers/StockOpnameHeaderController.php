@@ -40,6 +40,13 @@ class StockOpnameHeaderController extends Controller
             $query->where('created_at', '<=', $request->end_date . " 23:59:59");
         }
 
+        if ($request->has('start_date_time') && $request->start_date_time != "") {
+            $query->where('start_date_time', '>=', $request->start_date_time);
+        }
+        if ($request->has('end_date_time') && $request->end_date_time != "") {
+            $query->where('end_date_time', '<=', $request->end_date_time);
+        }
+
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
         $opnames = $query->orderBy('id', 'desc')->with(['branch'])->paginate($perPage);
 
@@ -92,13 +99,15 @@ class StockOpnameHeaderController extends Controller
             }
 
             $dataHeader = StockOpnameHeader::create(array(
-                'kode_sesi' => $kodeSesi,
-                'branch_id' => $validated['branch_id'],
-                'total_item' => $totalInventoryBranch,
-                'in_stock' => $itemInStock,
-                'missing' => $itemMissing,
-                'extra' => $itemExtra,
-                'status' => $itemInStock == $totalInventoryBranch ? OpnameHeaderStatus::SESUAI : OpnameHeaderStatus::SELISIH,
+                'kode_sesi'        => $kodeSesi,
+                'branch_id'        => $validated['branch_id'],
+                'total_item'       => $totalInventoryBranch,
+                'in_stock'         => $itemInStock,
+                'missing'          => $itemMissing,
+                'extra'            => $itemExtra,
+                'status'           => $itemInStock == $totalInventoryBranch ? OpnameHeaderStatus::SESUAI : OpnameHeaderStatus::SELISIH,
+                'start_date_time'  => isset($validated['start_date_time']) ? $validated['start_date_time'] : null,
+                'end_date_time'    => isset($validated['end_date_time']) ? $validated['end_date_time'] : null,
             ));
 
             foreach ($dataInsertBatch as $key => $value) {

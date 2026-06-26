@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Model;
     'missing',
     'extra',
     'status',
+    'start_date_time',
+    'end_date_time',
 ])]
 class StockOpnameHeader extends Model
 {
