@@ -182,7 +182,7 @@ const MasterInventory = () => {
             jual: Number(row.jual),
             cabang: branch?.branch_name || "-",
             status: toTitleCase(row.status),
-            no_seri: row.note || "",
+            no_seri: row.serial_number || "",
             keterangan: row.note || "",
             image: row.image_path ? `/storage/${row.image_path}` : null,
             product_id: row.product_id,
@@ -289,7 +289,7 @@ const MasterInventory = () => {
                 modal: Number(detail.modal ?? row.modal),
                 jual: Number(detail.jual ?? row.jual),
                 note: detail.note ?? row.note ?? "",
-                no_seri: detail.note ?? row.note ?? "",
+                no_seri: detail.serial_number ?? row.serial_number ?? "",
                 foto: mapped.image,
             };
             setFormData(fd);
@@ -305,7 +305,7 @@ const MasterInventory = () => {
                 modal: Number(row.modal),
                 jual: Number(row.jual),
                 note: row.note ?? "",
-                no_seri: row.note ?? "",
+                no_seri: row.serial_number ?? "",
                 foto: row.image_path ? `/storage/${row.image_path}` : null,
             };
             setFormData(fd);
