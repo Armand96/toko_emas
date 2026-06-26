@@ -140,7 +140,7 @@ class TSalesController extends Controller
                     'category_finance_id' => $categoryFinance->id,
                     'bank_cabang_id' => $salesPaymentMethod == SalesPaymentMethod::TUNAI ? 0 : $data->branch->bankcabang->id,
                     'type' => FinanceType::CASHIN,
-                    'payment_method' => $salesPaymentMethod == SalesPaymentMethod::TUNAI ? FinancePaymentMethod::CASH : FinancePaymentMethod::TRANSFER,
+                    'payment_method' => $salesPaymentMethod == SalesPaymentMethod::TUNAI ? FinancePaymentMethod::TUNAI : FinancePaymentMethod::TRANSFER,
                     'nominal' => $data->grand_total
                 ));
             }

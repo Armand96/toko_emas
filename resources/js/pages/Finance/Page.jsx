@@ -167,7 +167,7 @@ const Finance = () => {
             )
         },
         { header: 'Kategori', accessor: 'category', render: (row) => row.category?.category_name ?? '-' },
-        { header: 'Metode Bayar', accessor: 'payment_method', render: (row) => row.payment_method === 'CASH' ? 'Tunai' : 'Transfer' },
+        { header: 'Metode Bayar', accessor: 'payment_method', render: (row) => row.payment_method === 'TUNAI' ? 'Tunai' : 'Transfer' },
         { header: 'Jumlah', accessor: 'nominal', render: (row) => HelperFunctions.formatCurrency(row.nominal || 0) },
         {
             header: 'Keterangan', accessor: 'note',

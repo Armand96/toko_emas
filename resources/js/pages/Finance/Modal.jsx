@@ -7,7 +7,7 @@ import FinanceApis from '../../Services/Finance.apis';
 import OptionsStore from '../../Store/OptionsStore';
 
 const METODE_OPTIONS = [
-    { value: 'CASH', label: 'Tunai' },
+    { value: 'TUNAI', label: 'Tunai' },
     { value: 'TRANSFER', label: 'Transfer' },
 ];
 
