@@ -92,6 +92,10 @@ class FinanceReportController extends Controller
                 );
             }
 
+            if ($request->bank_cabang_id) {
+                $query->where('bank_cabang_id', $request->bank_cabang_id);
+            }
+
             if ($request->start_date && $request->end_date) {
                 $query->whereBetween('finances.created_at', [
                     $request->start_date,
@@ -125,6 +129,9 @@ class FinanceReportController extends Controller
                 }
                 if ($request->payment_method) {
                     $obQuery->where('payment_method', $request->payment_method);
+                }
+                if ($request->bank_cabang_id) {
+                    $obQuery->where('bank_cabang_id', $request->bank_cabang_id);
                 }
                 $openingBalance = $obQuery->selectRaw("
                     COALESCE(SUM(
@@ -203,6 +210,10 @@ class FinanceReportController extends Controller
                 'payment_method',
                 $request->payment_method
             );
+        }
+
+        if ($request->bank_cabang_id) {
+            $query->where('bank_cabang_id', $request->bank_cabang_id);
         }
 
         if ($request->type) {

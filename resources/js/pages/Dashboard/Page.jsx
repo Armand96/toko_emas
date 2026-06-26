@@ -115,15 +115,17 @@ const Dashboard = () => {
         }));
     }, [trendData]);
 
+    const branchId = isKasir() ? user?.branch_id : filter.cabang || null;
+
     const fetchDashboard = async () => {
         setLoading(true);
         try {
             const promises = [
-                canApprove ? DashboardApis.GetTakeAction() : Promise.resolve(null),
-                DashboardApis.GetDataToday(),
-                DashboardApis.GetSalesTrend(Number(trendRange)),
-                DashboardApis.GetLatestSales(),
-                DashboardApis.GetSalesStatus(),
+                canApprove ? DashboardApis.GetTakeAction(branchId) : Promise.resolve(null),
+                DashboardApis.GetDataToday(branchId),
+                DashboardApis.GetSalesTrend(Number(trendRange), branchId),
+                DashboardApis.GetLatestSales(branchId),
+                DashboardApis.GetSalesStatus(branchId),
             ];
 
             const [takeAction, dataToday, trend, latest, status] = await Promise.all(promises);
@@ -168,7 +170,7 @@ const Dashboard = () => {
 
     const fetchTrend = async (days) => {
         try {
-            const trend = await DashboardApis.GetSalesTrend(Number(days));
+            const trend = await DashboardApis.GetSalesTrend(Number(days), branchId);
             if (Array.isArray(trend)) {
                 setTrendData(trend);
             }
@@ -189,11 +191,11 @@ const Dashboard = () => {
                 }
             });
         }
-    }, []);
+    }, [branchId]);
 
     useEffect(() => {
         fetchTrend(trendRange);
-    }, [trendRange]);
+    }, [trendRange, branchId]);
 
     const columns = [
         {
