@@ -31,7 +31,7 @@ export default function Modal({
     })();
 
     const emitPhones = (list) => {
-        const value = list.map((p) => p.trim()).filter(Boolean).join(",");
+        const value = list.join(",");
         onChange({ target: { name: "phone_numbers", value } });
     };
 

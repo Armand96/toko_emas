@@ -47,11 +47,17 @@ const PrintKwitansi = () => {
 
     console.log(data)
 
+    const phoneDisplay = (() => {
+        const raw = branch?.phone_numbers;
+        if (!raw) return "-";
+        return raw.split(",").map(p => p.trim()).filter(Boolean).join(" / ");
+    })();
+
     const store = {
         tagline: "Jewellery design, Wedding Ring, Custom, Fashion, Jual Beli Emas",
         tagline2: "Perhiasan, LM ANTAM, Cukim, Leburan, Perak, Palladium",
         address: branch?.address || "Jl. Yos Sudarso",
-        phone: "Wa : 0813 1829 0055 / 0852 1051 3501",
+        phone: `Wa : ${phoneDisplay}`,
     };
 
     return (
