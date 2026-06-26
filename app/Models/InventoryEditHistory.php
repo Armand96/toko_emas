@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Model;
     'thumb_path',
     'status',
     'note',
+    'serial_number',
     'updated_by'
 ])]
 class InventoryEditHistory extends Model
