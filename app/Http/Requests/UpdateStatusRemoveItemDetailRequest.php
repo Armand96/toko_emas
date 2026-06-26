@@ -25,7 +25,8 @@ class UpdateStatusRemoveItemDetailRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'remove_detail_id' => 'required|integer|exists:remove_item_details,id',
+            'remove_detail_id'   => 'required|array|min:1',
+            'remove_detail_id.*' => 'integer|exists:remove_item_details,id',
             'status' => 'required|string|in:DISETUJUI,DITOLAK,DIBATALKAN,RETURN',
             'note' => 'nullable|string',
         ];

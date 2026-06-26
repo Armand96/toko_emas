@@ -141,23 +141,34 @@ class RemoveItemController extends Controller
 
             $dateNow = date('Y-m-d H:i:s');
             $status = RemoveItemStatus::from($validated['status']);
+            $detailIds = $validated['remove_detail_id'];
 
-            $detail = RemoveItemDetail::findOrFail($validated['remove_detail_id']);
-
-            $detail->update([
+            // Bulk update status on all selected details
+            RemoveItemDetail::whereIn('id', $detailIds)->update([
                 'status'     => $status,
                 'updated_at' => $dateNow,
             ]);
 
+            // Collect inventory codes of affected details
+            $details = RemoveItemDetail::whereIn('id', $detailIds)->get();
+            $inventoryCodes = $details->pluck('inventory_code')->toArray();
+
             if ($status == RemoveItemStatus::DISETUJUI) {
-                $removeItemData = RemoveItem::find($detail->remove_header_id);
+                // All details share the same header, grab it from the first one
+                $removeItemData = RemoveItem::find($details->first()->remove_header_id);
                 $jenis = RemoveItemJenis::from($removeItemData->jenis);
-                Inventory::where('inventory_code', $detail->inventory_code)->update([
-                    'status'     => $jenis == RemoveItemJenis::HILANG ? InventoryStatus::LOST : InventoryStatus::REPAIR,
+                $inventoryStatus = $jenis == RemoveItemJenis::HILANG ? InventoryStatus::LOST : InventoryStatus::REPAIR;
+
+                Inventory::whereIn('inventory_code', $inventoryCodes)->update([
+                    'status'     => $inventoryStatus,
                     'updated_at' => $dateNow,
                 ]);
-            } elseif ($status == RemoveItemStatus::DITOLAK) {
-                Inventory::where('inventory_code', $detail->inventory_code)->update([
+            } elseif (
+                $status == RemoveItemStatus::DITOLAK ||
+                $status == RemoveItemStatus::DIBATALKAN ||
+                $status == RemoveItemStatus::RETURN
+            ) {
+                Inventory::whereIn('inventory_code', $inventoryCodes)->update([
                     'status'     => InventoryStatus::AVAILABLE,
                     'updated_at' => $dateNow,
                 ]);
