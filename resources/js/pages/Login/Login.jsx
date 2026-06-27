@@ -30,7 +30,7 @@ const Login = () => {
       // Jangan setIsLoading(false) di sini — komponen akan segera unmount karena navigasi.
       navigate('/dashboard', { replace: true });
     } catch (err) {
-      const msg = err?.response?.data?.message || err?.message || 'Username atau password salah.';
+      const msg = 'Username atau password salah.';
       showAlert({ "icon": "error" , title: 'Login Gagal', message: msg, confirmText: 'OK' });
       setIsLoading(false);
     }
