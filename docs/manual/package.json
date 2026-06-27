@@ -1,0 +1,14 @@
+{
+  "name": "auromos-manual-builder",
+  "private": true,
+  "type": "module",
+  "description": "Generate MANUAL_BOOK.pdf dari MANUAL_BOOK.md (markdown + diagram Mermaid + screenshot).",
+  "scripts": {
+    "build": "node build-pdf.mjs"
+  },
+  "dependencies": {
+    "marked": "^18.0.5",
+    "mermaid": "^11.16.0",
+    "puppeteer-core": "^25.2.1"
+  }
+}

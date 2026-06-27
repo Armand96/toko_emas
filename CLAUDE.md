@@ -147,8 +147,11 @@ Kasir otomatis filter by `user.branch_id`. Permission check via `PermissionStore
 
 ## Script Test
 
-- `run-full-scenario.mjs` — Skenario lengkap: modal awal, pembelian, approval, customer baru, penjualan, stock opname
-- `run-inventory-scenario.mjs` — Skenario inventory: transfer, remove (hilang/repair), return, stock opname
-- `generate-test-report.mjs` — Generate Excel report QA (`QA_TEST_REPORT.xlsx`)
+Semua script test ada di `docs/testing/` (dijalankan dari root project). Lihat `docs/testing/README.md` untuk detail.
 
-Jalankan dengan `bun run <script>.mjs`. Token auth mungkin perlu di-refresh (login ulang via API).
+- `docs/testing/run-full-scenario.mjs` — Skenario lengkap: modal awal, pembelian, approval, customer baru, penjualan, stock opname
+- `docs/testing/run-inventory-scenario.mjs` — Skenario inventory: transfer, remove (hilang/repair), return, stock opname
+- `docs/testing/generate-test-report.mjs` — Generate Excel report QA (`QA_TEST_REPORT.xlsx`)
+- `docs/testing/_backtest.mjs` — Backtest flow + rekonsiliasi uang & stok (60 assertion)
+
+Jalankan dengan `bun run docs/testing/<script>.mjs`. Token auth mungkin perlu di-refresh (login ulang via API).
