@@ -34,6 +34,18 @@ class DatabaseSeeder extends Seeder
             INSERT INTO `m_products` (`id`, `product_name`, `branch_id`, `category_id`, `subcategory_id`, `image_path`, `thumb_path`, `barcode`, `is_active`, `description`, `created_at`, `updated_at`) VALUES (8, 'ANTAM 10g', NULL, 2, 3, NULL, NULL, 'ATM-00001', 1, 'Emas batangan ANTAM 10 gram', '2026-06-15 05:35:31', '2026-06-15 05:35:31');
             INSERT INTO `m_products` (`id`, `product_name`, `branch_id`, `category_id`, `subcategory_id`, `image_path`, `thumb_path`, `barcode`, `is_active`, `description`, `created_at`, `updated_at`) VALUES (9, 'Kalung Tali Emas', NULL, 4, 5, NULL, NULL, 'KTE-00001', 1, 'Kalung tali emas polos', '2026-06-15 05:35:31', '2026-06-15 05:35:31');
             INSERT INTO `m_products` (`id`, `product_name`, `branch_id`, `category_id`, `subcategory_id`, `image_path`, `thumb_path`, `barcode`, `is_active`, `description`, `created_at`, `updated_at`) VALUES (10, 'Cincin Solitaire', NULL, 4, 6, NULL, NULL, 'CSO-00001', 1, 'Cincin solitaire emas', '2026-06-15 05:35:31', '2026-06-15 05:35:31');
+
+            INSERT INTO `branch_products` (`id`, `product_id`, `branch_id`, `created_at`, `updated_at`) VALUES (1, 1, 1, '2026-06-15 05:35:31', '2026-06-15 05:35:31');
+            INSERT INTO `branch_products` (`id`, `product_id`, `branch_id`, `created_at`, `updated_at`) VALUES (2, 2, 2, '2026-06-15 05:35:31', '2026-06-15 05:35:31');
+            INSERT INTO `branch_products` (`id`, `product_id`, `branch_id`, `created_at`, `updated_at`) VALUES (3, 3, 3, '2026-06-15 05:35:31', '2026-06-15 05:35:31');
+            INSERT INTO `branch_products` (`id`, `product_id`, `branch_id`, `created_at`, `updated_at`) VALUES (4, 4, 4, '2026-06-15 05:35:31', '2026-06-15 05:35:31');
+            INSERT INTO `branch_products` (`id`, `product_id`, `branch_id`, `created_at`, `updated_at`) VALUES (5, 5, 1, '2026-06-15 05:35:31', '2026-06-15 05:35:31');
+            INSERT INTO `branch_products` (`id`, `product_id`, `branch_id`, `created_at`, `updated_at`) VALUES (6, 6, 2, '2026-06-15 05:35:31', '2026-06-15 05:35:31');
+            INSERT INTO `branch_products` (`id`, `product_id`, `branch_id`, `created_at`, `updated_at`) VALUES (7, 7, 3, '2026-06-15 05:35:31', '2026-06-15 05:35:31');
+            INSERT INTO `branch_products` (`id`, `product_id`, `branch_id`, `created_at`, `updated_at`) VALUES (8, 8, 4, '2026-06-15 05:35:31', '2026-06-15 05:35:31');
+            INSERT INTO `branch_products` (`id`, `product_id`, `branch_id`, `created_at`, `updated_at`) VALUES (9, 9, 1, '2026-06-15 05:35:31', '2026-06-15 05:35:31');
+            INSERT INTO `branch_products` (`id`, `product_id`, `branch_id`, `created_at`, `updated_at`) VALUES (10, 10, 2, '2026-06-15 05:35:31', '2026-06-15 05:35:31');
+
             INSERT INTO `m_suppliers` (`id`, `supplier_name`, `phone_number`, `address`, `is_active`, `created_at`, `updated_at`) VALUES (1, 'PT ABC Jaya', '0089829823', 'Jl Permata Hijau', 0, '2026-06-15 05:38:15', '2026-06-23 08:14:43');
             INSERT INTO `m_suppliers` (`id`, `supplier_name`, `phone_number`, `address`, `is_active`, `created_at`, `updated_at`) VALUES (2, 'Suppliedi', '081242454243411', 'Jl. Simpang Siedi', 1, '2026-06-23 06:19:02', '2026-06-23 06:19:35');
 
@@ -62,6 +74,12 @@ class DatabaseSeeder extends Seeder
             INSERT INTO `m_category_finances` (`id`, `category_name`, `type`, `is_active`, `created_at`, `updated_at`) VALUES (3, 'Penjualan', 'CASH IN', 1, NULL, NULL);
             INSERT INTO `m_category_finances` (`id`, `category_name`, `type`, `is_active`, `created_at`, `updated_at`) VALUES (4, 'Uang Awal', 'CASH IN', 1, NULL, NULL);
 
+            INSERT INTO `finances` (`id`, `branch_id`, `category_finance_id`, `bank_cabang_id`, `type`, `payment_method`, `nominal`, `note`, `attachment`, `is_auto`, `created_at`, `updated_at`) VALUES (1, 1, 4, 1, 'CASH IN', 'TUNAI', 10000000, 'Uang Awal', NULL, 1, '2026-06-15 06:46:19', '2026-06-15 06:46:38');
+            INSERT INTO `finances` (`id`, `branch_id`, `category_finance_id`, `bank_cabang_id`, `type`, `payment_method`, `nominal`, `note`, `attachment`, `is_auto`, `created_at`, `updated_at`) VALUES (2, 1, 4, 1, 'CASH IN', 'TRANSFER', 10000000, 'Uang Awal', NULL, 1, '2026-06-15 06:46:19', '2026-06-15 06:46:38');
+
+            INSERT INTO `finances` (`id`, `branch_id`, `category_finance_id`, `bank_cabang_id`, `type`, `payment_method`, `nominal`, `note`, `attachment`, `is_auto`, `created_at`, `updated_at`) VALUES (3, 2, 4, 1, 'CASH IN', 'TUNAI', 10000000, 'Uang Awal', NULL, 1, '2026-06-15 06:46:19', '2026-06-15 06:46:38');
+            INSERT INTO `finances` (`id`, `branch_id`, `category_finance_id`, `bank_cabang_id`, `type`, `payment_method`, `nominal`, `note`, `attachment`, `is_auto`, `created_at`, `updated_at`) VALUES (4, 2, 4, 1, 'CASH IN', 'TRANSFER', 10000000, 'Uang Awal', NULL, 1, '2026-06-15 06:46:19', '2026-06-15 06:46:38');
+
             INSERT INTO `bank_cabangs` (`id`, `branch_id`, `bank_id`, `nomor_rekening`, `nama_pemilik`, `is_active`, `created_at`, `updated_at`) VALUES (1, 1, 1, '00338227', 'Jono', 1, '2026-06-15 06:24:12', '2026-06-15 06:24:12');
             INSERT INTO `bank_cabangs` (`id`, `branch_id`, `bank_id`, `nomor_rekening`, `nama_pemilik`, `is_active`, `created_at`, `updated_at`) VALUES (3, 3, 1, '0032153415668', 'ARRAZQ STORE', 1, '2026-06-23 06:44:01', '2026-06-23 06:44:01');
             INSERT INTO `bank_cabangs` (`id`, `branch_id`, `bank_id`, `nomor_rekening`, `nama_pemilik`, `is_active`, `created_at`, `updated_at`) VALUES (4, 2, 2, '1234', 'ucok', 1, '2026-06-23 08:33:57', '2026-06-23 08:33:57');
@@ -73,14 +91,14 @@ class DatabaseSeeder extends Seeder
             INSERT INTO `roles` (`id`, `role_name`, `created_at`, `updated_at`) VALUES (4, 'Kasir', NULL, NULL);
         ");
 
-        User::create(array(
+        User::create([
             'username' => 'tokoemas',
             'name' => 'tokoemas',
             'branch_id' => 1,
             'role_id' => 1,
             'is_active' => true,
             'email' => 'tokoemas@mail.com',
-            'password' => Hash::make('tokoemas')
-        ));
+            'password' => Hash::make('tokoemas'),
+        ]);
     }
 }
