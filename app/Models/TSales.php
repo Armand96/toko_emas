@@ -43,4 +43,14 @@ class TSales extends Model
     {
         return $this->belongsTo(MCustomer::class, 'customer_id', 'id');
     }
+
+    public function senderBank()
+    {
+        return $this->belongsTo(BankCabang::class, 'sender_bank_id', 'id');
+    }
+
+    public function receiverBank()
+    {
+        return $this->belongsTo(BankCabang::class, 'receiver_bank_id', 'id');
+    }
 }

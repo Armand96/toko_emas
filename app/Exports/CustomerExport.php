@@ -5,14 +5,17 @@ namespace App\Exports;
 use App\Models\MCustomer;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class CustomerExport implements FromCollection, WithHeadings, WithMapping, WithStyles
+class CustomerExport implements FromCollection, WithMapping, WithStyles, WithEvents
 {
     protected Request $request;
+    protected int $headerRows = 4; // rows before data starts (title, periode, blank, column headers)
 
     public function __construct(Request $request)
     {
@@ -36,18 +39,6 @@ class CustomerExport implements FromCollection, WithHeadings, WithMapping, WithS
         return $query->orderByDesc('sales_sum_grand_total')->get();
     }
 
-    public function headings(): array
-    {
-        return [
-            'Nama Customer',
-            'No. HP',
-            'Jumlah Transaksi',
-            'Total Belanja',
-            'Transaksi Terakhir',
-            'Tanggal Daftar',
-        ];
-    }
-
     public function map($customer): array
     {
         return [
@@ -56,16 +47,86 @@ class CustomerExport implements FromCollection, WithHeadings, WithMapping, WithS
             $customer->sales_count,
             $customer->sales_sum_grand_total ?? 0,
             $customer->sales_max_created_at
-                ? \Carbon\Carbon::parse($customer->sales_max_created_at)->format('Y-m-d')
+                ? \Carbon\Carbon::parse($customer->sales_max_created_at)->format('d/m/Y')
                 : '-',
-            $customer->created_at?->format('Y-m-d'),
         ];
     }
 
     public function styles(Worksheet $sheet): array
     {
+        return [];
+    }
+
+    public function registerEvents(): array
+    {
         return [
-            1 => ['font' => ['bold' => true]],
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $collection = $this->collection();
+                $totalRows = $this->headerRows + $collection->count();
+
+                // --- Shift existing data rows down to make room for header rows ---
+                // Data was written starting at row 1, shift it down by (headerRows - 1)
+                if ($collection->count() > 0) {
+                    $sheet->insertNewRowBefore(1, $this->headerRows);
+                }
+
+                // Row 1: Title
+                $sheet->setCellValue('A1', 'REPORT TRANSAKSI CUSTOMER');
+                $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(12);
+
+                // Row 2: Periode
+                $startDate = $this->request->start_date ?? '';
+                $endDate   = $this->request->end_date ?? '';
+
+                if ($startDate !== '' && $endDate !== '') {
+                    $periodeText = 'Periode : '
+                        . \Carbon\Carbon::parse($startDate)->format('d/m/Y')
+                        . '-'
+                        . \Carbon\Carbon::parse($endDate)->format('d/m/Y');
+                } else {
+                    $periodeText = 'Periode : ';
+                }
+
+                $sheet->setCellValue('A2', $periodeText);
+
+                // Row 3: blank (already blank)
+
+                // Row 4: Column headers
+                $headers = [
+                    'A4' => 'Nama Customer',
+                    'B4' => 'No. HP',
+                    'C4' => 'Jumlah Transaksi',
+                    'D4' => 'Total Pembelian',
+                    'E4' => 'Transaksi Terakhir',
+                ];
+
+                foreach ($headers as $cell => $value) {
+                    $sheet->setCellValue($cell, $value);
+                }
+
+                // Style row 4 headers: bold
+                $sheet->getStyle('A4:E4')->getFont()->setBold(true);
+
+                // Style column C & D data rows: right-aligned (number)
+                if ($collection->count() > 0) {
+                    $dataStart = $this->headerRows + 1;
+                    $dataEnd   = $this->headerRows + $collection->count();
+                    $sheet->getStyle("C{$dataStart}:D{$dataEnd}")
+                        ->getAlignment()
+                        ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+                    // Format column D as number with thousand separator
+                    $sheet->getStyle("D{$dataStart}:D{$dataEnd}")
+                        ->getNumberFormat()
+                        ->setFormatCode('#,##0');
+                }
+
+                // Auto-size columns
+                foreach (range('A', 'E') as $col) {
+                    $sheet->getColumnDimension($col)->setAutoSize(true);
+                }
+            },
         ];
     }
 }
