@@ -1,17 +1,17 @@
-/**
- * SKENARIO LENGKAP — Toko Emas
+﻿/**
+ * SKENARIO LENGKAP â€” Toko Emas
  *
  * 1. Inisiasi modal 50 juta per cabang (50% tunai, 50% transfer)
  * 2. Buat 60 pembelian (15 per cabang, mix tunai/transfer)
- * 3. Approve 50% pembelian → inventory + finance CASH OUT
+ * 3. Approve 50% pembelian â†’ inventory + finance CASH OUT
  * 4. Buat 5 customer baru + Penjualan ~50% inventory
- * 5. Approve penjualan → DISETUJUI → CETAK KWITANSI → finance CASH IN
+ * 5. Approve penjualan â†’ DISETUJUI â†’ CETAK KWITANSI â†’ finance CASH IN
  * 6. Stock opname audit per cabang
  * 7. Verifikasi & summary
  */
 
 const BASE = 'http://127.0.0.1:8000/api';
-const TOKEN = '6|ozWZllzQBO9AYGFFKZ9xxN0Ag2QRybGtneLN5Wra6475dc9d';
+const TOKEN = '9|t2NxR00GMAmiPU9XCNUXqzTZt1CMPqLWv4Rj5jkVec943a4f';
 
 const hdrs = { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` };
 
@@ -20,7 +20,7 @@ async function api(method, path, body) {
     if (body) opts.body = JSON.stringify(body);
     const res = await fetch(`${BASE}${path}`, opts);
     const json = await res.json();
-    if (!res.ok) console.error(`  ❌ ${method} ${path} → ${res.status}`, json?.message || '');
+    if (!res.ok) console.error(`  âŒ ${method} ${path} â†’ ${res.status}`, json?.message || '');
     return json;
 }
 
@@ -37,7 +37,7 @@ async function apiData(method, path, body) {
 }
 
 function log(i, m) { console.log(`${i} ${m}`); }
-function section(t) { console.log(`\n${'═'.repeat(65)}\n  ${t}\n${'═'.repeat(65)}`); }
+function section(t) { console.log(`\n${'â•'.repeat(65)}\n  ${t}\n${'â•'.repeat(65)}`); }
 function fmt(n) { return `Rp ${Number(n).toLocaleString('id-ID')}`; }
 
 const BRANCHES = [
@@ -47,23 +47,23 @@ const BRANCHES = [
     { id: 4, name: 'Cibitung',       bank_cabang_id: 5 },
 ];
 
-// ═══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // STEP 1: MODAL AWAL
-// ═══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 section('STEP 1: Inisiasi Modal Rp 50 Juta per Cabang');
 
 for (const br of BRANCHES) {
     await apiForm('/finances', { branch_id: br.id, category_finance_id: 4, bank_cabang_id: 0,              type: 'CASH IN', payment_method: 'TUNAI',    nominal: 25000000, note: `Modal tunai ${br.name}` });
     await apiForm('/finances', { branch_id: br.id, category_finance_id: 4, bank_cabang_id: br.bank_cabang_id, type: 'CASH IN', payment_method: 'TRANSFER', nominal: 25000000, note: `Modal transfer ${br.name}` });
-    log('💰', `${br.name}: 25 jt tunai + 25 jt transfer`);
+    log('ðŸ’°', `${br.name}: 25 jt tunai + 25 jt transfer`);
 }
 
 let totals = await apiData('GET', '/report/total-count');
-log('📊', `Total: ${fmt(totals.total_all)} | Tunai: ${fmt(totals.total_cash)} | Bank: ${fmt(totals.total_transfer)}`);
+log('ðŸ“Š', `Total: ${fmt(totals.total_all)} | Tunai: ${fmt(totals.total_cash)} | Bank: ${fmt(totals.total_transfer)}`);
 
-// ═══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // STEP 2: 60 PEMBELIAN
-// ═══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 section('STEP 2: Buat 60 Pembelian (15 per Cabang)');
 
 const allProducts = (await apiData('GET', '/products?per_page=100'))?.data ?? (await apiData('GET', '/products?per_page=100'));
@@ -71,7 +71,7 @@ const allPembelian = [];
 
 for (const br of BRANCHES) {
     const prods = (Array.isArray(allProducts) ? allProducts : []).filter(p => (p.branches || []).some(b => b.branch_id === br.id));
-    if (!prods.length) { log('⚠️', `${br.name}: no products`); continue; }
+    if (!prods.length) { log('âš ï¸', `${br.name}: no products`); continue; }
 
     for (let batch = 0; batch < 3; batch++) {
         const items = [];
@@ -93,14 +93,14 @@ for (const br of BRANCHES) {
         const res = await apiData('POST', '/pembelian', { data: items });
         (Array.isArray(res) ? res : res?.data || []).forEach(c => allPembelian.push(c));
         const t = items.filter(i => i.tipe_pembayaran === 'TUNAI').length;
-        log('  📝', `${br.name} batch ${batch + 1}: ${items.length} item (${t} tunai, ${items.length - t} transfer)`);
+        log('  ðŸ“', `${br.name} batch ${batch + 1}: ${items.length} item (${t} tunai, ${items.length - t} transfer)`);
     }
 }
-log('✅', `Total pembelian: ${allPembelian.length}`);
+log('âœ…', `Total pembelian: ${allPembelian.length}`);
 
-// ═══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // STEP 3: APPROVE 50%
-// ═══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 section('STEP 3: Approve 50% Pembelian');
 
 const branchInvMap = {};
@@ -115,15 +115,15 @@ for (const br of BRANCHES) {
 
     const inv = await apiData('GET', `/inventory?per_page=10000&status=AVAILABLE&branch_id=${br.id}`);
     branchInvMap[br.id] = inv?.data ?? (Array.isArray(inv) ? inv : []);
-    log('✅', `${br.name}: ${approveIds.length} approved, ${rejectIds.length} rejected → ${branchInvMap[br.id].length} inventory`);
+    log('âœ…', `${br.name}: ${approveIds.length} approved, ${rejectIds.length} rejected â†’ ${branchInvMap[br.id].length} inventory`);
 }
 
 totals = await apiData('GET', '/report/total-count');
-log('💰', `Saldo: ${fmt(totals.total_all)} | Tunai: ${fmt(totals.total_cash)} | Bank: ${fmt(totals.total_transfer)}`);
+log('ðŸ’°', `Saldo: ${fmt(totals.total_all)} | Tunai: ${fmt(totals.total_cash)} | Bank: ${fmt(totals.total_transfer)}`);
 
-// ═══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // STEP 4: CUSTOMER BARU + PENJUALAN
-// ═══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 section('STEP 4: Customer Baru + Penjualan ~50% Inventory');
 
 const newCusts = [
@@ -143,9 +143,9 @@ const customers = [
 for (const c of newCusts) {
     const res = await apiData('POST', '/customers', c);
     const id = res?.id;
-    if (id) { customers.push({ id, name: c.customer_name }); log('👤', `${c.customer_name} (ID: ${id})`); }
+    if (id) { customers.push({ id, name: c.customer_name }); log('ðŸ‘¤', `${c.customer_name} (ID: ${id})`); }
 }
-log('✅', `Total customer: ${customers.length} (${newCusts.length} baru + 3 existing)`);
+log('âœ…', `Total customer: ${customers.length} (${newCusts.length} baru + 3 existing)`);
 
 let salesCount = 0;
 for (const br of BRANCHES) {
@@ -173,14 +173,14 @@ for (const br of BRANCHES) {
         idx += size;
         trx++;
     }
-    log('🛒', `${br.name}: ${trx} transaksi, ${sellCount} item dijual`);
+    log('ðŸ›’', `${br.name}: ${trx} transaksi, ${sellCount} item dijual`);
 }
-log('✅', `Total transaksi penjualan: ${salesCount}`);
+log('âœ…', `Total transaksi penjualan: ${salesCount}`);
 
-// ═══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // STEP 5: APPROVE PENJUALAN
-// ═══════════════════════════════════════════════════════════════
-section('STEP 5: Approve Penjualan → Cetak Kwitansi');
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+section('STEP 5: Approve Penjualan â†’ Cetak Kwitansi');
 
 const salesRes = await api('GET', '/sales?per_page=100');
 const salesList = salesRes?.data || [];
@@ -194,21 +194,21 @@ for (const sale of pendingSales) {
     if (cetakRes?.success !== false) cetakOk++;
     else cetakFail++;
 }
-log('✅', `${pendingSales.length} disetujui, ${cetakOk} kwitansi dicetak${cetakFail ? `, ${cetakFail} gagal` : ''}`);
+log('âœ…', `${pendingSales.length} disetujui, ${cetakOk} kwitansi dicetak${cetakFail ? `, ${cetakFail} gagal` : ''}`);
 
 totals = await apiData('GET', '/report/total-count');
-log('💰', `Saldo akhir: ${fmt(totals.total_all)} | Tunai: ${fmt(totals.total_cash)} | Bank: ${fmt(totals.total_transfer)}`);
+log('ðŸ’°', `Saldo akhir: ${fmt(totals.total_all)} | Tunai: ${fmt(totals.total_cash)} | Bank: ${fmt(totals.total_transfer)}`);
 
-// ═══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // STEP 6: STOCK OPNAME
-// ═══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 section('STEP 6: Stock Opname per Cabang');
 
 const opnameResults = [];
 for (const br of BRANCHES) {
     const inv = await apiData('GET', `/inventory?per_page=10000&status=AVAILABLE&branch_id=${br.id}`);
     const brInv = inv?.data ?? (Array.isArray(inv) ? inv : []);
-    if (!brInv.length) { log('⚠️', `${br.name}: 0 item, skip`); continue; }
+    if (!brInv.length) { log('âš ï¸', `${br.name}: 0 item, skip`); continue; }
 
     const items = [];
     const scanCnt = Math.ceil(brInv.length * 0.85);
@@ -225,13 +225,13 @@ for (const br of BRANCHES) {
     const instock = items.filter(i => i.opname_status === 'INSTOCK').length;
     const missing = items.filter(i => i.opname_status === 'MISSING').length;
     const extra = items.filter(i => i.opname_status === 'EXTRA').length;
-    log('🔍', `${br.name}: ${brInv.length} item → IN=${instock} MISS=${missing} EXTRA=${extra}`);
+    log('ðŸ”', `${br.name}: ${brInv.length} item â†’ IN=${instock} MISS=${missing} EXTRA=${extra}`);
     opnameResults.push({ branch: br.name, total: brInv.length, instock, missing, extra });
 }
 
-// ═══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // SUMMARY
-// ═══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 section('RINGKASAN AKHIR');
 
 totals = await apiData('GET', '/report/total-count');
@@ -245,49 +245,49 @@ const totalSales = (await api('GET', '/sales?per_page=1'))?.total || 0;
 const opnameList = (await api('GET', '/stock-opname?per_page=100'))?.data || [];
 
 console.log(`
-┌───────────────────────────────────────────────────────────────┐
-│                  SKENARIO TEST — RINGKASAN                    │
-├───────────────────────────────────────────────────────────────┤
-│                                                               │
-│  💰 MODAL AWAL                                               │
-│     Per cabang     : ${fmt(50000000).padEnd(18)} (50% tunai, 50% transfer)│
-│     Total 4 cabang : ${fmt(200000000).padEnd(18)}                        │
-│                                                               │
-│  📝 PEMBELIAN (60 total, 15/cabang)                           │
-│     Disetujui  : ${String(pemOk).padEnd(3)}  → inventory terbentuk                │
-│     Ditolak    : ${String(pemNo).padEnd(3)}                                        │
-│     Pending    : ${String(pemApp).padEnd(3)}                                        │
-│                                                               │
-│  📦 INVENTORY                                                 │
-│     AVAILABLE  : ${String(invAvail).padEnd(3)}                                        │
-│     SOLD       : ${String(invSold).padEnd(3)}  (dari penjualan)                    │
-│                                                               │
-│  👤 CUSTOMER                                                  │
-│     Existing   : 3                                            │
-│     Baru       : 5   (Siti, Budi, Dewi, Ahmad, Ratna)        │
-│     Total      : 8                                            │
-│                                                               │
-│  🛒 PENJUALAN                                                 │
-│     Transaksi  : ${String(totalSales).padEnd(3)}                                        │
-│     Dicetak    : ${String(cetakOk).padEnd(3)}  → finance CASH IN                    │
-│                                                               │
-│  💰 SALDO AKHIR                                               │
-│     KAS Tunai  : ${fmt(totals.total_cash).padEnd(18)}                        │
-│     Bank       : ${fmt(totals.total_transfer).padEnd(18)}                        │
-│     TOTAL      : ${fmt(totals.total_all).padEnd(18)}                        │
-│                                                               │
-│  📊 FINANCE SUMMARY                                           │
-│     Saldo Awal : ${fmt(summary?.summary?.opening_balance || 0).padEnd(18)}                        │
-│     Cash In    : ${fmt(summary?.summary?.cash_in || 0).padEnd(18)}                        │
-│     Cash Out   : ${fmt(summary?.summary?.cash_out || 0).padEnd(18)}                        │
-│     Saldo Akhir: ${fmt(summary?.summary?.closing_balance || 0).padEnd(18)}                        │
-│                                                               │
-│  🔍 STOCK OPNAME (${opnameList.length} sesi)${' '.repeat(37)}│
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                  SKENARIO TEST â€” RINGKASAN                    â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚                                                               â”‚
+â”‚  ðŸ’° MODAL AWAL                                               â”‚
+â”‚     Per cabang     : ${fmt(50000000).padEnd(18)} (50% tunai, 50% transfer)â”‚
+â”‚     Total 4 cabang : ${fmt(200000000).padEnd(18)}                        â”‚
+â”‚                                                               â”‚
+â”‚  ðŸ“ PEMBELIAN (60 total, 15/cabang)                           â”‚
+â”‚     Disetujui  : ${String(pemOk).padEnd(3)}  â†’ inventory terbentuk                â”‚
+â”‚     Ditolak    : ${String(pemNo).padEnd(3)}                                        â”‚
+â”‚     Pending    : ${String(pemApp).padEnd(3)}                                        â”‚
+â”‚                                                               â”‚
+â”‚  ðŸ“¦ INVENTORY                                                 â”‚
+â”‚     AVAILABLE  : ${String(invAvail).padEnd(3)}                                        â”‚
+â”‚     SOLD       : ${String(invSold).padEnd(3)}  (dari penjualan)                    â”‚
+â”‚                                                               â”‚
+â”‚  ðŸ‘¤ CUSTOMER                                                  â”‚
+â”‚     Existing   : 3                                            â”‚
+â”‚     Baru       : 5   (Siti, Budi, Dewi, Ahmad, Ratna)        â”‚
+â”‚     Total      : 8                                            â”‚
+â”‚                                                               â”‚
+â”‚  ðŸ›’ PENJUALAN                                                 â”‚
+â”‚     Transaksi  : ${String(totalSales).padEnd(3)}                                        â”‚
+â”‚     Dicetak    : ${String(cetakOk).padEnd(3)}  â†’ finance CASH IN                    â”‚
+â”‚                                                               â”‚
+â”‚  ðŸ’° SALDO AKHIR                                               â”‚
+â”‚     KAS Tunai  : ${fmt(totals.total_cash).padEnd(18)}                        â”‚
+â”‚     Bank       : ${fmt(totals.total_transfer).padEnd(18)}                        â”‚
+â”‚     TOTAL      : ${fmt(totals.total_all).padEnd(18)}                        â”‚
+â”‚                                                               â”‚
+â”‚  ðŸ“Š FINANCE SUMMARY                                           â”‚
+â”‚     Saldo Awal : ${fmt(summary?.summary?.opening_balance || 0).padEnd(18)}                        â”‚
+â”‚     Cash In    : ${fmt(summary?.summary?.cash_in || 0).padEnd(18)}                        â”‚
+â”‚     Cash Out   : ${fmt(summary?.summary?.cash_out || 0).padEnd(18)}                        â”‚
+â”‚     Saldo Akhir: ${fmt(summary?.summary?.closing_balance || 0).padEnd(18)}                        â”‚
+â”‚                                                               â”‚
+â”‚  ðŸ” STOCK OPNAME (${opnameList.length} sesi)${' '.repeat(37)}â”‚
 ${opnameResults.map(r =>
-`│     ${r.branch.padEnd(16)}: ${String(r.total).padEnd(2)} item → IN=${String(r.instock).padEnd(2)} MISS=${String(r.missing).padEnd(1)} EXTRA=${r.extra}     │`
+`â”‚     ${r.branch.padEnd(16)}: ${String(r.total).padEnd(2)} item â†’ IN=${String(r.instock).padEnd(2)} MISS=${String(r.missing).padEnd(1)} EXTRA=${r.extra}     â”‚`
 ).join('\n')}
-│                                                               │
-└───────────────────────────────────────────────────────────────┘
+â”‚                                                               â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 `);
 
-console.log('🎉 Semua skenario berhasil!');
+console.log('ðŸŽ‰ Semua skenario berhasil!');

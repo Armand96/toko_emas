@@ -163,7 +163,7 @@ class RemoveItemController extends Controller
             $status = RemoveItemStatus::from($validated['status']);
             RemoveItem::where('id', $validated['remove_id'])->update([
                 'status' => $status,
-                // 'note' => isset($validated['note']) ? $validated['note'] : null,
+                'note_approval' => isset($validated['note']) ? $validated['note'] : null,
                 'updated_at' => $dateNow
             ]);
 

@@ -6,17 +6,18 @@ import InventoryItemCard from '../../../components/InventoryItemCard';
 
 const getApprovalCardProps = (data) => {
     const date = data?.tanggal_approval || '-';
+    const pic = data?.pic_approval || 'Owner';
 
     switch (data?.status) {
         case 'Disetujui':
-            return { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh', pic: 'Owner', date, reason: null };
+            return { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh', pic, date, reason: null };
         case 'Dibatalkan':
-            return { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Dibatalkan oleh', pic: 'Owner', date, reason: data?.alasan, reasonLabel: 'Alasan Pembatalan' };
+            return { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Dibatalkan oleh', pic, date, reason: data?.alasan, reasonLabel: 'Alasan Pembatalan' };
         case 'Ditolak':
-            return { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Ditolak oleh', pic: 'Owner', date, reason: data?.alasan, reasonLabel: 'Alasan Penolakan' };
+            return { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Ditolak oleh', pic, date, reason: data?.alasan, reasonLabel: 'Alasan Penolakan' };
         case 'Approval':
         case 'Menunggu Approval':
-            return { Icon: ClockIcon, iconColor: 'text-warning-400', statusText: 'Menunggu Approval oleh', pic: 'Owner', date, reason: null };
+            return { Icon: ClockIcon, iconColor: 'text-warning-400', statusText: 'Menunggu Approval oleh', pic, date, reason: null };
         default:
             return null;
     }

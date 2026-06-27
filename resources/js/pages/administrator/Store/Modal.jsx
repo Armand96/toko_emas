@@ -44,7 +44,7 @@ export default function Modal({
     ];
 
     const disableButton = () => {
-        if (!formData?.nama_toko || !formData?.website || !formData?.email) {
+        if (!formData?.shop_name || !formData?.website || !formData?.email) {
             return true;
         }
         if (formError && Object.values(formError).some((error) => error)) {

@@ -203,7 +203,7 @@ const ReportPenjualan = () => {
             accessor: "payment_type",
             render: (row) => {
                 const type = row.payment_type;
-                const isCash = type === "CASH" || type === "Tunai";
+                const isCash = type === "TUNAI";
                 return (
                     <span
                         className={`rounded-md border px-2.5 py-1 text-xs font-medium ${

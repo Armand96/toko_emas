@@ -147,7 +147,8 @@ class TSalesController extends Controller
                     'bank_cabang_id' => $salesPaymentMethod == SalesPaymentMethod::TUNAI ? 0 : ($data->receiver_bank_id ?? 0),
                     'type' => FinanceType::CASHIN,
                     'payment_method' => $salesPaymentMethod == SalesPaymentMethod::TUNAI ? FinancePaymentMethod::TUNAI : FinancePaymentMethod::TRANSFER,
-                    'nominal' => $data->grand_total
+                    'nominal' => $data->grand_total,
+                    'is_auto' => true
                 ));
             }
 

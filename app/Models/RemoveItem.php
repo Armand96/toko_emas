@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
     'branch_id',
     'created_by',
     'note',
+    'note_approval',
     'jenis',
     'status',
 ])]

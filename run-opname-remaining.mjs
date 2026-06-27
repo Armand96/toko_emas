@@ -1,10 +1,10 @@
-/**
+﻿/**
  * Stock Opname untuk cabang Kebayoran Lama & Cibitung
  * + Verifikasi data keseluruhan
  */
 
 const BASE = 'http://127.0.0.1:8000/api';
-const TOKEN = '1|t6PvZnwzOdKQipycHRIvwNc5A8wQGd9WY16zeUoK0b6daecc';
+const TOKEN = '9|t2NxR00GMAmiPU9XCNUXqzTZt1CMPqLWv4Rj5jkVec943a4f';
 
 const headers = {
     'Content-Type': 'application/json',
@@ -19,7 +19,7 @@ async function api(method, path, body) {
 }
 
 function log(icon, msg) { console.log(`${icon} ${msg}`); }
-function section(title) { console.log(`\n${'═'.repeat(60)}\n  ${title}\n${'═'.repeat(60)}`); }
+function section(title) { console.log(`\n${'â•'.repeat(60)}\n  ${title}\n${'â•'.repeat(60)}`); }
 
 const BRANCHES = [
     { id: 3, name: 'Kebayoran Lama', code: 'KLA' },
@@ -33,19 +33,19 @@ const ALL_BRANCHES = [
     { id: 4, name: 'Cibitung' },
 ];
 
-section('STOCK OPNAME — Cabang Kebayoran Lama & Cibitung');
+section('STOCK OPNAME â€” Cabang Kebayoran Lama & Cibitung');
 
 const opnameResults = [];
 
 for (const branch of BRANCHES) {
-    log('🔍', `\n── Opname Cabang: ${branch.name} ──`);
+    log('ðŸ”', `\nâ”€â”€ Opname Cabang: ${branch.name} â”€â”€`);
 
     const invRes = await api('GET', `/inventory?per_page=10000&status=AVAILABLE&branch_id=${branch.id}`);
     const branchInventory = invRes?.data || [];
-    log('  📦', `  Total item di sistem: ${branchInventory.length}`);
+    log('  ðŸ“¦', `  Total item di sistem: ${branchInventory.length}`);
 
     if (branchInventory.length === 0) {
-        log('  ⚠️', `  Tidak ada inventory, skip opname`);
+        log('  âš ï¸', `  Tidak ada inventory, skip opname`);
         continue;
     }
 
@@ -90,7 +90,7 @@ for (const branch of BRANCHES) {
             note: `Item ditemukan dari cabang ${otherBranch.name}, kemungkinan salah transfer atau titipan sementara.`,
         });
     }
-    if (extraCount > 0) log('  🔄', `  Extra item dari cabang ${otherBranch.name}: ${extraCount}`);
+    if (extraCount > 0) log('  ðŸ”„', `  Extra item dari cabang ${otherBranch.name}: ${extraCount}`);
 
     await api('POST', '/stock-opname', { branch_id: branch.id, item: items });
 
@@ -98,13 +98,13 @@ for (const branch of BRANCHES) {
     const missing = items.filter(i => i.opname_status === 'MISSING').length;
     const extra = items.filter(i => i.opname_status === 'EXTRA').length;
 
-    log('  ✅', `  Hasil: INSTOCK=${instock}, MISSING=${missing}, EXTRA=${extra} → SELISIH`);
+    log('  âœ…', `  Hasil: INSTOCK=${instock}, MISSING=${missing}, EXTRA=${extra} â†’ SELISIH`);
     opnameResults.push({ branch: branch.name, total: branchInventory.length, instock, missing, extra });
 }
 
-// ═══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // VERIFIKASI KESELURUHAN
-// ═══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 section('VERIFIKASI DATA KESELURUHAN');
 
 // Kategori
@@ -112,52 +112,52 @@ const catRes = await api('GET', '/categories?per_page=100');
 const allCats = catRes?.data || [];
 const parentCats = allCats.filter(c => !c.parent_id);
 const subCats = allCats.filter(c => c.parent_id);
-log('📁', `Kategori: ${parentCats.length} parent + ${subCats.length} sub = ${allCats.length} total`);
+log('ðŸ“', `Kategori: ${parentCats.length} parent + ${subCats.length} sub = ${allCats.length} total`);
 
 // Produk
 const prodRes = await api('GET', '/products?per_page=100');
-log('📦', `Produk: ${prodRes?.total || prodRes?.data?.length || 0} total`);
+log('ðŸ“¦', `Produk: ${prodRes?.total || prodRes?.data?.length || 0} total`);
 
 // Pembelian per status
 for (const status of ['APPROVAL', 'DISETUJUI', 'DITOLAK', 'DIBATALKAN']) {
     const res = await api('GET', `/pembelian?status=${status}&per_page=1`);
-    log('  📝', `  Pembelian ${status}: ${res?.total || 0}`);
+    log('  ðŸ“', `  Pembelian ${status}: ${res?.total || 0}`);
 }
 
 // Inventory per cabang
-log('📦', 'Inventory AVAILABLE per cabang:');
+log('ðŸ“¦', 'Inventory AVAILABLE per cabang:');
 let totalInv = 0;
 for (const branch of ALL_BRANCHES) {
     const res = await api('GET', `/inventory?status=AVAILABLE&branch_id=${branch.id}&per_page=1`);
     const count = res?.total || 0;
     totalInv += count;
-    log('  🏪', `  ${branch.name}: ${count} item`);
+    log('  ðŸª', `  ${branch.name}: ${count} item`);
 }
-log('  📊', `  TOTAL: ${totalInv} item`);
+log('  ðŸ“Š', `  TOTAL: ${totalInv} item`);
 
 // Stock Opname
 const opnameListRes = await api('GET', '/stock-opname?per_page=100');
 const opnameList = opnameListRes?.data || [];
-log('🔍', `Stock Opname sessions: ${opnameList.length}`);
+log('ðŸ”', `Stock Opname sessions: ${opnameList.length}`);
 for (const op of opnameList) {
-    log('  📋', `  ${op.kode_sesi} | ${op.branch?.branch_name || '?'} | Total: ${op.total_item} | INSTOCK: ${op.in_stock} | MISSING: ${op.missing} | EXTRA: ${op.extra} | Status: ${op.status}`);
+    log('  ðŸ“‹', `  ${op.kode_sesi} | ${op.branch?.branch_name || '?'} | Total: ${op.total_item} | INSTOCK: ${op.in_stock} | MISSING: ${op.missing} | EXTRA: ${op.extra} | Status: ${op.status}`);
 }
 
 section('RINGKASAN FINAL');
 console.log(`
-┌─────────────────────────────────────────────────────────┐
-│  SKENARIO TEST TOKO EMAS — COMPLETED                   │
-├─────────────────────────────────────────────────────────┤
-│  Kategori     : ${String(allCats.length).padEnd(5)} (${parentCats.length} parent + ${subCats.length} sub)             │
-│  Produk       : ${String(prodRes?.total || 0).padEnd(5)} (tersebar di 4 cabang)              │
-│  Pembelian    : 60    (15 per cabang, mix tunai/transfer)│
-│  Disetujui    : 43    → otomatis jadi inventory          │
-│  Ditolak      : 10                                       │
-│  Pending      : 7                                        │
-│  Inventory    : ${String(totalInv).padEnd(5)} item AVAILABLE                       │
-│  Stock Opname : ${String(opnameList.length).padEnd(5)} sesi (4 cabang)                    │
-│                                                         │
-│  Setiap opname: 80% INSTOCK + 20% MISSING + 2 EXTRA    │
-│  → Semua cabang status SELISIH (ada missing & extra)    │
-└─────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  SKENARIO TEST TOKO EMAS â€” COMPLETED                   â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  Kategori     : ${String(allCats.length).padEnd(5)} (${parentCats.length} parent + ${subCats.length} sub)             â”‚
+â”‚  Produk       : ${String(prodRes?.total || 0).padEnd(5)} (tersebar di 4 cabang)              â”‚
+â”‚  Pembelian    : 60    (15 per cabang, mix tunai/transfer)â”‚
+â”‚  Disetujui    : 43    â†’ otomatis jadi inventory          â”‚
+â”‚  Ditolak      : 10                                       â”‚
+â”‚  Pending      : 7                                        â”‚
+â”‚  Inventory    : ${String(totalInv).padEnd(5)} item AVAILABLE                       â”‚
+â”‚  Stock Opname : ${String(opnameList.length).padEnd(5)} sesi (4 cabang)                    â”‚
+â”‚                                                         â”‚
+â”‚  Setiap opname: 80% INSTOCK + 20% MISSING + 2 EXTRA    â”‚
+â”‚  â†’ Semua cabang status SELISIH (ada missing & extra)    â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 `);

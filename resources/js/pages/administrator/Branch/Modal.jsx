@@ -118,7 +118,7 @@ export default function Modal({
             !formData?.lokasi_cabang ||
             !formData?.address ||
             // !formData?.pic ||
-            !formData?.open_date
+            !formData?.branch_open_date
         ) {
             return true;
         }

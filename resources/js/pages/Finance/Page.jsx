@@ -178,10 +178,10 @@ const Finance = () => {
             render: (row) => (
                 <ActionButtonGroup>
                     <ActionButton variant="view" title="Lihat Detail" onClick={() => handleOpenView(row)} />
-                    {can('update', 'finance') && (
+                    {!row.is_auto && can('update', 'finance') && (
                         <ActionButton variant="edit" onClick={() => handleOpenEdit(row)} />
                     )}
-                    {can('delete', 'finance') && (
+                    {!row.is_auto && can('delete', 'finance') && (
                         <ActionButton variant="delete" onClick={() => handleDelete(row)} />
                     )}
                 </ActionButtonGroup>

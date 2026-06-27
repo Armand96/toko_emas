@@ -51,7 +51,11 @@ const MasterBank = () => {
     }, [searchBounce]);
 
     const handleOpenModal = (mode, record = null) => {
-        setFormData(mode === 'add' ? {} : { ...record });
+        setFormData(
+            mode === 'add'
+                ? { is_active: true }
+                : { ...record, is_active: Boolean(Number(record?.is_active)) }
+        );
         setIsView(mode === 'view');
         setShowModalAdd(true);
     };
@@ -94,7 +98,7 @@ const MasterBank = () => {
             const body = new FormData();
             if (submitData.bank_code) body.append('bank_code', submitData.bank_code);
             if (submitData.bank_name) body.append('bank_name', submitData.bank_name);
-             body.append('is_active', submitData.is_active === true ? 1 : 0);
+            body.append('is_active', (submitData.is_active === true || submitData.is_active === 1 || submitData.is_active === '1') ? 1 : 0);
             if (submitData.id) body.append('id', submitData.id);
 
             await submitData?.id ? BankApis.PutBankMaster(submitData.id, body) : BankApis.PostBankMaster(body);

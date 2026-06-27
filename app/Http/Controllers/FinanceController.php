@@ -110,6 +110,10 @@ class FinanceController extends Controller
      */
     public function update(FinanceRequest $request, Finance $finance)
     {
+        if ($finance->is_auto) {
+            return ApiResponse::error('Transaksi otomatis dari pembelian/penjualan tidak dapat diubah', null, 422);
+        }
+
         $validated = $request->validated();
 
         try {
@@ -148,6 +152,10 @@ class FinanceController extends Controller
      */
     public function destroy(Finance $finance)
     {
+        if ($finance->is_auto) {
+            return ApiResponse::error('Transaksi otomatis dari pembelian/penjualan tidak dapat dihapus', null, 422);
+        }
+
         try {
             $finance->delete();
 

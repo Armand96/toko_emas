@@ -29,12 +29,12 @@ export default function Modal({ isOpen, onClose, onSubmit, formData, onChange, f
 
     const disableButton = () => {
         if (isView) return true;
-        if (!formData?.category_name) return true;
+        if (!formData?.bank_code || !formData?.bank_name) return true;
         return formError && Object.values(formError).some(error => error);
     };
 
     return (
-        <ModalCustom title={isView ? "Detail Kategori" : formData?.id ? "Edit Kategori" : "Tambah Kategori"} confirmTextButton={isView ? "Tutup" : formData?.id ? "Simpan Perubahan" : "Tambah"} cancelTextButton={isView ? "Tutup" : "Batal"} handleOnSubmit={() => onSubmit(formData)} isOpen={isOpen} onClose={onClose} footer={!isView} disabledConfirmBtn={disableButton()}>
+        <ModalCustom title={isView ? "Detail Bank" : formData?.id ? "Edit Bank" : "Tambah Bank"} confirmTextButton={isView ? "Tutup" : formData?.id ? "Simpan Perubahan" : "Tambah"} cancelTextButton={isView ? "Tutup" : "Batal"} handleOnSubmit={() => onSubmit(formData)} isOpen={isOpen} onClose={onClose} footer={!isView} disabledConfirmBtn={disableButton()}>
             <div className="flex flex-col gap-4 py-2">
                 <InputGroup cols="1" fields={fieldsModal} formData={formData} onChange={onChange} formError={formError} />
             </div>

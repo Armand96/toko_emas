@@ -143,7 +143,8 @@ class PembelianController extends Controller
                         'bank_cabang_id' => $value->bank_cabang_id == null ? 0 : $value->bank_cabang_id,
                         'type' => FinanceType::CASHOUT,
                         'payment_method' => $value->tipe_pembayaran,
-                        'nominal' => $value->modal
+                        'nominal' => $value->modal,
+                        'is_auto' => true
                     ));
 
                     Inventory::create(array(

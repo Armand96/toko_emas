@@ -56,7 +56,7 @@ const MasterCustomer = () => {
     }, [searchBounce]);
 
     const handleOpenModal = (mode, record = null) => {
-        setFormData(mode === 'add' ? { is_active: false } : { ...record });
+        setFormData(mode === 'add' ? { is_active: true } : { ...record, is_active: Boolean(Number(record?.is_active)) });
         setIsView(mode === 'view');
         setShowModalAdd(true);
     };

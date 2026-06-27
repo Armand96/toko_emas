@@ -1,15 +1,15 @@
-/**
- * SKENARIO TEST LENGKAP — Toko Emas
+﻿/**
+ * SKENARIO TEST LENGKAP â€” Toko Emas
  *
  * 1. Buat 20 kategori (2 parent + 18 sub, 9 per parent)
  * 2. Buat 10 produk tersebar di 4 cabang
  * 3. Buat 60 pembelian (15 per cabang, mix tunai/transfer)
- * 4. Approve 50% pembelian → inventory terbentuk
+ * 4. Approve 50% pembelian â†’ inventory terbentuk
  * 5. Jalankan stock opname per cabang (scan item + extra cross-branch)
  */
 
 const BASE = 'http://127.0.0.1:8000/api';
-const TOKEN = '1|t6PvZnwzOdKQipycHRIvwNc5A8wQGd9WY16zeUoK0b6daecc';
+const TOKEN = '9|t2NxR00GMAmiPU9XCNUXqzTZt1CMPqLWv4Rj5jkVec943a4f';
 
 const headers = {
     'Content-Type': 'application/json',
@@ -22,13 +22,13 @@ async function api(method, path, body) {
     const res = await fetch(`${BASE}${path}`, opts);
     const data = await res.json();
     if (!res.ok && res.status !== 422) {
-        console.error(`❌ ${method} ${path} → ${res.status}`, data?.message || '');
+        console.error(`âŒ ${method} ${path} â†’ ${res.status}`, data?.message || '');
     }
     return data;
 }
 
 function log(icon, msg) { console.log(`${icon} ${msg}`); }
-function section(title) { console.log(`\n${'═'.repeat(60)}\n  ${title}\n${'═'.repeat(60)}`); }
+function section(title) { console.log(`\n${'â•'.repeat(60)}\n  ${title}\n${'â•'.repeat(60)}`); }
 
 // Existing data
 const BRANCHES = [
@@ -38,9 +38,9 @@ const BRANCHES = [
     { id: 4, name: 'Cibitung', code: 'CBT', bank_cabang_id: 5 },
 ];
 
-// ═══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // STEP 1: KATEGORI (2 parent + 18 sub = 20 total)
-// ═══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 section('STEP 1: Buat 20 Kategori (2 Parent + 18 Sub Kategori)');
 
 const parentCategories = [
@@ -68,7 +68,7 @@ for (let i = 0; i < parentCategories.length; i++) {
     const res = await api('POST', '/categories', p);
     const parentId = res?.data?.id || res?.id;
     createdParents.push({ ...p, id: parentId });
-    log('📁', `Parent: ${p.category_name} (ID: ${parentId})`);
+    log('ðŸ“', `Parent: ${p.category_name} (ID: ${parentId})`);
 
     for (let j = 0; j < 9; j++) {
         const sub = {
@@ -80,15 +80,15 @@ for (let i = 0; i < parentCategories.length; i++) {
         const subRes = await api('POST', '/categories', sub);
         const subId = subRes?.data?.id || subRes?.id;
         createdSubs.push({ ...sub, id: subId, parentIndex: i });
-        log('  📄', `  Sub: ${sub.category_name} (ID: ${subId})`);
+        log('  ðŸ“„', `  Sub: ${sub.category_name} (ID: ${subId})`);
     }
 }
 
-log('✅', `Total kategori dibuat: ${createdParents.length} parent + ${createdSubs.length} sub = ${createdParents.length + createdSubs.length}`);
+log('âœ…', `Total kategori dibuat: ${createdParents.length} parent + ${createdSubs.length} sub = ${createdParents.length + createdSubs.length}`);
 
-// ═══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // STEP 2: PRODUK (10 produk, tersebar di 4 cabang)
-// ═══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 section('STEP 2: Buat 10 Produk Tersebar di 4 Cabang');
 
 const productDefs = [
@@ -104,18 +104,18 @@ const productDefs = [
     { name: 'Gelang Kaki Emas 3gr',       subIdx: 6, karatDefault: 18, beratDefault: 3.0 },
 ];
 
-// Distribusi cabang: produk 0-2 → 4 cabang, produk 3-5 → 3 cabang, produk 6-9 → 2 cabang
+// Distribusi cabang: produk 0-2 â†’ 4 cabang, produk 3-5 â†’ 3 cabang, produk 6-9 â†’ 2 cabang
 const branchDistribution = [
-    [1, 2, 3, 4],  // Cincin Nikah → semua cabang
-    [1, 2, 3, 4],  // Kalung Rantai → semua cabang
-    [1, 2, 3, 4],  // Gelang Tangan → semua cabang
-    [1, 2, 3],     // Anting → 3 cabang
-    [1, 2, 4],     // Liontin → 3 cabang
-    [1, 3, 4],     // Batangan 1gr → 3 cabang
-    [1, 2],        // Batangan 5gr → 2 cabang
-    [2, 4],        // Batangan 10gr → 2 cabang
-    [1, 3],        // Koin Emas → 2 cabang
-    [2, 3, 4],     // Gelang Kaki → 3 cabang
+    [1, 2, 3, 4],  // Cincin Nikah â†’ semua cabang
+    [1, 2, 3, 4],  // Kalung Rantai â†’ semua cabang
+    [1, 2, 3, 4],  // Gelang Tangan â†’ semua cabang
+    [1, 2, 3],     // Anting â†’ 3 cabang
+    [1, 2, 4],     // Liontin â†’ 3 cabang
+    [1, 3, 4],     // Batangan 1gr â†’ 3 cabang
+    [1, 2],        // Batangan 5gr â†’ 2 cabang
+    [2, 4],        // Batangan 10gr â†’ 2 cabang
+    [1, 3],        // Koin Emas â†’ 2 cabang
+    [2, 3, 4],     // Gelang Kaki â†’ 3 cabang
 ];
 
 const createdProducts = [];
@@ -140,14 +140,14 @@ for (let i = 0; i < productDefs.length; i++) {
     const barcode = res?.data?.barcode;
     createdProducts.push({ id: prodId, barcode, ...p, categoryId: parentCat.id, subcategoryId: sub.id, branches: branchDistribution[i] });
     const branchNames = branchDistribution[i].map(bid => BRANCHES.find(b => b.id === bid)?.name).join(', ');
-    log('📦', `${p.name} (ID: ${prodId}, barcode: ${barcode}) → [${branchNames}]`);
+    log('ðŸ“¦', `${p.name} (ID: ${prodId}, barcode: ${barcode}) â†’ [${branchNames}]`);
 }
 
-log('✅', `Total produk dibuat: ${createdProducts.length}`);
+log('âœ…', `Total produk dibuat: ${createdProducts.length}`);
 
-// ═══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // STEP 3: PEMBELIAN (60 total, 15 per cabang)
-// ═══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 section('STEP 3: Buat 60 Pembelian (15 per Cabang)');
 
 const allPembelian = [];
@@ -157,10 +157,10 @@ for (const branch of BRANCHES) {
     const branchProducts = createdProducts.filter(p => p.branches.includes(branch.id));
     if (branchProducts.length === 0) continue;
 
-    log('🏪', `\nCabang: ${branch.name} (${branchProducts.length} produk tersedia)`);
+    log('ðŸª', `\nCabang: ${branch.name} (${branchProducts.length} produk tersedia)`);
 
     // Buat 15 pembelian per cabang, dalam batch-batch kecil (3-5 item per batch)
-    const batchSizes = [5, 5, 5]; // 3 batch × 5 = 15
+    const batchSizes = [5, 5, 5]; // 3 batch Ã— 5 = 15
     let itemIdx = 0;
 
     for (let batchNum = 0; batchNum < batchSizes.length; batchNum++) {
@@ -199,23 +199,23 @@ for (const branch of BRANCHES) {
 
         const tunaiCount = items.filter(i => i.tipe_pembayaran === 'TUNAI').length;
         const transferCount = items.filter(i => i.tipe_pembayaran === 'TRANSFER').length;
-        log('  📝', `  Batch ${batchNum + 1}: ${batchSize} item (${tunaiCount} tunai, ${transferCount} transfer) → Batch ID: ${created[0]?.batch || '?'}`);
+        log('  ðŸ“', `  Batch ${batchNum + 1}: ${batchSize} item (${tunaiCount} tunai, ${transferCount} transfer) â†’ Batch ID: ${created[0]?.batch || '?'}`);
     }
 }
 
-log('✅', `Total pembelian dibuat: ${allPembelian.length}`);
+log('âœ…', `Total pembelian dibuat: ${allPembelian.length}`);
 
 // Summary per cabang
 for (const branch of BRANCHES) {
     const branchItems = allPembelian.filter(p => p.branch_id === branch.id);
     const tunai = branchItems.filter(p => p.tipe_pembayaran === 'TUNAI').length;
     const transfer = branchItems.filter(p => p.tipe_pembayaran === 'TRANSFER').length;
-    log('  📊', `  ${branch.name}: ${branchItems.length} item (${tunai} tunai, ${transfer} transfer)`);
+    log('  ðŸ“Š', `  ${branch.name}: ${branchItems.length} item (${tunai} tunai, ${transfer} transfer)`);
 }
 
-// ═══════════════════════════════════════════════
-// STEP 4: APPROVE 50% PEMBELIAN → INVENTORY
-// ═══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// STEP 4: APPROVE 50% PEMBELIAN â†’ INVENTORY
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 section('STEP 4: Approve 50% Pembelian (30 dari 60)');
 
 const approveCount = Math.ceil(allPembelian.length * 0.5);
@@ -235,7 +235,7 @@ for (const [branchId, ids] of Object.entries(approveByBranch)) {
         status: 'DISETUJUI',
         pembelian_ids: ids,
     });
-    log('✅', `${branch.name}: ${ids.length} pembelian disetujui`);
+    log('âœ…', `${branch.name}: ${ids.length} pembelian disetujui`);
 }
 
 // Tolak beberapa item (10% dari sisa)
@@ -248,36 +248,36 @@ if (toReject.length > 0) {
         pembelian_ids: rejectIds,
         note: 'Karat tidak sesuai dengan dokumen pembelian. Mohon periksa kembali.',
     });
-    log('❌', `${rejectIds.length} pembelian ditolak`);
+    log('âŒ', `${rejectIds.length} pembelian ditolak`);
 }
 
 // Verify inventory
 const inventoryRes = await api('GET', '/inventory?per_page=100&status=AVAILABLE');
 const totalInventory = inventoryRes?.total || inventoryRes?.data?.length || 0;
-log('📦', `Total inventory AVAILABLE: ${totalInventory}`);
+log('ðŸ“¦', `Total inventory AVAILABLE: ${totalInventory}`);
 
 for (const branch of BRANCHES) {
     const branchInv = await api('GET', `/inventory?per_page=100&status=AVAILABLE&branch_id=${branch.id}`);
-    log('  📊', `  ${branch.name}: ${branchInv?.total || branchInv?.data?.length || 0} item inventory`);
+    log('  ðŸ“Š', `  ${branch.name}: ${branchInv?.total || branchInv?.data?.length || 0} item inventory`);
 }
 
-// ═══════════════════════════════════════════════
-// STEP 5: STOCK OPNAME — AUDIT PER CABANG
-// ═══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// STEP 5: STOCK OPNAME â€” AUDIT PER CABANG
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 section('STEP 5: Stock Opname (Audit) Per Cabang');
 
 const opnameResults = [];
 
 for (const branch of BRANCHES) {
-    log('🔍', `\n── Opname Cabang: ${branch.name} ──`);
+    log('ðŸ”', `\nâ”€â”€ Opname Cabang: ${branch.name} â”€â”€`);
 
     // Ambil semua inventory AVAILABLE di cabang ini
     const invRes = await api('GET', `/inventory?per_page=10000&status=AVAILABLE&branch_id=${branch.id}`);
     const branchInventory = invRes?.data || [];
-    log('  📦', `  Total item di sistem: ${branchInventory.length}`);
+    log('  ðŸ“¦', `  Total item di sistem: ${branchInventory.length}`);
 
     if (branchInventory.length === 0) {
-        log('  ⚠️', `  Tidak ada inventory, skip opname`);
+        log('  âš ï¸', `  Tidak ada inventory, skip opname`);
         continue;
     }
 
@@ -297,7 +297,7 @@ for (const branch of BRANCHES) {
         });
     });
 
-    // Item yang tidak di-scan → MISSING
+    // Item yang tidak di-scan â†’ MISSING
     missedItems.forEach(inv => {
         items.push({
             inventory_code: inv.inventory_code,
@@ -323,7 +323,7 @@ for (const branch of BRANCHES) {
                 note: `Item ditemukan dari cabang ${otherBranch.name}, kemungkinan salah kirim atau titipan.`,
             });
         }
-        if (extraCount > 0) log('  🔄', `  Extra item dari cabang ${otherBranch.name}: ${extraCount}`);
+        if (extraCount > 0) log('  ðŸ”„', `  Extra item dari cabang ${otherBranch.name}: ${extraCount}`);
     }
 
     // Submit opname
@@ -337,25 +337,25 @@ for (const branch of BRANCHES) {
     const extra = items.filter(i => i.opname_status === 'EXTRA').length;
     const status = missing === 0 && extra === 0 ? 'SESUAI' : 'SELISIH';
 
-    log('  ✅', `  Hasil: INSTOCK=${instock}, MISSING=${missing}, EXTRA=${extra} → ${status}`);
+    log('  âœ…', `  Hasil: INSTOCK=${instock}, MISSING=${missing}, EXTRA=${extra} â†’ ${status}`);
     opnameResults.push({ branch: branch.name, total: branchInventory.length, instock, missing, extra, status });
 }
 
-// ═══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // FINAL SUMMARY
-// ═══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 section('RINGKASAN AKHIR');
 
-log('📁', `Kategori: ${createdParents.length} parent + ${createdSubs.length} sub = ${createdParents.length + createdSubs.length}`);
-log('📦', `Produk: ${createdProducts.length}`);
-log('📝', `Pembelian: ${allPembelian.length} total`);
-log('  ✅', `  Disetujui: ${toApprove.length}`);
-log('  ❌', `  Ditolak: ${toReject.length}`);
-log('  ⏳', `  Pending: ${notApproved.length - toReject.length}`);
-log('📦', `Inventory terbentuk: ${totalInventory}`);
-log('🔍', `Stock Opname:`);
+log('ðŸ“', `Kategori: ${createdParents.length} parent + ${createdSubs.length} sub = ${createdParents.length + createdSubs.length}`);
+log('ðŸ“¦', `Produk: ${createdProducts.length}`);
+log('ðŸ“', `Pembelian: ${allPembelian.length} total`);
+log('  âœ…', `  Disetujui: ${toApprove.length}`);
+log('  âŒ', `  Ditolak: ${toReject.length}`);
+log('  â³', `  Pending: ${notApproved.length - toReject.length}`);
+log('ðŸ“¦', `Inventory terbentuk: ${totalInventory}`);
+log('ðŸ”', `Stock Opname:`);
 opnameResults.forEach(r => {
-    log('  📊', `  ${r.branch}: ${r.total} item → INSTOCK=${r.instock}, MISSING=${r.missing}, EXTRA=${r.extra} [${r.status}]`);
+    log('  ðŸ“Š', `  ${r.branch}: ${r.total} item â†’ INSTOCK=${r.instock}, MISSING=${r.missing}, EXTRA=${r.extra} [${r.status}]`);
 });
 
-console.log('\n🎉 Semua skenario test berhasil dijalankan!');
+console.log('\nðŸŽ‰ Semua skenario test berhasil dijalankan!');

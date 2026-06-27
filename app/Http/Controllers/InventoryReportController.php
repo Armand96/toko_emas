@@ -225,6 +225,24 @@ class InventoryReportController extends Controller
             $query->where('karat', $request->karat);
         }
 
+        if ($request->aging) {
+            $aging = 'DATEDIFF(NOW(), created_at)';
+            switch ($request->aging) {
+                case '0-30':
+                    $query->whereRaw("$aging <= 30");
+                    break;
+                case '31-90':
+                    $query->whereRaw("$aging BETWEEN 31 AND 90");
+                    break;
+                case '91-180':
+                    $query->whereRaw("$aging BETWEEN 91 AND 180");
+                    break;
+                case '>180':
+                    $query->whereRaw("$aging > 180");
+                    break;
+            }
+        }
+
         if ($request->search) {
             $query->where(function ($q) use ($request) {
 

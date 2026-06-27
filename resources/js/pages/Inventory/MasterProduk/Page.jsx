@@ -341,8 +341,8 @@ const MasterProduk = () => {
                 onPageChange={handlePaginate}
                 onPageSizeChange={handleRow}
                 total={paramFetch.total}
-                currentPage={paramFetch.page}
-                pageSize={paramFetch.pageSize}
+                page={paramFetch.current_page}
+                pageSize={paramFetch.per_page}
             />
             <Modal
                 isOpen={isModalOpen}

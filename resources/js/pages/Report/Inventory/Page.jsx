@@ -63,7 +63,7 @@ const ReportInventory = () => {
         cabang: "",
         kategori: "",
         search: "",
-        statusDetail: "",
+        statusDetail: "AVAILABLE",
         agingDetail: "",
     });
 
@@ -157,6 +157,7 @@ const ReportInventory = () => {
             const extra = { page, per_page: perPage };
             if (filter.search) extra.search = filter.search;
             if (filter.statusDetail) extra.status = filter.statusDetail;
+            if (filter.agingDetail) extra.aging = filter.agingDetail;
             const params = buildParams(extra);
             const res = await ReportApis.GetInventoryDetail(`?${params.toString()}`);
             setDetail({

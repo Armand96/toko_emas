@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
     'created_by',
     'status',
     'note',
+    'note_approval',
 ])]
 class TransferItem extends Model
 {

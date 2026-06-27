@@ -36,7 +36,7 @@ const MainPembelian = ({ setCurentState }) => {
         total: 0,
         per_page: 10,
     });
-    const [search, setSearch] = useState({ search: "", status: "APPROVAL", category_id: "" });
+    const [search, setSearch] = useState({ search: "", status: "", category_id: "" });
     const [searchBounce] = useDebounce(search, 500);
     const [firstLoading, setFirstLoading] = useState(false);
 
@@ -264,7 +264,7 @@ const MainPembelian = ({ setCurentState }) => {
             render: (row) => (
                 <ActionButtonGroup>
                     {["APPROVAL"].includes(row?.status) && can('delete', 'inventory.pembelian') && (
-                        <ActionButton variant="cancel" title="Tolak" onClick={() => handleCancel(row)} />
+                        <ActionButton variant="cancel" title="Batalkan" onClick={() => handleCancel(row)} />
                     )}
                     <ActionButton
                         variant="view"

@@ -14,9 +14,14 @@ use Illuminate\Database\Eloquent\Model;
     'nominal',
     'note',
     'attachment',
+    'is_auto',
 ])]
 class Finance extends Model
 {
+    protected $casts = [
+        'is_auto' => 'boolean',
+    ];
+
     public function branch()
     {
         return $this->belongsTo(MBranch::class, 'branch_id', 'id');

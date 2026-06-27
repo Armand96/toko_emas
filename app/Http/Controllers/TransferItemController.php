@@ -118,7 +118,7 @@ class TransferItemController extends Controller
             $data = TransferItem::where('id', $validated['transfer_item_id'])->where('status', TransferItemStatus::APPROVAL)->first();
             $data->update([
                 'status' => $status,
-                'note' => isset($validated['note']) ? $validated['note'] : null
+                'note_approval' => isset($validated['note']) ? $validated['note'] : null
             ]);
 
             $dateNow = date('Y-m-d H:i:s');

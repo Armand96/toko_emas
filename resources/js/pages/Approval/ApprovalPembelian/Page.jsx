@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
+import dayjs from 'dayjs';
 import { CheckSquareOffsetIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
@@ -68,7 +69,8 @@ const ApprovalPembelian = () => {
                 ensureBranches(),
                 ensureUsers(),
             ]);
-            setCategoryOptions(HelperFunctions.formatDropdown(categoryData, 'id', 'category_name'));
+            const parentOnly = (Array.isArray(categoryData) ? categoryData : []).filter((c) => !c.parent_id);
+            setCategoryOptions(HelperFunctions.formatDropdown(parentOnly, 'id', 'category_name'));
             setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name'));
             setUserMap(Object.fromEntries((userData || []).map((u) => [u.id, u.name])));
         } catch (error) {
@@ -254,11 +256,11 @@ const ApprovalPembelian = () => {
             accessor: 'subkategori',
             render: (row) => row.subcategory?.category_name || '-',
         },
-        {
-            header: 'Deskripsi',
-            accessor: 'deskripsi',
-            render: (row) => row.product?.description ?? '-'
-        },
+        { header: 'Tanggal', accessor: 'tanggal', render: (row) => row.tanggal ? dayjs(row.tanggal).format('DD/MM/YYYY') : '-' },
+        { header: 'Berat', accessor: 'berat', render: (row) => row.berat ? `${row.berat} g` : '-' },
+        { header: 'Karat', accessor: 'karat', render: (row) => row.karat ? `${row.karat}K` : '-' },
+        { header: 'Modal', accessor: 'modal', render: (row) => HelperFunctions.formatCurrency(row.modal || 0) },
+        { header: 'Jual', accessor: 'jual', render: (row) => HelperFunctions.formatCurrency(row.jual || 0) },
         {
             header: 'Cabang',
             accessor: 'cabang',

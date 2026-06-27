@@ -131,7 +131,7 @@ export default function ModalDetailTransfer({
                     Icon={view.Icon}
                     iconColor={view.iconColor}
                     statusText={view.statusText}
-                    pic="Owner"
+                    pic={data?.status === 'DIBATALKAN' ? (data?.user?.name || '-') : 'Owner'}
                     date={tanggalApproval}
                     reasonLabel={view.reasonLabel}
                     reason={data?.note_approval || null}
