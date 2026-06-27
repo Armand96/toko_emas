@@ -1,4 +1,4 @@
-import ApprovalPembelian from "../pages/Approval/ApprovalPembelian/page";
+import ApprovalPembelian from "../pages/Approval/ApprovalPembelian/Page";
 import ApprovalPenjualan from "../pages/Approval/ApprovalPenjualan/Page";
 import ApprovalTransfer from "../pages/Approval/ApprovalTransfer/Page";
 import ApprovalRemoveItem from "../pages/Approval/ApprovalRemoveItem/Page";
