@@ -9,6 +9,12 @@ import HelperFunctions from "../../../utils/HelperFunctions";
 import { showAlert } from "../../../utils/showAlert";
 import AuthStore from "../../../Store/AuthStore";
 
+const localNow = () => {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+};
+
 const FormAdd = ({ setCurentState }) => {
     const user = AuthStore((s) => s.user);
 
@@ -28,7 +34,7 @@ const FormAdd = ({ setCurentState }) => {
     }, [branchInventory]);
 
     const [scanned, setScanned] = useState({});
-    const [sessionStart] = useState(() => new Date().toISOString().slice(0, 19).replace('T', ' '));
+    const [sessionStart] = useState(() => localNow());
 
     useEffect(() => {
         if (!user?.branch_id) return;
@@ -157,17 +163,23 @@ const FormAdd = ({ setCurentState }) => {
         // Bangun payload sesuai kontrak BE: item[] { inventory_code, product_id, last_status, opname_status }
         const item = [];
 
-        // AVAILABLE -> INSTOCK
+        const fmtDt = (iso) => {
+            if (!iso) return null;
+            const d = new Date(iso);
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+        };
+
         availableList.forEach((s) => {
             item.push({
                 inventory_code: s.code,
                 product_id: s.inv?.product_id,
                 last_status: s.inv?.status || 'AVAILABLE',
                 opname_status: 'INSTOCK',
+                scanned_at: fmtDt(s.waktu),
             });
         });
 
-        // LOST -> MISSING (barang cabang yang tidak pernah ke-scan)
         lostPreview.forEach((inv) => {
             item.push({
                 inventory_code: inv.inventory_code,
@@ -177,7 +189,6 @@ const FormAdd = ({ setCurentState }) => {
             });
         });
 
-        // EXTRA -> EXTRA (barang discan tapi bukan milik cabang ini)
         extraList.forEach((s) => {
             item.push({
                 inventory_code: s.code,
@@ -185,12 +196,13 @@ const FormAdd = ({ setCurentState }) => {
                 last_status: s.inv?.status || 'AVAILABLE',
                 opname_status: 'EXTRA',
                 note: s.note || null,
+                scanned_at: fmtDt(s.waktu),
             });
         });
 
         setIsSubmitting(true);
         try {
-            const endDateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            const endDateTime = localNow();
             await InventoryApis.PostStockOpname({
                 branch_id: user.branch_id,
                 start_date_time: sessionStart,

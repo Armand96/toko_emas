@@ -37,6 +37,7 @@ class StockOpnameRequest extends FormRequest
             'item.*.last_status'    => ['required', 'string'],
             'item.*.opname_status'  => ['required', 'string'],
             'item.*.note'           => ['nullable', 'string'],
+            'item.*.scanned_at'     => ['nullable', 'date_format:Y-m-d H:i:s'],
         ];
     }
 

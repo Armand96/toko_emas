@@ -102,8 +102,8 @@ const Detail = ({ id, setCurentState }) => {
             last_status: d.last_status,
             opname_status: d.opname_status,
             note: d.note,
-            waktu: d.created_at
-                ? new Date(d.created_at).toLocaleString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+            waktu: (d.scanned_at || d.created_at)
+                ? new Date(d.scanned_at || d.created_at).toLocaleString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                 : '-',
         };
     };

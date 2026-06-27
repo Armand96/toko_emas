@@ -11,7 +11,6 @@ const STATUS_VIEW = {
     'DISETUJUI': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh' },
     'DITOLAK': { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Ditolak oleh' },
     'DIBATALKAN': { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Dibatalkan oleh' },
-    'RETURN': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Dikembalikan oleh' },
 };
 
 const JENIS_LABEL = { HILANG: 'Hilang', REPAIR: 'Repair' };
@@ -27,7 +26,8 @@ export default function ModalDetailRemoveItem({
 
     const { details, user, status, jenis } = data;
     const isPending = status === 'APPROVAL';
-    const statusView = STATUS_VIEW[status] || STATUS_VIEW['APPROVAL'];
+    const displayStatus = status === 'RETURN' ? 'DISETUJUI' : status;
+    const statusView = STATUS_VIEW[displayStatus] || STATUS_VIEW['APPROVAL'];
 
     return (
         <ModalCustom
@@ -116,7 +116,7 @@ export default function ModalDetailRemoveItem({
                     Icon={statusView.Icon}
                     iconColor={statusView.iconColor}
                     statusText={statusView.statusText}
-                    pic={status === 'RETURN' ? (user?.name || '-') : 'Owner'}
+                    pic="Owner"
                     date={data?.updated_at ? dayjs(data.updated_at).format('DD MMMM YYYY, HH:mm') : '-'}
                     reasonLabel="Alasan Penolakan"
                     reason={status === 'DITOLAK' ? data?.note : null}

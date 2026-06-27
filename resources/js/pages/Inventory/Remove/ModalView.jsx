@@ -10,8 +10,6 @@ const getApprovalCardProps = (data) => {
     switch (data?.status) {
         case 'Disetujui':
             return { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh', pic: 'Owner', date, reason: null };
-        case 'Return':
-            return { Icon: ArrowCounterClockwiseIcon, iconColor: 'text-info-500', statusText: 'Dikembalikan ke inventory oleh', pic: data?.diajukan_oleh || '-', date, reason: data?.alasan, reasonLabel: 'Catatan Return' };
         case 'Dibatalkan':
             return { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Dibatalkan oleh', pic: 'Owner', date, reason: data?.alasan, reasonLabel: 'Alasan Pembatalan' };
         case 'Ditolak':

@@ -96,6 +96,22 @@ const ReportApis = {
     GetInventoryDetail: (params = "") => {
         return Apis.Get(`api/report/inventory-detail${params}`).then(({ data }) => data?.data ?? data);
     },
+    /* ── EXPORT (DOWNLOAD XLSX) ─────────────────────────────── */
+
+    ExportSales: (params = {}) =>
+        Apis.Download("api/report/export-sales", "sales-report.xlsx", params),
+
+    ExportPembelian: (params = {}) =>
+        Apis.Download("api/report/export-pembelian", "pembelian-report.xlsx", params),
+
+    ExportFinance: (params = {}) =>
+        Apis.Download("api/report/export-finance", "finance-report.xlsx", params),
+
+    ExportInventory: (params = {}) =>
+        Apis.Download("api/report/export-inventory", "inventory-report.xlsx", params),
+
+    ExportCustomer: (params = {}) =>
+        Apis.Download("api/report/export-customer", "customer-report.xlsx", params),
 };
 
 export default ReportApis;

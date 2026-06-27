@@ -72,6 +72,7 @@ const ReportCustomer = () => {
         per_page: 10,
     });
     const [firstLoaded, setFirstLoaded] = useState(false);
+    const [exporting, setExporting] = useState(false);
 
     /* ── Fetch KPI + Top Customer + chart (count tidak terpengaruh tanggal) ── */
     const fetchSummary = async () => {
@@ -171,6 +172,24 @@ const ReportCustomer = () => {
         filter.sort === "transaksi"
             ? "Diurutkan berdasarkan jumlah transaksi — menunjukkan customer paling sering berbelanja."
             : "Diurutkan berdasarkan total nilai pembelian (Rp) — menunjukkan kontributor revenue terbesar.";
+
+    const handleExport = async () => {
+        if (exporting) return;
+        setExporting(true);
+        try {
+            const params = {};
+            const { mode, start, end } = filter.dateRange || {};
+            if (mode !== "all" && start && end) {
+                params.start_date = `${start} 00:00:00`;
+                params.end_date = `${end} 23:59:59`;
+            }
+            await ReportApis.ExportCustomer(params);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setExporting(false);
+        }
+    };
 
     const onChangePage = (page) => fetchDetail(page, detail.per_page, searchBounce);
     const onChangePageSize = (size) => fetchDetail(1, size, searchBounce);
@@ -292,9 +311,11 @@ const ReportCustomer = () => {
                         </div>
                         <button
                             type="button"
-                            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-primary-200 px-3.5 py-2.5 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50"
+                            disabled={exporting}
+                            onClick={handleExport}
+                            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-primary-200 px-3.5 py-2.5 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50 disabled:opacity-50"
                         >
-                            <ExportIcon size={18} /> Export Data
+                            <ExportIcon size={18} /> {exporting ? "Downloading..." : "Export Data"}
                         </button>
                     </div>
                 </div>

@@ -11,7 +11,7 @@
  */
 
 const BASE = 'http://127.0.0.1:8000/api';
-const TOKEN = '1|t6PvZnwzOdKQipycHRIvwNc5A8wQGd9WY16zeUoK0b6daecc';
+const TOKEN = '6|ozWZllzQBO9AYGFFKZ9xxN0Ag2QRybGtneLN5Wra6475dc9d';
 
 const hdrs = { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` };
 

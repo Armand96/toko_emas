@@ -42,6 +42,7 @@ const ReportPenjualan = () => {
     const [subcategory, setSubcategory] = useState([]);
     const [karat, setKarat] = useState([]);
     const [detail, setDetail] = useState({ data: [], current_page: 1, total: 0, per_page: 10 });
+    const [exporting, setExporting] = useState(false);
 
     const buildParams = (extra = {}) => {
         const q = new URLSearchParams();
@@ -228,6 +229,25 @@ const ReportPenjualan = () => {
         },
     ];
 
+    const handleExport = async () => {
+        if (exporting) return;
+        setExporting(true);
+        try {
+            const params = {};
+            const { mode, start, end } = filter.dateRange || {};
+            if (mode !== "all" && start && end) {
+                params.start_date = `${start} 00:00:00`;
+                params.end_date = `${end} 23:59:59`;
+            }
+            if (filter.cabang) params.branch_id = filter.cabang;
+            await ReportApis.ExportSales(params);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setExporting(false);
+        }
+    };
+
     const onChangePage = (page) => fetchDetail(page, detail.per_page);
     const onChangePageSize = (size) => fetchDetail(1, size);
 
@@ -344,9 +364,11 @@ const ReportPenjualan = () => {
                     </div>
                     <button
                         type="button"
-                        className="flex shrink-0 items-center gap-1.5 rounded-lg border border-primary-200 px-3.5 py-2.5 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50"
+                        disabled={exporting}
+                        onClick={handleExport}
+                        className="flex shrink-0 items-center gap-1.5 rounded-lg border border-primary-200 px-3.5 py-2.5 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50 disabled:opacity-50"
                     >
-                        <ExportIcon size={18} /> Export Data
+                        <ExportIcon size={18} /> {exporting ? "Downloading..." : "Export Data"}
                     </button>
                 </div>
 

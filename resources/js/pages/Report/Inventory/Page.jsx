@@ -87,6 +87,7 @@ const ReportInventory = () => {
     const [inventoryAging, setInventoryAging] = useState([]);
 
     const [detail, setDetail] = useState({ data: [], current_page: 1, total: 0, per_page: 10 });
+    const [exporting, setExporting] = useState(false);
 
     const buildParams = (extra = {}) => {
         const q = new URLSearchParams();
@@ -182,9 +183,10 @@ const ReportInventory = () => {
                     { value: "", label: "Semua Cabang" },
                     ...HelperFunctions.formatDropdown(branchList, "id", "branch_name"),
                 ]);
+                const parentOnly = (Array.isArray(categoryList) ? categoryList : []).filter((c) => !c.parent_id);
                 setCategoryOptions([
                     { value: "", label: "Semua Kategori" },
-                    ...HelperFunctions.formatDropdown(categoryList, "id", "category_name"),
+                    ...HelperFunctions.formatDropdown(parentOnly, "id", "category_name"),
                 ]);
             } catch (error) {
                 console.error(error);
@@ -210,6 +212,21 @@ const ReportInventory = () => {
         setFilter((prev) => ({ ...prev, [name]: value }));
     };
 
+    const handleExport = async () => {
+        if (exporting) return;
+        setExporting(true);
+        try {
+            const params = {};
+            if (filter.cabang) params.branch_id = filter.cabang;
+            if (filter.kategori) params.category_id = filter.kategori;
+            await ReportApis.ExportInventory(params);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setExporting(false);
+        }
+    };
+
     const onChangePage = (page) => fetchDetail(page, detail.per_page);
     const onChangePageSize = (size) => fetchDetail(1, size);
 
@@ -220,14 +237,30 @@ const ReportInventory = () => {
         },
         {
             header: "Produk", accessor: "product",
-            render: (row) => (
-                <div className="flex items-center gap-2">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-warning-50 text-warning-500">
-                        <CoinsIcon size={16} weight="fill" />
-                    </span>
-                    <span className="text-gray-900">{row.product?.product_name ?? "-"}</span>
-                </div>
-            ),
+            render: (row) => {
+                const imgSrc = row.image_path ? `/storage/${row.image_path}` : null;
+                return (
+                    <div className="flex items-center gap-2">
+                        {imgSrc ? (
+                            <img
+                                src={imgSrc}
+                                alt={row.product?.product_name || ""}
+                                className="h-8 w-8 flex-shrink-0 rounded-md object-cover bg-gray-100"
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "";
+                                    e.target.style.display = "none";
+                                }}
+                            />
+                        ) : (
+                            <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-warning-50 text-warning-500">
+                                <CoinsIcon size={16} weight="fill" />
+                            </span>
+                        )}
+                        <span className="text-gray-900">{row.product?.product_name ?? "-"}</span>
+                    </div>
+                );
+            },
         },
         { header: "Kategori", accessor: "category", render: (row) => row.category?.category_name ?? "-" },
         { header: "Sub Kategori", accessor: "sub_category", render: (row) => row.sub_category?.category_name ?? "-" },
@@ -360,9 +393,11 @@ const ReportInventory = () => {
                     </div>
                     <button
                         type="button"
-                        className="flex shrink-0 items-center gap-1.5 rounded-lg border border-primary-200 px-3.5 py-2.5 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50"
+                        disabled={exporting}
+                        onClick={handleExport}
+                        className="flex shrink-0 items-center gap-1.5 rounded-lg border border-primary-200 px-3.5 py-2.5 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50 disabled:opacity-50"
                     >
-                        <ExportIcon size={18} /> Export Data
+                        <ExportIcon size={18} /> {exporting ? "Downloading..." : "Export Data"}
                     </button>
                 </div>
 

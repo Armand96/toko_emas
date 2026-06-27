@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
     'opname_status',
     'last_status',
     'note',
+    'scanned_at',
 ])]
 class StockOpnameDetail extends Model
 {

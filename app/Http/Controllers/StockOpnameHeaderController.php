@@ -87,6 +87,7 @@ class StockOpnameHeaderController extends Controller
                     'last_status' => $value['last_status'],
                     'opname_status' => $value['opname_status'],
                     'note' => isset($value['note']) ? $value['note'] : null,
+                    'scanned_at' => isset($value['scanned_at']) ? $value['scanned_at'] : null,
                     'created_at' => $dateNow
                 );
 
@@ -105,7 +106,7 @@ class StockOpnameHeaderController extends Controller
                 'in_stock'         => $itemInStock,
                 'missing'          => $itemMissing,
                 'extra'            => $itemExtra,
-                'status'           => $itemInStock == $totalInventoryBranch ? OpnameHeaderStatus::SESUAI : OpnameHeaderStatus::SELISIH,
+                'status'           => ($itemInStock == $totalInventoryBranch && $itemExtra == 0) ? OpnameHeaderStatus::SESUAI : OpnameHeaderStatus::SELISIH,
                 'start_date_time'  => isset($validated['start_date_time']) ? $validated['start_date_time'] : null,
                 'end_date_time'    => isset($validated['end_date_time']) ? $validated['end_date_time'] : null,
             ));
