@@ -6,5 +6,49 @@ use Illuminate\Database\Eloquent\Model;
 
 class MCategory extends Model
 {
-    //
+    protected $fillable = [
+        'category_name',
+        'category_code',
+        'description',
+        'parent_id',
+        'image_path',
+        'thumb_path'
+    ];
+
+    protected $hidden = [
+        'created_at',
+        'updated_at'
+    ];
+
+    public function subcategories()
+    {
+        return $this->hasMany(
+            MCategory::class,
+            'parent_id',
+            'id'
+        );
+    }
+
+    public function subcategory()
+    {
+        return $this->hasOne(
+            MCategory::class,
+            'parent_id',
+            'id'
+        );
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(
+            MCategory::class,
+            'parent_id',
+            'id'
+        );
+    }
+
+    public function products()
+    {
+        return $this->hasMany(MProduct::class, 'category_id', 'id');
+    }
 }

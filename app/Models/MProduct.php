@@ -10,14 +10,41 @@ class MProduct extends Model
         'product_name',
         'branch_id',
         'category_id',
-        'deskripsi',
+        'subcategory_id',
+        'description',
         'is_active',
         'image_path',
-        'thumb_path'
+        'thumb_path',
+        'barcode'
     ];
 
     protected $hidden = [
         'created_at',
         'updated_at'
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(MCategory::class, 'category_id', 'id');
+    }
+
+    public function subcategory()
+    {
+        return $this->belongsTo(MCategory::class, 'subcategory_id', 'id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(MBranch::class, 'branch_id', 'id');
+    }
+
+    public function inventory()
+    {
+        return $this->hasMany(Inventory::class, 'product_id', 'id');
+    }
+
+    public function branches()
+    {
+        return $this->hasMany(BranchProduct::class, 'product_id', 'id');
+    }
 }

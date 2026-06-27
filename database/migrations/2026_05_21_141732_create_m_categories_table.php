@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('category_name');
             $table->string('description');
-            $table->bigInteger('parent_id', false, true);
-            $table->string('image_path');
-            $table->string('thumb_path');
+            $table->string('category_code');
+            $table->bigInteger('parent_id', false, true)->nullable();
+            $table->string('image_path')->nullable();
+            $table->string('thumb_path')->nullable();
             $table->timestamps();
         });
     }

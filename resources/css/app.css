@@ -1,3 +1,574 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* =========================================
+   OpenSauceOne
+   ========================================= */
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-LightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-Italic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-MediumItalic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-SemiBoldItalic.ttf') format('truetype');
+    font-weight: 600;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-BoldItalic.ttf') format('truetype');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-ExtraBoldItalic.ttf') format('truetype');
+    font-weight: 800;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceOne';
+    src: url('../js/assets/fonts/OpenSauceOne-BlackItalic.ttf') format('truetype');
+    font-weight: 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* =========================================
+   OpenSauceSans
+   ========================================= */
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-LightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-Italic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-MediumItalic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-SemiBoldItalic.ttf') format('truetype');
+    font-weight: 600;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-BoldItalic.ttf') format('truetype');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-ExtraBoldItalic.ttf') format('truetype');
+    font-weight: 800;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('../js/assets/fonts/OpenSauceSans-BlackItalic.ttf') format('truetype');
+    font-weight: 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* =========================================
+   OpenSauceTwo
+   ========================================= */
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-LightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-Italic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-MediumItalic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-SemiBoldItalic.ttf') format('truetype');
+    font-weight: 600;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-BoldItalic.ttf') format('truetype');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-ExtraBoldItalic.ttf') format('truetype');
+    font-weight: 800;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'OpenSauceTwo';
+    src: url('../js/assets/fonts/OpenSauceTwo-BlackItalic.ttf') format('truetype');
+    font-weight: 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+@theme {
+  --font-sans: 'OpenSauceOne', 'OpenSauceSans', sans-serif;
+  --font-one: 'OpenSauceOne', sans-serif;
+  --font-sauce-sans: 'OpenSauceSans', sans-serif;
+  --font-two: 'OpenSauceTwo', sans-serif;
+
+  /* =========================================
+     BRAND COLORS
+     ========================================= */
+
+  /* Brand / Primary */
+  --color-primary-50: #f0f8ff;
+  --color-primary-100: #e0effe;
+  --color-primary-200: #b9e0fe;
+  --color-primary-300: #7cc8fd;
+  --color-primary-400: #36adfa;
+  --color-primary-500: #0c93eb;
+  --color-primary-600: #0079d3;
+  --color-primary-700: #015ba3;
+  --color-primary-800: #064e86;
+  --color-primary-900: #0b416f;
+  --color-primary-950: #07294a;
+
+  /* Brand / Secondary (Aksen Emas) */
+  --color-secondary-50: #fff9eb;
+  --color-secondary-100: #feecc7;
+  --color-secondary-200: #fcd78b;
+  --color-secondary-300: #fbbd4e;
+  --color-secondary-400: #f9a220;
+  --color-secondary-500: #f3810d;
+  --color-secondary-600: #d75e08;
+  --color-secondary-700: #b33e0a;
+  --color-secondary-800: #91300f;
+  --color-secondary-900: #772810;
+  --color-secondary-950: #441204;
+
+  /* =========================================
+     NEUTRAL & GRAY
+     ========================================= */
+
+  /* Neutral */
+  --color-neutral-white: #ffffff;
+  --color-neutral-black: #121212;
+  --color-neutral-bg-white-smk: #f7f8f9;
+
+  /* Gray */
+  --color-gray-50: #f8fafc;
+  --color-gray-100: #f1f5f9;
+  --color-gray-200: #e2e8f0;
+  --color-gray-300: #cad5e2;
+  --color-gray-400: #90a1b9;
+  --color-gray-500: #62748e;
+  --color-gray-600: #45556c;
+  --color-gray-700: #314158;
+  --color-gray-800: #1d293d;
+  --color-gray-900: #0f172b;
+  --color-gray-950: #020618;
+
+  /* =========================================
+     SEMANTIC COLORS
+     ========================================= */
+
+  /* Info (Blue) */
+  --color-info-50: #eff6ff;
+  --color-info-100: #dbeafe;
+  --color-info-200: #bedbff;
+  --color-info-300: #8ec5ff;
+  --color-info-400: #51a2ff;
+  --color-info-500: #2b7fff;
+  --color-info-600: #155dfc;
+  --color-info-700: #1447e6;
+  --color-info-800: #1c398e;
+  --color-info-900: #162556;
+  --color-info-950: #0b1229;
+
+  /* Success (Green) */
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dbfce7;
+  --color-success-200: #b9f8cf;
+  --color-success-300: #7bf1a8;
+  --color-success-400: #05df72;
+  --color-success-500: #00c951;
+  --color-success-600: #00a63e;
+  --color-success-700: #008236;
+  --color-success-800: #016630;
+  --color-success-900: #0d542b;
+  --color-success-950: #032e15;
+
+  /* Warning (Yellow) */
+  --color-warning-50: #fefce8;
+  --color-warning-100: #fef9c2;
+  --color-warning-200: #fff085;
+  --color-warning-300: #ffdf20;
+  --color-warning-400: #fdc700;
+  --color-warning-500: #f0b100;
+  --color-warning-600: #d08700;
+  --color-warning-700: #a65f00;
+  --color-warning-800: #894b00;
+  --color-warning-900: #733e0a;
+  --color-warning-950: #432004;
+
+  /* Danger (Red) */
+  --color-danger-50: #fef2f2;
+  --color-danger-100: #ffe2e2;
+  --color-danger-200: #ffc9c9;
+  --color-danger-300: #ffa2a2;
+  --color-danger-400: #ff6467;
+  --color-danger-500: #fb2c36;
+  --color-danger-600: #e7000b;
+  --color-danger-700: #c10007;
+  --color-danger-800: #9f0712;
+  --color-danger-900: #82181a;
+  --color-danger-950: #460809;
+
+    --color-border-default: #e2e8f0;
+
+}
+
+
+.btn {
+  @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.btn-primary {
+  @apply bg-primary-500 text-neutral-white border border-transparent cursor-pointer focus:ring-primary-500;
+}
+
+.btn-primary:hover {
+  @apply bg-primary-600;
+}
+
+.btn-primary:active {
+  @apply bg-primary-700;
+}
+
+.btn-primary:disabled {
+  @apply bg-gray-200 text-gray-400 border-transparent hover:bg-gray-200 cursor-not-allowed;
+}
+
+.btn-outline {
+  @apply bg-transparent text-primary-500 border border-gray-200 cursor-pointer focus:ring-gray-200;
+}
+
+.btn-outline:hover {
+  @apply bg-primary-50;
+}
+
+.btn-outline:active {
+  @apply bg-primary-100;
+}
+
+.btn-outline:disabled {
+  @apply bg-transparent text-gray-400 border-gray-400 hover:bg-transparent cursor-not-allowed;
+}
+
+.btn-danger {
+  @apply bg-danger-500 text-neutral-white border border-transparent cursor-pointer focus:ring-danger-500;
+}
+
+.btn-danger:hover {
+  @apply bg-danger-600;
+}
+
+.btn-danger:active {
+  @apply bg-danger-700;
+}
+
+.btn-danger:disabled {
+  @apply bg-gray-200 text-gray-400 border-transparent hover:bg-gray-200 cursor-not-allowed;
+}
+
+.btn-danger-outline {
+  @apply bg-transparent text-danger-500 border border-danger-500 cursor-pointer focus:ring-danger-500;
+}
+
+.btn-danger-outline:hover {
+  @apply bg-danger-50;
+}
+
+.btn-danger-outline:active {
+  @apply bg-danger-100;
+}
+
+.btn-danger-outline:disabled {
+  @apply bg-transparent text-gray-400 border-gray-400 hover:bg-transparent cursor-not-allowed;
+}
+
+.overlay {
+  background-color: rgba(0, 0, 0, 0.4);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 300ms ease-in-out;
+}
+
+.overlay.ReactModal__Overlay--after-open {
+  opacity: 1;
+}
+
+.overlay.ReactModal__Overlay--before-close {
+  opacity: 0;
+}
+
+.modal {
+  background: #fff;
+  /* max-width: 850px; */
+  width: 90%;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.modal:focus {
+  outline: none;
+}
+
+.modal-xl {
+  max-width: 90%;
+}
+
+.modal-lg {
+  max-width: 80%;
+}
+
+.modal-md {
+  max-width: 60%;
+}
+
+.modal-sm {
+  max-width: 40%;
+}
+
+.modal-xs {
+  max-width: 18%;
+}
+
+.ReactModal__Body--open {
+  overflow: hidden;
+}
+
+@media (max-width: 680px) {
+  .modal-lg,
+  .modal-md,
+  .modal-sm,
+  .modal-xl,
+  .modal {
+    max-width: 90% !important;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modal-body {
+  overflow-y: auto;
+  line-height: 1.5;
+}

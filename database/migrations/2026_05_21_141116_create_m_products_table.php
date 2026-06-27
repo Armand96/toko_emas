@@ -14,12 +14,14 @@ return new class extends Migration
         Schema::create('m_products', function (Blueprint $table) {
             $table->id();
             $table->string('product_name');
-            $table->bigInteger('branch_id', false, true);
+            $table->bigInteger('branch_id', false, true)->nullable();
             $table->bigInteger('category_id', false, true);
-            $table->string('image_path');
-            $table->string('thumb_path');
+            $table->bigInteger('subcategory_id', false, true);
+            $table->string('image_path')->nullable();
+            $table->string('thumb_path')->nullable();
+            $table->string('barcode');
             $table->boolean('is_active')->default(true);
-            $table->string('deskripsi')->nullable();
+            $table->string('description')->nullable();
             $table->timestamps();
         });
     }

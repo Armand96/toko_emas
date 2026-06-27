@@ -1,0 +1,562 @@
+import { useEffect, useState } from "react";
+import {
+    CaretLeftIcon,
+    FloppyDiskIcon,
+    PlusCircleIcon,
+    TrashIcon,
+} from "@phosphor-icons/react";
+import GenerateQR from "../../../components/Utils/GenerateQR";
+
+import HeaderSection from "../../../components/HeaderSection";
+import Dropdown from "../../../components/FormElement/SingleElement/Dropdown";
+import Input from "../../../components/FormElement/SingleElement/Input";
+import CurrencyInput from "../../../components/FormElement/SingleElement/CurrencyInput";
+import PhotoInput from "../../../components/FormElement/SingleElement/PhotoInput";
+import Table from "../../../components/Table/Table";
+
+import { showAlert } from "../../../utils/showAlert";
+import HelperFunctions from "../../../utils/HelperFunctions";
+import { generateBarcode } from "../../../utils/barcode";
+import LoadingStore from "../../../Store/LoadingStore";
+
+import InventoryApis from "../../../Services/Inventory.apis";
+import BankApis from "../../../Services/Bank.apis";
+import OptionsStore from "../../../Store/OptionsStore";
+import AuthStore from "../../../Store/AuthStore";
+import PermissionStore from "../../../Store/PermissionStore";
+
+const emptyItem = {
+    product_id: null,
+    category_id: null,
+    subcategory_id: null,
+    branch_id: null,
+    payment_method: "TRANSFER",
+    bank_id: null,
+    supplier_id: null,
+    berat: "",
+    karat: "",
+    no_seri: "",
+    modal: "",
+    jual: "",
+    foto: null,
+    _produk_label: "",
+    _produk_barcode: "",
+};
+
+const requiredItem = [
+    ["product_id", "Produk wajib dipilih"],
+    ["berat", "Berat wajib diisi"],
+    ["karat", "Karat wajib diisi"],
+    ["modal", "Harga modal wajib diisi"],
+    ["jual", "Harga jual wajib diisi"],
+    ["branch_id", "Cabang wajib dipilih"],
+    // ["supplier_id", "Supplier wajib dipilih"],
+];
+
+const FormPembelian = ({ setCurentState }) => {
+    const setLoading = LoadingStore((state) => state.setLoading);
+    const ensureProducts = OptionsStore((s) => s.ensureProducts);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
+    const ensureSuppliers = OptionsStore((s) => s.ensureSuppliers);
+
+    const user = AuthStore((s) => s.user);
+    const isKasir = PermissionStore((s) => s.isKasir);
+    // Kasir terkunci ke cabangnya sendiri; admin/owner/PIC bebas pilih cabang.
+    const lockBranch = isKasir() && !!user?.branch_id;
+
+    const [item, setItem] = useState(emptyItem);
+    const [errors, setErrors] = useState({});
+    const [batch, setBatch] = useState([]);
+
+    const [selectedBranch, setSelectedBranch] = useState(null);
+
+    const [allProducts, setAllProducts] = useState([]);
+    const [productOptions, setProductOptions] = useState([]);
+    const [branchOptions, setBranchOptions] = useState([]);
+    const [bankOptions, setBankOptions] = useState([]);
+    const [supplierOptions, setSupplierOptions] = useState([]);
+
+    const fetchOptions = async () => {
+        try {
+            const [productData, branchData, supplierData] = await Promise.all([
+                ensureProducts(),
+                ensureBranches(),
+                ensureSuppliers(),
+            ]);
+
+            setAllProducts(productData || []);
+            setProductOptions([]);
+            setBranchOptions(
+                HelperFunctions.formatDropdown(branchData, "id", "branch_name")
+            );
+            setSupplierOptions(
+                HelperFunctions.formatDropdown(supplierData, "id", "supplier_name")
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    useEffect(() => {
+        fetchOptions();
+    }, []);
+
+    const selectBranch = (branchId, products = allProducts) => {
+        setSelectedBranch(branchId);
+
+        const filtered = (products || []).filter((p) => {
+            if (p.branches && Array.isArray(p.branches)) {
+                return p.branches.some((b) => String(b.branch_id) === String(branchId));
+            }
+            return String(p.branch_id) === String(branchId);
+        });
+        setProductOptions(HelperFunctions.formatDropdown(filtered, "id", "product_name"));
+
+        setItem({ ...emptyItem, branch_id: branchId });
+        setErrors({});
+        setBankOptions([]);
+
+        if (branchId) {
+            BankApis.GetBankBranch(`?branch_id=${branchId}`).then((res) => {
+                setBankOptions(HelperFunctions.formatDropdownBank(res?.data || []));
+            });
+        }
+    };
+
+    // Kasir: cabang otomatis ikut cabang user login, tanpa perlu pilih.
+    useEffect(() => {
+        if (lockBranch && allProducts.length > 0 && !selectedBranch) {
+            selectBranch(user.branch_id);
+        }
+    }, [lockBranch, allProducts]);
+
+    const handleBranchChange = (e) => {
+        selectBranch(e.target.value);
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+
+        if (name === "foto") {
+            const file = e.target.files ? e.target.files[0] : value;
+            const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
+            if (file && !allowedTypes.includes(file.type)) {
+                showAlert({
+                    title: "Format tidak didukung",
+                    message: "Foto harus berformat JPG, JPEG, PNG, atau GIF",
+                    type: "warning",
+                });
+                return;
+            }
+            const MAX_SIZE_MB = 3;
+            if (file && file.size > MAX_SIZE_MB * 1024 * 1024) {
+                showAlert({
+                    title: "Ukuran file terlalu besar",
+                    message: `Ukuran foto maksimal ${MAX_SIZE_MB} MB`,
+                    type: "warning",
+                });
+                return;
+            }
+            setItem((prev) => ({ ...prev, foto: file ?? null }));
+            return;
+        }
+
+        if (name === "berat" || name === "karat") {
+            const normalized = value.replace(/,/g, ".").replace(/[^0-9.]/g, "");
+            setItem((prev) => ({ ...prev, [name]: normalized }));
+            if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+            return;
+        }
+
+        if (name === "modal" || name === "jual") {
+            setItem((prev) => ({ ...prev, [name]: value }));
+            if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+            return;
+        }
+
+        if (name === "product_id") {
+            const found = productOptions.find((p) => p.value === value);
+            const d = found?.details || {};
+            setItem((prev) => ({
+                ...prev,
+                product_id: value,
+                category_id: d.category_id ?? null,
+                subcategory_id: d.subcategory_id ?? null,
+                _produk_label: found?.label ?? "",
+                _produk_barcode: d.barcode ?? "",
+            }));
+            setErrors((prev) => ({ ...prev, product_id: "" }));
+            return;
+        }
+
+        setItem((prev) => ({ ...prev, [name]: value }));
+        if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+    };
+
+    const validateItem = () => {
+        const newErrors = {};
+        requiredItem.forEach(([key, msg]) => {
+            const v = item[key];
+            if (v === null || v === undefined || v === "") newErrors[key] = msg;
+        });
+        if (item.payment_method === "TRANSFER") {
+            const v = item.bank_id;
+            if (v === null || v === undefined || v === "") newErrors.bank_id = "Bank keluar wajib dipilih";
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleAddToBatch = () => {
+        if (!validateItem()) return;
+
+        const productBarcode = item._produk_barcode || "ITM";
+        const seq = batch.filter((b) => b._produk_barcode === item._produk_barcode).length;
+        const barcode = generateBarcode(productBarcode, seq);
+
+        setBatch((prev) => [
+            ...prev,
+            { ...item, barcode, _rowId: Date.now() + Math.random() },
+        ]);
+
+        setItem({ ...emptyItem, branch_id: selectedBranch });
+        setErrors({});
+    };
+
+    const handleRemove = (rowId) => {
+        setBatch((prev) => prev.filter((b) => b._rowId !== rowId));
+    };
+
+    const handleSubmitBatch = async () => {
+        if (batch.length === 0) {
+            showAlert({
+                title: "Perhatian",
+                message: "Belum ada item di batch",
+                type: "warning",
+            });
+            return;
+        }
+
+        const payload = {
+            data: batch.map((b) => ({
+                branch_id: Number(b.branch_id),
+                product_id: Number(b.product_id),
+                category_id: Number(b.category_id),
+                subcategory_id: Number(b.subcategory_id),
+                tipe_pembayaran: b.payment_method,
+                bank_cabang_id: b.bank_id ? Number(b.bank_id) : null,
+                supplier_id: Number(b.supplier_id),
+                barcode: b.barcode,
+                serial_number: b.no_seri || null,
+                berat: Number(b.berat),
+                karat: Number(b.karat),
+                modal: Number(b.modal),
+                jual: Number(b.jual),
+            })),
+        };
+
+        setLoading(true);
+        try {
+            const res = await InventoryApis.PostPembelian(payload);
+            const created = res?.data?.data || [];
+
+            const itemsWithFoto = batch
+                .map((b, index) => ({ foto: b.foto, id: created[index]?.id }))
+                .filter((b) => b.foto && b.id);
+
+            if (itemsWithFoto.length > 0) {
+                const pembelianIds = itemsWithFoto.map((b) => b.id).join(",");
+                const fotos = itemsWithFoto.map((b) => b.foto);
+
+                const formData = new FormData();
+                formData.append("pembelian_ids", pembelianIds);
+
+                for (let i = 0; i < fotos.length; i++) {
+                    formData.append("images[]", fotos[i]);
+                }
+
+                await InventoryApis.PostPembelianImage(formData);
+            }
+
+            showAlert({
+                title: "Berhasil",
+                message: "Pembelian berhasil disimpan",
+                icon: "success",
+            });
+            setBatch([]);
+            setItem(emptyItem);
+            if (setCurentState) setCurentState("main");
+        } catch (error) {
+            console.error(error);
+            showAlert({
+                title: "Gagal",
+                message: "Gagal menyimpan pembelian",
+                icon: "error",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const columns = [
+        {
+            header: "QR Code",
+            accessor: "barcode",
+            render: (row) => (
+                <GenerateQR value={row.barcode} size={28} />
+            ),
+        },
+        {
+            header: "Produk",
+            accessor: "_produk_label",
+            render: (row) => row._produk_label || "-",
+        },
+        { header: "Berat", accessor: "berat", render: (row) => `${row.berat} g` },
+        { header: "Karat", accessor: "karat", render: (row) => `${row.karat}K` },
+        {
+            header: "No Seri",
+            accessor: "no_seri",
+            render: (row) => row.no_seri || "-",
+        },
+        {
+            header: "Modal",
+            accessor: "modal",
+            render: (row) => HelperFunctions.formatCurrency(row.modal || 0),
+        },
+        {
+            header: "Jual",
+            accessor: "jual",
+            render: (row) => HelperFunctions.formatCurrency(row.jual || 0),
+        },
+        {
+            header: "Supplier",
+            accessor: "supplier_id",
+            render: (row) =>
+                supplierOptions.find((s) => s.value === row.supplier_id)?.label || "-",
+        },
+        {
+            header: "Cabang",
+            accessor: "branch_id",
+            render: (row) =>
+                branchOptions.find((b) => b.value === row.branch_id)?.label || "-",
+        },
+        {
+            header: "Pembayaran",
+            accessor: "payment_method",
+            render: (row) =>
+                row.payment_method === "TUNAI"
+                    ? "Tunai"
+                    : bankOptions.find((b) => b.value === row.bank_id)?.label || "Transfer",
+        },
+        {
+            header: "Aksi",
+            accessor: "aksi",
+            render: (row) => (
+                <button
+                    onClick={() => handleRemove(row._rowId)}
+                    className="p-1.5 btn-danger-outline rounded-md cursor-pointer"
+                >
+                    <TrashIcon size={18} />
+                </button>
+            ),
+        },
+    ];
+
+    return (
+        <div className="flex flex-col gap-4 w-full">
+            {setCurentState && (
+                <button
+                    onClick={() => setCurentState("main")}
+                    className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 w-fit cursor-pointer"
+                >
+                    <CaretLeftIcon size={18} /> Kembali
+                </button>
+            )}
+
+            <HeaderSection
+                title="Input Pembelian"
+                description="Lengkapi informasi pembelian dan detail item inventory."
+            />
+
+            <div className="flex flex-col lg:flex-row gap-4">
+                {/* ============ ITEM BARU ============ */}
+                <div className="w-full lg:w-2/5 p-6 bg-white rounded-lg border border-gray-200 h-fit">
+                    <p className="text-lg font-medium text-gray-900">Item Baru</p>
+                    <p className="text-sm text-gray-500">
+                        Isi detail, QR code auto-generated
+                    </p>
+
+                    <div className="flex flex-col gap-4 mt-6">
+                        {!lockBranch && (
+                            <Dropdown
+                                label="Cabang"
+                                name="branch_id"
+                                value={selectedBranch}
+                                options={branchOptions}
+                                placeholder="Pilih cabang"
+                                isRequired
+                                error={errors.branch_id}
+                                onChange={handleBranchChange}
+                            />
+                        )}
+
+                        <Dropdown
+                            label="Produk (master)"
+                            name="product_id"
+                            value={item.product_id}
+                            options={productOptions}
+                            placeholder={selectedBranch ? "Pilih produk" : "Pilih cabang dulu"}
+                            isRequired
+                            isDisable={!selectedBranch}
+                            error={errors.product_id}
+                            onChange={handleChange}
+                        />
+
+                        <PhotoInput
+                            label="Foto Item"
+                            name="foto"
+                            value={item.foto}
+                            helperText="Foto berformat JPG, JPEG, PNG, atau GIF. Maksimal 3 MB."
+                            accept="image/jpeg,image/png,image/gif"
+                            onChange={handleChange}
+                        />
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <Input
+                                label="Berat (g)"
+                                name="berat"
+                                type="text"
+                                inputMode="decimal"
+                                value={item.berat}
+                                placeholder="0.00"
+                                isRequired
+                                error={errors.berat}
+                                onChange={handleChange}
+                            />
+                            <Input
+                                label="Karat"
+                                name="karat"
+                                type="text"
+                                inputMode="numeric"
+                                value={item.karat}
+                                placeholder="0"
+                                isRequired
+                                error={errors.karat}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <Input
+                            label="No Seri (Opsional)"
+                            name="no_seri"
+                            type="text"
+                            value={item.no_seri}
+                            placeholder="Contoh: ABCD1234"
+                            onChange={handleChange}
+                        />
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <CurrencyInput
+                                label="Harga Modal"
+                                name="modal"
+                                value={item.modal}
+                                placeholder="0"
+                                isRequired
+                                error={errors.modal}
+                                onChange={handleChange}
+                            />
+                            <CurrencyInput
+                                label="Harga Jual"
+                                name="jual"
+                                value={item.jual}
+                                placeholder="0"
+                                isRequired
+                                error={errors.jual}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <Dropdown
+                            label="Supplier"
+                            name="supplier_id"
+                            value={item.supplier_id}
+                            options={supplierOptions}
+                            placeholder="Pilih supplier"
+                            // isRequired
+                            error={errors.supplier_id}
+                            onChange={handleChange}
+                        />
+
+                        <Dropdown
+                            label="Metode Pembayaran"
+                            name="payment_method"
+                            value={item.payment_method}
+                            options={[
+                                { value: 'TUNAI', label: 'Tunai' },
+                                { value: 'TRANSFER', label: 'Transfer' },
+                            ]}
+                            placeholder="Pilih metode"
+                            isRequired
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setItem((prev) => ({ ...prev, payment_method: val, ...(val === 'TUNAI' ? { bank_id: null } : {}) }));
+                            }}
+                        />
+
+                        {item.payment_method === "TRANSFER" && (
+                            <Dropdown
+                                label="Bank Keluar"
+                                name="bank_id"
+                                value={item.bank_id}
+                                options={bankOptions}
+                                placeholder="Pilih bank"
+                                isRequired
+                                error={errors.bank_id}
+                                onChange={handleChange}
+                            />
+                        )}
+
+                        <button
+                            onClick={handleAddToBatch}
+                            className="btn-primary mt-2 py-2 w-full rounded-lg flex items-center justify-center gap-2"
+                        >
+                            <PlusCircleIcon size={20} /> Tambah ke Batch
+                        </button>
+                    </div>
+                </div>
+
+                {/* ============ BATCH PEMBELIAN ============ */}
+                <div className="w-full lg:w-3/5 p-6 bg-white rounded-lg border border-gray-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex flex-col">
+                            <p className="text-lg font-medium text-gray-900">
+                                Batch Pembelian ({batch.length} item)
+                            </p>
+                            <p className="text-sm text-gray-500">
+                                Periksa item sebelum disimpan
+                            </p>
+                        </div>
+                        <button
+                            onClick={handleSubmitBatch}
+                            disabled={batch.length === 0}
+                            className="btn-primary py-2 px-4 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <FloppyDiskIcon size={20} /> Simpan &amp; Ajukan Pembelian
+                        </button>
+                    </div>
+
+                    <div className="mt-6">
+                        <Table
+                            columns={columns}
+                            data={batch}
+                            total={batch.length}
+                            paginate={false}
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default FormPembelian;

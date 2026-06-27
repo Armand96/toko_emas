@@ -1,0 +1,380 @@
+import { useEffect, useState } from 'react';
+import { useDebounce } from 'use-debounce';
+import dayjs from 'dayjs';
+import { CheckSquareOffsetIcon } from "@phosphor-icons/react";
+import HeaderSection from "../../../components/HeaderSection";
+import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
+import Badge from "../../../components/Badge";
+import Table from "../../../components/Table/Table";
+import Modal from "./Modal";
+import { showAlert } from '../../../utils/showAlert';
+import InputGroup from '../../../components/FormElement/InputGroup';
+import FooterActionBar from '../../../components/FooterActionBar';
+import InventoryApis from '../../../Services/Inventory.apis';
+import HelperFunctions from '../../../utils/HelperFunctions';
+import LoadingStore from '../../../Store/LoadingStore';
+import OptionsStore from '../../../Store/OptionsStore';
+import PermissionStore from '../../../Store/PermissionStore';
+
+const ApprovalPembelian = () => {
+    const setLoading = LoadingStore((state) => state.setLoading);
+    const can = PermissionStore((s) => s.can);
+    const ensureCategories = OptionsStore((s) => s.ensureCategories);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
+    const ensureUsers = OptionsStore((s) => s.ensureUsers);
+
+    const [paramFetch, setParamFetch] = useState({
+        data: [],
+        current_page: 1,
+        total: 0,
+        per_page: 10,
+    });
+
+    const [search, setSearch] = useState({ search: '', status: 'APPROVAL' });
+    const [searchBounce] = useDebounce(search, 500);
+    const [firstLoading, setFirstLoading] = useState(false);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedData, setSelectedData] = useState(null);
+    const [selectedRows, setSelectedRows] = useState([]);
+
+    const [categoryOptions, setCategoryOptions] = useState([]);
+    const [branchOptions, setBranchOptions] = useState([]);
+    const [userMap, setUserMap] = useState({});
+
+    const fetchData = async (page = 1, pageSize = 10, params = {}) => {
+        setLoading(true);
+        try {
+            const { search: keyword = '', category_id = '', branch_id = '', status = '' } = params;
+            let query = `?page=${page}&limit=${pageSize}`;
+            if (status) query += `&status=${status}`;
+            if (keyword) query += `&search=${keyword}`;
+            if (category_id) query += `&category_id=${category_id}`;
+            if (branch_id) query += `&branch_id=${branch_id}`;
+
+            const res = await InventoryApis.GetPembelian(query);
+            setParamFetch(res);
+            setFirstLoading(true);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchOptions = async () => {
+        try {
+            const [categoryData, branchData, userData] = await Promise.all([
+                ensureCategories(),
+                ensureBranches(),
+                ensureUsers(),
+            ]);
+            const parentOnly = (Array.isArray(categoryData) ? categoryData : []).filter((c) => !c.parent_id);
+            setCategoryOptions(HelperFunctions.formatDropdown(parentOnly, 'id', 'category_name'));
+            setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name'));
+            setUserMap(Object.fromEntries((userData || []).map((u) => [u.id, u.name])));
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    useEffect(() => {
+        fetchData(1, 10, search);
+        fetchOptions();
+    }, []);
+
+    useEffect(() => {
+        if (firstLoading) {
+            fetchData(1, paramFetch.per_page, search);
+        }
+    }, [searchBounce]);
+
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        const newSearch = { ...search, [name]: value };
+        setSearch(newSearch);
+    };
+
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            const allIds = paramFetch.data.filter(item => item.status == 'APPROVAL').map(item => item.id);
+            setSelectedRows(allIds);
+        } else {
+            setSelectedRows([]);
+        }
+    };
+
+    const handleSelectRow = (id) => {
+        setSelectedRows(prev =>
+            prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]
+        );
+    };
+
+    const updateStatus = async (ids, status, note = null) => {
+        setLoading(true);
+        try {
+            await InventoryApis.updatePembelian({
+                status,
+                pembelian_ids: ids,
+                note,
+            });
+            setSelectedRows([]);
+            handleCloseModal();
+            fetchData(paramFetch.current_page, paramFetch.per_page, search);
+
+            showAlert({
+                icon: status === 'DISETUJUI' ? 'success' : 'error',
+                isAutoClose: true,
+                title: status === 'DISETUJUI' ? 'Berhasil Disetujui' : 'Berhasil Ditolak',
+                message: status === 'DISETUJUI'
+                    ? 'Item pembelian telah masuk ke inventory aktif dan siap digunakan.'
+                    : 'Transaksi pembelian telah ditolak dan tidak akan diproses lebih lanjut.',
+            });
+        } catch (error) {
+            console.error(error);
+            showAlert({ icon: 'error', title: 'Gagal', message: 'Terjadi kesalahan saat memproses data' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const confirmApprove = (ids) => {
+        showAlert({
+            icon: 'success',
+            isAutoClose: false,
+            title: 'Setujui Pembelian',
+            message: 'Anda akan menyetujui item pembelian ini. Item akan masuk ke inventory aktif dan siap digunakan dalam proses operasional.',
+            confirmText: 'Setujui',
+            cancelText: 'Batal',
+        }).then((res) => {
+            if (res.confirmed) {
+                updateStatus(ids, 'DISETUJUI');
+            }
+        });
+    };
+
+    const confirmReject = (ids) => {
+        showAlert({
+            icon: 'error',
+            isAutoClose: false,
+            title: 'Tolak Pembelian',
+            message: 'Anda akan menolak item pembelian ini.',
+            textarea: true,
+            placeholder: 'Masukkan alasan penolakan',
+            confirmText: 'Tolak',
+            cancelText: 'Batal',
+        }).then((res) => {
+            if (res.confirmed) {
+                updateStatus(ids, 'DITOLAK', res.value);
+            }
+        });
+    };
+
+    const handleBulkApprove = () => {
+        confirmApprove(selectedRows);
+    };
+
+    const handleBulkReject = () => {
+        confirmReject(selectedRows);
+    };
+
+    const handleOpenModal = (data) => {
+        setSelectedData(data);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedData(null);
+    };
+
+    const handleApprove = () => {
+        if (!selectedData) return;
+        confirmApprove([selectedData.id]);
+    };
+
+    const handleReject = () => {
+        if (!selectedData) return;
+        confirmReject([selectedData.id]);
+    };
+
+    const columns = [
+        {
+            header: (
+                <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                    onChange={handleSelectAll}
+                    checked={selectedRows.length > 0 && selectedRows.length === paramFetch.data.filter(item => item.status === 'APPROVAL').length}
+                />
+            ),
+            accessor: 'checkbox',
+            render: (row) => row.status === 'APPROVAL' ? (
+                <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                    checked={selectedRows.includes(row.id)}
+                    onChange={() => handleSelectRow(row.id)}
+                />
+            ) : null
+        },
+        { header: 'Batch', accessor: 'batch' },
+        {
+            header: 'Kode',
+            accessor: 'inventory_code',
+            render: (row) => row.status === 'DISETUJUI' && row.inventory_code ? (
+                <span className="px-2 py-1 bg-neutral-50 border border-neutral-200 rounded-md text-xs font-medium text-neutral-700">
+                    {row.inventory_code}
+                </span>
+            ) : '-'
+        },
+        {
+            header: 'Produk',
+            accessor: 'produk',
+            render: (row) => (
+                <div className="flex items-center gap-2">
+                    <img
+                        src={row.image_path ? `/storage/${row.image_path}` : ""}
+                        alt={row.product?.product_name ?? ""}
+                        className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                    <span className="text-gray-900">{row.product?.product_name ?? '-'}</span>
+                </div>
+            )
+        },
+        {
+            header: 'Kategori',
+            accessor: 'kategori',
+            render: (row) => {
+                if (row.subcategory) return row.category?.category_name || '-';
+                return row.category?.parent?.category_name || row.category?.category_name || '-';
+            },
+        },
+        {
+            header: 'Sub Kategori',
+            accessor: 'subkategori',
+            render: (row) => row.subcategory?.category_name || '-',
+        },
+        { header: 'Tanggal', accessor: 'tanggal', render: (row) => row.tanggal ? dayjs(row.tanggal).format('DD/MM/YYYY') : '-' },
+        { header: 'Berat', accessor: 'berat', render: (row) => row.berat ? `${row.berat} g` : '-' },
+        { header: 'Karat', accessor: 'karat', render: (row) => row.karat ? `${row.karat}K` : '-' },
+        { header: 'Modal', accessor: 'modal', render: (row) => HelperFunctions.formatCurrency(row.modal || 0) },
+        { header: 'Jual', accessor: 'jual', render: (row) => HelperFunctions.formatCurrency(row.jual || 0) },
+        {
+            header: 'Cabang',
+            accessor: 'cabang',
+            render: (row) => row.branch?.branch_name ?? '-'
+        },
+        {
+            header: 'Status',
+            accessor: 'status',
+            render: (row) => {
+                const statusMap = {
+                    'APPROVAL': { label: 'Approval', tone: 'warning' },
+                    'DISETUJUI': { label: 'Disetujui', tone: 'success' },
+                    'DITOLAK': { label: 'Ditolak', tone: 'danger' },
+                    'DIBATALKAN': { label: 'Dibatalkan', tone: 'danger' },
+                };
+                const status = statusMap[row.status] || { label: row.status, tone: 'gray' };
+                return <Badge tone={status.tone}>{status.label}</Badge>;
+            }
+        },
+        {
+            header: 'Aksi',
+            accessor: 'aksi',
+            render: (row) => (
+                <ActionButtonGroup>
+                    <ActionButton variant="view" onClick={() => handleOpenModal(row)} />
+                </ActionButtonGroup>
+            )
+        }
+    ];
+
+    const statusOptions = [
+        { value: 'APPROVAL', label: 'Approval' },
+        { value: 'DISETUJUI', label: 'Disetujui' },
+        { value: 'DITOLAK', label: 'Ditolak' },
+        { value: 'DIBATALKAN', label: 'Dibatalkan' },
+    ];
+
+    const searchFilter = [
+        { type: 'search', name: 'search', label: '', placeholder: 'Cari produk..' },
+    ];
+
+    const dropdownFilters = [
+        { type: 'dropdown', name: 'status', label: '', placeholder: 'Pilih status', options: statusOptions },
+        { type: 'dropdown', name: 'category_id', label: '', placeholder: 'Pilih kategori', options: categoryOptions },
+        { type: 'dropdown', name: 'branch_id', label: '', placeholder: 'Pilih cabang', options: branchOptions },
+    ];
+
+    return (
+        <div className={`flex flex-col gap-6 relative min-h-full ${selectedRows.length > 0 ? 'pb-24 lg:pb-28' : ''}`}>
+            <HeaderSection
+                title="Approval Pembelian"
+                description="Verifikasi detail item pembelian sebelum menyetujui proses masuknya inventory ke stok aktif."
+                icon={CheckSquareOffsetIcon}
+            />
+
+            <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[220px] max-w-xs">
+                    <InputGroup
+                        fields={searchFilter}
+                        formData={search}
+                        cols="1"
+                        onChange={handleFilterChange}
+                    />
+                </div>
+                {dropdownFilters.map((field) => (
+                    <div key={field.name} className="w-[160px]">
+                        <InputGroup
+                            fields={[field]}
+                            formData={search}
+                            cols="1"
+                            onChange={handleFilterChange}
+                        />
+                    </div>
+                ))}
+            </div>
+
+            <Table
+                columns={columns}
+                data={paramFetch.data}
+                page={paramFetch.current_page}
+                pageSize={paramFetch.per_page}
+                total={paramFetch.total}
+                onPageChange={(newPage) => fetchData(newPage, paramFetch.per_page, search)}
+                onPageSizeChange={(newSize) => fetchData(1, newSize, search)}
+            />
+
+            <Modal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onSubmitApprove={can('update', 'approval.pembelian') ? handleApprove : undefined}
+                onSubmitReject={can('update', 'approval.pembelian') ? handleReject : undefined}
+                data={selectedData ? {
+                    ...selectedData,
+                    user: selectedData.user ?? (userMap[selectedData.created_by]
+                        ? { name: userMap[selectedData.created_by] }
+                        : null),
+                } : null}
+                mode="approve"
+            />
+
+            <div className="w-3/6 relative z-60">
+                <FooterActionBar
+                    selectedCount={selectedRows.length}
+                    onClearSelection={() => setSelectedRows([])}
+                    secondaryText={can('update', 'approval.pembelian') ? "Tolak" : undefined}
+                    secondaryType="danger"
+                    onSecondaryClick={handleBulkReject}
+                    primaryText={can('update', 'approval.pembelian') ? "Setujui" : undefined}
+                    primaryType="primary"
+                    onPrimaryClick={handleBulkApprove}
+                />
+            </div>
+        </div>
+    );
+};
+
+export default ApprovalPembelian;
