@@ -61,8 +61,8 @@ class TransferItemController extends Controller
 
         try {
             $transferId = 'TRF-' . date('Ymd') . "-";
-            $counter = TransferItem::where('kode_transfer', 'like', $transferId . "%")->count();
-            $counter++;
+            $latestTransfer = TransferItem::where('kode_transfer', 'like', $transferId . "%")->lockForUpdate()->orderByDesc('id')->value('kode_transfer');
+            $counter = $latestTransfer ? (int) substr($latestTransfer, strrpos($latestTransfer, '-') + 1) + 1 : 1;
             $transferId = $transferId . str_pad($counter, 4, "0", STR_PAD_LEFT);
 
             $hdrTransfer = array(

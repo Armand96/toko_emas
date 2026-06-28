@@ -21,24 +21,24 @@ class MProductController extends Controller
     {
         $query = MProduct::query();
 
-        if ($request->has('product_name') && $request->product_name != "") {
-            $query->where('product_name', 'like', '%' . $request->product_name . '%');
+        if ($request->has('product_name') && $request->product_name != '') {
+            $query->where('product_name', 'like', '%'.$request->product_name.'%');
         }
-        if ($request->has('branch_id') && $request->branch_id != "") {
-            $query->whereHas('branches', function($qry) use($request) {
+        if ($request->has('branch_id') && $request->branch_id != '') {
+            $query->whereHas('branches', function ($qry) use ($request) {
                 $qry->where('branch_id', $request->branch_id);
             });
         }
-        if ($request->has('category_id') && $request->category_id != "") {
+        if ($request->has('category_id') && $request->category_id != '') {
             $query->where('category_id', $request->category_id);
         }
-        if ($request->has('description') && $request->description != "") {
-            $query->where('description', 'like', '%' . $request->description . '%');
+        if ($request->has('description') && $request->description != '') {
+            $query->where('description', 'like', '%'.$request->description.'%');
         }
-        if ($request->has('barcode') && $request->barcode != "") {
-            $query->where('barcode', 'like', '%' . $request->barcode . '%');
+        if ($request->has('barcode') && $request->barcode != '') {
+            $query->where('barcode', 'like', '%'.$request->barcode.'%');
         }
-        if ($request->has('is_active') && $request->is_active != "") {
+        if ($request->has('is_active') && $request->is_active != '') {
             $query->where('is_active', $request->is_active);
         }
 
@@ -67,35 +67,38 @@ class MProductController extends Controller
             if ($request->hasFile('image')) {
                 // Upload new image
                 $image = $request->file('image');
-                $imageName = $validated['product_name'] . "_" . date('Y-m-d') . "." . $image->getClientOriginalExtension();
+                $imageName = $validated['product_name'].'_'.date('Y-m-d').'.'.$image->getClientOriginalExtension();
                 $image->storeAs('images', $imageName, 'public');
-                $validated['image_path'] = 'images/' . $imageName;
-                $validated['thumb_path'] = 'thumbs/' . $imageName;
+                $validated['image_path'] = 'images/'.$imageName;
+                $validated['thumb_path'] = 'thumbs/'.$imageName;
                 // Generate thumbnail
                 $thumb = Image::decode($image)->scale(height: 200);
                 Storage::disk('public')->put($validated['thumb_path'], $thumb->encodeUsingFileExtension($image->getClientOriginalExtension(), quality: 70));
             }
-            $countData = MProduct::where('category_id', $validated['category_id'])->lockForUpdate()->count();
-            $category = isset($validated['subcategory_id']) ? MCategory::find($validated['subcategory_id']) : MCategory::find($validated['category_id']);
-            $validated['barcode'] = $category->category_code . "-" . str_pad($countData + 1, 5, "0", STR_PAD_LEFT);
+            $category = isset($validated['subcategory_id']) && $validated['subcategory_id'] != 0 ? MCategory::find($validated['subcategory_id']) : MCategory::find($validated['category_id']);
+            $latestBarcode = MProduct::where('category_id', $validated['category_id'])->lockForUpdate()->orderByDesc('id')->value('barcode');
+            $sequence = $latestBarcode ? (int) substr($latestBarcode, strrpos($latestBarcode, '-') + 1) + 1 : 1;
+            $validated['barcode'] = $category->category_code.'-'.str_pad($sequence, 5, '0', STR_PAD_LEFT);
             $branchIds = $validated['branch_id'];
             $validated['branch_id'] = 0;
             $product = MProduct::create($validated);
 
             $batchInsert = [];
             foreach ($branchIds as $key => $value) {
-                array_push($batchInsert, array(
+                array_push($batchInsert, [
                     'product_id' => $product->id,
                     'branch_id' => $value,
-                    'created_at' => $product->created_at
-                ));
+                    'created_at' => $product->created_at,
+                ]);
             }
             BranchProduct::insert($batchInsert);
 
             DB::commit();
-            return ApiResponse::success($product, "Success create product", 201);
+
+            return ApiResponse::success($product, 'Success create product', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -105,7 +108,7 @@ class MProductController extends Controller
      */
     public function show(MProduct $product)
     {
-        return ApiResponse::success($product->load(['subcategory', 'category.parent', 'branches.branch']), "Success");
+        return ApiResponse::success($product->load(['subcategory', 'category.parent', 'branches.branch']), 'Success');
     }
 
     /**
@@ -140,7 +143,7 @@ class MProductController extends Controller
                 // Upload new image
                 $image = $request->file('image');
 
-                $imageName = $validated['product_name'] . "_" . date('Y-m-d') . "." . $image->getClientOriginalExtension();
+                $imageName = $validated['product_name'].'_'.date('Y-m-d').'.'.$image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
@@ -148,9 +151,9 @@ class MProductController extends Controller
                     'public'
                 );
 
-                $validated['image_path'] = 'images/' . $imageName;
+                $validated['image_path'] = 'images/'.$imageName;
 
-                $validated['thumb_path'] = 'thumbs/' . $imageName;
+                $validated['thumb_path'] = 'thumbs/'.$imageName;
 
                 // Generate thumbnail
                 $thumb = Image::decode($image)
@@ -171,19 +174,19 @@ class MProductController extends Controller
 
             $batchInsert = [];
             foreach ($branchIds as $key => $value) {
-                array_push($batchInsert, array(
+                array_push($batchInsert, [
                     'product_id' => $product->id,
                     'branch_id' => $value,
                     'created_at' => $product->created_at,
-                    'updated_at' => $product->updated_at
-                ));
+                    'updated_at' => $product->updated_at,
+                ]);
             }
             BranchProduct::where('product_id', $product->id)->delete();
             BranchProduct::insert($batchInsert);
 
             DB::commit();
 
-            return ApiResponse::success($product, "Success update product", 201);
+            return ApiResponse::success($product, 'Success update product', 201);
         } catch (\Throwable $th) {
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
