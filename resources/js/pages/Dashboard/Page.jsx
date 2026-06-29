@@ -186,7 +186,7 @@ const Dashboard = () => {
             ensureBranches().then((branches) => {
                 if (Array.isArray(branches)) {
                     setBranchOptions(
-                        HelperFunctions.formatDropdown(branches?.data ?? branches, "id", "name")
+                        HelperFunctions.formatDropdown(branches?.data ?? branches, "id", "branch_name")
                     );
                 }
             });
@@ -264,7 +264,7 @@ const Dashboard = () => {
             </div>
 
             {/* Perlu tindakan — hanya untuk role yang punya akses approval */}
-            {canApprove && (
+            {canApprove && totalPending > 0 && (
                 <div className="rounded-xl border border-warning-200 bg-warning-50/50 p-5">
                     <div className="mb-4 flex items-start gap-3 border-b border-warning-200/70 pb-4">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-warning-100 text-warning-600">
