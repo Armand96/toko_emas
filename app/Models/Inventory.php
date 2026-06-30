@@ -79,4 +79,21 @@ class Inventory extends Model
     {
         return $this->hasMany(InventoryEditHistory::class, 'inventory_id', 'id');
     }
+
+    // Riwayat lengkap: item bisa ditransfer/dihapus berkali-kali sepanjang waktu,
+    // beda dengan transfer()/remove() yang hasOne dan hanya ambil 1 record.
+    public function transferDetails()
+    {
+        return $this->hasMany(TransferItemDetail::class, 'inventory_code', 'inventory_code');
+    }
+
+    public function removeDetails()
+    {
+        return $this->hasMany(RemoveItemDetail::class, 'inventory_code', 'inventory_code');
+    }
+
+    public function salesDetail()
+    {
+        return $this->hasOne(TSalesDetail::class, 'inventory_code', 'inventory_code');
+    }
 }

@@ -62,6 +62,16 @@ class InventoryController extends Controller
             'subCategory',
             'editHistories.updateByUser:id,name,role_id',
             'editHistories.updateByUser.role:id,role_name',
+            'pembelian.user:id,name,role_id',
+            'pembelian.user.role:id,role_name',
+            'transferDetails.header.branchSource',
+            'transferDetails.header.branchDest',
+            'transferDetails.header.user:id,name,role_id',
+            'transferDetails.header.user.role:id,role_name',
+            'removeDetails.header.user:id,name,role_id',
+            'removeDetails.header.user.role:id,role_name',
+            'salesDetail.header.user:id,name,role_id',
+            'salesDetail.header.user.role:id,role_name',
         ]), "OK", 200);
     }
 
