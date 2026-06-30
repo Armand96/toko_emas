@@ -20,6 +20,8 @@ import MiniStatCard from "./Component/MiniStatCard";
 import ChartCard from "./Component/ChartCard";
 import BarChartH from "./Component/BarChartH";
 import DonutChart from "./Component/DonutChart";
+import AuthStore from "../../../Store/AuthStore";
+import PermissionStore from "../../../Store/PermissionStore";
 
 const STATUS_TONE = {
     AVAILABLE: "success",
@@ -58,6 +60,8 @@ const ReportInventory = () => {
     const setLoading = LoadingStore((s) => s.setLoading);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const ensureCategories = OptionsStore((s) => s.ensureCategories);
+      const user = AuthStore((s) => s.user);
+        const isKasir = PermissionStore((s) => s.isKasir);
 
     const [filter, setFilter] = useState({
         cabang: "",
@@ -91,7 +95,7 @@ const ReportInventory = () => {
 
     const buildParams = (extra = {}) => {
         const q = new URLSearchParams();
-        if (filter.cabang) q.append("branch_id", filter.cabang);
+        if (filter.cabang ||  isKasir()) q.append("branch_id",   isKasir() ? user?.branch_id : filter.cabang );
         if (filter.kategori) q.append("category_id", filter.kategori);
         Object.entries(extra).forEach(([k, v]) => {
             if (v !== "" && v !== undefined && v !== null) q.append(k, v);
@@ -290,7 +294,7 @@ const ReportInventory = () => {
 
             {/* Filter bar */}
             <div className="flex flex-wrap items-start gap-3">
-                <div className="w-full sm:w-[180px]">
+                <div className={`w-full sm:w-[180px] ${isKasir() && "hidden"}`}>
                     <InputGroup
                         fields={[{ name: "cabang", label: "", type: "dropdown", options: branchOptions, placeholder: "Semua Cabang" }]}
                         formData={filter}

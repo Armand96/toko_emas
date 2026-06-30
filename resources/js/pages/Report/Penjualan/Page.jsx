@@ -17,10 +17,16 @@ import StatCard from "./Component/StatCard";
 import ChartCard from "./Component/ChartCard";
 import BarChartH from "./Component/BarChartH";
 import LineChart from "./Component/LineChart";
+import AuthStore from "../../../Store/AuthStore";
+import PermissionStore from "../../../Store/PermissionStore";
 
 const ReportPenjualan = () => {
     const setLoading = LoadingStore((s) => s.setLoading);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
+        const user = AuthStore((s) => s.user);
+        const isKasir = PermissionStore((s) => s.isKasir);
+
+
 
     const [filter, setFilter] = useState({
         dateRange: { mode: "all", start: "", end: "" },
@@ -51,7 +57,7 @@ const ReportPenjualan = () => {
             q.append("start_date", `${start} 00:00:00`);
             q.append("end_date", `${end} 23:59:59`);
         }
-        if (filter.cabang) q.append("branch_id", filter.cabang);
+        if (filter.cabang ) q.append("branch_id", isKasir() ? user.branch_id : filter.cabang);
         Object.entries(extra).forEach(([k, v]) => {
             if (v !== "" && v !== undefined && v !== null) q.append(k, v);
         });
@@ -268,7 +274,7 @@ const ReportPenjualan = () => {
                         onChange={handleChange}
                     />
                 </div>
-                <div className="w-full sm:w-[180px]">
+                <div className={`w-full sm:w-[180px] ${isKasir() && "hidden"}`}>
                     <InputGroup
                         fields={[{
                             name: "cabang",
