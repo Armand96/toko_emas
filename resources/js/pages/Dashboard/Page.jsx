@@ -55,16 +55,16 @@ const Dashboard = () => {
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const isKasir = PermissionStore((s) => s.isKasir);
     const user = AuthStore((s) => s.user);
-    const canApprove = PermissionStore((s) => s.hasPermission("approval.penjualan"));
+    const canApprove = PermissionStore((s) => s.hasPermission("/approval/penjualan"));
 
     const [filter, setFilter] = useState({ cabang: "" });
     const [trendRange, setTrendRange] = useState("7");
 
     const [pendingActions, setPendingActions] = useState([
-        { key: "penjualan", label: "Penjualan", count: 0, path: "/transaksi/penjualan" },
-        { key: "pembelian", label: "Pembelian", count: 0, path: "/transaksi/pembelian" },
-        { key: "remove-item", label: "Remove Item", count: 0, path: "/inventory/remove-item" },
-        { key: "transfer-item", label: "Transfer Item", count: 0, path: "/inventory/transfer-item" },
+        { key: "penjualan", label: "Penjualan", count: 0, path: "/approval/penjualan" },
+        { key: "pembelian", label: "Pembelian", count: 0, path: "/approval/pembelian" },
+        { key: "remove-item", label: "Remove Item", count: 0, path: "/approval/remove-item" },
+        { key: "transfer-item", label: "Transfer Item", count: 0, path: "/approval/transfer" },
     ]);
 
     const [stats, setStats] = useState({
@@ -132,10 +132,10 @@ const Dashboard = () => {
 
             if (takeAction && canApprove) {
                 setPendingActions([
-                    { key: "penjualan", label: "Penjualan", count: takeAction.count_penjualan || 0, path: "/transaksi/penjualan" },
-                    { key: "pembelian", label: "Pembelian", count: takeAction.count_pembelian || 0, path: "/transaksi/pembelian" },
-                    { key: "remove-item", label: "Remove Item", count: takeAction.count_remove_item || 0, path: "/inventory/remove-item" },
-                    { key: "transfer-item", label: "Transfer Item", count: takeAction.count_transfer_item || 0, path: "/inventory/transfer-item" },
+                    { key: "penjualan", label: "Penjualan", count: takeAction.count_penjualan || 0, path: "/approval/penjualan" },
+                    { key: "pembelian", label: "Pembelian", count: takeAction.count_pembelian || 0, path: "/approval/pembelian" },
+                    { key: "remove-item", label: "Remove Item", count: takeAction.count_remove_item || 0, path: "/approval/remove-item" },
+                    { key: "transfer-item", label: "Transfer Item", count: takeAction.count_transfer_item || 0, path: "/approval/transfer" },
                 ]);
             }
 

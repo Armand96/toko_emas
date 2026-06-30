@@ -127,7 +127,7 @@ class TransferItemController extends Controller
             if ($status == TransferItemStatus::DISETUJUI) {
                 // $mproducts = BranchProduct::whereIn('product_id', $products)->select(['branch_id'])->toArray();
                 Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow, 'branch_id' => $data->branch_dest_id));
-            } else if ($status == TransferItemStatus::DIBATALKAN) {
+            } else if ($status == TransferItemStatus::DIBATALKAN || $status == TransferItemStatus::DITOLAK) {
                 Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow));
             }
 

@@ -7,8 +7,8 @@ import Branch from "../pages/administrator/Branch/Page";
 import SettingStore from "../pages/administrator/Store/Page";
 import { Approval } from "./approval";
 import { Report } from "./report";
+import { Transaksi } from "./transaksi";
 import MasterBank from "../pages/administrator/MasterBank/Page";
-import Penjualan from "../pages/Penjualan/Page";
 import MasterUser from "../pages/administrator/user/Page";
 import MasterSupplier from "../pages/administrator/Supplier/Page";
 import MasterCustomer from "../pages/administrator/Customer/Page";
@@ -50,12 +50,12 @@ const router = createBrowserRouter([
                     { path: "/administrator/supplier", element: <MasterSupplier /> },
                     { path: "/administrator/customer", element: <MasterCustomer /> },
                     { path: "/administrator/master-category-finance", element: <MasterCategoryFinance /> },
-                    { path: "/transaksi/penjualan", element: <Penjualan /> },
                     { path: "/finance", element: <Finance /> },
                     ...Inventory,
                     ...Ui,
                     ...Approval,
                     ...Report,
+                    ...Transaksi,
                 ],
             },
         ],

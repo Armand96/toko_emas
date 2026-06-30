@@ -350,8 +350,8 @@ const ApprovalPembelian = () => {
             <Modal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSubmitApprove={can('update', 'approval.pembelian') ? handleApprove : undefined}
-                onSubmitReject={can('update', 'approval.pembelian') ? handleReject : undefined}
+                onSubmitApprove={can('update') ? handleApprove : undefined}
+                onSubmitReject={can('update') ? handleReject : undefined}
                 data={selectedData ? {
                     ...selectedData,
                     user: selectedData.user ?? (userMap[selectedData.created_by]
@@ -365,10 +365,10 @@ const ApprovalPembelian = () => {
                 <FooterActionBar
                     selectedCount={selectedRows.length}
                     onClearSelection={() => setSelectedRows([])}
-                    secondaryText={can('update', 'approval.pembelian') ? "Tolak" : undefined}
+                    secondaryText={can('update') ? "Tolak" : undefined}
                     secondaryType="danger"
                     onSecondaryClick={handleBulkReject}
-                    primaryText={can('update', 'approval.pembelian') ? "Setujui" : undefined}
+                    primaryText={can('update') ? "Setujui" : undefined}
                     primaryType="primary"
                     onPrimaryClick={handleBulkApprove}
                 />

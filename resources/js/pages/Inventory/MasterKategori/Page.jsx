@@ -173,7 +173,7 @@ const MasterKategori = () => {
             render: (row) => (
                 <ActionButtonGroup>
                     <ActionButton variant="view" onClick={() => handleOpenModal("view", row)} />
-                    {can('update', 'inventory.master_kategori') && (
+                    {can('update') && (
                         <ActionButton variant="edit" onClick={() => handleOpenModal("edit", row)} />
                     )}
                 </ActionButtonGroup>
@@ -195,7 +195,7 @@ const MasterKategori = () => {
                 title="Master Kategori"
                 description="Kelola daftar kategori dan sub-kategori produk."
                 icon={PlusCircleIcon}
-                onClick={can('create', 'inventory.master_kategori') ? () => handleOpenModal("add") : undefined}
+                onClick={can('create') ? () => handleOpenModal("add") : undefined}
                 textButton="Tambah Kategori"
             />
             <div className="flex flex-wrap items-end gap-3">

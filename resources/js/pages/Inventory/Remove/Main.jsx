@@ -228,7 +228,7 @@ const Main = ({ setCurentState }) => {
             header: 'Aksi', accessor: 'aksi',
             render: (row) => (
                 <ActionButtonGroup>
-                    {row.status === 'Approval' && can('delete', 'inventory.remove') && (
+                    {row.status === 'Approval' && can('delete') && (
                         <ActionButton variant="cancel" onClick={() => handleCancel(row)} />
                     )}
                     <ActionButton variant="view" title="Lihat Detail" onClick={() => handleViewDetail(row)} />
@@ -244,7 +244,7 @@ const Main = ({ setCurentState }) => {
                 description="Kelola proses barang keluar dari ready stock berdasarkan jenis transaksi."
                 icon={PlusCircleIcon}
                 textButton="Remove Item"
-                onClick={can('create', 'inventory.remove') ? () => setCurentState('form') : undefined}
+                onClick={can('create') ? () => setCurentState('form') : undefined}
             />
             <div className="flex flex-wrap items-end gap-3">
                 <div className="flex-1 min-w-[220px] max-w-xs">

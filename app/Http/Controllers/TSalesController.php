@@ -89,6 +89,8 @@ class TSalesController extends Controller
             $insertBatch = [];
             $subTotal = 0;
 
+            $whereInInventoryCode = [];
+
             foreach ($validated['item'] as $index => $value) {
                 $itemData = array(
                     'sales_id' => $hdrData->id,
@@ -99,10 +101,15 @@ class TSalesController extends Controller
                 );
 
                 $subTotal += $value['price'];
+                array_push($whereInInventoryCode, $value['inventory_code']);
                 array_push($insertBatch, $itemData);
             }
 
             TSalesDetail::insert($insertBatch);
+
+            Inventory::whereIn('inventory_code', $whereInInventoryCode)->update([
+                'status' => InventoryStatus::PENDING
+            ]);
 
             $hdrData->sub_total = $subTotal;
             $hdrData->grand_total = $subTotal;
@@ -150,6 +157,11 @@ class TSalesController extends Controller
                     'nominal' => $data->grand_total,
                     'is_auto' => true
                 ));
+            } elseif ($status == SalesStatus::DITOLAK || $status == SalesStatus::DIBATALKAN) {
+                $products = TSalesDetail::where('sales_id', $validated['penjualan_id'])->pluck('inventory_code')->toArray();
+                $dateNow = date('Y-m-d H:i:s');
+
+                Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow));
             }
 
             DB::commit();

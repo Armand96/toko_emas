@@ -173,7 +173,7 @@ const Main = () => {
             render: (row) => (
                 <ActionButtonGroup>
                     <ActionButton variant="view" title="Lihat Detail" onClick={() => handleViewDetail(row)} />
-                    {can('update', 'inventory.in_repair') && (
+                    {can('update') && (
                         <ActionButton icon={ArrowRight} title="Kembalikan ke Inventory" tone="default" onClick={() => handleReturn(row)} />
                     )}
                 </ActionButtonGroup>

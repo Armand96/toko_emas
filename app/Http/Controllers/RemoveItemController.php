@@ -128,6 +128,7 @@ class RemoveItemController extends Controller
 
             $dateNow = date('Y-m-d H:i:s');
             $insertBatch = [];
+            $whereInInventoryCode = [];
 
             foreach ($validated['item'] as $index => $value) {
                 $itemData = array(
@@ -137,10 +138,15 @@ class RemoveItemController extends Controller
                     'created_at' => $dateNow
                 );
 
+                array_push($whereInInventoryCode, $value['inventory_code']);
                 array_push($insertBatch, $itemData);
             }
 
             RemoveItemDetail::insert($insertBatch);
+
+            Inventory::whereIn('inventory_code', $whereInInventoryCode)->update([
+                'status' => InventoryStatus::PENDING
+            ]);
 
             DB::commit();
 
@@ -173,7 +179,7 @@ class RemoveItemController extends Controller
                 $removeItemData = RemoveItem::find($validated['remove_id']);
                 $jenis = RemoveItemJenis::from($removeItemData->jenis);
                 Inventory::whereIn('inventory_code', $products)->update(array('status' => $jenis == RemoveItemJenis::HILANG ? InventoryStatus::LOST : InventoryStatus::REPAIR, 'updated_at' => $dateNow));
-            } elseif ($status == RemoveItemStatus::RETURN || $status == RemoveItemStatus::DIBATALKAN) {
+            } elseif ($status == RemoveItemStatus::RETURN || $status == RemoveItemStatus::DIBATALKAN || $status == RemoveItemStatus::DITOLAK) {
                 Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow));
             }
 

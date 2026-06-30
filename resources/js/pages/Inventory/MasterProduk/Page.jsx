@@ -287,7 +287,7 @@ const MasterProduk = () => {
             render: (row) => (
                 <ActionButtonGroup>
                     <ActionButton variant="view" onClick={() => handleOpenModal('view', row)} />
-                    {can('update', 'inventory.master_produk') && (
+                    {can('update') && (
                         <ActionButton variant="edit" onClick={() => handleOpenModal('edit', row)} />
                     )}
                 </ActionButtonGroup>
@@ -312,7 +312,7 @@ const MasterProduk = () => {
                 title="Master Produk"
                 description="Kelola daftar produk toko emas Anda secara keseluruhan."
                 icon={PlusCircleIcon}
-                onClick={can('create', 'inventory.master_produk') ? () => handleOpenModal('add') : undefined}
+                onClick={can('create') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah Produk"
             />
             <div className="flex flex-wrap items-end gap-3">

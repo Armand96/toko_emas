@@ -121,7 +121,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     .map((section) => ({
       ...section,
       items: section.items
-        .filter((item) => canSeeMenu(item.id))
+        .filter((item) => canSeeMenu(item))
         .map((item) => {
           if (!item.subItems) return item;
           const filteredSubs = item.subItems.filter((sub) => canSeeSubMenu(sub.link));

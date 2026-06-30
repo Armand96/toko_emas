@@ -298,8 +298,8 @@ const ApprovalPenjualan = () => {
             <ModalDetailPenjualan
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSubmitApprove={can('update', 'approval.penjualan') ? handleApprove : undefined}
-                onSubmitReject={can('update', 'approval.penjualan') ? handleReject : undefined}
+                onSubmitApprove={can('update') ? handleApprove : undefined}
+                onSubmitReject={can('update') ? handleReject : undefined}
                 data={selectedData}
             />
         </div>
