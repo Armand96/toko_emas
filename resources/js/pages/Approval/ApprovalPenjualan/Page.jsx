@@ -78,7 +78,7 @@ const ApprovalPenjualan = () => {
     };
 
     useEffect(() => {
-        fetchData();
+        fetchData(1, paramFetch.per_page, filter);
         ensureBranches()
             .then((data) => setBranchOptions(HelperFunctions.formatDropdown(data, "id", "branch_name")));
     }, []);

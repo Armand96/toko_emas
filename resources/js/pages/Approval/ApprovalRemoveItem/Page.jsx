@@ -71,7 +71,7 @@ const ApprovalRemoveItem = () => {
                 setProductMap(map);
             });
 
-        fetchData();
+        fetchData(1, paramFetch.per_page, filter);
     }, []);
 
     useEffect(() => {
