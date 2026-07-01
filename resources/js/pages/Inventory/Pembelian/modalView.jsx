@@ -194,7 +194,7 @@ export default function ModalView({ isOpen, onClose, data }) {
                     Icon={data?.status === 'DISETUJUI' ? CheckCircleIcon : (data?.status === 'DITOLAK' || data?.status === 'DIBATALKAN') ? XCircleIcon : ClockIcon}
                     iconColor={data?.status === 'DISETUJUI' ? 'text-success-500' : (data?.status === 'DITOLAK' || data?.status === 'DIBATALKAN') ? 'text-danger-500' : 'text-warning-500'}
                     statusText={data?.status === 'DISETUJUI' ? 'Disetujui oleh' : data?.status === 'DITOLAK' ? 'Ditolak oleh' : data?.status === 'DIBATALKAN' ? 'Dibatalkan oleh' : 'Menunggu Approval oleh'}
-                    pic={data?.status === 'DIBATALKAN' ? (data?.user?.name || '-') : (data?.approved_by || 'Owner')}
+                    pic={data?.status === 'DIBATALKAN' ? (data?.created_by_name || '-') : (data?.approved_by || 'Owner')}
                     date={data?.updated_at ? dayjs(data.updated_at).format('DD MMMM YYYY, HH:mm') : '-'}
                     reasonLabel={data?.status === 'DITOLAK' ? 'Alasan Penolakan' : data?.status === 'DIBATALKAN' ? 'Alasan Pembatalan' : null}
                     reason={(data?.status === 'DITOLAK' || data?.status === 'DIBATALKAN') ? data?.note : null}

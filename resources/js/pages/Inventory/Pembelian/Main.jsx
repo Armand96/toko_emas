@@ -361,6 +361,7 @@ const MainPembelian = ({ setCurentState }) => {
                     user: selectedData.user ?? (userMap[selectedData.created_by]
                         ? { name: userMap[selectedData.created_by] }
                         : null),
+                    created_by_name: userMap[selectedData.created_by] || selectedData.user?.name || '-',
                 } : null}
             />
 

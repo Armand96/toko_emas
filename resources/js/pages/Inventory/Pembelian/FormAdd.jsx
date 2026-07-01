@@ -117,7 +117,7 @@ const FormPembelian = ({ setCurentState }) => {
         setBankOptions([]);
 
         if (branchId) {
-            BankApis.GetBankBranch(`?branch_id=${branchId}`).then((res) => {
+            BankApis.GetBankBranch(`?branch_id=${branchId}&is_active=1`).then((res) => {
                 setBankOptions(HelperFunctions.formatDropdownBank(res?.data || []));
             });
         }
