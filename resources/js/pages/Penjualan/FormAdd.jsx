@@ -85,12 +85,10 @@ const FormAdd = ({ setCurentState }) => {
     const [paymentMethod, setPaymentMethod] = useState('tunai');
     const [bankOptions, setBankOptions] = useState([]);
     const [selectedBankId, setSelectedBankId] = useState(null);
-    const [namaPengirim, setNamaPengirim] = useState('');
-    const [rekeningPengirim, setRekeningPengirim] = useState('');
 
     useEffect(() => {
         if (paymentMethod === 'transfer' && user?.branch_id) {
-            BankApis.GetBankBranch(`?per_page=10000000&branch_id=${user.branch_id}`)
+            BankApis.GetBankBranch(`?per_page=10000000&branch_id=${user.branch_id}&is_active=1`)
                 .then((res) => {
                     setBankOptions(res?.data || []);
                     setSelectedBankId(null);
@@ -118,11 +116,11 @@ const FormAdd = ({ setCurentState }) => {
         if (paymentMethod === 'tunai') {
             if (!uangDibayar || uangDibayar < subTotal) return false;
         } else {
-            if (!selectedBankId || !namaPengirim || !rekeningPengirim) return false;
+            if (!selectedBankId) return false;
         }
 
         return true;
-    }, [cartItems, customerType, customerData, selectedMember, paymentMethod, uangDibayar, subTotal, selectedBankId, namaPengirim, rekeningPengirim]);
+    }, [cartItems, customerType, customerData, selectedMember, paymentMethod, uangDibayar, subTotal, selectedBankId]);
 
     const mapInventoryToCartItem = (inv) => ({
         inventory_code: inv.inventory_code,
@@ -260,8 +258,6 @@ const FormAdd = ({ setCurentState }) => {
                 payload.exchange = kembalian > 0 ? kembalian : 0;
             } else {
                 payload.receiver_bank_id = selectedBankId;
-                payload.sender_bank_name = namaPengirim;
-                payload.sender_rekening = rekeningPengirim;
             }
 
             await PenjualanApis.PostPenjualan(payload);
@@ -539,29 +535,6 @@ const FormAdd = ({ setCurentState }) => {
                                 </div>
                             </div>
 
-                            {/* Input Nama & Rekening Pengirim */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-sm font-medium text-gray-900">Nama Pengirim<span className="text-error-500">*</span></label>
-                                    <input
-                                        type="text"
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                                        value={namaPengirim}
-                                        onChange={(e) => setNamaPengirim(e.target.value)}
-                                        placeholder="Masukkan nama pengirim"
-                                    />
-                                </div>
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-sm font-medium text-gray-900">No. Rekening Pengirim<span className="text-error-500">*</span></label>
-                                    <input
-                                        type="text"
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                                        value={rekeningPengirim}
-                                        onChange={(e) => setRekeningPengirim(e.target.value)}
-                                        placeholder="Masukkan no. rekening pengirim"
-                                    />
-                                </div>
-                            </div>
                         </div>
                     )}
                 </div>

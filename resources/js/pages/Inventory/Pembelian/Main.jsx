@@ -164,21 +164,20 @@ const MainPembelian = ({ setCurentState }) => {
         HelperFunctions.printBarcode(barcodes, { items });
     };
 
+    const selectableCount = paramFetch.data.filter(item => selectableStatuses.includes(item.status)).length;
+
     const columns = [
         {
-            header: (
+            header: isKasir() && selectableCount > 0 ? (
                 <input
                     type="checkbox"
                     className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
                     onChange={handleSelectAll}
-                    checked={
-                        selectedRows.length > 0 &&
-                        selectedRows.length === paramFetch.data.filter(item => selectableStatuses.includes(item.status)).length
-                    }
+                    checked={selectedRows.length > 0 && selectedRows.length === selectableCount}
                 />
-            ),
+            ) : "",
             accessor: 'checkbox',
-            render: (row) => selectableStatuses.includes(row.status) ? (
+            render: (row) => isKasir() && selectableStatuses.includes(row.status) ? (
                 <input
                     type="checkbox"
                     className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
@@ -263,7 +262,7 @@ const MainPembelian = ({ setCurentState }) => {
             accessor: "aksi",
             render: (row) => (
                 <ActionButtonGroup>
-                    {["APPROVAL"].includes(row?.status) && can('delete', 'inventory.pembelian') && (
+                    {["APPROVAL"].includes(row?.status) && can('delete') && isKasir() && (
                         <ActionButton variant="cancel" title="Batalkan" onClick={() => handleCancel(row)} />
                     )}
                     <ActionButton
@@ -295,7 +294,7 @@ const MainPembelian = ({ setCurentState }) => {
                 title="Pembelian"
                 description="Catat dan kelola pembelian barang sebelum masuk ke inventory aktif"
                 icon={PlusCircleIcon}
-                onClick={can('create', 'inventory.pembelian') ? () => setCurentState && setCurentState("form") : undefined}
+                onClick={can('create') ? () => setCurentState && setCurentState("form") : undefined}
                 textButton="Tambah Pembelian"
             />
 
@@ -346,11 +345,13 @@ const MainPembelian = ({ setCurentState }) => {
                 page={paramFetch.current_page}
                 pageSize={paramFetch.per_page}
                 onPageChange={onChangePage}
+
                 onPageSizeChange={onChangePageSize}
             />
 
             <ModalView
                 isOpen={isModalOpen}
+
                 onClose={() => {
                     setIsModalOpen(false);
                     setSelectedData(null);
@@ -360,6 +361,7 @@ const MainPembelian = ({ setCurentState }) => {
                     user: selectedData.user ?? (userMap[selectedData.created_by]
                         ? { name: userMap[selectedData.created_by] }
                         : null),
+                    created_by_name: userMap[selectedData.created_by] || selectedData.user?.name || '-',
                 } : null}
             />
 
@@ -369,6 +371,7 @@ const MainPembelian = ({ setCurentState }) => {
                     onClearSelection={() => setSelectedRows([])}
                     primaryText={approvedItems.length > 0 ? `Cetak QR Code (${approvedItems.length})` : undefined}
                     primaryType="primary"
+
                     primaryIcon={<PrinterIcon size={16} />}
                     onPrimaryClick={handleBulkPrint}
                     secondaryText={hasApproval ? "Batalkan Pengajuan" : undefined}

@@ -272,8 +272,8 @@ const ApprovalTransfer = () => {
             <ModalDetailTransfer
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSubmitApprove={can('update', 'approval.transfer') ? handleApprove : undefined}
-                onSubmitReject={can('update', 'approval.transfer') ? handleReject : undefined}
+                onSubmitApprove={can('update') ? handleApprove : undefined}
+                onSubmitReject={can('update') ? handleReject : undefined}
                 data={selectedData}
                 productMap={productMap}
             />

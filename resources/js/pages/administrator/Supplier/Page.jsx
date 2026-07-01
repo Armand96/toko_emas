@@ -144,7 +144,7 @@ const MasterSupplier = () => {
             render: (row) => (
                 <ActionButtonGroup>
                     <ActionButton variant="view" onClick={() => handleOpenModal('view', row)} />
-                    {can('update', 'administrator.supplier') && (
+                    {can('update') && (
                         <ActionButton variant="edit" onClick={() => handleOpenModal('edit', row)} />
                     )}
                 </ActionButtonGroup>
@@ -166,7 +166,7 @@ const MasterSupplier = () => {
                 title="Supplier"
                 description="Kelola data supplier untuk mendukung proses transaksi pembelian."
                 icon={PlusCircleIcon}
-                onClick={can('create', 'administrator.supplier') ? () => handleOpenModal('add') : undefined}
+                onClick={can('create') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah Supplier"
             />
             <div className="flex flex-wrap items-end gap-3">

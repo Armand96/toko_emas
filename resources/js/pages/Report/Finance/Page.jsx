@@ -166,8 +166,8 @@ const ReportFinance = () => {
         (async () => {
             try {
                 const params = filter.cabang
-                    ? `?per_page=10000000&branch_id=${filter.cabang}`
-                    : "?per_page=10000000";
+                    ? `?per_page=10000000&branch_id=${filter.cabang}&is_active=1`
+                    : "?per_page=10000000&is_active=1";
                 const res = await BankApis.GetBankBranch(params);
                 const list = res?.data || [];
                 setBankCabangOptions([

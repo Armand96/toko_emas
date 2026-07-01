@@ -146,7 +146,7 @@ const MasterCustomer = () => {
             render: (row) => (
                 <ActionButtonGroup>
                     <ActionButton variant="view" onClick={() => handleOpenModal('view', row)} />
-                    {can('update', 'administrator.customer') && (
+                    {can('update') && (
                         <ActionButton variant="edit" onClick={() => handleOpenModal('edit', row)} />
                     )}
                 </ActionButtonGroup>
@@ -168,7 +168,7 @@ const MasterCustomer = () => {
                 title="Customer"
                 description="Kelola data pelanggan untuk mendukung proses transaksi penjualan dan layanan pelanggan."
                 icon={PlusCircleIcon}
-                onClick={can('create', 'administrator.customer') ? () => handleOpenModal('add') : undefined}
+                onClick={can('create') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah Customer"
             />
             <div className="flex flex-wrap items-end gap-3">

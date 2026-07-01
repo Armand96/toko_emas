@@ -143,7 +143,7 @@ const Main = ({ setCurentState }) => {
                 description="Kelola proses stock opname untuk memastikan kesesuaian stok fisik dan sistem."
                 icon={PlusCircleIcon}
                 textButton="Input Sesi Stock Opname"
-                onClick={can('create', 'inventory.stock_opname') ? () => setCurentState({ view: 'form' }) : undefined}
+                onClick={can('create') ? () => setCurentState({ view: 'form' }) : undefined}
             />
             <div className="flex flex-wrap items-end gap-3">
                 <div className="min-w-[220px]">

@@ -71,7 +71,7 @@ const ApprovalRemoveItem = () => {
                 setProductMap(map);
             });
 
-        fetchData();
+        fetchData(1, paramFetch.per_page, filter);
     }, []);
 
     useEffect(() => {
@@ -278,8 +278,8 @@ const ApprovalRemoveItem = () => {
             <ModalDetailRemoveItem
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSubmitApprove={can('update', 'approval.remove_item') ? handleApprove : undefined}
-                onSubmitReject={can('update', 'approval.remove_item') ? handleReject : undefined}
+                onSubmitApprove={can('update') ? handleApprove : undefined}
+                onSubmitReject={can('update') ? handleReject : undefined}
                 data={selectedData}
             />
         </div>

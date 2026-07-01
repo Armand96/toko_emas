@@ -186,7 +186,7 @@ const MasterUser = () => {
             render: (row) => (
                 <ActionButtonGroup>
                     <ActionButton variant="view" onClick={() => handleOpenModal('view', row)} />
-                    {can('update', 'administrator.user') && (
+                    {can('update') && (
                         <ActionButton variant="edit" onClick={() => handleOpenModal('edit', row)} />
                     )}
                 </ActionButtonGroup>
@@ -215,7 +215,7 @@ const MasterUser = () => {
                 title="User Management"
                 description="Kelola data pengguna untuk akses ke sistem."
                 icon={PlusCircleIcon}
-                onClick={can('create', 'administrator.user') ? () => handleOpenModal('add') : undefined}
+                onClick={can('create') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah User"
             />
             <div className="flex flex-wrap items-end gap-3">

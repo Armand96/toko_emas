@@ -49,12 +49,12 @@ const OptionsStore = create((set, get) => ({
     suppliers: { ...initial },
     users: { ...initial },
 
-    ensureProducts: createResource(set, get, "products", () => InventoryApis.GetProducts("?per_page=10000000")),
-    ensureCategories: createResource(set, get, "categories", () => InventoryApis.GetCategories("?per_page=10000000")),
-    ensureBranches: createResource(set, get, "branches", () => BranchApis.GetBranch("?per_page=10000000")),
-    ensureBanks: createResource(set, get, "banks", () => BankApis.GetBankBranch("?per_page=10000000")),
-    ensureSuppliers: createResource(set, get, "suppliers", () => SupplierApis.GetSupplier("?per_page=10000000")),
-    ensureUsers: createResource(set, get, "users", () => UsersApis.GetUser("?per_page=10000000")),
+    ensureProducts: createResource(set, get, "products", () => InventoryApis.GetProducts("?per_page=10000000&is_active=1")),
+    ensureCategories: createResource(set, get, "categories", () => InventoryApis.GetCategories("?per_page=10000000&is_active=1")),
+    ensureBranches: createResource(set, get, "branches", () => BranchApis.GetBranch("?per_page=10000000&is_active=1")),
+    ensureBanks: createResource(set, get, "banks", () => BankApis.GetBankBranch("?per_page=10000000&is_active=1")),
+    ensureSuppliers: createResource(set, get, "suppliers", () => SupplierApis.GetSupplier("?per_page=10000000&is_active=1")),
+    ensureUsers: createResource(set, get, "users", () => UsersApis.GetUser("?per_page=10000000&is_active=1")),
 
     invalidate: (key) => set({ [key]: { data: [], loaded: false, promise: null } }),
 }));

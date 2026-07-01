@@ -78,7 +78,7 @@ const ApprovalPenjualan = () => {
     };
 
     useEffect(() => {
-        fetchData();
+        fetchData(1, paramFetch.per_page, filter);
         ensureBranches()
             .then((data) => setBranchOptions(HelperFunctions.formatDropdown(data, "id", "branch_name")));
     }, []);
@@ -298,8 +298,8 @@ const ApprovalPenjualan = () => {
             <ModalDetailPenjualan
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSubmitApprove={can('update', 'approval.penjualan') ? handleApprove : undefined}
-                onSubmitReject={can('update', 'approval.penjualan') ? handleReject : undefined}
+                onSubmitApprove={can('update') ? handleApprove : undefined}
+                onSubmitReject={can('update') ? handleReject : undefined}
                 data={selectedData}
             />
         </div>

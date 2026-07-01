@@ -178,10 +178,10 @@ const Finance = () => {
             render: (row) => (
                 <ActionButtonGroup>
                     <ActionButton variant="view" title="Lihat Detail" onClick={() => handleOpenView(row)} />
-                    {!row.is_auto && can('update', 'finance') && (
+                    {!row.is_auto && can('update') && (
                         <ActionButton variant="edit" onClick={() => handleOpenEdit(row)} />
                     )}
-                    {!row.is_auto && can('delete', 'finance') && (
+                    {!row.is_auto && can('delete') && (
                         <ActionButton variant="delete" onClick={() => handleDelete(row)} />
                     )}
                 </ActionButtonGroup>
@@ -199,7 +199,7 @@ const Finance = () => {
                 description="Kelola data keuangan toko."
                 icon={PlusCircleIcon}
                 textButton="Tambah Transaksi"
-                onClick={can('create', 'finance') ? handleOpenAdd : undefined}
+                onClick={can('create') ? handleOpenAdd : undefined}
             />
 
             {/* Filter Bar */}

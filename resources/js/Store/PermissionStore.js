@@ -9,274 +9,125 @@ const ROLES = {
     KASIR: 4,
 };
 
-// Permission levels
-const CRUD = ['create', 'read', 'update', 'delete'];
-const RU = ['read', 'update'];
-const READ = ['read'];
+const { SUPER_ADMIN, OWNER, PIC, KASIR } = ROLES;
+const ACTIONS = ['create', 'read', 'update', 'delete'];
 
-// Hardcoded permission matrix per role
-const ROLE_PERMISSIONS = {
-    [ROLES.SUPER_ADMIN]: {
-        // Super Admin = All Menu
-        dashboard: CRUD,
-        'approval.penjualan': CRUD,
-        'approval.pembelian': CRUD,
-        'approval.remove_item': CRUD,
-        'approval.transfer': CRUD,
-        'inventory.master_kategori': CRUD,
-        'inventory.master_produk': CRUD,
-        'inventory.pembelian': CRUD,
-        'inventory.item_inventory': CRUD,
-        'inventory.remove': CRUD,
-        'inventory.in_repair': CRUD,
-        'inventory.transfer': CRUD,
-        'inventory.stock_opname': CRUD,
-        penjualan: CRUD,
-        finance: CRUD,
-        report: CRUD,
-        'report.inventory': CRUD,
-        'report.pembelian': CRUD,
-        'report.penjualan': CRUD,
-        'report.finance': CRUD,
+// Satu baris per halaman (diidentifikasi oleh link/route-nya sendiri).
+// Tiap action berisi role mana saja yang boleh melakukannya.
+const PERMISSIONS = [
+    { link: '/dashboard',
+        create: [SUPER_ADMIN], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN], delete: [SUPER_ADMIN] },
 
-        'report.customer': CRUD,
-        'administrator.user': CRUD,
-        'administrator.cabang': CRUD,
-        'administrator.setting': CRUD,
-        'administrator.master_bank': CRUD,
-        'administrator.supplier': CRUD,
-        'administrator.customer': CRUD,
-        'administrator.master_category_finance': CRUD,
-        'transaksi.penjualan': CRUD,
-        'transaksi.pembelian': CRUD,
-    },
+    { link: '/approval/penjualan',
+        create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER] },
+    { link: '/approval/pembelian',
+        create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER] },
+    { link: '/approval/remove-item',
+        create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER] },
+    { link: '/approval/transfer',
+        create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER] },
 
-    [ROLES.OWNER]: {
-        dashboard: READ,
-        'approval.penjualan': CRUD,
-        'approval.pembelian': CRUD,
-        'approval.remove_item': CRUD,
-        'approval.transfer': CRUD,
-        'inventory.master_kategori': CRUD,
-        'inventory.master_produk': CRUD,
-        'inventory.item_inventory': READ,
-        'inventory.remove': READ,
-        'inventory.in_repair': READ,
-        'inventory.transfer': READ,
-        'inventory.stock_opname': READ,
-        finance: CRUD,
-        report: READ,
-        'report.inventory': CRUD,
-        'report.pembelian': CRUD,
-        'report.penjualan': CRUD,
-        'report.finance': CRUD,
-        'report.customer': CRUD,
-        'administrator.user': CRUD,
-        'administrator.cabang': CRUD,
-        'administrator.setting': CRUD,
-        'administrator.master_bank': CRUD,
-        'administrator.supplier': CRUD,
-        'transaksi.penjualan': READ,
-        'transaksi.pembelian': READ,
-        'administrator.customer': CRUD,
-        'administrator.master_category_finance': CRUD,
-    },
+    { link: '/transaksi/penjualan',
+        create: [SUPER_ADMIN, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN, KASIR], delete: [SUPER_ADMIN, KASIR] },
+    { link: '/transaksi/pembelian',
+        create: [SUPER_ADMIN, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN, KASIR], delete: [SUPER_ADMIN, KASIR] },
 
-    [ROLES.PIC]: {
-        dashboard: READ,
-        'approval.penjualan': RU,
-        'approval.pembelian': RU,
-        'approval.remove_item': RU,
-        'approval.transfer': RU,
-        'inventory.master_kategori': CRUD,
-        'inventory.master_produk': CRUD,
-        'inventory.item_inventory': READ,
-        'inventory.remove': READ,
-        'inventory.in_repair': READ,
-        'inventory.transfer': READ,
-        'inventory.stock_opname': CRUD,
-        finance: CRUD,
-        report: READ,
-        'report.inventory': READ,
-        'report.pembelian': READ,
-        'report.penjualan': READ,
-        'report.finance': READ,
-        'report.customer': READ,
-        'administrator.user': CRUD,
-        'administrator.cabang': CRUD,
-        'administrator.setting': CRUD,
-        'administrator.master_bank': CRUD,
-        'administrator.supplier': CRUD,
-        'transaksi.penjualan': READ,
-        'transaksi.pembelian': READ,
-        'administrator.customer': CRUD,
-        'administrator.master_category_finance': CRUD,
-    },
+    { link: '/inventory/master-kategori',
+        create: [SUPER_ADMIN, OWNER, PIC], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER, PIC] },
+    { link: '/inventory/master-produk',
+        create: [SUPER_ADMIN, OWNER, PIC], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER, PIC] },
+    { link: '/inventory/inventory',
+        create: [SUPER_ADMIN, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN, KASIR], delete: [SUPER_ADMIN, KASIR] },
+    { link: '/inventory/remove',
+        create: [SUPER_ADMIN, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN, KASIR], delete: [SUPER_ADMIN, KASIR] },
+    { link: '/inventory/in-repair',
+        create: [SUPER_ADMIN, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN, KASIR], delete: [SUPER_ADMIN, KASIR] },
+    { link: '/inventory/transfer',
+        create: [SUPER_ADMIN, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN, KASIR], delete: [SUPER_ADMIN, KASIR] },
+    { link: '/inventory/stock-opname',
+        create: [SUPER_ADMIN, PIC, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN, PIC, KASIR], delete: [SUPER_ADMIN, PIC, KASIR] },
 
-    [ROLES.KASIR]: {
-        dashboard: READ,
-        'inventory.pembelian': CRUD,
-        'inventory.item_inventory': CRUD,
-        'inventory.remove': CRUD,
-        'inventory.in_repair': CRUD,
-        'inventory.transfer': CRUD,
-        'inventory.stock_opname': CRUD,
-        'transaksi.penjualan': CRUD,
-        'transaksi.pembelian': CRUD,
-        'administrator.supplier': CRUD,
-        'administrator.customer': CRUD,
-    },
-};
+    { link: '/finance',
+        create: [SUPER_ADMIN, OWNER, PIC], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER, PIC] },
 
-// Mapping: sidebar item id -> permission key
-const MENU_PERMISSION_MAP = {
-    dashboard: 'dashboard',
-    approval: [
-        'approval.penjualan',
-        'approval.pembelian',
-        'approval.remove_item',
-        'approval.transfer',
-    ],
-    transaksi: [
-        'transaksi.penjualan',
-        'transaksi.pembelian',
-    ],
-    inventory: [
-        'inventory.master_kategori',
-        'inventory.master_produk',
-        'inventory.pembelian',
-        'inventory.item_inventory',
-        'inventory.remove',
-        'inventory.in_repair',
-        'inventory.transfer',
-        'inventory.stock_opname',
-    ],
-    penjualan: 'penjualan',
-    finance: 'finance',
-    report: [
-        'report.penjualan',
-        'report.pembelian',
-        'report.finance',
-        'report.customer',
-    ],
-    user: 'administrator.user',
-    cabang: 'administrator.cabang',
-    setting: 'administrator.setting',
-    MasterBank: 'administrator.master_bank',
-    MasterSupplier: 'administrator.supplier',
-    MasterCustomer: 'administrator.customer',
-    MasterCategoryFinance: 'administrator.master_category_finance',
-};
+    { link: '/report/pembelian',
+        create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER], delete: [SUPER_ADMIN, OWNER] },
+    { link: '/report/penjualan',
+        create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER], delete: [SUPER_ADMIN, OWNER] },
+    { link: '/report/finance',
+        create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER], delete: [SUPER_ADMIN, OWNER] },
+    { link: '/report/customer',
+        create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER], delete: [SUPER_ADMIN, OWNER] },
 
-// Mapping: sub-menu link -> permission key
-const SUBMENU_PERMISSION_MAP = {
-    '/approval/penjualan': 'approval.penjualan',
-    '/approval/pembelian': 'approval.pembelian',
-    '/approval/remove-item': 'approval.remove_item',
-    '/approval/transfer': 'approval.transfer',
-    '/inventory/master-kategori': 'inventory.master_kategori',
-    '/inventory/master-produk': 'inventory.master_produk',
-    '/inventory/pembelian': 'inventory.pembelian',
-    '/inventory/inventory': 'inventory.item_inventory',
-    '/inventory/remove': 'inventory.remove',
-    '/inventory/in-repair': 'inventory.in_repair',
-    '/inventory/transfer': 'inventory.transfer',
-    '/inventory/stock-opname': 'inventory.stock_opname',
-    '/report/penjualan': 'report.penjualan',
-    '/report/pembelian': 'report.pembelian',
-    '/report/customer': 'report.customer',
-    '/report/finance': 'report.finance',
-     '/transaksi/penjualan': 'transaksi.penjualan',
-    '/transaksi/pembelian': 'transaksi.pembelian',
-};
-
-// Mapping: route path -> permission key
-const ROUTE_PERMISSION_MAP = {
-    '/dashboard': 'dashboard',
-    '/approval/penjualan': 'approval.penjualan',
-    '/approval/pembelian': 'approval.pembelian',
-    '/approval/remove-item': 'approval.remove_item',
-    '/approval/transfer': 'approval.transfer',
-    '/transaksi/penjualan': 'transaksi.penjualan',
-    '/transaksi/pembelian': 'transaksi.pembelian',
-    '/inventory/master-kategori': 'inventory.master_kategori',
-    '/inventory/master-produk': 'inventory.master_produk',
-    '/inventory/pembelian': 'inventory.pembelian',
-    '/inventory/inventory': 'inventory.item_inventory',
-    '/inventory/remove': 'inventory.remove',
-    '/inventory/in-repair': 'inventory.in_repair',
-    '/inventory/transfer': 'inventory.transfer',
-    '/inventory/stock-opname': 'inventory.stock_opname',
-    '/penjualan': 'penjualan',
-    '/finance': 'finance',
-    '/report/penjualan': 'report.penjualan',
-    '/report/pembelian': 'report.pembelian',
-    '/report/customer': 'report.customer',
-    '/report/finance': 'report.finance',
-    '/administrator/users': 'administrator.user',
-    '/administrator/cabang': 'administrator.cabang',
-    '/administrator/setting': 'administrator.setting',
-    '/administrator/master-bank': 'administrator.master_bank',
-    '/administrator/supplier': 'administrator.supplier',
-    '/administrator/customer': 'administrator.customer',
-    '/administrator/master-category-finance': 'administrator.master_category_finance',
-};
+    { link: '/administrator/users',
+        create: [SUPER_ADMIN, OWNER, PIC], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER, PIC] },
+    { link: '/administrator/cabang',
+        create: [SUPER_ADMIN, OWNER, PIC], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER, PIC] },
+    { link: '/administrator/setting',
+        create: [SUPER_ADMIN, OWNER, PIC], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER, PIC] },
+    { link: '/administrator/master-bank',
+        create: [SUPER_ADMIN, OWNER, PIC], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER, PIC] },
+    { link: '/administrator/supplier',
+        create: [SUPER_ADMIN, OWNER, PIC, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN, OWNER, PIC, KASIR], delete: [SUPER_ADMIN, OWNER, PIC, KASIR] },
+    { link: '/administrator/customer',
+        create: [SUPER_ADMIN, OWNER, PIC, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN, OWNER, PIC, KASIR], delete: [SUPER_ADMIN, OWNER, PIC, KASIR] },
+    { link: '/administrator/master-category-finance',
+        create: [SUPER_ADMIN, OWNER, PIC], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER, PIC] },
+];
 
 const initialUser = AuthStore.getState().user;
 const initialRoleId = initialUser?.role_id || null;
 
+const buildPermissions = (roleId) => {
+    const permissions = {};
+    for (const entry of PERMISSIONS) {
+        const actions = ACTIONS.filter((action) => (entry[action] || []).includes(roleId));
+        if (actions.length) permissions[entry.link] = actions;
+    }
+    return permissions;
+};
+
 const PermissionStore = create((set, get) => ({
     roleId: initialRoleId,
-    permissions: ROLE_PERMISSIONS[initialRoleId] || {},
+    permissions: buildPermissions(initialRoleId),
 
     // Sync permissions dari AuthStore user
     syncFromAuth: () => {
         const user = AuthStore.getState().user;
         const roleId = user?.role_id || null;
-        const permissions = ROLE_PERMISSIONS[roleId] || {};
-        set({ roleId, permissions });
+        set({ roleId, permissions: buildPermissions(roleId) });
     },
 
-    // Cek apakah user punya akses ke permission key tertentu
-    hasPermission: (permissionKey) => {
-        const { permissions } = get();
-        return !!permissions[permissionKey];
-    },
+    // Cek apakah user punya akses ke link tertentu (apapun action-nya)
+    hasPermission: (link) => !!get().permissions[link],
 
-    // Cek apakah user punya akses dengan action tertentu (create/read/update/delete)
-    can: (action, permissionKey) => {
-        const { permissions } = get();
-        const actions = permissions[permissionKey];
-        if (!actions) return false;
-        return actions.includes(action);
-    },
-
-    // Cek apakah menu item (by id) boleh ditampilkan
-    canSeeMenu: (menuId) => {
-        const { permissions } = get();
-        const mapping = MENU_PERMISSION_MAP[menuId];
-        if (!mapping) return true;
-        if (Array.isArray(mapping)) {
-            return mapping.some((key) => !!permissions[key]);
-        }
-        return !!permissions[mapping];
-    },
-
-    // Cek apakah sub-menu (by link) boleh ditampilkan
-    canSeeSubMenu: (link) => {
-        const { permissions } = get();
-        const key = SUBMENU_PERMISSION_MAP[link];
-        if (!key) return true;
-        return !!permissions[key];
+    // Cek apakah user punya akses dengan action tertentu (create/read/update/delete).
+    // `link` opsional — kalau tidak dioper, diambil dari URL browser saat ini
+    // (halaman tidak perlu hardcode permission key-nya sendiri).
+    can: (action, link) => {
+        const resolvedLink = link || window.location.pathname;
+        const actions = get().permissions[resolvedLink];
+        return !!actions && actions.includes(action);
     },
 
     // Cek apakah route boleh diakses. `perms` opsional supaya caller bisa
     // mengoper snapshot permission yang sedang dia subscribe (hindari baca stale).
     canAccessRoute: (path, perms) => {
         const permissions = perms || get().permissions;
-        const key = ROUTE_PERMISSION_MAP[path];
-        if (!key) return true;
-        return !!permissions[key];
+        const isGoverned = PERMISSIONS.some((entry) => entry.link === path);
+        return !isGoverned || !!permissions[path];
+    },
+
+    // Cek apakah sub-menu (by link) boleh ditampilkan — sama logicnya dengan route guard.
+    canSeeSubMenu: (link) => get().canAccessRoute(link),
+
+    // Cek apakah menu item sidebar boleh ditampilkan. `item` adalah entry dari
+    // sidebarData: punya `link` langsung, atau `subItems` (visible kalau ada
+    // minimal satu sub-item yang bisa diakses).
+    canSeeMenu: (item) => {
+        if (item.link) return get().canAccessRoute(item.link);
+        if (item.subItems) return item.subItems.some((sub) => get().canAccessRoute(sub.link));
+        return true;
     },
 
     // Helper: cek role
@@ -304,5 +155,5 @@ AuthStore.subscribe((state, prev) => {
     }
 });
 
-export { ROLES, MENU_PERMISSION_MAP, SUBMENU_PERMISSION_MAP, ROUTE_PERMISSION_MAP };
+export { ROLES, PERMISSIONS };
 export default PermissionStore;
