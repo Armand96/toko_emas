@@ -129,7 +129,8 @@ class PembelianController extends Controller
 
                 foreach ($dataPembelian as $idx => $value) {
 
-                    $data = Inventory::where('product_id', $value->product_id)->count();
+                    $latestInventory = Inventory::where('product_id', $value->product_id)->lockForUpdate()->orderByDesc('id')->value('inventory_code');
+                    $data = $latestInventory ? (int) substr($latestInventory, strrpos($latestInventory, '-') + 1) : 0;
 
                     $value->inventory_code = $value->barcode . "-" . str_pad($data + 1, 4, "0", STR_PAD_LEFT);
                     $value->update();

@@ -123,45 +123,133 @@ const MasterInventory = () => {
         return changes;
     };
 
-    const buildRiwayat = (editHistories, currentInventory) => {
-        if (!editHistories || editHistories.length === 0) return [];
+    const REMOVE_JENIS_LABEL = { HILANG: "Hilang", REPAIR: "Repair" };
 
-        const sorted = [...editHistories].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        const result = [];
+    // Riwayat aksi non-edit: storing (input awal dari pembelian), transfer, remove, sold.
+    // Sumbernya bukan editHistories (yang hanya tercatat saat edit manual), melainkan
+    // tabel transaksi terkait (pembelian, transfer_item, remove_item, t_sales) yang
+    // di-join lewat inventory_code dari endpoint detail.
+    // Catatan: transfer_items/remove_items hanya simpan 1 kolom status per header (di-overwrite
+    // tiap transisi APPROVAL->DISETUJUI->RETURN dst), jadi tiap row transfer/remove di sini hanya
+    // bisa menghasilkan SATU event (state akhirnya) -- bukan satu event per transisi status.
+    const buildActionEvents = (detail) => {
+        const events = [];
 
-        sorted.forEach((history, idx) => {
-            const isOldest = idx === sorted.length - 1;
-
-            // Setiap edit_history = snapshot SEBELUM edit.
-            // Perubahan = diff(snapshot, state sesudahnya).
-            const after = idx === 0 ? currentInventory : sorted[idx - 1];
-            const changes = after ? diffSnapshot(history, after) : [];
-
-            result.push({
-                title: "Edit item",
-                actor: buildActor(history),
-                date: formatDateTime(history.created_at),
-                description: changes.length > 0 ? null : "Tidak ada perubahan field",
-                changes,
+        if (detail.pembelian) {
+            const p = detail.pembelian;
+            events.push({
+                title: "Storing item",
+                actor: buildActor({ update_by_user: p.user }),
+                rawDate: p.updated_at,
+                date: formatDateTime(p.updated_at),
+                description: "Input awal item dari pembelian",
             });
+        }
 
-            // Entry paling lama = "Input awal item" (snapshot nilai awal)
-            if (isOldest) {
-                result.push({
-                    title: "Input awal item",
-                    actor: buildActor(history),
-                    date: formatDateTime(history.created_at),
-                    description: null,
-                    changes: buildInitialSnapshot(history),
-                    initial: true,
-                });
-            }
+        (detail.transfer_details || []).forEach((d) => {
+            const h = d.header;
+            if (!h) return;
+            const fromBranch = h.branch_source?.branch_name || "-";
+            const toBranch = h.branch_dest?.branch_name || "-";
+            const isFinal = ["DISETUJUI", "DITOLAK", "DIBATALKAN"].includes(h.status);
+            const rawDate = isFinal ? h.updated_at : h.created_at;
+            events.push({
+                title: "Transfer item",
+                actor: buildActor({ update_by_user: h.user }),
+                rawDate,
+                date: formatDateTime(rawDate),
+                description: isFinal
+                    ? `Transfer item dari cabang ${fromBranch} ke ${toBranch} (${toTitleCase(h.status)})`
+                    : `Pengajuan transfer item dari cabang ${fromBranch} ke ${toBranch}`,
+            });
         });
 
-        return result;
+        (detail.remove_details || []).forEach((d) => {
+            const h = d.header;
+            if (!h) return;
+            // Header status = source of truth (changeApproval header-level dipakai di hampir semua kasus).
+            // d.status (RemoveItemDetail) hanya ter-update lewat endpoint approval per-detail terpisah,
+            // jadi sering basi (stuck "APPROVAL") walau header sudah final.
+            const status = h.status;
+            const jenisLabel = REMOVE_JENIS_LABEL[h.jenis] || h.jenis;
+            const isFinal = ["DISETUJUI", "DITOLAK", "DIBATALKAN", "RETURN"].includes(status);
+            const rawDate = isFinal ? (d.updated_at || h.updated_at) : h.created_at;
+            events.push({
+                title: status === "RETURN" ? "Storing item" : "Remove item",
+                actor: buildActor({ update_by_user: h.user }),
+                rawDate,
+                date: formatDateTime(rawDate),
+                description: status === "RETURN"
+                    ? "Update kembali status item inventory ke Available"
+                    : isFinal
+                        ? `Remove item dengan jenis ${jenisLabel} (${toTitleCase(status)})`
+                        : `Pengajuan remove item dengan jenis ${jenisLabel}`,
+            });
+        });
+
+        if (detail.sales_detail?.header) {
+            const h = detail.sales_detail.header;
+            if (h.approval_status === "CETAK KWITANSI" || h.approval_status === "SELESAI") {
+                events.push({
+                    title: "Sold item",
+                    actor: buildActor({ update_by_user: h.user }),
+                    rawDate: h.updated_at,
+                    date: formatDateTime(h.updated_at),
+                    description: `Item terjual pada order ${h.order_id}`,
+                });
+            }
+        }
+
+        return events;
     };
 
-    const mapInventory = (row, editHistories = null, currentData = null) => {
+    const buildRiwayat = (editHistories, currentInventory, detail = null) => {
+        const result = [];
+
+        if (editHistories && editHistories.length > 0) {
+            const sorted = [...editHistories].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            sorted.forEach((history, idx) => {
+                const isOldest = idx === sorted.length - 1;
+
+                // Setiap edit_history = snapshot SEBELUM edit.
+                // Perubahan = diff(snapshot, state sesudahnya).
+                const after = idx === 0 ? currentInventory : sorted[idx - 1];
+                const changes = after ? diffSnapshot(history, after) : [];
+
+                result.push({
+                    title: "Edit item",
+                    actor: buildActor(history),
+                    rawDate: history.created_at,
+                    date: formatDateTime(history.created_at),
+                    description: changes.length > 0 ? null : "Tidak ada perubahan field",
+                    changes,
+                });
+
+                // Entry paling lama dari editHistories = "Input awal item" (snapshot nilai awal),
+                // hanya dipakai sebagai fallback kalau tidak ada data pembelian di detail.
+                if (isOldest && !detail?.pembelian) {
+                    result.push({
+                        title: "Input awal item",
+                        actor: buildActor(history),
+                        rawDate: history.created_at,
+                        date: formatDateTime(history.created_at),
+                        description: null,
+                        changes: buildInitialSnapshot(history),
+                        initial: true,
+                    });
+                }
+            });
+        }
+
+        if (detail) {
+            result.push(...buildActionEvents(detail));
+        }
+
+        return result.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+    };
+
+    const mapInventory = (row, editHistories = null, currentData = null, detail = null) => {
         const product  = row.product || productOptions.find((p) => p.value === row.product_id)?.details;
         const branch   = row.branch || branchOptions.find((b) => b.value === row.branch_id)?.details;
 
@@ -189,7 +277,7 @@ const MasterInventory = () => {
             product_id: row.product_id,
             branch_id: row.branch_id,
             category_id: row.category_id,
-            riwayat: editHistories ? buildRiwayat(editHistories, currentData || row) : [],
+            riwayat: detail ? buildRiwayat(editHistories, currentData || row, detail) : [],
         };
     };
 
@@ -264,7 +352,7 @@ const MasterInventory = () => {
             const res = await InventoryApis.GetInventorySingle(row.id);
             const detail = res?.data || res;
             const editHistories = detail?.edit_histories || [];
-            setSelectedItem({ ...row, ...mapInventory(row, editHistories, detail) });
+            setSelectedItem({ ...row, ...mapInventory(row, editHistories, detail, detail) });
             setShowDetailModal(true);
         } catch (error) {
             console.error(error);

@@ -62,8 +62,8 @@ class TSalesController extends Controller
 
         try {
             $orderId = 'ORD-' . date('Ymd') . "-";
-            $counter = TSales::where('order_id', 'like', $orderId . "%")->count();
-            $counter++;
+            $latestOrder = TSales::where('order_id', 'like', $orderId . "%")->lockForUpdate()->orderByDesc('id')->value('order_id');
+            $counter = $latestOrder ? (int) substr($latestOrder, strrpos($latestOrder, '-') + 1) + 1 : 1;
             $orderId = $orderId . str_pad($counter, 4, "0", STR_PAD_LEFT);
 
             $hdrSales = array(

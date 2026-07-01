@@ -111,8 +111,8 @@ class RemoveItemController extends Controller
 
         try {
             $code = 'RMV-' . date('Ymd') . "-";
-            $counter = RemoveItem::where('code', 'like', $code . "%")->count();
-            $counter++;
+            $latestCode = RemoveItem::where('code', 'like', $code . "%")->lockForUpdate()->orderByDesc('id')->value('code');
+            $counter = $latestCode ? (int) substr($latestCode, strrpos($latestCode, '-') + 1) + 1 : 1;
             $code = $code . str_pad($counter, 4, "0", STR_PAD_LEFT);
 
             $hdrRemove = array(

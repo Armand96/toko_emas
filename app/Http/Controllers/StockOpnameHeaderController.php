@@ -67,8 +67,8 @@ class StockOpnameHeaderController extends Controller
 
             $dataBranch = MBranch::find($validated['branch_id']);
             $kodeSesi = 'OPN-' . $dataBranch->branch_code . '-' . date('y') . date('m');
-            $counter = StockOpnameHeader::where('kode_sesi', 'like', $kodeSesi . "%")->count();
-            $counter++;
+            $latestSesi = StockOpnameHeader::where('kode_sesi', 'like', $kodeSesi . "%")->lockForUpdate()->orderByDesc('id')->value('kode_sesi');
+            $counter = $latestSesi ? (int) substr($latestSesi, strrpos($latestSesi, '-') + 1) + 1 : 1;
             $kodeSesi = $kodeSesi . "-" . str_pad($counter, 4, "0", STR_PAD_LEFT);
 
             $totalInventoryBranch = Inventory::where('branch_id', $dataBranch->id)->where('status', InventoryStatus::AVAILABLE)->count();
