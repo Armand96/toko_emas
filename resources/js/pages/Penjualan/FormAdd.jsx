@@ -202,7 +202,7 @@ const FormAdd = ({ setCurentState }) => {
         }
     };
 
-    // Auto-fill nama pengirim jika pilih member terdaftar
+
     useEffect(() => {
         if (selectedMember && paymentMethod === 'transfer') {
             setNamaPengirim(selectedMember.customer_name);
@@ -210,6 +210,7 @@ const FormAdd = ({ setCurentState }) => {
             setNamaPengirim(customerData.nama);
         }
     }, [selectedMember, customerType, customerData.nama, paymentMethod]);
+
 
     const handleSubmit = async () => {
         if (cartItems.length === 0) {

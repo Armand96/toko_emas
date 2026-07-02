@@ -80,7 +80,6 @@ const PhotoInput = ({
                         disabled={isDisable}
                         className="hidden"
                         accept={accept}
-                        capture="environment"
                     />
                     <button
                         type="button"
