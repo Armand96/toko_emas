@@ -417,7 +417,7 @@ const FormPembelian = ({ setCurentState }) => {
                             name="foto"
                             value={item.foto}
                             helperText="Foto berformat JPG, JPEG, PNG, atau GIF. Maksimal 3 MB."
-                            accept="image/jpeg,image/png,image/gif"
+                            accept="image/*"
                             onChange={handleChange}
                         />
 
