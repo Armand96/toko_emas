@@ -49,7 +49,6 @@ const PhotoUploadBox = ({ name, value, onChange }) => {
                 onChange={handleChange}
                 className="hidden"
                 accept="image/*"
-                capture="environment"
             />
             <button
                 type="button"
