@@ -18,7 +18,7 @@ import { showAlert } from "../../utils/showAlert";
 
 const STATUS_OPTIONS = [
     { value: 'APPROVAL', label: 'Approval' },
-    { value: 'DISETUJUI', label: 'Disetujui' },
+    // { value: 'DISETUJUI', label: 'Disetujui' },
     { value: 'CETAK KWITANSI', label: 'Cetak Kwitansi' },
     { value: 'SELESAI', label: 'Selesai' },
     { value: 'DITOLAK', label: 'Ditolak' },
@@ -34,7 +34,7 @@ const Main = ({ setCurentState }) => {
 
     const STATUS_LABEL = {
     'SELESAI': 'Selesai',
-    'DISETUJUI': isKasir() ? "Cetak Kwintansi" : 'Disetujui',
+    'DISETUJUI': 'Cetak Kwitansi',
     'CETAK KWITANSI': 'Cetak Kwitansi',
     'APPROVAL': 'Approval',
     'DITOLAK': 'Ditolak',
@@ -44,7 +44,7 @@ const Main = ({ setCurentState }) => {
 
 const STATUS_TONE = {
     'SELESAI': 'success',
-    'DISETUJUI': isKasir() ? "info" : 'success',
+    'DISETUJUI': 'info',
     'CETAK KWITANSI': 'info',
     'APPROVAL': 'warning',
     'DITOLAK': 'danger',
@@ -78,7 +78,7 @@ const STATUS_TONE = {
             });
             if (filters.search) params.append('order_id', filters.search);
             if (filters.status) {
-                params.append('approval_status', isKasir() ? filters.status === "DISETUJUI" ? "CETAK KWITANSI":  filters.status  : filters.status);
+                params.append('approval_status', filters.status === "CETAK KWITANSI" ? "DISETUJUI":  filters.status );
                 params.append('status', filters.status);
             }
             if (isKasir() && user?.branch_id) params.append('branch_id', user.branch_id);
