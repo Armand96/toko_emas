@@ -16,16 +16,19 @@ class MCustomerController extends Controller
     {
         $query = MCustomer::query();
 
-        if ($request->has('customer_name') && $request->customer_name != "") {
-            $query->where('customer_name', 'like', '%' . $request->customer_name . '%');
+        if ($request->has('customer_name') && $request->customer_name != '') {
+            $query->where('customer_name', 'like', '%'.$request->customer_name.'%');
         }
-        if ($request->has('address') && $request->address != "") {
-            $query->where('address', 'like', '%' . $request->address . '%');
+        if ($request->has('customer_code') && $request->customer_code != '') {
+            $query->where('customer_code', 'like', '%'.$request->customer_code.'%');
         }
-        if ($request->has('phone_number') && $request->phone_number != "") {
-            $query->where('phone_number', 'like', '%' . $request->phone_number . '%');
+        if ($request->has('address') && $request->address != '') {
+            $query->where('address', 'like', '%'.$request->address.'%');
         }
-        if ($request->has('is_active') && $request->is_active != "") {
+        if ($request->has('phone_number') && $request->phone_number != '') {
+            $query->where('phone_number', 'like', '%'.$request->phone_number.'%');
+        }
+        if ($request->has('is_active') && $request->is_active != '') {
             $query->where('is_active', $request->is_active);
         }
 
@@ -51,10 +54,21 @@ class MCustomerController extends Controller
         $validated = $request->validated();
 
         try {
+            // Generate customer_code: MBR-YYMM-XXXX (sequence resets each month)
+            $prefix = 'MBR-'.now()->format('ym');
+            $lastCode = MCustomer::where('customer_code', 'like', $prefix.'-%')
+                ->orderBy('customer_code', 'desc')
+                ->value('customer_code');
+
+            $sequence = $lastCode
+                ? (int) substr($lastCode, -4) + 1
+                : 1;
+
+            $validated['customer_code'] = $prefix.'-'.str_pad($sequence, 4, '0', STR_PAD_LEFT);
 
             $product = MCustomer::create($validated);
 
-            return ApiResponse::success($product, "Success create new customer", 201);
+            return ApiResponse::success($product, 'Success create new customer', 201);
         } catch (\Throwable $th) {
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
@@ -65,7 +79,7 @@ class MCustomerController extends Controller
      */
     public function show(MCustomer $customer)
     {
-        return ApiResponse::success($customer, "Success");
+        return ApiResponse::success($customer, 'Success');
     }
 
     /**
@@ -87,7 +101,7 @@ class MCustomerController extends Controller
 
             $customer->update($validated);
 
-            return ApiResponse::success($customer, "Success update customer", 201);
+            return ApiResponse::success($customer, 'Success update customer', 201);
         } catch (\Throwable $th) {
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
