@@ -1,14 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ScanIcon, WarningIcon, WrenchIcon } from "@phosphor-icons/react";
+import { WarningIcon, WrenchIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import ModalScanBarcode from "../../../components/ModaScanBarcode";
 import InventoryApis from "../../../Services/Inventory.apis";
 import InventoryItemCard from "../../../components/InventoryItemCard";
+import FormSectionCard from "../../../components/FormSectionCard";
+import EmptyState from "../../../components/EmptyState";
+import ItemPickerRow from "../../../components/ItemPickerRow";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import { showAlert } from "../../../utils/showAlert";
 import PermissionStore from "../../../Store/PermissionStore";
 import AuthStore from "../../../Store/AuthStore";
-import Dropdown from "../../../components/FormElement/SingleElement/Dropdown";
 
 const JENIS_OPTIONS = [
     { value: 'HILANG', label: 'Hilang', desc: 'Item tidak ditemukan/hilang', Icon: WarningIcon, color: 'text-danger-500', bg: 'bg-danger-50' },
@@ -142,11 +144,7 @@ const FormAdd = ({ setCurentState }) => {
             <div className="w-full flex flex-col gap-6">
 
                 {/* CARD 1: INFORMASI PENGELUARAN */}
-                <div className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div className="flex items-center gap-2 mb-6">
-                        <div className="w-1 h-4 bg-primary-500 rounded-full"></div>
-                        <h2 className="text-sm font-semibold text-neutral-900">Informasi Pengeluaran</h2>
-                    </div>
+                <FormSectionCard title="Informasi Pengeluaran">
 
                     <div className="flex flex-col gap-5">
                         <div className="flex flex-col gap-1.5">
@@ -187,39 +185,18 @@ const FormAdd = ({ setCurentState }) => {
                             {errors.catatan && <span className="text-xs text-danger-500">{errors.catatan}</span>}
                         </div>
                     </div>
-                </div>
+                </FormSectionCard>
 
                 {/* CARD 2: DAFTAR BARANG */}
-                <div className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div className="flex items-center gap-2 mb-6">
-                        <div className="w-1 h-4 bg-primary-500 rounded-full"></div>
-                        <h2 className="text-sm font-semibold text-neutral-900">Daftar Barang</h2>
-                    </div>
+                <FormSectionCard title="Daftar Barang">
 
                     <div className="flex flex-col gap-6">
-                        <div className="flex items-center gap-4">
-                            <button
-                                type="button"
-                                onClick={() => setIsScanModalOpen(true)}
-                                className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 border border-primary-500 text-primary-500 bg-white rounded-lg hover:bg-primary-50 transition-colors font-medium text-sm cursor-pointer"
-                            >
-                                <ScanIcon size={20} />
-                                Scan QR Code
-                            </button>
-
-                            <span className="text-sm text-gray-400 font-medium">atau</span>
-
-                            <div className="flex-[2]">
-                                <Dropdown
-                                    name="item_select"
-                                    value=""
-                                    options={itemDropdownOptions}
-                                    placeholder="Pilih item.."
-                                    onChange={handleSelectChange}
-                                    error={errors.items}
-                                />
-                            </div>
-                        </div>
+                        <ItemPickerRow
+                            onScan={() => setIsScanModalOpen(true)}
+                            options={itemDropdownOptions}
+                            onSelect={handleSelectChange}
+                            error={errors.items}
+                        />
 
                         <div className="flex flex-col gap-3">
                             {selectedItems.map((item) => (
@@ -234,13 +211,11 @@ const FormAdd = ({ setCurentState }) => {
                                 />
                             ))}
                             {selectedItems.length === 0 && (
-                                <div className="text-center py-8 text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-xl">
-                                    Belum ada barang yang dipilih.
-                                </div>
+                                <EmptyState message="Belum ada barang yang dipilih." />
                             )}
                         </div>
                     </div>
-                </div>
+                </FormSectionCard>
 
                 {/* FOOTER BUTTONS */}
                 <div className="flex items-center justify-between mt-2 mb-8">

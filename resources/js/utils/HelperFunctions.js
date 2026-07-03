@@ -112,6 +112,12 @@ const HelperFunctions = {
             return details;
         }
     },
+  formatOnlyNumber: (value) => {
+    if (typeof value === 'string') {
+      return value.replace(/\D/g, '');
+    }
+    return value;
+  }
 };
 
 export default HelperFunctions;
