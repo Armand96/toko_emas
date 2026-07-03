@@ -10,7 +10,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE inventories MODIFY COLUMN status ENUM('AVAILABLE', 'PENDING', 'TRANSIT', 'SOLD', 'REPAIR', 'LOST') NOT NULL");
+        DB::statement("ALTER TABLE inventories MODIFY COLUMN status ENUM('AVAILABLE', 'RESERVED', 'TRANSIT', 'SOLD', 'REPAIR', 'LOST') NOT NULL");
     }
 
     /**
@@ -18,7 +18,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("UPDATE inventories SET status = 'AVAILABLE' WHERE status = 'PENDING'");
+        DB::statement("UPDATE inventories SET status = 'AVAILABLE' WHERE status = 'RESERVED'");
         DB::statement("ALTER TABLE inventories MODIFY COLUMN status ENUM('AVAILABLE', 'TRANSIT', 'SOLD', 'REPAIR', 'LOST') NOT NULL");
     }
 };
