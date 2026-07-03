@@ -78,11 +78,13 @@ const ReportCustomer = () => {
     const fetchSummary = async () => {
         setLoading(true);
         try {
-            const dq = dateParams().toString();
+            const dq = dateParams();
+            dq.append("approval_status", "SELESAI");
+            const dqs = dq.toString();
             const [count, top, trx] = await Promise.all([
                 ReportApis.GetCustomerCount(),
-                ReportApis.GetTopCustomer(dq ? `?${dq}` : ""),
-                ReportApis.GetCustomerTransaction(dq ? `?${dq}` : ""),
+                ReportApis.GetTopCustomer(`?${dqs}`),
+                ReportApis.GetCustomerTransaction(`?${dqs}`),
             ]);
             setSummary({
                 total: count?.total_customer ?? 0,
@@ -106,6 +108,7 @@ const ReportCustomer = () => {
             const query = dateParams();
             query.append("page", page);
             query.append("per_page", perPage);
+            query.append("approval_status", "SELESAI");
             if (search) query.append("search", search);
 
             const res = await ReportApis.GetTopCustomerDetail(`?${query.toString()}`);
