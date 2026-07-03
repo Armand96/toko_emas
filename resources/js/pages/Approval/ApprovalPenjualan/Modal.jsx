@@ -53,23 +53,23 @@ export default function ModalDetailPenjualan({
             width="max-w-3xl"
             footer={isPending}
             customFooter={
-                <div className="flex justify-between items-center p-4 border-t border-neutral-200">
+                <div className="flex justify-between items-center gap-2 p-4 border-t border-neutral-200">
                     <button
                         onClick={onClose}
-                        className="px-6 py-2 bg-white border border-neutral-300 text-neutral-700 font-medium rounded-lg hover:bg-neutral-50 transition-colors"
+                        className="px-4 sm:px-6 py-2 bg-white border border-neutral-300 text-neutral-700 font-medium rounded-lg hover:bg-neutral-50 transition-colors"
                     >
                         Batal
                     </button>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 sm:gap-3">
                         <button
                             onClick={onSubmitReject}
-                            className="px-6 py-2 bg-danger-500 text-white font-medium rounded-lg hover:bg-danger-600 transition-colors"
+                            className="px-4 sm:px-6 py-2 bg-danger-500 text-white font-medium rounded-lg hover:bg-danger-600 transition-colors"
                         >
-                            Tolak 
+                            Tolak
                         </button>
                         <button
                             onClick={onSubmitApprove}
-                            className="px-6 py-2 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors"
+                            className="px-4 sm:px-6 py-2 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors"
                         >
                             Setujui
                         </button>

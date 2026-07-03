@@ -315,31 +315,31 @@ const FormAdd = ({ setCurentState }) => {
 
                 {customerType === 'baru' && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-col gap-1.5 min-w-0">
                             <label className="text-sm font-medium text-gray-700">Nama Customer<span className="text-red-500"> *</span></label>
                             <input
                                 type="text"
-                                className="input-field border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
                                 value={customerData.nama}
                                 onChange={(e) => setCustomerData({ ...customerData, nama: e.target.value })}
                                 placeholder="Masukkan nama customer"
                             />
                         </div>
-                        <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-col gap-1.5 min-w-0">
                             <label className="text-sm font-medium text-gray-700">No. HP<span className="text-red-500"> *</span></label>
                             <input
                                 type="text"
-                                className="input-field border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
                                 value={customerData.hp}
                                 onChange={(e) => setCustomerData({ ...customerData, hp: HelperFunctions.formatOnlyNumber(e.target.value) })}
                                 placeholder="Contoh: 08xxxxxxxxxx"
                             />
                         </div>
-                        <div className="flex flex-col gap-1.5 col-span-2">
+                        <div className="flex flex-col gap-1.5 sm:col-span-2 min-w-0">
                             <label className="text-sm font-medium text-gray-700">Alamat<span className="text-red-500"> *</span></label>
                             <input
                                 type="text"
-                                className="input-field border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
                                 value={customerData.alamat}
                                 onChange={(e) => setCustomerData({ ...customerData, alamat: e.target.value })}
                                 placeholder="Masukkan alamat customer"

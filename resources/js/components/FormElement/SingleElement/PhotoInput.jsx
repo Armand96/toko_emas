@@ -1,6 +1,7 @@
 import { WarningCircleIcon, TrashIcon, FolderOpenIcon, CameraIcon } from "@phosphor-icons/react";
 import { useRef, useState, useEffect } from "react";
 import Drawer from "../../Drawer";
+import compressImage from "../../../utils/compressImage";
 
 const PhotoInput = ({
     label,
@@ -17,6 +18,7 @@ const PhotoInput = ({
     const cameraRef = useRef(null);
     const [preview, setPreview] = useState(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [isCompressing, setIsCompressing] = useState(false);
 
     // Kamera hanya relevan di perangkat touch (mobile/tablet). Di desktop,
     // "Dari Kamera" cuma jatuh ke dialog file yang sama dengan "Dari File",
@@ -38,11 +40,25 @@ const PhotoInput = ({
         }
     }, [value]);
 
-    const handleChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            onChange(e);
-        }
+    const handleChange = async (e) => {
+        const file = e.target.files?.[0];
         setIsDrawerOpen(false);
+        if (!file) return;
+
+        let finalFile = file;
+        if (file.type?.startsWith("image/")) {
+            setIsCompressing(true);
+            try {
+                finalFile = await compressImage(file, { maxSizeMB: 3 });
+            } catch {
+                finalFile = file;
+            } finally {
+                setIsCompressing(false);
+            }
+        }
+
+        // Kirim event sintetis dengan file yang sudah dikompres.
+        onChange({ target: { name, value: finalFile, files: [finalFile] } });
     };
 
     const handleRemove = (e) => {
@@ -121,11 +137,11 @@ const PhotoInput = ({
 
                     <button
                         type="button"
-                        disabled={isDisable}
+                        disabled={isDisable || isCompressing}
                         onClick={openPicker}
                         className="w-fit px-5 py-1.5 text-sm font-medium text-primary-600 border border-primary-400 rounded-lg hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                        {value ? "Ganti Foto" : "Upload"}
+                        {isCompressing ? "Memproses..." : value ? "Ganti Foto" : "Upload"}
                     </button>
                 </div>
             </div>
