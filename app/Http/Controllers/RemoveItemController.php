@@ -145,7 +145,7 @@ class RemoveItemController extends Controller
             RemoveItemDetail::insert($insertBatch);
 
             Inventory::whereIn('inventory_code', $whereInInventoryCode)->update([
-                'status' => InventoryStatus::PENDING
+                'status' => InventoryStatus::RESERVED
             ]);
 
             DB::commit();

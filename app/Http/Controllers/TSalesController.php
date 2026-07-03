@@ -108,7 +108,7 @@ class TSalesController extends Controller
             TSalesDetail::insert($insertBatch);
 
             Inventory::whereIn('inventory_code', $whereInInventoryCode)->update([
-                'status' => InventoryStatus::PENDING
+                'status' => InventoryStatus::RESERVED
             ]);
 
             $hdrData->sub_total = $subTotal;
