@@ -23,22 +23,22 @@ class TransferItemController extends Controller
     {
         $query = TransferItem::query();
 
-        if ($request->has('kode_transfer') && $request->kode_transfer != "") {
-            $query->where('kode_transfer', 'like', '%' . $request->kode_transfer . '%');
+        if ($request->has('kode_transfer') && $request->kode_transfer != '') {
+            $query->where('kode_transfer', 'like', '%'.$request->kode_transfer.'%');
         }
-        if ($request->has('note') && $request->note != "") {
-            $query->where('note', 'like', '%' . $request->note . '%');
+        if ($request->has('note') && $request->note != '') {
+            $query->where('note', 'like', '%'.$request->note.'%');
         }
-        if ($request->has('branch_source_id') && $request->branch_source_id != "") {
+        if ($request->has('branch_source_id') && $request->branch_source_id != '') {
             $query->where('branch_source_id', $request->branch_source_id);
         }
-        if ($request->has('branch_dest_id') && $request->branch_dest_id != "") {
+        if ($request->has('branch_dest_id') && $request->branch_dest_id != '') {
             $query->where('branch_dest_id', $request->branch_dest_id);
         }
-        if ($request->has('created_by') && $request->created_by != "") {
+        if ($request->has('created_by') && $request->created_by != '') {
             $query->where('created_by', $request->created_by);
         }
-        if ($request->has('status') && $request->status != "") {
+        if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
 
@@ -60,18 +60,18 @@ class TransferItemController extends Controller
         DB::beginTransaction();
 
         try {
-            $transferId = 'TRF-' . date('Ymd') . "-";
-            $latestTransfer = TransferItem::where('kode_transfer', 'like', $transferId . "%")->lockForUpdate()->orderByDesc('id')->value('kode_transfer');
+            $transferId = 'TRF-'.date('Ymd').'-';
+            $latestTransfer = TransferItem::where('kode_transfer', 'like', $transferId.'%')->lockForUpdate()->orderByDesc('id')->value('kode_transfer');
             $counter = $latestTransfer ? (int) substr($latestTransfer, strrpos($latestTransfer, '-') + 1) + 1 : 1;
-            $transferId = $transferId . str_pad($counter, 4, "0", STR_PAD_LEFT);
+            $transferId = $transferId.str_pad($counter, 4, '0', STR_PAD_LEFT);
 
-            $hdrTransfer = array(
+            $hdrTransfer = [
                 'kode_transfer' => $transferId,
                 'branch_source_id' => $validated['branch_source_id'],
                 'branch_dest_id' => $validated['branch_dest_id'],
                 'created_by' => $request->user()->id,
-                'status' => TransferItemStatus::APPROVAL
-            );
+                'status' => TransferItemStatus::APPROVAL,
+            ];
 
             $hdrData = TransferItem::create($hdrTransfer);
 
@@ -80,27 +80,28 @@ class TransferItemController extends Controller
             $whereInInventoryCode = [];
 
             foreach ($validated['item'] as $index => $value) {
-                $itemData = array(
+                $itemData = [
                     'transfer_item_id' => $hdrData->id,
                     'product_id' => $value['product_id'],
                     'inventory_code' => $value['inventory_code'],
-                    'created_at' => $dateNow
-                );
+                    'created_at' => $dateNow,
+                ];
 
                 array_push($whereInInventoryCode, $value['inventory_code']);
                 array_push($insertBatch, $itemData);
             }
 
             Inventory::whereIn('inventory_code', $whereInInventoryCode)->update([
-                'status' => InventoryStatus::TRANSIT
+                'status' => InventoryStatus::TRANSIT,
             ]);
             TransferItemDetail::insert($insertBatch);
 
             DB::commit();
 
-            return ApiResponse::success([], "Success create pengajuan transfer", 200);
+            return ApiResponse::success([], 'Success create pengajuan transfer', 200);
         } catch (\Throwable $th) {
             DB::rollback();
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -118,7 +119,7 @@ class TransferItemController extends Controller
             $data = TransferItem::where('id', $validated['transfer_item_id'])->where('status', TransferItemStatus::APPROVAL)->first();
             $data->update([
                 'status' => $status,
-                'note_approval' => isset($validated['note']) ? $validated['note'] : null
+                'note_approval' => isset($validated['note']) ? $validated['note'] : null,
             ]);
 
             $dateNow = date('Y-m-d H:i:s');
@@ -126,16 +127,31 @@ class TransferItemController extends Controller
 
             if ($status == TransferItemStatus::DISETUJUI) {
                 // $mproducts = BranchProduct::whereIn('product_id', $products)->select(['branch_id'])->toArray();
-                Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow, 'branch_id' => $data->branch_dest_id));
-            } else if ($status == TransferItemStatus::DIBATALKAN || $status == TransferItemStatus::DITOLAK) {
-                Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow));
+                Inventory::whereIn('inventory_code', $products)->update(['status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow, 'branch_id' => $data->branch_dest_id]);
+
+                // Sync BranchProduct for each unique product in the transfer
+                $productIds = TransferItemDetail::where('transfer_item_id', $validated['transfer_item_id'])
+                    ->pluck('product_id')
+                    ->unique()
+                    ->values();
+
+                // Batch-insert BranchProduct for the destination branch (ignore duplicates)
+                $branchProductBatch = $productIds->map(fn ($productId) => [
+                    'product_id' => $productId,
+                    'branch_id' => $data->branch_dest_id,
+                ])->toArray();
+
+                BranchProduct::upsert($branchProductBatch, ['product_id', 'branch_id']);
+            } elseif ($status == TransferItemStatus::DIBATALKAN || $status == TransferItemStatus::DITOLAK) {
+                Inventory::whereIn('inventory_code', $products)->update(['status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow]);
             }
 
             DB::commit();
 
-            return ApiResponse::success([], "Sukses update status transfer item", 201);
+            return ApiResponse::success([], 'Sukses update status transfer item', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }

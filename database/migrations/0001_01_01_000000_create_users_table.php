@@ -21,7 +21,7 @@ return new class extends Migration
             // $table->string('thumb_path');
             $table->bigInteger('role_id', false, true);
             $table->boolean('is_active')->default(true);
-            $table->string('email')->nullable()->unique();
+            $table->string('email')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
