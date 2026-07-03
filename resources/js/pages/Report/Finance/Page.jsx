@@ -356,7 +356,7 @@ const ReportFinance = () => {
                     <p className="text-[13px] text-gray-500">Menyajikan rincian aktivitas keuangan dalam bentuk visual dan data.</p>
                 </div>
                 <div className="flex flex-wrap items-start gap-3">
-                    <div className="w-full sm:w-[260px]">
+                    <div className="w-full sm:w-[320px]">
                         <InputGroup
                             fields={[{ name: "dateRange", label: "", type: "daterange" }]}
                             formData={filter}

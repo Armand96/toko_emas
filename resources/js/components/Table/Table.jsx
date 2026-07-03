@@ -66,15 +66,17 @@ const Table = ({
   };
 
   const getPageNumbers = () => {
-    const pages = [];
-    for (let i = 1; i <= totalPages; i++) {
-      if (i === 1 || i === totalPages || (i >= page - 1 && i <= page + 1)) {
-        pages.push(i);
-      } else if (i === page - 2 || i === page + 2) {
-        pages.push('...');
-      }
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
-    return pages.filter((p, index, self) => self.indexOf(p) === index);
+    const pages = [1];
+    const rangeStart = Math.max(2, page - 1);
+    const rangeEnd = Math.min(totalPages - 1, page + 1);
+    if (rangeStart > 2) pages.push('...');
+    for (let i = rangeStart; i <= rangeEnd; i++) pages.push(i);
+    if (rangeEnd < totalPages - 1) pages.push('...');
+    pages.push(totalPages);
+    return pages;
   };
 
   return (

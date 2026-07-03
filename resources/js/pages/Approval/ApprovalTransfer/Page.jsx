@@ -186,17 +186,15 @@ const ApprovalTransfer = () => {
         {
             header: 'Item Produk',
             accessor: 'details',
-            render: (row) => {
-                const items = row.details || [];
-                if (items.length === 0) return '-';
-                const names = items
-                    .map((d) => {
-                        const name = productMap[d.product_id] || d.product?.product_name || d.product?.name;
-                        return name ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ? `${d.inventory.karat}K` : ''}` : d.inventory_code;
-                    })
-                    .filter(Boolean);
-                return names.join(', ');
-            },
+            render: (row) => HelperFunctions.summarizeItems(
+                row.details,
+                (d) => {
+                    const name = productMap[d.product_id] || d.product?.product_name || d.product?.name;
+                    return name
+                        ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ? `${d.inventory.karat}K` : ''}`.trim()
+                        : d.inventory_code;
+                }
+            ),
         },
         { header: 'Cabang Asal', accessor: 'branch_source', render: (row) => row.branch_source?.branch_name || row.branch_source?.name || '-' },
         { header: 'Cabang Tujuan', accessor: 'branch_dest', render: (row) => row.branch_dest?.branch_name || row.branch_dest?.name || '-' },

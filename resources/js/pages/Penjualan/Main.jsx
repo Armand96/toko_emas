@@ -209,13 +209,10 @@ const STATUS_TONE = {
         {
             header: 'Item Produk',
             accessor: 'details',
-            render: (row) => {
-                const items = row.details || [];
-                if (items.length === 0) return '-';
-                const names = items.map((d) => d.product?.product_name).filter(Boolean);
-                if (names.length <= 3) return names.join(', ');
-                return `${names.slice(0, 3).join(', ')} +${names.length - 3} lainnya`;
-            },
+            render: (row) => HelperFunctions.summarizeItems(
+                row.details,
+                (d) => d.product?.product_name
+            ),
         },
         {
             header: 'Status',

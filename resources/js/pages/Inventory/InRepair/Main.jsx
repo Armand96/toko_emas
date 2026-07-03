@@ -146,17 +146,13 @@ const Main = () => {
         {
             header: 'Item Produk',
             accessor: 'details',
-            render: (row) => {
-                const items = row.details || [];
-                if (items.length === 0) return '-';
-                const names = items
-                    .map((d) => {
-                        const name = d.product?.product_name || productMap[d.product_id];
-                        return name ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ?? ''}K` : d.inventory_code;
-                    })
-                    .filter(Boolean);
-                return names.join(', ');
-            },
+            render: (row) => HelperFunctions.summarizeItems(
+                row.details,
+                (d) => {
+                    const name = d.product?.product_name || productMap[d.product_id];
+                    return name ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ?? ''}K`.trim() : d.inventory_code;
+                }
+            ),
         },
         {
             header: 'Lama Repair',
@@ -167,7 +163,9 @@ const Main = () => {
         {
             header: 'Status',
             accessor: 'status',
-            render: () => <Badge tone="purple">Repair</Badge>,
+            render: (row) => row.status === 'RETURN'
+                ? <Badge tone="success">Dikembalikan</Badge>
+                : <Badge tone="purple">Repair</Badge>,
         },
         {
             header: 'Aksi', accessor: 'aksi',

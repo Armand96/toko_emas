@@ -200,16 +200,14 @@ const Main = ({ setCurentState }) => {
             render: (row) => {
                 const details = row._raw?.details || [];
                 if (details.length === 0) return row.item_produk || '-';
-                const names = details
-                    .map((d) => {
+                return HelperFunctions.summarizeItems(
+                    details,
+                    (d) => {
                         const name = d.product?.name || productMap[d.product_id];
                         const karat = d.inventory?.karat ? `${d.inventory.karat}K` : '';
-                        return name ? `${name} ${d.inventory?.berat ?? ''}g ${karat}` : d.inventory_code;
-                    })
-                    .filter(Boolean);
-                if (names.length === 0) return '-';
-                if (names.length <= 3) return names.join(', ');
-                return `${names.slice(0, 3).join(', ')} +${names.length - 3} lainnya`;
+                        return name ? `${name} ${d.inventory?.berat ?? ''}g ${karat}`.trim() : d.inventory_code;
+                    }
+                );
             },
         },
         { header: 'Cabang', accessor: 'cabang' },

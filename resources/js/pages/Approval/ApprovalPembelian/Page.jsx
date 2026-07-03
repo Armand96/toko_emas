@@ -219,6 +219,7 @@ const ApprovalPembelian = () => {
                 />
             ) : null
         },
+                { header: "Tanggal", accessor: "tanggal", render: (row) => row.tanggal ?? dayjs(row.created_at).format("DD/MM/YYYY") ?? "-" },
         { header: 'Batch', accessor: 'batch' },
         {
             header: 'Kode',

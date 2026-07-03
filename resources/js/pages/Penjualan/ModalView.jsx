@@ -49,7 +49,7 @@ const ModalViewPenjualan = ({ isOpen, onClose, data }) => {
                     <div className="grid grid-cols-2 gap-y-4 gap-x-6">
                         <div className="flex flex-col gap-1">
                             <span className="text-xs text-neutral-500">ID Customer</span>
-                            <span className="text-sm font-medium text-neutral-900">{customer?.kode || customer?.id || '-'}</span>
+                            <span className="text-sm font-medium text-neutral-900">{customer?.customer_code || '-'}</span>
                         </div>
                         <div className="flex flex-col gap-1">
                             <span className="text-xs text-neutral-500">Nama Customer</span>
