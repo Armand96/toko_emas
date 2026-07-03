@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ScanIcon, PackageIcon, CheckCircleIcon, ClockCountdownIcon, PlusCircleIcon, CaretLeftIcon } from "@phosphor-icons/react";
+import { PackageIcon, CheckCircleIcon, ClockCountdownIcon, PlusCircleIcon, CaretLeftIcon } from "@phosphor-icons/react";
 import ModalScanBarcode from "../../../components/ModaScanBarcode";
+import ItemPickerRow from "../../../components/ItemPickerRow";
 import StatCards from "./StatCards";
 import InventoryApis from "../../../Services/Inventory.apis";
 import CodeBadge from "../../../components/CodeBadge";
@@ -276,36 +277,16 @@ const FormAdd = ({ setCurentState }) => {
                     </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                    <button
-                        type="button"
-                        onClick={() => setIsScanModalOpen(true)}
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 border border-primary-500 text-primary-500 bg-white rounded-lg hover:bg-primary-50 transition-colors font-medium text-sm cursor-pointer"
-                    >
-                        <ScanIcon size={20} />
-                        Scan QR Code
-                    </button>
-
-                    <span className="text-sm text-gray-400 font-medium text-center">atau</span>
-
-                    <input
-                        type="text"
-                        value={manualCode}
-                        onChange={(e) => setManualCode(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') handleManualVerify(); }}
-                        placeholder="Masukkan kode.."
-                        className="flex-[2] px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                    />
-
-                    <button
-                        type="button"
-                        onClick={handleManualVerify}
-                        disabled={!manualCode.trim()}
-                        className="px-5 py-2.5 bg-primary-500 text-white text-sm font-medium rounded-lg hover:bg-primary-600 transition-colors cursor-pointer disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-                    >
-                        Verifikasi Barang
-                    </button>
-                </div>
+                <ItemPickerRow
+                    variant="input"
+                    onScan={() => setIsScanModalOpen(true)}
+                    value={manualCode}
+                    onChange={(e) => setManualCode(e.target.value)}
+                    onSubmit={handleManualVerify}
+                    submitDisabled={!manualCode.trim()}
+                    placeholder="Masukkan kode.."
+                    submitLabel="Verifikasi Barang"
+                />
             </div>
 
             {/* HASIL VERIFIKASI */}

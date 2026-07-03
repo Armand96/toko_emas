@@ -1,9 +1,12 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useDebounce } from "use-debounce";
-import { ScanIcon, CaretRightIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
+import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../components/HeaderSection";
 import ModalScanBarcode from "./ModaScanBarcode";
 import InventoryItemCard from "../../components/InventoryItemCard";
+import FormSectionCard from "../../components/FormSectionCard";
+import EmptyState from "../../components/EmptyState";
+import ItemPickerRow from "../../components/ItemPickerRow";
 import HelperFunctions from "../../utils/HelperFunctions";
 import LoadingStore from "../../Store/LoadingStore";
 import { showAlert } from "../../utils/showAlert";
@@ -14,7 +17,6 @@ import PenjualanApis from "../../Services/Penjualan.apis";
 import OptionsStore from "../../Store/OptionsStore";
 import AuthStore from "../../Store/AuthStore";
 import CurrencyInput from "../../components/FormElement/SingleElement/CurrencyInput";
-import Dropdown from "../../components/FormElement/SingleElement/Dropdown";
 
 const FormAdd = ({ setCurentState }) => {
     const setLoading = LoadingStore((state) => state.setLoading);
@@ -126,7 +128,7 @@ const FormAdd = ({ setCurentState }) => {
         if (paymentMethod === 'tunai') {
             if (!uangDibayar || uangDibayar < subTotal) return false;
         } else {
-            if (!selectedBankId || !namaPengirim || !rekeningPengirim) return false;
+            if (!selectedBankId || !namaPengirim) return false;
         }
 
         return true;
@@ -233,7 +235,7 @@ const FormAdd = ({ setCurentState }) => {
             return;
         }
 
-        if (paymentMethod === 'transfer' && (!selectedBankId || !namaPengirim || !rekeningPengirim)) {
+        if (paymentMethod === 'transfer' && (!selectedBankId || !namaPengirim)) {
             showAlert({ icon: 'warning', title: 'Perhatian', message: 'Lengkapi data transfer.' });
             return;
         }
@@ -294,11 +296,7 @@ const FormAdd = ({ setCurentState }) => {
             />
 
             {/* SECTION 1: DATA CUSTOMER */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                <div className="flex items-center gap-2 mb-6">
-                    <div className="w-1 h-4 bg-primary-500 rounded-full"></div>
-                    <h3 className="text-sm font-semibold text-neutral-900">Data Customer</h3>
-                </div>
+            <FormSectionCard title="Data Customer">
 
                 <div className="flex gap-2 p-1 bg-gray-50 border border-gray-200 rounded-lg w-full mb-6">
                     <button
@@ -318,7 +316,7 @@ const FormAdd = ({ setCurentState }) => {
                 {customerType === 'baru' && (
                     <div className="grid grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-sm font-medium text-gray-700">Nama Customer<span className="text-error-500">*</span></label>
+                            <label className="text-sm font-medium text-gray-700">Nama Customer<span className="text-red-500"> *</span></label>
                             <input
                                 type="text"
                                 className="input-field border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
@@ -328,17 +326,17 @@ const FormAdd = ({ setCurentState }) => {
                             />
                         </div>
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-sm font-medium text-gray-700">No. HP<span className="text-error-500">*</span></label>
+                            <label className="text-sm font-medium text-gray-700">No. HP<span className="text-red-500"> *</span></label>
                             <input
                                 type="text"
                                 className="input-field border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
                                 value={customerData.hp}
-                                onChange={(e) => setCustomerData({ ...customerData, hp: e.target.value })}
+                                onChange={(e) => setCustomerData({ ...customerData, hp: HelperFunctions.formatOnlyNumber(e.target.value) })}
                                 placeholder="Contoh: 08xxxxxxxxxx"
                             />
                         </div>
                         <div className="flex flex-col gap-1.5 col-span-2">
-                            <label className="text-sm font-medium text-gray-700">Alamat<span className="text-error-500">*</span></label>
+                            <label className="text-sm font-medium text-gray-700">Alamat<span className="text-red-500"> *</span></label>
                             <input
                                 type="text"
                                 className="input-field border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
@@ -404,7 +402,7 @@ const FormAdd = ({ setCurentState }) => {
                                 </div>
                                 <button
                                     onClick={() => setSelectedMember(null)}
-                                    className="text-error-500 text-sm font-medium hover:text-error-600 transition-colors px-2"
+                                    className="text-red-500 text-sm font-medium hover:text-red-600 transition-colors px-2"
                                 >
                                     Ganti
                                 </button>
@@ -412,34 +410,17 @@ const FormAdd = ({ setCurentState }) => {
                         )}
                     </div>
                 )}
-            </div>
+            </FormSectionCard>
 
             {/* SECTION 2: KERANJANG PENJUALAN */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                <div className="flex items-center gap-2 mb-6">
-                    <div className="w-1 h-4 bg-primary-500 rounded-full"></div>
-                    <h3 className="text-sm font-semibold text-neutral-900">Keranjang Penjualan</h3>
-                </div>
+            <FormSectionCard title="Keranjang Penjualan">
 
-                <div className="flex items-center gap-4 mb-6">
-                    <button
-                        onClick={() => setIsScanModalOpen(true)}
-                        className="flex flex-1 items-center justify-center gap-2 py-2.5 border border-primary-500 text-primary-600 rounded-lg font-medium hover:bg-primary-50 transition-colors"
-                    >
-                        <ScanIcon size={20} />
-                        Scan QR Code
-                    </button>
-                    <span className="text-gray-400 text-sm">atau</span>
-                    <div className="flex-1">
-                        <Dropdown
-                            name="item_select"
-                            value=""
-                            options={itemDropdownOptions}
-                            placeholder="Pilih item.."
-                            onChange={handleSelectItem}
-                        />
-                    </div>
-                </div>
+                <ItemPickerRow
+                    className="mb-6"
+                    onScan={() => setIsScanModalOpen(true)}
+                    options={itemDropdownOptions}
+                    onSelect={handleSelectItem}
+                />
 
                 {/* List Items */}
                 <div className="flex flex-col gap-3">
@@ -456,23 +437,23 @@ const FormAdd = ({ setCurentState }) => {
                     ))}
 
                     {cartItems.length === 0 && (
-                        <p className="text-center text-gray-500 py-4">Belum ada item yang ditambahkan.</p>
+                        <EmptyState message="Belum ada item yang ditambahkan." />
                     )}
                 </div>
-            </div>
+            </FormSectionCard>
 
             {/* SECTION 3: PEMBAYARAN */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                <div className="flex items-center gap-2 mb-6">
-                    <div className="w-1 h-4 bg-primary-500 rounded-full"></div>
-                    <h3 className="text-sm font-semibold text-neutral-900">Pembayaran</h3>
-                </div>
+            <FormSectionCard title="Pembayaran" divider>
 
                 <div className="flex flex-col mb-6">
-                    <div className="flex justify-between py-3 border-b border-dashed border-gray-200">
+                    <div className="flex justify-between py-3">
                         <span className="text-sm text-gray-500">Sub Total</span>
                         <span className="font-medium text-gray-800">{HelperFunctions.formatCurrency(subTotal)}</span>
                     </div>
+                    {/* <div className="flex justify-between py-3 border-b border-dashed border-gray-200">
+                        <span className="text-sm text-gray-500">Kembalian</span>
+                        <span className="font-medium text-gray-800">{HelperFunctions.formatCurrency(kembalian)}</span>
+                    </div> */}
                     <div className="flex justify-between py-4">
                         <span className="text-base font-bold text-gray-800">Total</span>
                         <span className="text-lg font-bold text-gray-900">{HelperFunctions.formatCurrency(subTotal)}</span>
@@ -508,10 +489,13 @@ const FormAdd = ({ setCurentState }) => {
                                 onChange={(e) => setUangDibayar(Number(e.target.value))}
                             />
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-sm font-medium text-gray-700">Kembalian</label>
-                                <div className="w-full border border-gray-200 rounded-lg px-3 py-2.5 bg-gray-50 text-gray-800 font-medium">
-                                    {HelperFunctions.formatCurrency(kembalian > 0 ? kembalian : 0)}
-                                </div>
+                                <CurrencyInput
+                                label="Kembalian"
+                                name="kembalian"
+                                value={kembalian > 0 ? kembalian : 0}
+                                placeholder="0"
+                                isDisable={true}
+/>
                             </div>
                         </div>
                     )}
@@ -521,7 +505,7 @@ const FormAdd = ({ setCurentState }) => {
                         <div className="flex flex-col gap-4 mt-2">
                             {/* Pilihan Rekening Tujuan */}
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-sm font-medium text-gray-900">Rekening Tujuan<span className="text-error-500">*</span></label>
+                                <label className="text-sm font-medium text-gray-900">Rekening Tujuan<span className="text-red-500"> *</span></label>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {bankOptions.map((bc) => (
                                         <div
@@ -549,9 +533,9 @@ const FormAdd = ({ setCurentState }) => {
                             </div>
 
                             {/* Input Nama & Rekening Pengirim */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-4">
                                 <div className="flex flex-col gap-1.5">
-                                    <label className="text-sm font-medium text-gray-900">Nama Pengirim<span className="text-error-500">*</span></label>
+                                    <label className="text-sm font-medium text-gray-900">Nama Pengirim<span className="text-red-500"> *</span></label>
                                     <input
                                         type="text"
                                         className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors"
@@ -560,7 +544,7 @@ const FormAdd = ({ setCurentState }) => {
                                         placeholder="Masukkan nama pengirim"
                                     />
                                 </div>
-                                <div className="flex flex-col gap-1.5">
+                                {/* <div className="flex flex-col gap-1.5">
                                     <label className="text-sm font-medium text-gray-900">No. Rekening Pengirim<span className="text-error-500">*</span></label>
                                     <input
                                         type="text"
@@ -570,13 +554,13 @@ const FormAdd = ({ setCurentState }) => {
                                         onChange={(e) => setRekeningPengirim(e.target.value.replace(/\D/g, ''))}
                                         placeholder="Masukkan no. rekening pengirim"
                                     />
-                                </div>
+                                </div> */}
                             </div>
                         </div>
                     )}
                 </div>
 
-            </div>
+            </FormSectionCard>
 
             {/* Action Buttons (inline di paling bawah konten) */}
             <div className="flex items-center justify-between">
