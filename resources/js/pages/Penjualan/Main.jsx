@@ -25,29 +25,32 @@ const STATUS_OPTIONS = [
     { value: 'DIBATALKAN', label: 'Dibatalkan' },
 ];
 
-const STATUS_TONE = {
-    'SELESAI': 'success',
-    'DISETUJUI': 'success',
-    'CETAK KWITANSI': 'info',
-    'APPROVAL': 'warning',
-    'DITOLAK': 'danger',
-    'DIBATALKAN': 'danger',
-};
-
-const STATUS_LABEL = {
-    'SELESAI': 'Selesai',
-    'DISETUJUI': 'Disetujui',
-    'CETAK KWITANSI': 'Cetak Kwitansi',
-    'APPROVAL': 'Approval',
-    'DITOLAK': 'Ditolak',
-    'DIBATALKAN': 'Dibatalkan',
-};
 
 const Main = ({ setCurentState }) => {
     const setLoading = LoadingStore((state) => state.setLoading);
     const can = PermissionStore((s) => s.can);
     const isKasir = PermissionStore((s) => s.isKasir);
     const user = AuthStore((s) => s.user);
+
+    const STATUS_LABEL = {
+    'SELESAI': 'Selesai',
+    'DISETUJUI': isKasir() ? "Cetak Kwintansi" : 'Disetujui',
+    'CETAK KWITANSI': 'Cetak Kwitansi',
+    'APPROVAL': 'Approval',
+    'DITOLAK': 'Ditolak',
+    'DIBATALKAN': 'Dibatalkan',
+};
+
+
+const STATUS_TONE = {
+    'SELESAI': 'success',
+    'DISETUJUI': isKasir() ? "info" : 'success',
+    'CETAK KWITANSI': 'info',
+    'APPROVAL': 'warning',
+    'DITOLAK': 'danger',
+    'DIBATALKAN': 'danger',
+};
+
 
     const [paramFetch, setParamFetch] = useState({
         data: [],

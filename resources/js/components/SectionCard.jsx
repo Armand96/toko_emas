@@ -1,13 +1,13 @@
 const SectionCard = ({ title, badge, children, className = "" }) => {
     return (
         <div className={`flex flex-col gap-3 border border-gray-200 p-6 rounded-lg ${className}`}>
-            <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
+            <div className="flex justify-between items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                     <div className="w-1 h-4 bg-primary-500 rounded-full flex-shrink-0" />
-                    <h3 className="font-semibold text-neutral-900 text-lg">{title}</h3>
+                    <h3 className="font-semibold text-neutral-900 text-sm truncate">{title}</h3>
                 </div>
                 {badge && (
-                    <span className="px-3 py-1 bg-neutral-100 text-neutral-600 text-xs font-medium rounded-md">
+                    <span className="px-3 py-1 bg-neutral-100 text-neutral-600 text-xs font-medium rounded-md whitespace-nowrap flex-shrink-0">
                         {badge}
                     </span>
                 )}
