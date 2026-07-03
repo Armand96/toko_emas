@@ -21,14 +21,14 @@ import AuthStore from "../../../Store/AuthStore";
 
 const STATUS_CONFIG = {
     Available: { bg: "bg-success-100", text: "text-success-700" },
-    Pending:   { bg: "bg-warning-100", text: "text-warning-700" },
+    Reserved:  { bg: "bg-warning-100", text: "text-warning-700" },
     Transit:   { bg: "bg-warning-100", text: "text-warning-700" },
     Sold:      { bg: "bg-gray-100",    text: "text-gray-600" },
     Repair:    { bg: "bg-info-100",    text: "text-info-700" },
     Lost:      { bg: "bg-danger-100",  text: "text-danger-700" },
 };
 
-const STATUS_OPTIONS = ["AVAILABLE", "PENDING", "TRANSIT", "SOLD", "REPAIR", "LOST"]
+const STATUS_OPTIONS = ["AVAILABLE", "RESERVED", "TRANSIT", "SOLD", "REPAIR", "LOST"]
     .map(v => ({ value: v, label: v.charAt(0) + v.slice(1).toLowerCase() }));
 
 const toTitleCase = (status) => {
@@ -590,7 +590,7 @@ const MasterInventory = () => {
             accessor: "status",
             render: (row) => {
                 const status = toTitleCase(row.status);
-                const toneMap = { Available: 'success', Pending: 'warning', Transit: 'warning', Sold: 'gray', Repair: 'info', Lost: 'danger' };
+                const toneMap = { Available: 'success', Reserved: 'warning', Transit: 'warning', Sold: 'gray', Repair: 'info', Lost: 'danger' };
                 return <Badge tone={toneMap[status] || 'gray'}>{status}</Badge>;
             },
         },

@@ -121,13 +121,17 @@ const ReportPenjualan = () => {
         }
     };
 
+    const COMPLETED_STATUSES = ['SELESAI', 'CETAK KWITANSI'];
+
     const fetchDetail = async (page = 1, perPage = 10) => {
         setLoading(true);
         try {
             const params = buildParams({ page, per_page: perPage });
             const res = await ReportApis.GetSalesDetail(`?${params.toString()}`);
+            const allData = Array.isArray(res?.data) ? res.data : [];
+            const filtered = allData.filter(row => COMPLETED_STATUSES.includes(row.approval_status));
             setDetail({
-                data: Array.isArray(res?.data) ? res.data : [],
+                data: filtered,
                 current_page: res?.current_page ?? 1,
                 total: res?.total ?? 0,
                 per_page: res?.per_page ?? perPage,

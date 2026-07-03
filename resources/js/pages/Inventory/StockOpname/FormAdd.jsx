@@ -273,6 +273,7 @@ const FormAdd = ({ setCurentState }) => {
                     <span className="text-sm text-gray-500">
                         {branchName} · {isLoading ? 'Memuat inventory...' : `${totalBranch} item aktif`}
                     </span>
+                    <span className="text-xs text-gray-400">Dimulai {(() => { const [d, t] = sessionStart.split(' '); const [y,m,dd] = d.split('-'); return `${dd}/${m}/${y} ${t?.slice(0,5)}`; })()}</span>
                 </div>
 
                 <div className="flex flex-col gap-2">

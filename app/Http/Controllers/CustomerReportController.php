@@ -43,9 +43,9 @@ class CustomerReportController extends Controller
                 'phone_number'
             ]
         )
-            ->withCount('sales')
-            ->withSum('sales', 'grand_total')
-            ->withMax('sales', 'created_at')
+            ->withCount(['sales' => fn($q) => $q->where('approval_status', 'SELESAI')])
+            ->withSum(['sales' => fn($q) => $q->where('approval_status', 'SELESAI')], 'grand_total')
+            ->withMax(['sales' => fn($q) => $q->where('approval_status', 'SELESAI')], 'created_at')
             ->orderByDesc('sales_sum_grand_total')
             ->limit(5)
             ->get();
@@ -64,7 +64,7 @@ class CustomerReportController extends Controller
             $query->where('created_at', '<=',  $request->end_date . " 23:59:59");
         }
 
-        $perPage = $request->input('per_page', 10); // Default to 10 items per page
+        $perPage = $request->input('per_page', 10);
         $customers = $query->select(
             [
                 'id',
@@ -72,9 +72,9 @@ class CustomerReportController extends Controller
                 'phone_number'
             ]
         )
-            ->withCount('sales')
-            ->withSum('sales', 'grand_total')
-            ->withMax('sales', 'created_at')
+            ->withCount(['sales' => fn($q) => $q->where('approval_status', 'SELESAI')])
+            ->withSum(['sales' => fn($q) => $q->where('approval_status', 'SELESAI')], 'grand_total')
+            ->withMax(['sales' => fn($q) => $q->where('approval_status', 'SELESAI')], 'created_at')
             ->orderByDesc('sales_sum_grand_total')
             ->paginate($perPage);
 
@@ -100,7 +100,10 @@ class CustomerReportController extends Controller
             $query->where('t_sales.created_at', '<=',  $request->end_date . " 23:59:59");
         }
         $customerFrequency = $query->selectRaw('m_customers.id, COUNT(t_sales.id) as total_transaction ')
-            ->join('t_sales', 't_sales.customer_id', '=', 'm_customers.id')
+            ->join('t_sales', function ($join) {
+                $join->on('t_sales.customer_id', '=', 'm_customers.id')
+                     ->where('t_sales.approval_status', 'SELESAI');
+            })
             ->groupBy('m_customers.id')
             ->get();
 
@@ -141,7 +144,10 @@ class CustomerReportController extends Controller
         }
 
         $customerSpending = $query->selectRaw('m_customers.id, COALESCE(SUM(t_sales.grand_total), 0) as total_spending')
-            ->join('t_sales', 't_sales.customer_id', '=', 'm_customers.id')
+            ->join('t_sales', function ($join) {
+                $join->on('t_sales.customer_id', '=', 'm_customers.id')
+                     ->where('t_sales.approval_status', 'SELESAI');
+            })
             ->groupBy('m_customers.id')
             ->get();
 

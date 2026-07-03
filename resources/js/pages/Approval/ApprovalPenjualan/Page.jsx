@@ -255,8 +255,8 @@ const ApprovalPenjualan = () => {
                             options: [
                                 { value: 'APPROVAL', label: 'Approval' },
                                 { value: 'DISETUJUI', label: 'Disetujui' },
-                                { value: 'CETAK KWITANSI', label: 'Cetak Kwitansi' },
-                                { value: 'SELESAI', label: 'Selesai' },
+                                // { value: 'CETAK KWITANSI', label: 'Cetak Kwitansi' },
+                                // { value: 'SELESAI', label: 'Selesai' },
                                 { value: 'DITOLAK', label: 'Ditolak' },
                                 { value: 'DIBATALKAN', label: 'Dibatalkan' },
                             ],
