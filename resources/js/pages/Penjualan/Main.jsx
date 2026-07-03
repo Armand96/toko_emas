@@ -78,7 +78,7 @@ const STATUS_TONE = {
             });
             if (filters.search) params.append('order_id', filters.search);
             if (filters.status) {
-                params.append('approval_status', filters.status);
+                params.append('approval_status', isKasir() ? filters.status === "DISETUJUI" ? "CETAK KWITANSI":  filters.status  : filters.status);
                 params.append('status', filters.status);
             }
             if (isKasir() && user?.branch_id) params.append('branch_id', user.branch_id);
