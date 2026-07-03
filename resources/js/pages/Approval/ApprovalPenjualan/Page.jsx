@@ -28,8 +28,6 @@ const STATUS_TONE = {
 const STATUS_LABEL = {
     'APPROVAL': 'Approval',
     'DISETUJUI': 'Disetujui',
-    'CETAK KWITANSI': 'Cetak Kwitansi',
-    'SELESAI': 'Selesai',
     'DITOLAK': 'Ditolak',
     'DIBATALKAN': 'Dibatalkan',
 };
@@ -197,12 +195,10 @@ const ApprovalPenjualan = () => {
         {
             header: 'Item Produk',
             accessor: 'details',
-            render: (row) => {
-                const items = row.details || [];
-                if (items.length === 0) return '-';
-                const names = items.map((d) => d.product?.product_name).filter(Boolean);
-                return names.join(', ');
-            },
+            render: (row) => HelperFunctions.summarizeItems(
+                row.details,
+                (d) => d.product?.product_name
+            ),
         },
         { header: 'Nominal', accessor: 'grand_total', render: (row) => HelperFunctions.formatCurrency(row.grand_total || 0) },
         { header: 'Pembayaran', accessor: 'payment_type', render: (row) => row.payment_type === 'TUNAI' ? 'Tunai' : 'Transfer' },

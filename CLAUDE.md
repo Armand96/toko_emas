@@ -149,9 +149,17 @@ Kasir otomatis filter by `user.branch_id`. Permission check via `PermissionStore
 
 Semua script test ada di `docs/testing/` (dijalankan dari root project). Lihat `docs/testing/README.md` untuk detail.
 
-- `docs/testing/run-full-scenario.mjs` — Skenario lengkap: modal awal, pembelian, approval, customer baru, penjualan, stock opname
+- `docs/testing/run-full-scenario.mjs` — **Skenario lengkap v2**: login otomatis, setup 20 cabang + produk + user kasir, modal awal 10jt tunai+transfer per cabang, ~1000 pembelian per cabang (produk random beda per cabang), approve/tolak random, customer baru, penjualan random, transfer item antar cabang, remove item (hilang/repair), stock opname. Setiap run menghasilkan data berbeda (random seed).
 - `docs/testing/run-inventory-scenario.mjs` — Skenario inventory: transfer, remove (hilang/repair), return, stock opname
 - `docs/testing/generate-test-report.mjs` — Generate Excel report QA (`QA_TEST_REPORT.xlsx`)
 - `docs/testing/_backtest.mjs` — Backtest flow + rekonsiliasi uang & stok (60 assertion)
 
-Jalankan dengan `bun run docs/testing/<script>.mjs`. Token auth mungkin perlu di-refresh (login ulang via API).
+Jalankan dengan `bun run docs/testing/<script>.mjs`. Token di-refresh otomatis (login `tokoemas/tokoemas` di awal script).
+
+### Catatan run-full-scenario.mjs v2
+
+- **Sebelum run pertama**: pastikan DB sudah di-seed (`php artisan migrate:fresh --seed`) dan server jalan (`php artisan serve`)
+- Script idempotent untuk master data (cabang/produk/user tidak dobel kalau sudah ada)
+- Produk di-assign ke semua cabang saat create; subset random per cabang disimulasikan saat generate pembelian
+- Endpoint penting: `bankCabangs` (bukan `bank-cabang`), produk butuh `branch_id[]` array + `description` wajib
+- Response branches/inventory/products: paginator langsung (bukan wrapped `{ data: [...] }`) — gunakan `toArr()` untuk parse

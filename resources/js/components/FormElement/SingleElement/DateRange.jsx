@@ -76,7 +76,7 @@ const DateRange = ({ label, name, value, isRequired, onChange }) => {
                     onClick={() => setOpen((o) => !o)}
                     className="flex w-full min-w-[220px] items-center justify-between gap-3 rounded-lg border border-gray-200 bg-neutral-white px-3 py-[7px] text-sm text-gray-900 transition-colors hover:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/30"
                 >
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-2 text-nowrap">
                         <CalendarBlankIcon size={18} className="text-gray-400" />
                         {display}
                     </span>

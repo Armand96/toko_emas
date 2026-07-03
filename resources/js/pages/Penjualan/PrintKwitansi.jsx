@@ -57,7 +57,7 @@ const PrintKwitansi = () => {
         tagline: "Jewellery design, Wedding Ring, Custom, Fashion, Jual Beli Emas",
         tagline2: "Perhiasan, LM ANTAM, Cukim, Leburan, Perak, Palladium",
         address: branch?.address || "Jl. Yos Sudarso",
-        phone: `Wa : ${phoneDisplay}`,
+        phone: `Telephone/WhatsApp : ${phoneDisplay}`,
     };
 
     return (

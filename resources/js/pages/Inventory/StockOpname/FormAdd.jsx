@@ -9,6 +9,7 @@ import Badge from "../../../components/Badge";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import { showAlert } from "../../../utils/showAlert";
 import AuthStore from "../../../Store/AuthStore";
+import OptionsStore from "../../../Store/OptionsStore";
 
 const localNow = () => {
     const d = new Date();
@@ -18,6 +19,11 @@ const localNow = () => {
 
 const FormAdd = ({ setCurentState }) => {
     const user = AuthStore((s) => s.user);
+    const { branches, ensureBranches } = OptionsStore();
+    const branchName = useMemo(() => {
+        const list = branches?.data ?? [];
+        return list.find(b => b.id === user?.branch_id)?.branch_name ?? `Cabang #${user?.branch_id ?? '-'}`;
+    }, [branches, user?.branch_id]);
 
     const [activeTab, setActiveTab] = useState('sesuai');
     const [isScanModalOpen, setIsScanModalOpen] = useState(false);
@@ -36,6 +42,8 @@ const FormAdd = ({ setCurentState }) => {
 
     const [scanned, setScanned] = useState({});
     const [sessionStart] = useState(() => localNow());
+
+    useEffect(() => { ensureBranches(); }, []);
 
     useEffect(() => {
         if (!user?.branch_id) return;
@@ -263,7 +271,7 @@ const FormAdd = ({ setCurentState }) => {
                 <div className="flex flex-col gap-0.5">
                     <h2 className="text-lg font-semibold text-gray-900">Sesi Aktif</h2>
                     <span className="text-sm text-gray-500">
-                        {user?.branch?.branch_name || `Cabang #${user?.branch_id ?? '-'}`} · {isLoading ? 'Memuat inventory...' : `${totalBranch} item aktif`}
+                        {branchName} · {isLoading ? 'Memuat inventory...' : `${totalBranch} item aktif`}
                     </span>
                 </div>
 

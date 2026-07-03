@@ -180,17 +180,13 @@ const ApprovalRemoveItem = () => {
         {
             header: 'Item Produk',
             accessor: 'details',
-            render: (row) => {
-                const items = row.details || [];
-                if (items.length === 0) return '-';
-                const names = items
-                    .map((d) => {
-                        const name = d.product?.product_name || productMap[d.product_id];
-                        return name ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ?? ''}K` : d.inventory_code;
-                    })
-                    .filter(Boolean);
-                return names.join(', ');
-            },
+            render: (row) => HelperFunctions.summarizeItems(
+                row.details,
+                (d) => {
+                    const name = d.product?.product_name || productMap[d.product_id];
+                    return name ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ?? ''}K`.trim() : d.inventory_code;
+                }
+            ),
         },
         { header: 'Cabang', accessor: 'branch', render: (row) => row.branch?.branch_name || row.branch?.name || '-' },
         { header: 'Jenis', accessor: 'jenis', render: (row) => JENIS_LABEL[row.jenis] || row.jenis || '-' },

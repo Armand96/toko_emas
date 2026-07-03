@@ -65,6 +65,12 @@ export default function ModalCustomer({
             disabledConfirmBtn={disableButton()}
         >
             <div className="flex flex-col gap-4 py-2">
+                {isEdit && formData?.customer_code && (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+                        <span className="text-sm text-gray-500">ID Member</span>
+                        <span className="text-sm font-medium text-gray-900">{formData.customer_code}</span>
+                    </div>
+                )}
                 <InputGroup
                     cols="2"
                     fields={fieldsModal}

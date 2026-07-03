@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { PlusCircleIcon } from "@phosphor-icons/react";
+import CodeBadge from "../../../components/CodeBadge";
 import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
 import Badge from "../../../components/Badge";
 import HeaderSection from "../../../components/HeaderSection";
@@ -125,6 +126,13 @@ const MasterCustomer = () => {
     };
 
     const columns = [
+        {
+            header: 'ID Member',
+            accessor: 'customer_code',
+            render: (row) => row.customer_code
+                ? <CodeBadge variant="table">{row.customer_code}</CodeBadge>
+                : '-'
+        },
         { header: 'Nama Lengkap', accessor: 'customer_name' },
         { header: 'No HP', accessor: 'phone_number' },
         {

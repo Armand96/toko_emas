@@ -196,7 +196,7 @@ export default function Modal({
                 <div className="border border-neutral-200 rounded-lg p-4 flex items-center gap-6 text-sm">
                     <div className="flex gap-2">
                         <span className="text-neutral-500">Batch</span>
-                        <span className="font-medium text-neutral-900">{data?.batch ? String(data.batch).padStart(5, '0') : '-'}</span>
+                        <span className="font-medium text-neutral-900">{data?.batch}</span>
                     </div>
                     <div className="w-px h-4 bg-neutral-200"></div>
                     <div className="flex gap-2">

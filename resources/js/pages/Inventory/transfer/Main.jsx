@@ -197,15 +197,13 @@ const Main = ({ setCurentState }) => {
             render: (row) => {
                 const details = row._raw?.details || [];
                 if (details.length === 0) return row.item_produk || '-';
-                const names = details
-                    .map((d) => {
+                return HelperFunctions.summarizeItems(
+                    details,
+                    (d) => {
                         const name = d.product?.name || d.product?.product_name || productMap[d.product_id];
-                        return name ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ? `${d.inventory.karat}K` : ''}` : d.inventory_code;
-                    })
-                    .filter(Boolean);
-                if (names.length === 0) return '-';
-                if (names.length <= 3) return names.join(', ');
-                return `${names.slice(0, 3).join(', ')} +${names.length - 3} lainnya`;
+                        return name ? `${name} ${d.inventory?.berat ?? ''}g ${d.inventory?.karat ? `${d.inventory.karat}K` : ''}`.trim() : d.inventory_code;
+                    }
+                );
             },
         },
         { header: 'Cabang Asal', accessor: 'cabang_asal' },

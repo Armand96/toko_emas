@@ -13,6 +13,7 @@ import DetailItemModal from "./DetailItemModal";
 import EditItemModal from "./EditItemModal";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import InventoryApis from "../../../Services/Inventory.apis";
+import { showAlert } from "../../../utils/showAlert";
 import LoadingStore from "../../../Store/LoadingStore";
 import OptionsStore from "../../../Store/OptionsStore";
 import PermissionStore from "../../../Store/PermissionStore";
@@ -472,9 +473,11 @@ const MasterInventory = () => {
                 serial_number: formData.no_seri || null,
             };
             await InventoryApis.PutInventory(formData.id, body);
+            showAlert({ icon: 'success', isAutoClose: true, title: 'Berhasil Diperbarui', message: 'Data item inventory berhasil disimpan.' });
             handleCloseEdit();
             fetchData(paramFetch.current_page, paramFetch.per_page, search.kode, filter.status, filter.kategori, filter.cabang);
         } catch (error) {
+            showAlert({ icon: 'error', title: 'Gagal Menyimpan', message: 'Terjadi kesalahan saat menyimpan data.' });
             console.error(error);
         } finally {
             setLoading(false);

@@ -60,6 +60,22 @@ const HelperFunctions = {
         }
         return formattedData;
     },
+    /**
+     * Singkat daftar item inventory jadi teks ringkas untuk kolom tabel.
+     * Contoh output: "Kalung Polos 2g 24K, Anting Motif 1.5g 22K +3 lainnya"
+     *
+     * @param {Array} items - array detail (transfer/remove/pembelian)
+     * @param {Function} getName - fn(item) => string nama produk
+     * @param {number} [max=2] - maks item yang ditampilkan sebelum "+N lainnya"
+     */
+    summarizeItems: (items = [], getName, max = 2) => {
+        if (!Array.isArray(items) || items.length === 0) return '-';
+        const labels = items.map(getName).filter(Boolean);
+        if (labels.length === 0) return '-';
+        const shown = labels.slice(0, max);
+        const rest = labels.length - max;
+        return rest > 0 ? `${shown.join(', ')} +${rest} lainnya` : shown.join(', ');
+    },
     formatCurrency: (price) => {
          return new Intl.NumberFormat("id-ID", {
             style: "currency",
