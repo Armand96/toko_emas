@@ -6,6 +6,7 @@ import Badge from "../../../components/Badge";
 import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
 import InputGroup from '../../../components/FormElement/InputGroup';
+import FilterBar from '../../../components/FilterBar';
 import { showAlert } from '../../../utils/showAlert';
 import HelperFunctions from '../../../utils/HelperFunctions';
 import LoadingStore from '../../../Store/LoadingStore';
@@ -155,11 +156,11 @@ const MasterBank = () => {
     return (
         <div className="flex flex-col gap-6 w-full">
             <HeaderSection title="Master Bank" description="Kelola daftar bank." icon={PlusCircleIcon} onClick={() => handleOpenModal('add')} textButton="Tambah Bank" />
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px] max-w-xs">
+            <FilterBar>
+                <FilterBar.Search>
                     <InputGroup fields={[{ name: 'category_name', label: '', type: 'search', placeholder: 'Cari bank...' }]} formData={search} cols='1' onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })} />
-                </div>
-            </div>
+                </FilterBar.Search>
+            </FilterBar>
             <Table columns={columns} data={paramFetch.data} onPageChange={onChangePage} onPageSizeChange={onChangePageSize} total={paramFetch.total} page={paramFetch.current_page} pageSize={paramFetch.per_page} />
             <Modal isOpen={showModalAdd} onClose={handleCloseModal} onSubmit={handleSubmit} formData={formData} onChange={handleChange} formError={formError} isView={isView} parentOptions={parentOptions} />
         </div>

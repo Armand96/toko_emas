@@ -7,6 +7,7 @@ import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
 import InputGroup from '../../../components/FormElement/InputGroup';
+import FilterBar from '../../../components/FilterBar';
 import { showAlert } from '../../../utils/showAlert';
 import LoadingStore from '../../../Store/LoadingStore';
 import OptionsStore from '../../../Store/OptionsStore';
@@ -226,24 +227,24 @@ const Branch = () => {
                 onClick={() => handleOpenModal('add')}
                 textButton="Tambah Cabang"
             />
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px] max-w-xs">
+            <FilterBar>
+                <FilterBar.Search>
                     <InputGroup
                         fields={searchFields}
                         formData={search}
                         cols='1'
                         onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
                     />
-                </div>
-                <div className="w-[160px]">
+                </FilterBar.Search>
+                <FilterBar.Item>
                     <InputGroup
                         fields={filterFields}
                         formData={search}
                         cols='1'
                         onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
                     />
-                </div>
-            </div>
+                </FilterBar.Item>
+            </FilterBar>
             <Table
                 columns={columns}
                 data={paramFetch.data}

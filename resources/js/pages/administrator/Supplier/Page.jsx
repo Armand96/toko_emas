@@ -5,6 +5,7 @@ import ActionButton, { ActionButtonGroup } from "../../../components/ActionButto
 import Badge from "../../../components/Badge";
 import Table from "../../../components/Table/Table";
 import InputGroup from '../../../components/FormElement/InputGroup';
+import FilterBar from '../../../components/FilterBar';
 import { showAlert } from '../../../utils/showAlert';
 import SupplierApis from "../../../Services/Supplier.apis";
 import LoadingStore from '../../../Store/LoadingStore';
@@ -169,8 +170,8 @@ const MasterSupplier = () => {
                 onClick={can('create') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah Supplier"
             />
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px] max-w-xs">
+            <FilterBar>
+                <FilterBar.Search>
                     <InputGroup
                         fields={[{
                             name: 'supplier_name',
@@ -182,8 +183,8 @@ const MasterSupplier = () => {
                         cols='1'
                         onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
                     />
-                </div>
-            </div>
+                </FilterBar.Search>
+            </FilterBar>
             <Table
                 columns={columns}
                 data={paramFetch.data}

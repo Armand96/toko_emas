@@ -9,6 +9,7 @@ import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
 import { showAlert } from '../../../utils/showAlert';
 import InputGroup from '../../../components/FormElement/InputGroup';
+import FilterBar from '../../../components/FilterBar';
 import FooterActionBar from '../../../components/FooterActionBar';
 import InventoryApis from '../../../Services/Inventory.apis';
 import HelperFunctions from '../../../utils/HelperFunctions';
@@ -316,26 +317,26 @@ const ApprovalPembelian = () => {
                 icon={CheckSquareOffsetIcon}
             />
 
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px] max-w-xs">
+            <FilterBar>
+                <FilterBar.Search>
                     <InputGroup
                         fields={searchFilter}
                         formData={search}
                         cols="1"
                         onChange={handleFilterChange}
                     />
-                </div>
+                </FilterBar.Search>
                 {dropdownFilters.map((field) => (
-                    <div key={field.name} className="w-[160px]">
+                    <FilterBar.Item key={field.name}>
                         <InputGroup
                             fields={[field]}
                             formData={search}
                             cols="1"
                             onChange={handleFilterChange}
                         />
-                    </div>
+                    </FilterBar.Item>
                 ))}
-            </div>
+            </FilterBar>
 
             <Table
                 columns={columns}

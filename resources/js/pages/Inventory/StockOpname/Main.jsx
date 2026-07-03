@@ -6,6 +6,7 @@ import Badge from "../../../components/Badge";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
+import FilterBar from "../../../components/FilterBar";
 import InventoryApis from "../../../Services/Inventory.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import OptionsStore from "../../../Store/OptionsStore";
@@ -145,42 +146,42 @@ const Main = ({ setCurentState }) => {
                 textButton="Input Sesi Stock Opname"
                 onClick={can('create') ? () => setCurentState({ view: 'form' }) : undefined}
             />
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="min-w-[220px]">
+            <FilterBar>
+                <FilterBar.Item width="sm:w-auto sm:min-w-[220px]">
                     <InputGroup
                         fields={[{ name: 'dateRange', label: '', type: 'daterange' }]}
                         formData={filterData}
                         cols="1"
                         onChange={handleFilterChange}
                     />
-                </div>
-                <div className="flex-1 min-w-[220px] max-w-xs">
+                </FilterBar.Item>
+                <FilterBar.Search>
                     <InputGroup
                         fields={[{ name: 'search', label: '', type: 'search', placeholder: 'Cari kode sesi...' }]}
                         formData={filterData}
                         cols="1"
                         onChange={handleFilterChange}
                     />
-                </div>
-                <div className="w-[160px]">
+                </FilterBar.Search>
+                <FilterBar.Item>
                     <InputGroup
                         fields={[{ name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: OPNAME_STATUS_OPTIONS }]}
                         formData={filterData}
                         cols="1"
                         onChange={handleFilterChange}
                     />
-                </div>
+                </FilterBar.Item>
                 {!isKasir() && (
-                    <div className="w-[160px]">
+                    <FilterBar.Item>
                         <InputGroup
                             fields={[{ name: 'cabang', label: '', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions }]}
                             formData={filterData}
                             cols="1"
                             onChange={handleFilterChange}
                         />
-                    </div>
+                    </FilterBar.Item>
                 )}
-            </div>
+            </FilterBar>
             <Table
                 columns={columns}
                 data={paramFetch.data}

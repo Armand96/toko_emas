@@ -168,7 +168,7 @@ const FormAdd = ({ setCurentState }) => {
                 <FormSectionCard title="Informasi Transfer">
 
                     <div className="flex flex-col gap-5">
-                        <div className="flex items-center gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                             <div className="flex-1 flex flex-col gap-1.5">
                                 <label className="text-sm font-medium text-gray-700">Cabang Asal</label>
                                 <input
@@ -179,8 +179,8 @@ const FormAdd = ({ setCurentState }) => {
                                 />
                             </div>
 
-                            <div className="mt-6 text-gray-400">
-                                <ArrowRight size={20} weight="bold" />
+                            <div className="flex justify-center sm:mt-6 text-gray-400">
+                                <ArrowRight size={20} weight="bold" className="rotate-90 sm:rotate-0" />
                             </div>
 
                             <div className="flex-1 flex flex-col gap-1.5">

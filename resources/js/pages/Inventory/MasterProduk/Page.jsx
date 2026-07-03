@@ -7,6 +7,7 @@ import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
 import InputGroup from '../../../components/FormElement/InputGroup';
+import FilterBar from '../../../components/FilterBar';
 import { showAlert } from '../../../utils/showAlert';
 import InventoryApis from '../../../Services/Inventory.apis';
 import LoadingStore from '../../../Store/LoadingStore';
@@ -315,26 +316,26 @@ const MasterProduk = () => {
                 onClick={can('create') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah Produk"
             />
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px] max-w-xs">
+            <FilterBar>
+                <FilterBar.Search>
                     <InputGroup
                         fields={searchFields}
                         formData={search}
                         cols='1'
                         onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
                     />
-                </div>
+                </FilterBar.Search>
                 {filterFieldsProduk.map((field) => (
-                    <div key={field.name} className="w-[160px]">
+                    <FilterBar.Item key={field.name}>
                         <InputGroup
                             fields={[field]}
                             formData={search}
                             cols='1'
                             onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
                         />
-                    </div>
+                    </FilterBar.Item>
                 ))}
-            </div>
+            </FilterBar>
             <Table
                 columns={columns}
                 data={paramFetch.data}

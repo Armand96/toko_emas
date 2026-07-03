@@ -7,6 +7,7 @@ import CodeBadge from "../../../components/CodeBadge";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
+import FilterBar from "../../../components/FilterBar";
 import FooterActionBar from "../../../components/FooterActionBar";
 import DetailItemModal from "./DetailItemModal";
 import EditItemModal from "./EditItemModal";
@@ -612,8 +613,8 @@ const MasterInventory = () => {
             />
 
             {/* Filter row */}
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px] max-w-xs">
+            <FilterBar>
+                <FilterBar.Search>
                     <InputGroup
                         fields={[{
                             name: "kode",
@@ -625,8 +626,8 @@ const MasterInventory = () => {
                         cols="1"
                         onChange={handleSearchChange}
                     />
-                </div>
-                <div className="w-[160px]">
+                </FilterBar.Search>
+                <FilterBar.Item>
                     <InputGroup
                         fields={[{
                             name: "status",
@@ -639,8 +640,8 @@ const MasterInventory = () => {
                         cols="1"
                         onChange={handleFilterChange}
                     />
-                </div>
-                <div className="w-[160px]">
+                </FilterBar.Item>
+                <FilterBar.Item>
                     <InputGroup
                         fields={[{
                             name: "kategori",
@@ -653,9 +654,9 @@ const MasterInventory = () => {
                         cols="1"
                         onChange={handleFilterChange}
                     />
-                </div>
+                </FilterBar.Item>
                 {!isKasir() && (
-                    <div className="w-[160px]">
+                    <FilterBar.Item>
                         <InputGroup
                             fields={[{
                                 name: "cabang",
@@ -668,9 +669,9 @@ const MasterInventory = () => {
                             cols="1"
                             onChange={handleFilterChange}
                         />
-                    </div>
+                    </FilterBar.Item>
                 )}
-            </div>
+            </FilterBar>
 
             <Table
                 columns={columns}

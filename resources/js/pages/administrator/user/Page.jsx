@@ -6,6 +6,7 @@ import Badge from "../../../components/Badge";
 import Table from "../../../components/Table/Table";
 import ModalUser from "./Modal";
 import InputGroup from '../../../components/FormElement/InputGroup';
+import FilterBar from '../../../components/FilterBar';
 import { showAlert } from '../../../utils/showAlert';
 import UsersApis from "../../../Services/User.apis";
 import HelperFunctions from '../../../utils/HelperFunctions';
@@ -218,8 +219,8 @@ const MasterUser = () => {
                 onClick={can('create') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah User"
             />
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px] max-w-xs">
+            <FilterBar>
+                <FilterBar.Search>
                     <InputGroup
                         fields={[{
                             name: 'name',
@@ -231,8 +232,8 @@ const MasterUser = () => {
                         cols='1'
                         onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
                     />
-                </div>
-                <div className="w-[160px]">
+                </FilterBar.Search>
+                <FilterBar.Item>
                     <InputGroup
                         fields={[{
                             name: 'status',
@@ -248,8 +249,8 @@ const MasterUser = () => {
                         cols='1'
                         onChange={handleFilterChange}
                     />
-                </div>
-                <div className="w-[180px]">
+                </FilterBar.Item>
+                <FilterBar.Item width="sm:w-[180px]">
                     <InputGroup
                         fields={[{
                             name: 'branch_id',
@@ -262,8 +263,8 @@ const MasterUser = () => {
                         cols='1'
                         onChange={handleFilterChange}
                     />
-                </div>
-            </div>
+                </FilterBar.Item>
+            </FilterBar>
             <Table
                 columns={columns}
                 data={paramFetch.data}

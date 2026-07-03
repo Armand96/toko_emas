@@ -6,6 +6,7 @@ import Badge from "../../../components/Badge";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
+import FilterBar from "../../../components/FilterBar";
 import ModalDetailRemove from './ModalView';
 import InventoryApis from "../../../Services/Inventory.apis";
 import { showAlert } from "../../../utils/showAlert";
@@ -246,34 +247,34 @@ const Main = ({ setCurentState }) => {
                 textButton="Remove Item"
                 onClick={can('create') ? () => setCurentState('form') : undefined}
             />
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px] max-w-xs">
+            <FilterBar>
+                <FilterBar.Search>
                     <InputGroup
                         fields={[{ name: 'search', label: '', type: 'search', placeholder: 'Cari kode...' }]}
                         formData={filterData}
                         cols="1"
                         onChange={handleFilterChange}
                     />
-                </div>
-                <div className="w-[160px]">
+                </FilterBar.Search>
+                <FilterBar.Item>
                     <InputGroup
                         fields={[{ name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: REMOVE_STATUS_OPTIONS }]}
                         formData={filterData}
                         cols="1"
                         onChange={handleFilterChange}
                     />
-                </div>
+                </FilterBar.Item>
                 {!isKasir() && (
-                    <div className="w-[160px]">
+                    <FilterBar.Item>
                         <InputGroup
                             fields={[{ name: 'cabang', label: '', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions }]}
                             formData={filterData}
                             cols="1"
                             onChange={handleFilterChange}
                         />
-                    </div>
+                    </FilterBar.Item>
                 )}
-            </div>
+            </FilterBar>
             <Table
                 columns={columns}
                 data={paramFetch.data}

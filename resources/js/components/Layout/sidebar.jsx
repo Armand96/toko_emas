@@ -117,6 +117,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     setOpenMenus((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  // Tutup sidebar saat navigasi di mobile (viewport < lg / 1024px).
+  const handleNavigate = () => {
+    if (window.innerWidth < 1024) setIsOpen(false);
+  };
+
   const filteredSidebar = useMemo(() => sidebarData
     .map((section) => ({
       ...section,
@@ -211,6 +216,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                                 <NavLink
                                   key={subIdx}
                                   to={sub.link}
+                                  onClick={handleNavigate}
                                   className={({ isActive }) =>
                                     `block px-11 py-2 text-sm transition-colors cursor-pointer ${isActive
                                       ? "text-neutral-white font-medium"
@@ -231,6 +237,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                       <NavLink
                         key={item.id}
                         to={item.link}
+                        onClick={handleNavigate}
                         className={({ isActive }) =>
                           `flex items-center gap-3 px-4 py-2.5 transition-colors cursor-pointer ${isActive
                             ? "bg-primary-900 text-neutral-white"
