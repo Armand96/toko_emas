@@ -78,9 +78,9 @@ const Table = ({
   };
 
   return (
-  <div>
+  <div className="w-full min-w-0">
 
-      <div className="w-full flex flex-col bg-neutral-white rounded-lg shadow-sm border border-gray-200">
+      <div className="w-full min-w-0 flex flex-col bg-neutral-white rounded-lg shadow-sm border border-gray-200">
       <div className="overflow-x-auto w-full">
         <table className="w-full text-sm text-left text-gray-900">
           <thead className="text-xs text-gray-900 bg-neutral-bg-white-smk border-b border-gray-200 uppercase font-semibold">

@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
+import FilterBar from "../../../components/FilterBar";
 import ModalDetailRemoveItem from "./Modal";
 import { showAlert } from '../../../utils/showAlert';
 import HelperFunctions from "../../../utils/HelperFunctions";
@@ -225,8 +226,8 @@ const ApprovalRemoveItem = () => {
             />
 
             {/* Filter Bar */}
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px] max-w-xs">
+            <FilterBar>
+                <FilterBar.Search>
                     <InputGroup
                         fields={[{
                             name: "search",
@@ -238,7 +239,7 @@ const ApprovalRemoveItem = () => {
                         cols="1"
                         onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
                     />
-                </div>
+                </FilterBar.Search>
                 {[
                     { name: 'status', placeholder: 'Pilih status', options: [
                         { value: 'APPROVAL', label: 'Approval' },
@@ -248,7 +249,7 @@ const ApprovalRemoveItem = () => {
                     ]},
                     { name: 'cabang', placeholder: 'Pilih cabang', options: branchOptions },
                 ].map((field) => (
-                    <div key={field.name} className="w-[160px]">
+                    <FilterBar.Item key={field.name}>
                         <InputGroup
                             fields={[{
                                 name: field.name,
@@ -261,9 +262,9 @@ const ApprovalRemoveItem = () => {
                             cols="1"
                             onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
                         />
-                    </div>
+                    </FilterBar.Item>
                 ))}
-            </div>
+            </FilterBar>
 
             <Table
                 columns={columns}

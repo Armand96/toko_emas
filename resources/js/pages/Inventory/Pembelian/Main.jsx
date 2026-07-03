@@ -6,6 +6,7 @@ import { useDebounce } from "use-debounce";
 
 import HeaderSection from "../../../components/HeaderSection";
 import InputGroup from "../../../components/FormElement/InputGroup";
+import FilterBar from "../../../components/FilterBar";
 import Table from "../../../components/Table/Table";
 import CodeBadge from "../../../components/CodeBadge";
 import FooterActionBar from "../../../components/FooterActionBar";
@@ -298,8 +299,8 @@ const MainPembelian = ({ setCurentState }) => {
                 textButton="Tambah Pembelian"
             />
 
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px] max-w-xs">
+            <FilterBar>
+                <FilterBar.Search>
                     <InputGroup
                         fields={[{
                             name: "search",
@@ -311,7 +312,7 @@ const MainPembelian = ({ setCurentState }) => {
                         cols="1"
                         onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
                     />
-                </div>
+                </FilterBar.Search>
                 {[
                     { name: 'status', placeholder: 'Pilih status', options: [
                         { value: 'APPROVAL', label: 'Approval' },
@@ -321,7 +322,7 @@ const MainPembelian = ({ setCurentState }) => {
                     ]},
                     { name: 'category_id', placeholder: 'Pilih kategori', options: categoryOptions.filter((c) => !c.details?.parent_id) },
                 ].map((field) => (
-                    <div key={field.name} className="w-[160px]">
+                    <FilterBar.Item key={field.name}>
                         <InputGroup
                             fields={[{
                                 name: field.name,
@@ -334,9 +335,9 @@ const MainPembelian = ({ setCurentState }) => {
                             cols="1"
                             onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
                         />
-                    </div>
+                    </FilterBar.Item>
                 ))}
-            </div>
+            </FilterBar>
 
             <Table
                 columns={columns}

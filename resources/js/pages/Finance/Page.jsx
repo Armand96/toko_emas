@@ -6,6 +6,7 @@ import ActionButton, { ActionButtonGroup } from "../../components/ActionButton";
 import Badge from "../../components/Badge";
 import Table from "../../components/Table/Table";
 import InputGroup from "../../components/FormElement/InputGroup";
+import FilterBar from "../../components/FilterBar";
 import HelperFunctions from "../../utils/HelperFunctions";
 import { showAlert } from "../../utils/showAlert";
 import LoadingStore from "../../Store/LoadingStore";
@@ -203,16 +204,16 @@ const Finance = () => {
             />
 
             {/* Filter Bar */}
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="min-w-[220px]">
+            <FilterBar>
+                <FilterBar.Search>
                     <InputGroup
                         fields={[{ name: "dateRange", label: "", type: "daterange" }]}
                         formData={filter}
                         cols="1"
                         onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
                     />
-                </div>
-                <div className="w-[160px]">
+                </FilterBar.Search>
+                <FilterBar.Item>
                     <InputGroup
                         fields={[{
                             name: "tipe",
@@ -225,8 +226,8 @@ const Finance = () => {
                         cols="1"
                         onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
                     />
-                </div>
-                <div className="w-[160px]">
+                </FilterBar.Item>
+                <FilterBar.Item>
                     <InputGroup
                         fields={[{
                             name: "cabang",
@@ -239,8 +240,8 @@ const Finance = () => {
                         cols="1"
                         onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
                     />
-                </div>
-            </div>
+                </FilterBar.Item>
+            </FilterBar>
 
             <Table
                 columns={columns}

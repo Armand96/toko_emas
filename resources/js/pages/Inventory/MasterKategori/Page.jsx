@@ -5,6 +5,7 @@ import ActionButton, { ActionButtonGroup } from "../../../components/ActionButto
 import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
 import InputGroup from "../../../components/FormElement/InputGroup";
+import FilterBar from "../../../components/FilterBar";
 import { showAlert } from "../../../utils/showAlert";
 import InventoryApis from "../../../Services/Inventory.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
@@ -198,8 +199,8 @@ const MasterKategori = () => {
                 onClick={can('create') ? () => handleOpenModal("add") : undefined}
                 textButton="Tambah Kategori"
             />
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px] max-w-xs">
+            <FilterBar>
+                <FilterBar.Search>
                     <InputGroup
                         fields={[{
                             name: "category_name",
@@ -211,8 +212,8 @@ const MasterKategori = () => {
                         cols="1"
                         onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
                     />
-                </div>
-            </div>
+                </FilterBar.Search>
+            </FilterBar>
             <Table
                 columns={columns}
                 data={paramFetch.data}

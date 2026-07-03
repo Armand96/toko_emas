@@ -6,6 +6,7 @@ import HeaderSection from "../../components/HeaderSection";
 import ActionButton, { ActionButtonGroup } from "../../components/ActionButton";
 import Badge from "../../components/Badge";
 import InputGroup from "../../components/FormElement/InputGroup";
+import FilterBar from "../../components/FilterBar";
 import Table from "../../components/Table/Table";
 import LoadingStore from "../../Store/LoadingStore";
 import ModalViewPenjualan from "./ModalView";
@@ -258,24 +259,24 @@ const Main = ({ setCurentState }) => {
                 textButton="Transaksi Baru"
             />
 
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px] max-w-xs">
+            <FilterBar>
+                <FilterBar.Search>
                     <InputGroup
                         fields={searchFieldsPenjualan}
                         formData={search}
                         cols='1'
                         onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
                     />
-                </div>
-                <div className="w-[160px]">
+                </FilterBar.Search>
+                <FilterBar.Item>
                     <InputGroup
                         fields={[{ name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: STATUS_OPTIONS }]}
                         formData={search}
                         cols='1'
                         onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
                     />
-                </div>
-            </div>
+                </FilterBar.Item>
+            </FilterBar>
 
             <Table
                 columns={columns}

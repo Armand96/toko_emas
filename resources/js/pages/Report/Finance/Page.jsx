@@ -427,7 +427,7 @@ const ReportFinance = () => {
                         >
                             <ExportIcon size={18} /> {exporting ? "Downloading..." : "Export Data"}
                         </button>
-                        <div className="w-[160px]">
+                        <div className="w-full sm:w-[160px]">
                             <InputGroup
                                 fields={[{ name: "tipe", label: "", type: "dropdown", options: TIPE_OPTIONS, placeholder: "Pilih tipe" }]}
                                 formData={filter}

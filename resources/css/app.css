@@ -572,3 +572,55 @@
   overflow-y: auto;
   line-height: 1.5;
 }
+
+/* =========================================
+   Custom Scrollbar
+   ========================================= */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-300) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-300);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-gray-400);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Dark scrollbar (mis. sidebar primary-950) */
+.scrollbar-dark {
+  scrollbar-color: var(--color-primary-800) transparent;
+}
+.scrollbar-dark::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary-800);
+}
+.scrollbar-dark::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-primary-700);
+}
+
+/* Hide scrollbar (dipakai sidebar) */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

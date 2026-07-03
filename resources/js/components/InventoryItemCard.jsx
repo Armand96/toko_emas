@@ -12,9 +12,9 @@ const InventoryItemCard = ({
     onRemove,
 }) => {
     return (
-        <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-white">
-            <div className="flex items-center gap-3">
-                <CodeBadge variant={codeBadgeVariant}>{code}</CodeBadge>
+        <div className="flex items-center justify-between gap-3 p-3 border border-gray-200 rounded-lg bg-white">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+                <CodeBadge variant={codeBadgeVariant} className="hidden sm:inline-flex">{code}</CodeBadge>
                 <div className="w-10 h-10 rounded-md bg-amber-100/50 overflow-hidden flex-shrink-0 border border-gray-200 flex items-center justify-center">
                     {image ? (
                         <img
@@ -29,12 +29,13 @@ const InventoryItemCard = ({
                 </div>
                 <div className="flex flex-col flex-1 min-w-0">
                     <span className="text-sm font-bold text-gray-900 truncate">{name || '-'}</span>
+                    <span className="text-[11px] text-gray-400 font-mono truncate sm:hidden">{code}</span>
                     {specs && (
                         <span className="text-xs text-gray-500 mt-0.5">{specs}</span>
                     )}
                 </div>
             </div>
-            <div className="flex items-center gap-4 flex-shrink-0">
+            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
                 {price !== undefined && price !== null && (
                     <span className="text-sm font-bold text-gray-900">
                         {HelperFunctions.formatCurrency(price)}

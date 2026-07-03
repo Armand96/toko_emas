@@ -7,6 +7,7 @@ import Badge from "../../../components/Badge";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
+import FilterBar from "../../../components/FilterBar";
 import ModalDetailRemoveItem from "../../Approval/ApprovalRemoveItem/Modal";
 import InventoryApis from "../../../Services/Inventory.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
@@ -187,8 +188,8 @@ const Main = () => {
                 title="Item Repair"
                 description="Kelola item inventory yang sedang dalam proses perbaikan dan kembalikan ke inventory aktif setelah repair selesai."
             />
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px] max-w-xs">
+            <FilterBar>
+                <FilterBar.Search>
                     <InputGroup
                         fields={[{
                             name: 'search',
@@ -200,8 +201,8 @@ const Main = () => {
                         cols="1"
                         onChange={handleFilterChange}
                     />
-                </div>
-            </div>
+                </FilterBar.Search>
+            </FilterBar>
             <Table
                 columns={columns}
                 data={paramFetch.data}

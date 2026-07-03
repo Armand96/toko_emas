@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import InputGroup from "../../../components/FormElement/InputGroup";
+import FilterBar from "../../../components/FilterBar";
 import ModalDetailPenjualan from "./Modal";
 import { showAlert } from '../../../utils/showAlert';
 import HelperFunctions from "../../../utils/HelperFunctions";
@@ -234,8 +235,8 @@ const ApprovalPenjualan = () => {
             />
 
             {/* Filter Bar */}
-            <div className="flex flex-wrap items-end gap-3">
-                <div className="flex-1 min-w-[220px] max-w-xs">
+            <FilterBar>
+                <FilterBar.Search>
                     <InputGroup
                         fields={[{
                             name: "search",
@@ -247,8 +248,8 @@ const ApprovalPenjualan = () => {
                         cols="1"
                         onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
                     />
-                </div>
-                <div className="w-[160px]">
+                </FilterBar.Search>
+                <FilterBar.Item>
                     <InputGroup
                         fields={[{
                             name: "status",
@@ -268,8 +269,8 @@ const ApprovalPenjualan = () => {
                         cols="1"
                         onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
                     />
-                </div>
-                <div className="w-[160px]">
+                </FilterBar.Item>
+                <FilterBar.Item>
                     <InputGroup
                         fields={[{
                             name: "cabang",
@@ -282,8 +283,8 @@ const ApprovalPenjualan = () => {
                         cols="1"
                         onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
                     />
-                </div>
-            </div>
+                </FilterBar.Item>
+            </FilterBar>
 
             <Table
                 columns={columns}

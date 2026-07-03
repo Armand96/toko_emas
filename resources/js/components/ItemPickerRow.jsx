@@ -21,7 +21,7 @@ const ItemPickerRow = ({
 
     return (
         <div
-            className={`flex ${isInput ? "flex-col sm:flex-row items-stretch sm:items-center" : "items-center"} gap-4 ${className}`}
+            className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-4 ${className}`}
         >
             <button
                 type="button"
