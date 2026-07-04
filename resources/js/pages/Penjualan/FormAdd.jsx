@@ -17,6 +17,7 @@ import PenjualanApis from "../../Services/Penjualan.apis";
 import OptionsStore from "../../Store/OptionsStore";
 import AuthStore from "../../Store/AuthStore";
 import CurrencyInput from "../../components/FormElement/SingleElement/CurrencyInput";
+import CodeBadge from "../../components/CodeBadge";
 
 const FormAdd = ({ setCurentState }) => {
     const setLoading = LoadingStore((state) => state.setLoading);
@@ -382,7 +383,12 @@ const FormAdd = ({ setCurentState }) => {
                                                         setIsSearching(false);
                                                     }}
                                                 >
-                                                    <div className="font-semibold text-sm text-gray-800">{member.customer_name}</div>
+                                                    <div className="flex items-center gap-2">
+                                                        {member.customer_code && (
+                                                            <CodeBadge variant="table">{member.customer_code}</CodeBadge>
+                                                        )}
+                                                        <span className="font-semibold text-sm text-gray-800">{member.customer_name}</span>
+                                                    </div>
                                                     <div className="text-xs text-gray-500 mt-0.5">{member.phone_number}</div>
                                                 </div>
                                             ))
@@ -395,6 +401,9 @@ const FormAdd = ({ setCurentState }) => {
                         ) : (
                             <div className="flex items-center justify-between p-3.5 border border-gray-200 rounded-lg bg-white shadow-sm">
                                 <div className="flex items-center gap-4">
+                                    {selectedMember.customer_code && (
+                                        <CodeBadge variant="table">{selectedMember.customer_code}</CodeBadge>
+                                    )}
                                     <div className="flex flex-col">
                                         <span className="text-sm font-bold text-gray-800">{selectedMember.customer_name}</span>
                                         <span className="text-xs text-gray-500 mt-0.5">{selectedMember.phone_number} • {selectedMember.address}</span>

@@ -23,16 +23,16 @@ class DashboardController extends Controller
     public function takeAction(Request $request)
     {
         $penjualan = TSales::where('approval_status', SalesStatus::APPROVAL)
-            ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
+            ->when($request->branch_id, fn ($q) => $q->where('branch_id', $request->branch_id))
             ->count();
         $pembelian = Pembelian::where('status', PembelianStatus::APPROVAL)
-            ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
+            ->when($request->branch_id, fn ($q) => $q->where('branch_id', $request->branch_id))
             ->count();
         $removeItem = RemoveItem::where('status', RemoveItemStatus::APPROVAL)
-            ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
+            ->when($request->branch_id, fn ($q) => $q->where('branch_id', $request->branch_id))
             ->count();
         $transferItem = TransferItem::where('status', TransferItemStatus::APPROVAL)
-            ->when($request->branch_id, fn($q) => $q->where('branch_source_id', $request->branch_id))
+            ->when($request->branch_id, fn ($q) => $q->where('branch_source_id', $request->branch_id))
             ->count();
 
         return ApiResponse::success([
@@ -49,30 +49,30 @@ class DashboardController extends Controller
         $branchId = $request->branch_id;
 
         $availableInventoryCount = Inventory::where('status', InventoryStatus::AVAILABLE)
-            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->count();
 
         $sales = TSales::whereIn('approval_status', [
             SalesStatus::DISETUJUI,
             SalesStatus::CETAK_KWITANSI,
-            SalesStatus::SELESAI
+            SalesStatus::SELESAI,
         ])
             ->where('updated_at', '>=', $today)
-            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
-            ->selectRaw("
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->selectRaw('
             COUNT(*) as total_item_sold,
             COALESCE(SUM(grand_total), 0) as total_sales
-        ")->first();
+        ')->first();
 
         $pembelian = Pembelian::where('status', PembelianStatus::DISETUJUI)
             ->where('updated_at', '>=', $today)
-            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
-            ->selectRaw("
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->selectRaw('
             COUNT(*) as total_item_bought,
             COALESCE(SUM(modal), 0) as total_pembelian
-        ")->first();
+        ')->first();
 
-        $finance = Finance::when($branchId, fn($q) => $q->where('branch_id', $branchId))
+        $finance = Finance::when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->selectRaw("
             COALESCE(SUM(
                 CASE
@@ -116,8 +116,7 @@ class DashboardController extends Controller
             'cash_balance' => $finance->cash_balance,
             'bank_balance' => $finance->bank_balance,
 
-            'total_balance' =>
-            $finance->cash_balance +
+            'total_balance' => $finance->cash_balance +
                 $finance->bank_balance,
 
         ], 'OK', 200);
@@ -141,17 +140,16 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $sales = TSales::selectRaw("
+        $sales = TSales::selectRaw('
             DATE(created_at) as trx_date,
             SUM(grand_total) as total_sales
-        ")
+        ')
             ->whereIn('approval_status', [
-                SalesStatus::DISETUJUI,
                 SalesStatus::CETAK_KWITANSI,
-                SalesStatus::SELESAI
+                SalesStatus::SELESAI,
             ])
             ->whereDate('created_at', '>=', $startDate)
-            ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
+            ->when($request->branch_id, fn ($q) => $q->where('branch_id', $request->branch_id))
             ->groupBy(DB::raw('DATE(created_at)'))
             ->orderBy('trx_date')
             ->get();
@@ -180,13 +178,13 @@ class DashboardController extends Controller
                 'full_date' => $date->format('Y-m-d'),
                 'total_sales' => $found
                     ? (float) $found->total_sales
-                    : 0
+                    : 0,
             ];
         }
 
         return ApiResponse::success(
             $chartData,
-            "OK",
+            'OK',
             200
         );
     }
@@ -196,9 +194,13 @@ class DashboardController extends Controller
         return ApiResponse::success(
             TSales::orderBy('id', 'desc')
                 ->with(['branch', 'customer'])
-                ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
+                ->whereIn('approval_status', [
+                    SalesStatus::CETAK_KWITANSI,
+                    SalesStatus::SELESAI,
+                ])
+                ->when($request->branch_id, fn ($q) => $q->where('branch_id', $request->branch_id))
                 ->get(),
-            "OK", 200
+            'OK', 200
         );
     }
 
@@ -206,11 +208,11 @@ class DashboardController extends Controller
     {
         return ApiResponse::success(
             TSales::selectRaw('approval_status, COUNT(approval_status) as count')
-                ->where('created_at', '>=', date('Y-m-d') . " 00:00:00")
-                ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
+                ->where('created_at', '>=', date('Y-m-d').' 00:00:00')
+                ->when($request->branch_id, fn ($q) => $q->where('branch_id', $request->branch_id))
                 ->groupBy('approval_status')
-                ->get(),
-            "OK", 200
+                ->toSql(),
+            'OK', 200
         );
     }
 }
