@@ -13,7 +13,8 @@ class SalesReportController extends Controller
 {
     public function salesSummary(Request $request)
     {
-        $query = TSales::query();
+        $query = TSales::query()
+            ->whereIn('approval_status', ['CETAK_KWITANSI', 'SELESAI']);
 
         if ($request->branch_id) {
             $query->where('branch_id', $request->branch_id);
@@ -22,7 +23,7 @@ class SalesReportController extends Controller
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('t_sales.created_at', [
                 $request->start_date,
-                $request->end_date
+                $request->end_date,
             ]);
         }
 
@@ -39,7 +40,7 @@ class SalesReportController extends Controller
                 '=',
                 't_sales_details.inventory_code'
             )
-            ->selectRaw("
+            ->selectRaw('
             COALESCE(SUM(t_sales.grand_total), 0) as total_penjualan,
 
             COUNT(DISTINCT t_sales.id) as jumlah_transaksi,
@@ -49,7 +50,7 @@ class SalesReportController extends Controller
             ), 0) as laba,
 
             COALESCE(SUM(inventories.berat), 0) as emas_terjual
-        ")
+        ')
             ->first();
 
         return ApiResponse::success(
@@ -61,31 +62,39 @@ class SalesReportController extends Controller
 
     public function salesTrendAndTopProduct(Request $request)
     {
-        $query = TSales::query();
-        $queryDetail = TSalesDetail::query();
+        $query = TSales::query()
+            ->whereIn('approval_status', ['CETAK_KWITANSI', 'SELESAI']);
+
+        $queryDetail = TSalesDetail::query()
+            ->whereHas('header', function ($dtlQry) use ($request) {
+                $dtlQry->whereIn('approval_status', ['CETAK_KWITANSI', 'SELESAI']);
+
+                if ($request->branch_id) {
+                    $dtlQry->where('branch_id', $request->branch_id);
+                }
+                if ($request->start_date && $request->end_date) {
+                    $dtlQry->whereBetween('t_sales.created_at', [
+                        $request->start_date,
+                        $request->end_date,
+                    ]);
+                }
+            });
 
         if ($request->branch_id) {
             $query->where('branch_id', $request->branch_id);
-            $queryDetail->whereHas('header', function ($dtlQry) use ($request) {
-                $dtlQry->where('branch_id', $request->branch_id);
-            });
         }
 
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('t_sales.created_at', [
                 $request->start_date,
-                $request->end_date
-            ]);
-            $queryDetail->whereBetween('t_sales_details.created_at', [
-                $request->start_date,
-                $request->end_date
+                $request->end_date,
             ]);
         }
 
-        $trend = $query->selectRaw("
+        $trend = $query->selectRaw('
             DATE(t_sales.created_at) as trx_date,
             SUM(grand_total) as total
-        ")
+        ')
             ->groupBy('trx_date')
             ->orderBy('trx_date')
             ->get();
@@ -103,7 +112,7 @@ class SalesReportController extends Controller
                 '=',
                 't_sales_details.inventory_code'
             )
-            ->selectRaw("
+            ->selectRaw('
                 m_products.product_name,
 
                 inventories.karat,
@@ -111,7 +120,7 @@ class SalesReportController extends Controller
                 AVG(inventories.berat) as berat,
 
                 COUNT(*) as terjual
-            ")
+            ')
             ->groupBy(
                 'm_products.id',
                 'm_products.product_name',
@@ -129,24 +138,25 @@ class SalesReportController extends Controller
 
     public function salesCategoryAndKarat(Request $request)
     {
-        // $query = TSales::query();
-        $queryDetail = TSalesDetail::query();
+        $queryDetail = TSalesDetail::query()
+            ->whereHas('header', function ($dtlQry) use ($request) {
+                $dtlQry->whereIn('approval_status', ['CETAK_KWITANSI', 'SELESAI']);
 
-        if ($request->branch_id) {
-            // $query->where('branch_id', $request->branch_id);
-            $queryDetail->whereHas('header', function ($dtlQry) use ($request) {
-                $dtlQry->where('branch_id', $request->branch_id);
+                if ($request->branch_id) {
+                    $dtlQry->where('branch_id', $request->branch_id);
+                }
+                if ($request->start_date && $request->end_date) {
+                    $dtlQry->whereBetween('t_sales.created_at', [
+                        $request->start_date,
+                        $request->end_date,
+                    ]);
+                }
             });
-        }
 
         if ($request->start_date && $request->end_date) {
-            // $query->whereBetween('t_sales.created_at', [
-            //     $request->start_date,
-            //     $request->end_date
-            // ]);
             $queryDetail->whereBetween('t_sales_details.created_at', [
                 $request->start_date,
-                $request->end_date
+                $request->end_date,
             ]);
         }
 
@@ -163,10 +173,10 @@ class SalesReportController extends Controller
                 '=',
                 'inventories.category_id'
             )
-            ->selectRaw("
+            ->selectRaw('
                 m_categories.category_name,
                 SUM(t_sales_details.price) as total
-            ")
+            ')
             ->groupBy(
                 'm_categories.id',
                 'm_categories.category_name'
@@ -187,10 +197,10 @@ class SalesReportController extends Controller
                 '=',
                 'inventories.subcategory_id'
             )
-            ->selectRaw("
+            ->selectRaw('
                 sub_categories.category_name as subcategory_name,
                 SUM(t_sales_details.price) as total
-            ")
+            ')
             ->groupBy(
                 'sub_categories.id',
                 'sub_categories.category_name'
@@ -205,10 +215,10 @@ class SalesReportController extends Controller
                 '=',
                 't_sales_details.inventory_code'
             )
-            ->selectRaw("
+            ->selectRaw('
                 inventories.karat,
                 SUM(t_sales_details.price) as total
-            ")
+            ')
             ->groupBy('inventories.karat')
             ->orderByDesc('inventories.karat')
             ->get();
@@ -222,7 +232,8 @@ class SalesReportController extends Controller
 
     public function salesDetail(Request $request)
     {
-        $query = TSales::query();
+        $query = TSales::query()
+            ->whereIn('approval_status', ['CETAK_KWITANSI', 'SELESAI']);
 
         if ($request->branch_id) {
             $query->where('branch_id', $request->branch_id);
@@ -238,7 +249,7 @@ class SalesReportController extends Controller
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('t_sales.created_at', [
                 $request->start_date,
-                $request->end_date
+                $request->end_date,
             ]);
         }
 
@@ -249,7 +260,7 @@ class SalesReportController extends Controller
                 'user:id,name',
 
                 'details.product:id,product_name',
-                'details.inventory:inventory_code,berat'
+                'details.inventory:inventory_code,berat',
             ])
             ->latest()
             ->paginate(
@@ -265,7 +276,8 @@ class SalesReportController extends Controller
 
     public function exportSales(Request $request)
     {
-        $filename = 'sales-report-' . date('Ymd-His') . '.xlsx';
+        $filename = 'sales-report-'.date('Ymd-His').'.xlsx';
+
         return Excel::download(new SalesExport($request), $filename);
     }
 }
