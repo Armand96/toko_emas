@@ -18,7 +18,7 @@ class PembelianReportController extends Controller
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('pembelians.created_at', [
                 $request->start_date,
-                $request->end_date
+                $request->end_date,
             ]);
         }
 
@@ -29,8 +29,8 @@ class PembelianReportController extends Controller
         return ApiResponse::success([
             'total_item_dibeli' => (clone $query)->where('status', PembelianStatus::DISETUJUI)->count(),
             'total_berat' => (clone $query)->where('status', PembelianStatus::DISETUJUI)->sum('berat'),
-            'total_nilai' => $query->where('status', PembelianStatus::DISETUJUI)->sum('modal')
-        ], "OK", 200);
+            'total_nilai' => $query->where('status', PembelianStatus::DISETUJUI)->sum('modal'),
+        ], 'OK', 200);
     }
 
     public function pembelianKategoriReport(Request $request)
@@ -44,7 +44,7 @@ class PembelianReportController extends Controller
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('pembelians.created_at', [
                 $request->start_date,
-                $request->end_date
+                $request->end_date,
             ]);
         }
 
@@ -55,10 +55,10 @@ class PembelianReportController extends Controller
                 '=',
                 'pembelians.category_id'
             )
-            ->selectRaw("
+            ->selectRaw('
             m_categories.category_name,
             SUM(pembelians.modal) as total_modal
-        ")
+        ')
             ->groupBy(
                 'm_categories.id',
                 'm_categories.category_name'
@@ -73,10 +73,10 @@ class PembelianReportController extends Controller
                 '=',
                 'pembelians.subcategory_id'
             )
-            ->selectRaw("
+            ->selectRaw('
             sub_categories.category_name as subcategory_name,
             SUM(pembelians.modal) as total_modal
-        ")
+        ')
             ->groupBy(
                 'sub_categories.id',
                 'sub_categories.category_name'
@@ -101,15 +101,15 @@ class PembelianReportController extends Controller
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('pembelians.created_at', [
                 $request->start_date,
-                $request->end_date
+                $request->end_date,
             ]);
         }
 
         $data = $query
-            ->selectRaw("
+            ->selectRaw('
             karat,
             SUM(modal) as total_modal
-        ")
+        ')
             ->groupBy('karat')
             ->orderByDesc('karat')
             ->get();
@@ -132,7 +132,7 @@ class PembelianReportController extends Controller
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('pembelians.created_at', [
                 $request->start_date,
-                $request->end_date
+                $request->end_date,
             ]);
         }
 
@@ -142,11 +142,10 @@ class PembelianReportController extends Controller
 
         $data = $query
             ->with([
-                'branch:id,branch_name'
+                'branch:id,branch_name',
             ])
-            ->selectRaw("
+            ->selectRaw('
             batch,
-            supplier_id,
             branch_id,
             DATE(pembelians.created_at) as tanggal,
 
@@ -155,10 +154,9 @@ class PembelianReportController extends Controller
             SUM(berat) as total_berat,
 
             SUM(modal) as total_modal
-        ")
+        ')
             ->groupBy(
                 'batch',
-                'supplier_id',
                 'branch_id',
                 'tanggal'
             )
@@ -176,7 +174,8 @@ class PembelianReportController extends Controller
 
     public function exportPembelian(Request $request)
     {
-        $filename = 'pembelian-report-' . date('Ymd-His') . '.xlsx';
+        $filename = 'pembelian-report-'.date('Ymd-His').'.xlsx';
+
         return Excel::download(new PembelianExport($request), $filename);
     }
 }
