@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
-use App\Helpers\FinancePaymentMethod;
 use App\Helpers\FinanceType;
 use App\Helpers\InventoryStatus;
 use App\Helpers\PembelianStatus;
@@ -32,29 +31,32 @@ class PembelianController extends Controller
         $query = Pembelian::query();
 
         $searchKeyword = $request->input('search', $request->input('product_name', ''));
-        if ($searchKeyword != "") {
+        if ($searchKeyword != '') {
             $query->whereHas('product', function ($qry) use ($searchKeyword) {
-                $qry->where('product_name', 'like', '%' . $searchKeyword . '%');
+                $qry->where('product_name', 'like', '%'.$searchKeyword.'%');
             });
         }
-        if ($request->has('product_id') && $request->product_id != "") {
+        if ($request->has('product_id') && $request->product_id != '') {
             $query->where('product_id', $request->product_id);
         }
-        if ($request->has('status') && $request->status != "") {
+        if ($request->has('customer_id') && $request->customer_id != '') {
+            $query->where('customer_id', $request->customer_id);
+        }
+        if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
-        if ($request->has('category_id') && $request->category_id != "") {
+        if ($request->has('category_id') && $request->category_id != '') {
             $query->where('category_id', $request->category_id);
         }
-        if ($request->has('branch_id') && $request->branch_id != "") {
+        if ($request->has('branch_id') && $request->branch_id != '') {
             $query->where('branch_id', $request->branch_id);
         }
-        if ($request->has('status') && $request->status != "") {
+        if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $pembelians = $query->with(['product', 'category', 'subcategory', 'supplier', 'branch', 'bankCabang.bank', 'inventory', 'user'])->orderBy('id', 'desc')->paginate($perPage);
+        $pembelians = $query->with(['product', 'category', 'subcategory', 'supplier', 'branch', 'bankCabang.bank', 'inventory', 'user', 'customer'])->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($pembelians);
     }
@@ -68,8 +70,9 @@ class PembelianController extends Controller
             'supplier',
             'branch',
             'bankCabang.bank',
-            'user'
-        ]), "OK", 200);
+            'user',
+            'customer',
+        ]), 'OK', 200);
     }
 
     public function pembelian(PembelianRequest $request)
@@ -98,10 +101,11 @@ class PembelianController extends Controller
             // $result = Pembelian::insert($validated['data']);
             DB::commit();
 
-            return ApiResponse::success($result, "Sukses buat pembelian", 201);
+            return ApiResponse::success($result, 'Sukses buat pembelian', 201);
         } catch (\Throwable $th) {
             Log::error($th);
             DB::rollBack();
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -118,7 +122,7 @@ class PembelianController extends Controller
 
             Pembelian::whereIn('id', $validated['pembelian_ids'])->where('status', PembelianStatus::APPROVAL)->update([
                 'status' => $validated['status'],
-                'note' => isset($validated['note']) ? $validated['note'] : null
+                'note' => isset($validated['note']) ? $validated['note'] : null,
             ]);
 
             $status = PembelianStatus::from($validated['status']);
@@ -132,24 +136,24 @@ class PembelianController extends Controller
                     $latestInventory = Inventory::where('product_id', $value->product_id)->lockForUpdate()->orderByDesc('id')->value('inventory_code');
                     $data = $latestInventory ? (int) substr($latestInventory, strrpos($latestInventory, '-') + 1) : 0;
 
-                    $value->inventory_code = $value->barcode . "-" . str_pad($data + 1, 4, "0", STR_PAD_LEFT);
+                    $value->inventory_code = $value->barcode.'-'.str_pad($data + 1, 4, '0', STR_PAD_LEFT);
                     $value->update();
 
                     // if (count($batchInsert) > 0) Inventory::insert($batchInsert);
                     // TO DO INSERT KE FINANCE
                     $categoryFinance = MCategoryFinance::where('category_name', 'like', '%Pembelian%')->first();
-                    Finance::create(array(
+                    Finance::create([
                         'branch_id' => $value->branch_id,
                         'category_finance_id' => $categoryFinance->id,
                         'bank_cabang_id' => $value->bank_cabang_id == null ? 0 : $value->bank_cabang_id,
                         'type' => FinanceType::CASHOUT,
                         'payment_method' => $value->tipe_pembayaran,
                         'nominal' => $value->modal,
-                        'is_auto' => true
-                    ));
+                        'is_auto' => true,
+                    ]);
 
-                    Inventory::create(array(
-                        'inventory_code' => $value->barcode . "-" . str_pad($data + 1, 4, "0", STR_PAD_LEFT),
+                    Inventory::create([
+                        'inventory_code' => $value->barcode.'-'.str_pad($data + 1, 4, '0', STR_PAD_LEFT),
                         'pembelian_id' => $value->id,
                         'product_id' => $value->product_id,
                         'category_id' => $value->category_id,
@@ -164,16 +168,17 @@ class PembelianController extends Controller
                         'thumb_path' => $value->thumb_path,
                         'serial_number' => $value->serial_number,
                         'created_at' => $dateNow,
-                        'status' => InventoryStatus::AVAILABLE
-                    ));
+                        'status' => InventoryStatus::AVAILABLE,
+                    ]);
                 }
             }
 
             DB::commit();
 
-            return ApiResponse::success([], "Sukses update status pembelian", 201);
+            return ApiResponse::success([], 'Sukses update status pembelian', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -186,18 +191,18 @@ class PembelianController extends Controller
         $imagePath = [];
 
         try {
-            $ids = explode(",", $validated['pembelian_ids']);
+            $ids = explode(',', $validated['pembelian_ids']);
 
             foreach ($ids as $index => $value) {
-                $dataInsert = array(
-                    'image_path' => "",
-                    'thumb_path' => ""
-                );
+                $dataInsert = [
+                    'image_path' => '',
+                    'thumb_path' => '',
+                ];
                 // dd($validated['images'][$index]);
                 // Upload new image
                 $image = $request->file('images')[$index];
 
-                $imageName = "pembelian_" . $value . "_" . date('Y-m-d') . "." . $image->getClientOriginalExtension();
+                $imageName = 'pembelian_'.$value.'_'.date('Y-m-d').'.'.$image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
@@ -205,10 +210,9 @@ class PembelianController extends Controller
                     'public'
                 );
 
+                $dataInsert['image_path'] = 'images/'.$imageName;
 
-                $dataInsert['image_path'] = 'images/' . $imageName;
-
-                $dataInsert['thumb_path'] = 'thumbs/' . $imageName;
+                $dataInsert['thumb_path'] = 'thumbs/'.$imageName;
 
                 // Generate thumbnail
                 $thumb = Image::decode($image)
@@ -240,6 +244,7 @@ class PembelianController extends Controller
             }
 
             DB::rollBack();
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }

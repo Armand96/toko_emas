@@ -69,4 +69,9 @@ class Pembelian extends Model
     {
         return $this->belongsTo(BankCabang::class, 'bank_cabang_id', 'id');
     }
+
+    public function customer()
+    {
+        return $this->belongsTo(MCustomer::class, 'customer_id', 'id');
+    }
 }
