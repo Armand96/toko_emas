@@ -270,7 +270,7 @@ const Main = ({ setCurentState }) => {
                         <ActionButton variant="cancel" title="Batalkan" onClick={() => handleCancel(row)} />
                     )}
                     <ActionButton variant="view" title="Lihat Detail" onClick={() => handleViewTransaction(row)} />
-                    {(row.approval_status === 'SELESAI' || row.approval_status === 'DISETUJUI' || row.approval_status === 'CETAK KWITANSI') && (
+                    {(row.approval_status === 'SELESAI' || row.approval_status === 'DISETUJUI' || row.approval_status === 'CETAK KWITANSI' && isKasir()) && (
                         <ActionButton variant="print" title="Cetak Kwitansi" onClick={() => handlePrint(row)} />
                     )}
                 </ActionButtonGroup>

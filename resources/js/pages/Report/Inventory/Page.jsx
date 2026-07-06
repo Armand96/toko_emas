@@ -27,7 +27,7 @@ import PermissionStore from "../../../Store/PermissionStore";
 const STATUS_TONE = {
     AVAILABLE: "success",
     RESERVED: "warning",
-    REPAIR: "primary",
+    REPAIR: "purple",
     TRANSIT: "warning",
     LOST: "danger",
     SOLD: "gray",

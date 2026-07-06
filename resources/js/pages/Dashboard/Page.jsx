@@ -349,13 +349,13 @@ const Dashboard = () => {
                     </button>
                 </ChartCard>
 
-                <ChartCard title="Status Penjualan" subtitle="Status penjualan hari ini">
+                {/* <ChartCard title="Status Penjualan" subtitle="Status penjualan hari ini">
                     <DonutChart
                         data={donutData}
                         colors={donutColors}
                         height={300}
                     />
-                </ChartCard>
+                </ChartCard> */}
             </div>
         </div>
     );
