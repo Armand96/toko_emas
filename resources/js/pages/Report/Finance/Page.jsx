@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     WalletIcon,
     MoneyIcon,
@@ -16,6 +16,7 @@ import LoadingStore from "../../../Store/LoadingStore";
 import OptionsStore from "../../../Store/OptionsStore";
 import ReportApis from "../../../Services/Report.apis";
 import BankApis from "../../../Services/Bank.apis";
+import { useQueryParams } from "../../../utils/useQueryParams";
 import StatCard from "./Component/StatCard";
 import ChartCard from "./Component/ChartCard";
 import DonutChart from "./Component/DonutChart";
@@ -83,12 +84,24 @@ const ReportFinance = () => {
     const setLoading = LoadingStore((s) => s.setLoading);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
 
+    const [
+        {
+            cabang: urlCabang,
+            metode: urlMetode,
+            tipe: urlTipe,
+            bank_cabang: urlBankCabang,
+            page: urlPage,
+            per_page: urlPerPage,
+        },
+        setQuery,
+    ] = useQueryParams({ cabang: "", metode: "", tipe: "", bank_cabang: "", page: 1, per_page: 10 });
+
     const [filter, setFilter] = useState({
         dateRange: { mode: "all", start: "", end: "" },
-        cabang: "",
-        metode: "",
-        tipe: "",
-        bank_cabang: "",
+        cabang: urlCabang,
+        metode: urlMetode,
+        tipe: urlTipe,
+        bank_cabang: urlBankCabang,
     });
 
     const [branchOptions, setBranchOptions] = useState([{ value: "", label: "Semua Cabang" }]);
@@ -225,8 +238,16 @@ const ReportFinance = () => {
         }
     };
 
+    const didMount = useRef(false);
+
     useEffect(() => {
         fetchSummary();
+        if (!didMount.current) {
+            didMount.current = true;
+            fetchDetail(urlPage, urlPerPage);
+            return;
+        }
+        setQuery({ cabang: filter.cabang, metode: filter.metode, tipe: filter.tipe, bank_cabang: filter.bank_cabang, page: 1 });
         fetchDetail(1, detail.per_page);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filter.dateRange, filter.cabang, filter.metode, filter.tipe, filter.bank_cabang]);
@@ -236,10 +257,16 @@ const ReportFinance = () => {
         setFilter((prev) => ({ ...prev, [name]: value }));
     };
 
-    const periodLabel = useMemo(() => {
-        const { mode, start, end } = filter.dateRange || {};
-        if (mode === "all" || !start || !end) return "semua periode";
-        return `${start} s/d ${end}`;
+    const startDateLabel = useMemo(() => {
+        const { mode, start } = filter.dateRange || {};
+        if (mode === "all" || !start) return "semua periode";
+        return start;
+    }, [filter.dateRange]);
+
+    const endDateLabel = useMemo(() => {
+        const { mode, end } = filter.dateRange || {};
+        if (mode === "all" || !end) return "semua periode";
+        return end;
     }, [filter.dateRange]);
 
     const detailColumns = [
@@ -303,8 +330,14 @@ const ReportFinance = () => {
         }
     };
 
-    const onChangePage = (page) => fetchDetail(page, detail.per_page);
-    const onChangePageSize = (size) => fetchDetail(1, size);
+    const onChangePage = (page) => {
+        setQuery({ page, per_page: detail.per_page });
+        fetchDetail(page, detail.per_page);
+    };
+    const onChangePageSize = (size) => {
+        setQuery({ page: 1, per_page: size });
+        fetchDetail(1, size);
+    };
 
     return (
         <div className="flex w-full flex-col gap-6">
@@ -395,10 +428,10 @@ const ReportFinance = () => {
 
             {/* Period KPI */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard label="Saldo Awal" value={HelperFunctions.formatCurrency(period.opening_balance)} subLabel={periodLabel} icon={CalendarBlankIcon} tone="info" />
+                <StatCard label="Saldo Awal" value={HelperFunctions.formatCurrency(period.opening_balance)} subLabel={startDateLabel} icon={CalendarBlankIcon} tone="info" />
                 <StatCard label="Total Cash In" value={HelperFunctions.formatCurrency(period.cash_in)} icon={ArrowCircleDownIcon} tone="success" />
                 <StatCard label="Total Cash Out" value={HelperFunctions.formatCurrency(period.cash_out)} icon={ArrowCircleUpIcon} tone="danger" />
-                <StatCard label="Saldo Akhir" value={HelperFunctions.formatCurrency(period.closing_balance)} icon={WalletIcon} tone="info" />
+                <StatCard label="Saldo Akhir" value={HelperFunctions.formatCurrency(period.closing_balance)} subLabel={endDateLabel} icon={WalletIcon} tone="info" />
             </div>
 
             {/* Donut charts */}

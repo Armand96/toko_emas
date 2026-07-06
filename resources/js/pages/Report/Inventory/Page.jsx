@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     CubeIcon,
     ScalesIcon,
@@ -15,6 +15,7 @@ import HelperFunctions from "../../../utils/HelperFunctions";
 import LoadingStore from "../../../Store/LoadingStore";
 import OptionsStore from "../../../Store/OptionsStore";
 import ReportApis from "../../../Services/Report.apis";
+import { useQueryParams } from "../../../utils/useQueryParams";
 import StatCard from "./Component/StatCard";
 import MiniStatCard from "./Component/MiniStatCard";
 import ChartCard from "./Component/ChartCard";
@@ -25,6 +26,7 @@ import PermissionStore from "../../../Store/PermissionStore";
 
 const STATUS_TONE = {
     AVAILABLE: "success",
+    RESERVED: "warning",
     REPAIR: "primary",
     TRANSIT: "warning",
     LOST: "danger",
@@ -33,6 +35,7 @@ const STATUS_TONE = {
 
 const STATUS_LABEL = {
     AVAILABLE: "Available",
+    RESERVED: "Reserved",
     REPAIR: "In Repair",
     TRANSIT: "Transit",
     LOST: "Lost",
@@ -41,6 +44,7 @@ const STATUS_LABEL = {
 
 const STATUS_OPTIONS = [
     { value: "AVAILABLE", label: "Available" },
+    { value: "RESERVED", label: "Reserved" },
     { value: "REPAIR", label: "In Repair" },
     { value: "TRANSIT", label: "Transit" },
     { value: "LOST", label: "Lost" },
@@ -63,12 +67,33 @@ const ReportInventory = () => {
       const user = AuthStore((s) => s.user);
         const isKasir = PermissionStore((s) => s.isKasir);
 
-    const [filter, setFilter] = useState({
+    const [
+        {
+            cabang: urlCabang,
+            kategori: urlKategori,
+            search: urlSearch,
+            statusDetail: urlStatusDetail,
+            agingDetail: urlAgingDetail,
+            page: urlPage,
+            per_page: urlPerPage,
+        },
+        setQuery,
+    ] = useQueryParams({
         cabang: "",
         kategori: "",
         search: "",
         statusDetail: "AVAILABLE",
         agingDetail: "",
+        page: 1,
+        per_page: 10,
+    });
+
+    const [filter, setFilter] = useState({
+        cabang: urlCabang,
+        kategori: urlKategori,
+        search: urlSearch,
+        statusDetail: urlStatusDetail,
+        agingDetail: urlAgingDetail,
     });
 
     const [branchOptions, setBranchOptions] = useState([{ value: "", label: "Semua Cabang" }]);
@@ -200,14 +225,25 @@ const ReportInventory = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const didMount = useRef(false);
+
     useEffect(() => {
         fetchCharts();
+        if (!didMount.current) {
+            didMount.current = true;
+            fetchDetail(urlPage, urlPerPage);
+            return;
+        }
+        setQuery({ cabang: filter.cabang, kategori: filter.kategori, page: 1 });
         fetchDetail(1, detail.per_page);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filter.cabang, filter.kategori]);
 
     useEffect(() => {
-        const t = setTimeout(() => fetchDetail(1, detail.per_page), 400);
+        const t = setTimeout(() => {
+            setQuery({ search: filter.search, statusDetail: filter.statusDetail, agingDetail: filter.agingDetail, page: 1 });
+            fetchDetail(1, detail.per_page);
+        }, 400);
         return () => clearTimeout(t);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filter.search, filter.statusDetail, filter.agingDetail]);
@@ -232,8 +268,14 @@ const ReportInventory = () => {
         }
     };
 
-    const onChangePage = (page) => fetchDetail(page, detail.per_page);
-    const onChangePageSize = (size) => fetchDetail(1, size);
+    const onChangePage = (page) => {
+        setQuery({ page, per_page: detail.per_page });
+        fetchDetail(page, detail.per_page);
+    };
+    const onChangePageSize = (size) => {
+        setQuery({ page: 1, per_page: size });
+        fetchDetail(1, size);
+    };
 
     const detailColumns = [
         {

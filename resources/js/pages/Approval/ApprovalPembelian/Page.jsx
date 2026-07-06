@@ -8,7 +8,6 @@ import Badge from "../../../components/Badge";
 import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
 import { showAlert } from '../../../utils/showAlert';
-import InputGroup from '../../../components/FormElement/InputGroup';
 import FilterBar from '../../../components/FilterBar';
 import FooterActionBar from '../../../components/FooterActionBar';
 import InventoryApis from '../../../Services/Inventory.apis';
@@ -16,6 +15,7 @@ import HelperFunctions from '../../../utils/HelperFunctions';
 import LoadingStore from '../../../Store/LoadingStore';
 import OptionsStore from '../../../Store/OptionsStore';
 import PermissionStore from '../../../Store/PermissionStore';
+import { useQueryParams } from '../../../utils/useQueryParams';
 
 const ApprovalPembelian = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
@@ -31,7 +31,24 @@ const ApprovalPembelian = () => {
         per_page: 10,
     });
 
-    const [search, setSearch] = useState({ search: '', status: 'APPROVAL' });
+    const [
+        {
+            search: urlSearch,
+            status: urlStatus,
+            category_id: urlCategoryId,
+            branch_id: urlBranchId,
+            page: urlPage,
+            per_page: urlPerPage,
+        },
+        setQuery,
+    ] = useQueryParams({ search: '', status: 'APPROVAL', category_id: '', branch_id: '', page: 1, per_page: 10 });
+
+    const [search, setSearch] = useState({
+        search: urlSearch,
+        status: urlStatus,
+        category_id: urlCategoryId,
+        branch_id: urlBranchId,
+    });
     const [searchBounce] = useDebounce(search, 500);
     const [firstLoading, setFirstLoading] = useState(false);
 
@@ -80,21 +97,22 @@ const ApprovalPembelian = () => {
     };
 
     useEffect(() => {
-        fetchData(1, 10, search);
+        fetchData(urlPage, urlPerPage, search);
         fetchOptions();
     }, []);
 
     useEffect(() => {
         if (firstLoading) {
+            setQuery({
+                search: searchBounce.search,
+                status: searchBounce.status,
+                category_id: searchBounce.category_id,
+                branch_id: searchBounce.branch_id,
+                page: 1,
+            });
             fetchData(1, paramFetch.per_page, search);
         }
     }, [searchBounce]);
-
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        const newSearch = { ...search, [name]: value };
-        setSearch(newSearch);
-    };
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
@@ -300,15 +318,6 @@ const ApprovalPembelian = () => {
         { value: 'DIBATALKAN', label: 'Dibatalkan' },
     ];
 
-    const searchFilter = [
-        { type: 'search', name: 'search', label: '', placeholder: 'Cari produk..' },
-    ];
-
-    const dropdownFilters = [
-        { type: 'dropdown', name: 'status', label: '', placeholder: 'Pilih status', options: statusOptions },
-        { type: 'dropdown', name: 'category_id', label: '', placeholder: 'Pilih kategori', options: categoryOptions },
-        { type: 'dropdown', name: 'branch_id', label: '', placeholder: 'Pilih cabang', options: branchOptions },
-    ];
 
     return (
         <div className={`flex flex-col gap-6 relative min-h-full ${selectedRows.length > 0 ? 'pb-24 lg:pb-28' : ''}`}>
@@ -318,26 +327,16 @@ const ApprovalPembelian = () => {
                 icon={CheckSquareOffsetIcon}
             />
 
-            <FilterBar>
-                <FilterBar.Search>
-                    <InputGroup
-                        fields={searchFilter}
-                        formData={search}
-                        cols="1"
-                        onChange={handleFilterChange}
-                    />
-                </FilterBar.Search>
-                {dropdownFilters.map((field) => (
-                    <FilterBar.Item key={field.name}>
-                        <InputGroup
-                            fields={[field]}
-                            formData={search}
-                            cols="1"
-                            onChange={handleFilterChange}
-                        />
-                    </FilterBar.Item>
-                ))}
-            </FilterBar>
+            <FilterBar
+                value={search}
+                onChange={setSearch}
+                fields={[
+                    { name: 'search', type: 'search', placeholder: 'Cari produk..' },
+                    { name: 'status', type: 'dropdown', placeholder: 'Pilih status', options: statusOptions },
+                    { name: 'category_id', type: 'dropdown', placeholder: 'Pilih kategori', options: categoryOptions },
+                    { name: 'branch_id', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions },
+                ]}
+            />
 
             <Table
                 columns={columns}
@@ -345,8 +344,14 @@ const ApprovalPembelian = () => {
                 page={paramFetch.current_page}
                 pageSize={paramFetch.per_page}
                 total={paramFetch.total}
-                onPageChange={(newPage) => fetchData(newPage, paramFetch.per_page, search)}
-                onPageSizeChange={(newSize) => fetchData(1, newSize, search)}
+                onPageChange={(newPage) => {
+                    setQuery({ page: newPage, per_page: paramFetch.per_page });
+                    fetchData(newPage, paramFetch.per_page, search);
+                }}
+                onPageSizeChange={(newSize) => {
+                    setQuery({ page: 1, per_page: newSize });
+                    fetchData(1, newSize, search);
+                }}
             />
 
             <Modal

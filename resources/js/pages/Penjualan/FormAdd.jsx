@@ -216,6 +216,7 @@ const FormAdd = ({ setCurentState }) => {
 
 
     const handleSubmit = async () => {
+        if (submitting) return;
         if (cartItems.length === 0) {
             showAlert({ icon: 'warning', title: 'Perhatian', message: 'Keranjang penjualan masih kosong.' });
             return;

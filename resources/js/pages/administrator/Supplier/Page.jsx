@@ -4,7 +4,6 @@ import HeaderSection from "../../../components/HeaderSection";
 import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
 import Badge from "../../../components/Badge";
 import Table from "../../../components/Table/Table";
-import InputGroup from '../../../components/FormElement/InputGroup';
 import FilterBar from '../../../components/FilterBar';
 import { showAlert } from '../../../utils/showAlert';
 import SupplierApis from "../../../Services/Supplier.apis";
@@ -170,21 +169,13 @@ const MasterSupplier = () => {
                 onClick={can('create') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah Supplier"
             />
-            <FilterBar>
-                <FilterBar.Search>
-                    <InputGroup
-                        fields={[{
-                            name: 'supplier_name',
-                            label: '',
-                            type: 'search',
-                            placeholder: 'Cari supplier...'
-                        }]}
-                        formData={search}
-                        cols='1'
-                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
-                    />
-                </FilterBar.Search>
-            </FilterBar>
+            <FilterBar
+                value={search}
+                onChange={setSearch}
+                fields={[
+                    { name: 'supplier_name', type: 'search', placeholder: 'Cari supplier...' },
+                ]}
+            />
             <Table
                 columns={columns}
                 data={paramFetch.data}

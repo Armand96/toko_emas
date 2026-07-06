@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 import { PlusCircleIcon } from "@phosphor-icons/react";
+import { useQueryParams } from "../../utils/useQueryParams";
 import HeaderSection from "../../components/HeaderSection";
 import ActionButton, { ActionButtonGroup } from "../../components/ActionButton";
 import Badge from "../../components/Badge";
 import Table from "../../components/Table/Table";
-import InputGroup from "../../components/FormElement/InputGroup";
 import FilterBar from "../../components/FilterBar";
 import HelperFunctions from "../../utils/HelperFunctions";
 import { showAlert } from "../../utils/showAlert";
@@ -25,7 +25,11 @@ const Finance = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
     const can = PermissionStore((s) => s.can);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
-    const [filter, setFilter] = useState({ search: '', tipe: '', cabang: '', dateRange: { mode: 'all', start: '', end: '' } });
+    const [
+        { search: urlSearch, tipe: urlTipe, cabang: urlCabang, page: urlPage, per_page: urlPerPage },
+        setQuery,
+    ] = useQueryParams({ search: '', tipe: '', cabang: '', page: 1, per_page: 10 });
+    const [filter, setFilter] = useState({ search: urlSearch, tipe: urlTipe, cabang: urlCabang, dateRange: { mode: 'all', start: '', end: '' } });
     const [filterBounce] = useDebounce(filter, 500);
     const [firstLoading, setFirstLoading] = useState(false);
 
@@ -69,7 +73,7 @@ const Finance = () => {
     };
 
     useEffect(() => {
-        fetchData();
+        fetchData(urlPage, urlPerPage, { search: urlSearch, tipe: urlTipe, cabang: urlCabang });
         ensureBranches()
             .then((data) => setBranchOptions(HelperFunctions.formatDropdown(data, "id", "branch_name")))
             .catch((err) => console.error(err));
@@ -77,6 +81,7 @@ const Finance = () => {
 
     useEffect(() => {
         if (firstLoading) {
+            setQuery({ search: filterBounce.search, tipe: filterBounce.tipe, cabang: filterBounce.cabang, page: 1 });
             fetchData(1, paramFetch.per_page, filterBounce);
         }
     }, [filterBounce]);
@@ -190,8 +195,14 @@ const Finance = () => {
         },
     ];
 
-    const onChangePage = (page) => fetchData(page, paramFetch.per_page, filterBounce);
-    const onChangePageSize = (pageSize) => fetchData(1, pageSize, filterBounce);
+    const onChangePage = (page) => {
+        setQuery({ page, per_page: paramFetch.per_page });
+        fetchData(page, paramFetch.per_page, filterBounce);
+    };
+    const onChangePageSize = (pageSize) => {
+        setQuery({ page: 1, per_page: pageSize });
+        fetchData(1, pageSize, filterBounce);
+    };
 
     return (
         <div className="flex flex-col gap-6 w-full">
@@ -204,44 +215,15 @@ const Finance = () => {
             />
 
             {/* Filter Bar */}
-            <FilterBar>
-                <FilterBar.Search>
-                    <InputGroup
-                        fields={[{ name: "dateRange", label: "", type: "daterange" }]}
-                        formData={filter}
-                        cols="1"
-                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
-                    />
-                </FilterBar.Search>
-                <FilterBar.Item>
-                    <InputGroup
-                        fields={[{
-                            name: "tipe",
-                            label: "",
-                            type: "dropdown",
-                            placeholder: "Pilih tipe",
-                            options: TIPE_OPTIONS,
-                        }]}
-                        formData={filter}
-                        cols="1"
-                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
-                    />
-                </FilterBar.Item>
-                <FilterBar.Item>
-                    <InputGroup
-                        fields={[{
-                            name: "cabang",
-                            label: "",
-                            type: "dropdown",
-                            placeholder: "Pilih cabang",
-                            options: branchOptions,
-                        }]}
-                        formData={filter}
-                        cols="1"
-                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
-                    />
-                </FilterBar.Item>
-            </FilterBar>
+            <FilterBar
+                value={filter}
+                onChange={setFilter}
+                fields={[
+                    { name: "dateRange", type: "daterange", width: "sm:flex-1 sm:min-w-[220px] sm:max-w-xs" },
+                    { name: "tipe", type: "dropdown", placeholder: "Pilih tipe", options: TIPE_OPTIONS },
+                    { name: "cabang", type: "dropdown", placeholder: "Pilih cabang", options: branchOptions },
+                ]}
+            />
 
             <Table
                 columns={columns}

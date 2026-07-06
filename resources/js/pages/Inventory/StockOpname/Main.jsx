@@ -3,9 +3,9 @@ import { useDebounce } from "use-debounce";
 import { PlusCircleIcon } from "@phosphor-icons/react";
 import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
 import Badge from "../../../components/Badge";
+import { useQueryParams } from "../../../utils/useQueryParams";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
-import InputGroup from "../../../components/FormElement/InputGroup";
 import FilterBar from "../../../components/FilterBar";
 import InventoryApis from "../../../Services/Inventory.apis";
 import HelperFunctions from "../../../utils/HelperFunctions";
@@ -17,7 +17,11 @@ const Main = ({ setCurentState }) => {
     const can = PermissionStore((s) => s.can);
     const isKasir = PermissionStore((s) => s.isKasir);
     const user = AuthStore((s) => s.user);
-    const [filterData, setFilterData] = useState({ search: '', status: '', cabang: '', dateRange: null });
+    const [
+        { search: urlSearch, status: urlStatus, cabang: urlCabang, page: urlPage, per_page: urlPerPage },
+        setQuery,
+    ] = useQueryParams({ search: '', status: '', cabang: '', page: 1, per_page: 10 });
+    const [filterData, setFilterData] = useState({ search: urlSearch, status: urlStatus, cabang: urlCabang, dateRange: null });
     const [isLoading, setIsLoading] = useState(false);
     const [branchOptions, setBranchOptions] = useState([]);
 
@@ -85,7 +89,7 @@ const Main = ({ setCurentState }) => {
         ensureBranches()
             .then((data) => setBranchOptions(HelperFunctions.formatDropdown(data, "id", "branch_name")));
 
-        fetchData(paramFetch.page, paramFetch.pageSize, filterData);
+        fetchData(urlPage, urlPerPage, { search: urlSearch, status: urlStatus, cabang: urlCabang });
     }, []);
 
     useEffect(() => {
@@ -93,14 +97,10 @@ const Main = ({ setCurentState }) => {
             didMount.current = true;
             return;
         }
+        setQuery({ search: filterBounce.search, status: filterBounce.status, cabang: filterBounce.cabang, page: 1 });
         fetchData(1, paramFetch.pageSize, filterBounce);
         setParamFetch(prev => ({ ...prev, page: 1 }));
     }, [filterBounce]);
-
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        setFilterData(prev => ({ ...prev, [name]: value }));
-    };
 
     const handleViewDetail = (row) => {
         setCurentState({ view: 'detail', id: row.id });
@@ -146,42 +146,16 @@ const Main = ({ setCurentState }) => {
                 textButton="Input Sesi Stock Opname"
                 onClick={can('create') ? () => setCurentState({ view: 'form' }) : undefined}
             />
-            <FilterBar>
-                <FilterBar.Item width="sm:w-auto sm:min-w-[220px]">
-                    <InputGroup
-                        fields={[{ name: 'dateRange', label: '', type: 'daterange' }]}
-                        formData={filterData}
-                        cols="1"
-                        onChange={handleFilterChange}
-                    />
-                </FilterBar.Item>
-                <FilterBar.Search>
-                    <InputGroup
-                        fields={[{ name: 'search', label: '', type: 'search', placeholder: 'Cari kode sesi...' }]}
-                        formData={filterData}
-                        cols="1"
-                        onChange={handleFilterChange}
-                    />
-                </FilterBar.Search>
-                <FilterBar.Item>
-                    <InputGroup
-                        fields={[{ name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: OPNAME_STATUS_OPTIONS }]}
-                        formData={filterData}
-                        cols="1"
-                        onChange={handleFilterChange}
-                    />
-                </FilterBar.Item>
-                {!isKasir() && (
-                    <FilterBar.Item>
-                        <InputGroup
-                            fields={[{ name: 'cabang', label: '', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions }]}
-                            formData={filterData}
-                            cols="1"
-                            onChange={handleFilterChange}
-                        />
-                    </FilterBar.Item>
-                )}
-            </FilterBar>
+            <FilterBar
+                value={filterData}
+                onChange={setFilterData}
+                fields={[
+                    { name: 'dateRange', type: 'daterange', width: 'sm:w-auto sm:min-w-[220px]' },
+                    { name: 'search', type: 'search', placeholder: 'Cari kode sesi...' },
+                    { name: 'status', type: 'dropdown', placeholder: 'Pilih status', options: OPNAME_STATUS_OPTIONS },
+                    !isKasir() && { name: 'cabang', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions },
+                ]}
+            />
             <Table
                 columns={columns}
                 data={paramFetch.data}
@@ -191,10 +165,12 @@ const Main = ({ setCurentState }) => {
                 isLoading={isLoading}
                 onPageChange={(page) => {
                     setParamFetch(prev => ({ ...prev, page }));
+                    setQuery({ page, per_page: paramFetch.pageSize });
                     fetchData(page, paramFetch.pageSize, filterData);
                 }}
                 onPageSizeChange={(pageSize) => {
                     setParamFetch(prev => ({ ...prev, pageSize, page: 1 }));
+                    setQuery({ page: 1, per_page: pageSize });
                     fetchData(1, pageSize, filterData);
                 }}
             />

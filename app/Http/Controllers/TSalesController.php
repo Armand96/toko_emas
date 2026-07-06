@@ -31,7 +31,15 @@ class TSalesController extends Controller
             $query->where('customer.customer_name', 'like', '%' . $request->customer_name . '%');
         }
         if ($request->has('approval_status') && $request->status != "") {
-            $query->where('approval_status', $request->status);
+            if ($request->status === SalesStatus::DISETUJUI->value) {
+                $query->whereIn('approval_status', [
+                    SalesStatus::DISETUJUI->value,
+                    SalesStatus::CETAK_KWITANSI->value,
+                    SalesStatus::SELESAI->value,
+                ]);
+            } else {
+                $query->where('approval_status', $request->status);
+            }
         }
         if ($request->has('branch_id') && $request->branch_id != "") {
             $query->where('branch_id', $request->branch_id);

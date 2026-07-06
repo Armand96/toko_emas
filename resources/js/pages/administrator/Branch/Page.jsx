@@ -6,7 +6,6 @@ import Badge from "../../../components/Badge";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
-import InputGroup from '../../../components/FormElement/InputGroup';
 import FilterBar from '../../../components/FilterBar';
 import { showAlert } from '../../../utils/showAlert';
 import LoadingStore from '../../../Store/LoadingStore';
@@ -210,14 +209,6 @@ const Branch = () => {
         }
     ];
 
-    const searchFields = [
-        { name: 'search', label: '', type: 'search', placeholder: 'Cari cabang...' },
-    ];
-
-    const filterFields = [
-        { name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: [{ value: '1', label: 'Aktif' }, { value: '0', label: 'Tidak Aktif' }] },
-    ];
-
     return (
         <div className="flex flex-col gap-6 w-full">
             <HeaderSection
@@ -227,24 +218,14 @@ const Branch = () => {
                 onClick={() => handleOpenModal('add')}
                 textButton="Tambah Cabang"
             />
-            <FilterBar>
-                <FilterBar.Search>
-                    <InputGroup
-                        fields={searchFields}
-                        formData={search}
-                        cols='1'
-                        onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
-                    />
-                </FilterBar.Search>
-                <FilterBar.Item>
-                    <InputGroup
-                        fields={filterFields}
-                        formData={search}
-                        cols='1'
-                        onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
-                    />
-                </FilterBar.Item>
-            </FilterBar>
+            <FilterBar
+                value={search}
+                onChange={setSearch}
+                fields={[
+                    { name: 'search', type: 'search', placeholder: 'Cari cabang...' },
+                    { name: 'status', type: 'dropdown', placeholder: 'Pilih status', options: [{ value: '1', label: 'Aktif' }, { value: '0', label: 'Tidak Aktif' }] },
+                ]}
+            />
             <Table
                 columns={columns}
                 data={paramFetch.data}

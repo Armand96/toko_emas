@@ -6,7 +6,6 @@ import Badge from "../../../components/Badge";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
-import InputGroup from '../../../components/FormElement/InputGroup';
 import FilterBar from '../../../components/FilterBar';
 import { showAlert } from '../../../utils/showAlert';
 import InventoryApis from '../../../Services/Inventory.apis';
@@ -296,16 +295,7 @@ const MasterProduk = () => {
         }
     ];
 
-    const searchFields = [
-        { name: 'search', label: '', type: 'search', placeholder: 'Cari produk...' },
-    ];
-
     const parentCategoryOptions = categoryOptions.filter((c) => !c.details?.parent_id);
-
-    const filterFieldsProduk = [
-        { name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih kategori', options: parentCategoryOptions },
-        ...(!isKasir() ? [{ name: 'cabang', label: '', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions }] : []),
-    ];
 
     return (
         <div className="flex flex-col gap-6 w-full">
@@ -316,26 +306,15 @@ const MasterProduk = () => {
                 onClick={can('create') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah Produk"
             />
-            <FilterBar>
-                <FilterBar.Search>
-                    <InputGroup
-                        fields={searchFields}
-                        formData={search}
-                        cols='1'
-                        onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
-                    />
-                </FilterBar.Search>
-                {filterFieldsProduk.map((field) => (
-                    <FilterBar.Item key={field.name}>
-                        <InputGroup
-                            fields={[field]}
-                            formData={search}
-                            cols='1'
-                            onChange={(value) => setSearch({ ...search, [value.target.name]: value.target.value })}
-                        />
-                    </FilterBar.Item>
-                ))}
-            </FilterBar>
+            <FilterBar
+                value={search}
+                onChange={setSearch}
+                fields={[
+                    { name: 'search', type: 'search', placeholder: 'Cari produk...' },
+                    { name: 'status', type: 'dropdown', placeholder: 'Pilih kategori', options: parentCategoryOptions },
+                    !isKasir() && { name: 'cabang', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions },
+                ]}
+            />
             <Table
                 columns={columns}
                 data={paramFetch.data}

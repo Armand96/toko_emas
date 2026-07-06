@@ -27,6 +27,7 @@ class TransferItemRequest extends FormRequest
         return [
             'branch_source_id' => ['required', 'integer'],
             'branch_dest_id' => ['nullable', 'integer'],
+            'note' => ['nullable', 'string'],
 
             'item' => ['required', 'array', 'min:1'],
 

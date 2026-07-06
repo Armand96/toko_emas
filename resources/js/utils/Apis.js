@@ -2,6 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import authConfig from "./authConfig";
 import AuthStore from "../Store/AuthStore";
+import { showAlert } from "./showAlert";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.example.com";
 
@@ -53,27 +54,45 @@ const wrap = async (fn) => {
   }
 };
 
+// Cegah submit ganda akibat network error: cek koneksi sebelum request yang mengubah data.
+const ensureOnline = async () => {
+  if (navigator.onLine) return true;
+  await showAlert({
+    icon: "error",
+    title: "Tidak Ada Koneksi",
+    message: "Mohon periksa jaringan anda.",
+  });
+  return false;
+};
+
+const guarded = async (fn) => {
+  if (!(await ensureOnline())) {
+    return Promise.reject({ isNetworkError: true, message: "Mohon periksa jaringan anda." });
+  }
+  return wrap(fn);
+};
+
 const Apis = {
   Get: (url, params = {}, config = {}) =>
     wrap(() => client.get(url, { params, ...config })),
 
   Post: (url, body = {}, config = {}) =>
-    wrap(() => client.post(url, body, config)),
+    guarded(() => client.post(url, body, config)),
 
   Put: (url, body = {}, config = {}) =>
-    wrap(() => client.put(url, body, config)),
+    guarded(() => client.put(url, body, config)),
 
   Patch: (url, body = {}, config = {}) =>
-    wrap(() => client.patch(url, body, config)),
+    guarded(() => client.patch(url, body, config)),
 
   Delete: (url, config = {}) =>
-    wrap(() => client.delete(url, config)),
+    guarded(() => client.delete(url, config)),
 
   Upload: (url, file, { fieldName = "file", extraData = {}, onProgress } = {}) => {
     const form = new FormData();
     form.append(fieldName, file);
     Object.entries(extraData).forEach(([k, v]) => form.append(k, v));
-    return wrap(() =>
+    return guarded(() =>
       client.post(url, form, {
         headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (e) => onProgress?.(Math.round((e.loaded * 100) / e.total)),

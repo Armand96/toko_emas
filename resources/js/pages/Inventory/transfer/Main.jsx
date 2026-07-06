@@ -4,9 +4,9 @@ import { PlusCircle } from "@phosphor-icons/react";
 import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
 import Badge from "../../../components/Badge";
 import CodeBadge from "../../../components/CodeBadge";
+import { useQueryParams } from "../../../utils/useQueryParams";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
-import InputGroup from "../../../components/FormElement/InputGroup";
 import FilterBar from "../../../components/FilterBar";
 import ModalDetailTransfer from './ModalView';
 import InventoryApis from "../../../Services/Inventory.apis";
@@ -24,7 +24,11 @@ const Main = ({ setCurentState }) => {
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
 
-    const [filterData, setFilterData] = useState({ search: '', status: '' });
+    const [
+        { search: urlSearch, status: urlStatus, page: urlPage, per_page: urlPerPage },
+        setQuery,
+    ] = useQueryParams({ search: '', status: '', page: 1, per_page: 10 });
+    const [filterData, setFilterData] = useState({ search: urlSearch, status: urlStatus });
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -101,7 +105,7 @@ const Main = ({ setCurentState }) => {
             data.forEach((p) => { map[p.id] = p.product_name; });
             setProductMap(map);
         });
-        fetchData(paramFetch.page, paramFetch.pageSize, filterData);
+        fetchData(urlPage, urlPerPage, { search: urlSearch, status: urlStatus });
     }, []);
 
     useEffect(() => {
@@ -109,14 +113,10 @@ const Main = ({ setCurentState }) => {
             didMount.current = true;
             return;
         }
+        setQuery({ search: filterBounce.search, status: filterBounce.status, page: 1 });
         fetchData(1, paramFetch.pageSize, filterBounce);
         setParamFetch(prev => ({ ...prev, page: 1 }));
     }, [filterBounce]);
-
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        setFilterData(prev => ({ ...prev, [name]: value }));
-    };
 
     const handleViewDetail = async (row) => {
         try {
@@ -240,24 +240,14 @@ const Main = ({ setCurentState }) => {
                 textButton="Transfer"
                 onClick={can('create') ? () => setCurentState('form') : undefined}
             />
-            <FilterBar>
-                <FilterBar.Search>
-                    <InputGroup
-                        fields={[{ name: 'search', label: '', type: 'search', placeholder: 'Cari kode...' }]}
-                        formData={filterData}
-                        cols="1"
-                        onChange={handleFilterChange}
-                    />
-                </FilterBar.Search>
-                <FilterBar.Item>
-                    <InputGroup
-                        fields={[{ name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: TRANSFER_STATUS_OPTIONS }]}
-                        formData={filterData}
-                        cols="1"
-                        onChange={handleFilterChange}
-                    />
-                </FilterBar.Item>
-            </FilterBar>
+            <FilterBar
+                value={filterData}
+                onChange={setFilterData}
+                fields={[
+                    { name: 'search', type: 'search', placeholder: 'Cari kode...' },
+                    { name: 'status', type: 'dropdown', placeholder: 'Pilih status', options: TRANSFER_STATUS_OPTIONS },
+                ]}
+            />
             <Table
                 columns={columns}
                 data={paramFetch.data}
@@ -267,10 +257,12 @@ const Main = ({ setCurentState }) => {
                 isLoading={isLoading}
                 onPageChange={(page) => {
                     setParamFetch(prev => ({ ...prev, page }));
+                    setQuery({ page, per_page: paramFetch.pageSize });
                     fetchData(page, paramFetch.pageSize, filterData);
                 }}
                 onPageSizeChange={(pageSize) => {
                     setParamFetch(prev => ({ ...prev, pageSize, page: 1 }));
+                    setQuery({ page: 1, per_page: pageSize });
                     fetchData(1, pageSize, filterData);
                 }}
             />

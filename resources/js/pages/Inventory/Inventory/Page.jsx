@@ -4,9 +4,9 @@ import { PrinterIcon } from "@phosphor-icons/react";
 import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
 import Badge from "../../../components/Badge";
 import CodeBadge from "../../../components/CodeBadge";
+import { useQueryParams } from "../../../utils/useQueryParams";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
-import InputGroup from "../../../components/FormElement/InputGroup";
 import FilterBar from "../../../components/FilterBar";
 import FooterActionBar from "../../../components/FooterActionBar";
 import DetailItemModal from "./DetailItemModal";
@@ -42,8 +42,12 @@ const MasterInventory = () => {
     const isKasir = PermissionStore((s) => s.isKasir);
     const user = AuthStore((s) => s.user);
     const [paramFetch, setParamFetch] = useState({ data: [], current_page: 1, total: 0, per_page: 10 });
-    const [search, setSearch]         = useState({ kode: "" });
-    const [filter, setFilter]         = useState({ status: "", kategori: "", cabang: "" });
+    const [
+        { kode: urlKode, status: urlStatus, kategori: urlKategori, cabang: urlCabang, page: urlPage, per_page: urlPerPage },
+        setQuery,
+    ] = useQueryParams({ kode: "", status: "", kategori: "", cabang: "", page: 1, per_page: 10 });
+    const [search, setSearch]         = useState({ kode: urlKode });
+    const [filter, setFilter]         = useState({ status: urlStatus, kategori: urlKategori, cabang: urlCabang });
     const [firstLoading, setFirstLoading] = useState(false);
     const [searchBounce] = useDebounce(search, 500);
 
@@ -323,7 +327,7 @@ const MasterInventory = () => {
             console.error("Error fetching options:", error);
         }).finally(() => {
             setLoading(false);
-            fetchData();
+            fetchData(urlPage, urlPerPage, urlKode, urlStatus, urlKategori, urlCabang);
         });
     }, []);
 
@@ -336,17 +340,25 @@ const MasterInventory = () => {
         const { name, value } = e.target;
         const newFilter = { ...filter, [name]: value };
         setFilter(newFilter);
+        setQuery({ status: newFilter.status, kategori: newFilter.kategori, cabang: newFilter.cabang, page: 1 });
         fetchData(1, paramFetch.per_page, search.kode, newFilter.status, newFilter.kategori, newFilter.cabang);
     };
 
     useEffect(() => {
         if (firstLoading) {
+            setQuery({ kode: searchBounce.kode, page: 1 });
             fetchData(1, paramFetch.per_page, search.kode, filter.status, filter.kategori, filter.cabang);
         }
     }, [searchBounce]);
 
-    const onChangePage     = (page)     => fetchData(page, paramFetch.per_page, search.kode, filter.status, filter.kategori, filter.cabang);
-    const onChangePageSize = (pageSize) => fetchData(1,    pageSize,            search.kode, filter.status, filter.kategori, filter.cabang);
+    const onChangePage     = (page)     => {
+        setQuery({ page, per_page: paramFetch.per_page });
+        fetchData(page, paramFetch.per_page, search.kode, filter.status, filter.kategori, filter.cabang);
+    };
+    const onChangePageSize = (pageSize) => {
+        setQuery({ page: 1, per_page: pageSize });
+        fetchData(1, pageSize, search.kode, filter.status, filter.kategori, filter.cabang);
+    };
 
     const handleViewDetail = async (row) => {
         setLoading(true);
@@ -616,65 +628,16 @@ const MasterInventory = () => {
             />
 
             {/* Filter row */}
-            <FilterBar>
-                <FilterBar.Search>
-                    <InputGroup
-                        fields={[{
-                            name: "kode",
-                            label: "",
-                            type: "search",
-                            placeholder: "Cari kode/nama/berat/karat...",
-                        }]}
-                        formData={search}
-                        cols="1"
-                        onChange={handleSearchChange}
-                    />
-                </FilterBar.Search>
-                <FilterBar.Item>
-                    <InputGroup
-                        fields={[{
-                            name: "status",
-                            label: "",
-                            type: "dropdown",
-                            placeholder: "Pilih status",
-                            options: STATUS_OPTIONS,
-                        }]}
-                        formData={filter}
-                        cols="1"
-                        onChange={handleFilterChange}
-                    />
-                </FilterBar.Item>
-                <FilterBar.Item>
-                    <InputGroup
-                        fields={[{
-                            name: "kategori",
-                            label: "",
-                            type: "dropdown",
-                            placeholder: "Pilih kategori",
-                            options: kategoriFilterOptions,
-                        }]}
-                        formData={filter}
-                        cols="1"
-                        onChange={handleFilterChange}
-                    />
-                </FilterBar.Item>
-                {!isKasir() && (
-                    <FilterBar.Item>
-                        <InputGroup
-                            fields={[{
-                                name: "cabang",
-                                label: "",
-                                type: "dropdown",
-                                placeholder: "Pilih cabang",
-                                options: branchOptions,
-                            }]}
-                            formData={filter}
-                            cols="1"
-                            onChange={handleFilterChange}
-                        />
-                    </FilterBar.Item>
-                )}
-            </FilterBar>
+            <FilterBar
+                value={search}
+                onChange={setSearch}
+                fields={[
+                    { name: "kode", type: "search", placeholder: "Cari kode/nama/berat/karat...", onChange: handleSearchChange },
+                    { name: "status", type: "dropdown", placeholder: "Pilih status", options: STATUS_OPTIONS, formData: filter, onChange: handleFilterChange },
+                    { name: "kategori", type: "dropdown", placeholder: "Pilih kategori", options: kategoriFilterOptions, formData: filter, onChange: handleFilterChange },
+                    !isKasir() && { name: "cabang", type: "dropdown", placeholder: "Pilih cabang", options: branchOptions, formData: filter, onChange: handleFilterChange },
+                ]}
+            />
 
             <Table
                 columns={columns}

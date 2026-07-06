@@ -25,9 +25,9 @@ class CustomerExport implements FromCollection, WithMapping, WithStyles, WithEve
     public function collection()
     {
         $query = MCustomer::query()->select(['id', 'customer_name', 'phone_number', 'created_at'])
-            ->withCount('sales')
-            ->withSum('sales', 'grand_total')
-            ->withMax('sales', 'created_at');
+            ->withCount(['sales' => fn ($q) => $q->where('approval_status', 'SELESAI')])
+            ->withSum(['sales' => fn ($q) => $q->where('approval_status', 'SELESAI')], 'grand_total')
+            ->withMax(['sales' => fn ($q) => $q->where('approval_status', 'SELESAI')], 'created_at');
 
         if ($this->request->has('start_date') && $this->request->start_date != '') {
             $query->where('created_at', '>=', $this->request->start_date . ' 00:00:00');

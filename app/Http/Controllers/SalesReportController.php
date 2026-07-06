@@ -14,7 +14,7 @@ class SalesReportController extends Controller
     public function salesSummary(Request $request)
     {
         $query = TSales::query()
-            ->whereIn('approval_status', ['CETAK_KWITANSI', 'SELESAI']);
+            ->whereIn('approval_status', ['CETAK KWITANSI', 'SELESAI']);
 
         if ($request->branch_id) {
             $query->where('branch_id', $request->branch_id);
@@ -63,11 +63,11 @@ class SalesReportController extends Controller
     public function salesTrendAndTopProduct(Request $request)
     {
         $query = TSales::query()
-            ->whereIn('approval_status', ['CETAK_KWITANSI', 'SELESAI']);
+            ->whereIn('approval_status', ['CETAK KWITANSI', 'SELESAI']);
 
         $queryDetail = TSalesDetail::query()
             ->whereHas('header', function ($dtlQry) use ($request) {
-                $dtlQry->whereIn('approval_status', ['CETAK_KWITANSI', 'SELESAI']);
+                $dtlQry->whereIn('approval_status', ['CETAK KWITANSI', 'SELESAI']);
 
                 if ($request->branch_id) {
                     $dtlQry->where('branch_id', $request->branch_id);
@@ -140,7 +140,7 @@ class SalesReportController extends Controller
     {
         $queryDetail = TSalesDetail::query()
             ->whereHas('header', function ($dtlQry) use ($request) {
-                $dtlQry->whereIn('approval_status', ['CETAK_KWITANSI', 'SELESAI']);
+                $dtlQry->whereIn('approval_status', ['CETAK KWITANSI', 'SELESAI']);
 
                 if ($request->branch_id) {
                     $dtlQry->where('branch_id', $request->branch_id);
@@ -233,7 +233,7 @@ class SalesReportController extends Controller
     public function salesDetail(Request $request)
     {
         $query = TSales::query()
-            ->whereIn('approval_status', ['CETAK_KWITANSI', 'SELESAI']);
+            ->whereIn('approval_status', ['CETAK KWITANSI', 'SELESAI']);
 
         if ($request->branch_id) {
             $query->where('branch_id', $request->branch_id);

@@ -52,11 +52,7 @@ class DashboardController extends Controller
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->count();
 
-        $sales = TSales::whereIn('approval_status', [
-            SalesStatus::DISETUJUI,
-            SalesStatus::CETAK_KWITANSI,
-            SalesStatus::SELESAI,
-        ])
+        $sales = TSales::where('approval_status', SalesStatus::SELESAI)
             ->where('updated_at', '>=', $today)
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->selectRaw('
@@ -144,10 +140,7 @@ class DashboardController extends Controller
             DATE(created_at) as trx_date,
             SUM(grand_total) as total_sales
         ')
-            ->whereIn('approval_status', [
-                SalesStatus::CETAK_KWITANSI,
-                SalesStatus::SELESAI,
-            ])
+            ->where('approval_status', SalesStatus::SELESAI)
             ->whereDate('created_at', '>=', $startDate)
             ->when($request->branch_id, fn ($q) => $q->where('branch_id', $request->branch_id))
             ->groupBy(DB::raw('DATE(created_at)'))

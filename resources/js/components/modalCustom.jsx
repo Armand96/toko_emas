@@ -30,6 +30,7 @@ const ModalCustom = ({
   const [zIndex, setZIndex] = useState(1000);
   const scrollContainerRef = useRef(null);
   const savedScrollPositionRef = useRef(0);
+  const isSubmittingRef = useRef(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -58,6 +59,18 @@ const ModalCustom = ({
 
   const handleClose = () => {
     onClose();
+  };
+
+  // Cegah submit ganda akibat klik cepat berulang sebelum state `disabledBtn` sempat re-render.
+  const handleConfirmClick = async () => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    savedScrollPositionRef.current = 0;
+    try {
+      await handleOnSubmit();
+    } finally {
+      isSubmittingRef.current = false;
+    }
   };
 
   return (
@@ -99,7 +112,7 @@ const ModalCustom = ({
               <div className="flex justify-between flex-row-reverse items-center px-6 py-4">
                 <div className="flex flex-col gap-3 md:flex-row justify-start md:justify-end w-full">
                   {singleButton ? (
-                      <button className="btn-primary !w-full  rounded-lg py-2 px-6 order-1 md:order-0" disabled={!!disabledBtn} onClick={() => { savedScrollPositionRef.current = 0; handleOnSubmit()}}>
+                      <button className="btn-primary !w-full  rounded-lg py-2 px-6 order-1 md:order-0" disabled={!!disabledBtn} onClick={handleConfirmClick}>
                       {confirmTextButton}
                     </button>
                   ) : (
@@ -109,7 +122,7 @@ const ModalCustom = ({
                       </button>
 
                       {confirmTextButton && (
-                            <button className={`btn-primary rounded-lg py-2 px-6 ${size === 'sm' ? 'w-full!' : 'md:w-fit!'}`} disabled={!!disabledBtn} onClick={() => { savedScrollPositionRef.current = 0; handleOnSubmit()}}>
+                            <button className={`btn-primary rounded-lg py-2 px-6 ${size === 'sm' ? 'w-full!' : 'md:w-fit!'}`} disabled={!!disabledBtn} onClick={handleConfirmClick}>
                           {confirmTextButton}
                         </button>
                       )}

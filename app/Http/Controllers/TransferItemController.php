@@ -69,6 +69,7 @@ class TransferItemController extends Controller
                 'kode_transfer' => $transferId,
                 'branch_source_id' => $validated['branch_source_id'],
                 'branch_dest_id' => $validated['branch_dest_id'],
+                'note' => $validated['note'] ?? null,
                 'created_by' => $request->user()->id,
                 'status' => TransferItemStatus::APPROVAL,
             ];

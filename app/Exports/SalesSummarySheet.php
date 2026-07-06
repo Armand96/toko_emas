@@ -31,14 +31,16 @@ class SalesSummarySheet implements FromCollection, WithMapping, WithStyles, With
 
     public function collection()
     {
-        $query = TSales::query()->with([
-            'customer:id,customer_name',
-            'branch:id,branch_name',
-            'user:id,name',
-            'details.inventory:inventory_code,berat,modal',
-            'senderBank.bank:id,bank_name',
-            'receiverBank.bank:id,bank_name',
-        ]);
+        $query = TSales::query()
+            ->with([
+                'customer:id,customer_name',
+                'branch:id,branch_name',
+                'user:id,name',
+                'details.inventory:inventory_code,berat,modal',
+                'senderBank.bank:id,bank_name',
+                'receiverBank.bank:id,bank_name',
+            ])
+            ->whereIn('approval_status', ['CETAK KWITANSI', 'SELESAI']);
 
         if ($this->request->branch_id) {
             $query->where('branch_id', $this->request->branch_id);

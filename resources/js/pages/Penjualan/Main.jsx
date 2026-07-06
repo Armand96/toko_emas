@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 import dayjs from "dayjs";
 import { PlusCircleIcon } from "@phosphor-icons/react";
+import { useQueryParams } from "../../utils/useQueryParams";
 import HeaderSection from "../../components/HeaderSection";
 import ActionButton, { ActionButtonGroup } from "../../components/ActionButton";
 import Badge from "../../components/Badge";
-import InputGroup from "../../components/FormElement/InputGroup";
 import FilterBar from "../../components/FilterBar";
 import Table from "../../components/Table/Table";
 import LoadingStore from "../../Store/LoadingStore";
@@ -14,13 +14,12 @@ import HelperFunctions from "../../utils/HelperFunctions";
 import PenjualanApis from "../../Services/Penjualan.apis";
 import PermissionStore from "../../Store/PermissionStore";
 import AuthStore from "../../Store/AuthStore";
+import OptionsStore from "../../Store/OptionsStore";
 import { showAlert } from "../../utils/showAlert";
 
 const STATUS_OPTIONS = [
     { value: 'APPROVAL', label: 'Approval' },
-    // { value: 'DISETUJUI', label: 'Disetujui' },
-    { value: 'CETAK KWITANSI', label: 'Cetak Kwitansi' },
-    { value: 'SELESAI', label: 'Selesai' },
+    { value: 'DISETUJUI', label: 'Disetujui' },
     { value: 'DITOLAK', label: 'Ditolak' },
     { value: 'DIBATALKAN', label: 'Dibatalkan' },
 ];
@@ -31,11 +30,13 @@ const Main = ({ setCurentState }) => {
     const can = PermissionStore((s) => s.can);
     const isKasir = PermissionStore((s) => s.isKasir);
     const user = AuthStore((s) => s.user);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
+    const [branchOptions, setBranchOptions] = useState([]);
 
     const STATUS_LABEL = {
-    'SELESAI': 'Selesai',
-    'DISETUJUI': 'Cetak Kwitansi',
-    'CETAK KWITANSI': 'Cetak Kwitansi',
+    'SELESAI': 'Disetujui',
+    'DISETUJUI': 'Disetujui',
+    'CETAK KWITANSI': 'Disetujui',
     'APPROVAL': 'Approval',
     'DITOLAK': 'Ditolak',
     'DIBATALKAN': 'Dibatalkan',
@@ -44,8 +45,8 @@ const Main = ({ setCurentState }) => {
 
 const STATUS_TONE = {
     'SELESAI': 'success',
-    'DISETUJUI': 'info',
-    'CETAK KWITANSI': 'info',
+    'DISETUJUI': 'success',
+    'CETAK KWITANSI': 'success',
     'APPROVAL': 'warning',
     'DITOLAK': 'danger',
     'DIBATALKAN': 'danger',
@@ -59,9 +60,17 @@ const STATUS_TONE = {
         per_page: 10,
     });
 
-    const [search, setSearch] = useState({
+    const [{ search: urlSearch, status: urlStatus, branch_id: urlBranchId, page: urlPage, per_page: urlPerPage }, setQuery] = useQueryParams({
         search: '',
         status: '',
+        branch_id: '',
+        page: 1,
+        per_page: 10,
+    });
+    const [search, setSearch] = useState({
+        search: urlSearch,
+        status: urlStatus,
+        branch_id: urlBranchId,
     });
     const [searchBounce] = useDebounce(search, 500);
     const [firstLoading, setFirstLoading] = useState(false);
@@ -78,10 +87,11 @@ const STATUS_TONE = {
             });
             if (filters.search) params.append('order_id', filters.search);
             if (filters.status) {
-                params.append('approval_status', filters.status === "CETAK KWITANSI" ? "DISETUJUI":  filters.status );
+                params.append('approval_status', filters.status);
                 params.append('status', filters.status);
             }
             if (isKasir() && user?.branch_id) params.append('branch_id', user.branch_id);
+            else if (filters.branch_id) params.append('branch_id', filters.branch_id);
 
             const res = await PenjualanApis.GetPenjualan(`?${params.toString()}`);
             setParamFetch(res);
@@ -94,11 +104,17 @@ const STATUS_TONE = {
     };
 
     useEffect(() => {
-        fetchData();
+        fetchData(urlPage, urlPerPage, { search: urlSearch, status: urlStatus, branch_id: urlBranchId });
+        if (!isKasir()) {
+            ensureBranches()
+                .then((data) => setBranchOptions(HelperFunctions.formatDropdown(data, "id", "branch_name")))
+                .catch((err) => console.error(err));
+        }
     }, []);
 
     useEffect(() => {
         if (firstLoading) {
+            setQuery({ search: searchBounce.search, status: searchBounce.status, branch_id: searchBounce.branch_id, page: 1 });
             fetchData(1, paramFetch.per_page, searchBounce);
         }
     }, [searchBounce]);
@@ -194,10 +210,6 @@ const STATUS_TONE = {
         }
     };
 
-    const searchFieldsPenjualan = [
-        { name: 'search', label: '', type: 'search', placeholder: 'Cari kode...' },
-    ];
-
     const columns = [
         {
             header: 'Tanggal',
@@ -243,11 +255,15 @@ const STATUS_TONE = {
         },
     ];
 
-    const onChangePage = (page) =>
+    const onChangePage = (page) => {
+        setQuery({ page, per_page: paramFetch.per_page });
         fetchData(page, paramFetch.per_page, searchBounce);
+    };
 
-    const onChangePageSize = (pageSize) =>
+    const onChangePageSize = (pageSize) => {
+        setQuery({ page: 1, per_page: pageSize });
         fetchData(1, pageSize, searchBounce);
+    };
 
     return (
         <div className="flex flex-col gap-6 w-full relative">
@@ -259,24 +275,15 @@ const STATUS_TONE = {
                 textButton="Transaksi Baru"
             />
 
-            <FilterBar>
-                <FilterBar.Search>
-                    <InputGroup
-                        fields={searchFieldsPenjualan}
-                        formData={search}
-                        cols='1'
-                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
-                    />
-                </FilterBar.Search>
-                <FilterBar.Item>
-                    <InputGroup
-                        fields={[{ name: 'status', label: '', type: 'dropdown', placeholder: 'Pilih status', options: STATUS_OPTIONS }]}
-                        formData={search}
-                        cols='1'
-                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
-                    />
-                </FilterBar.Item>
-            </FilterBar>
+            <FilterBar
+                value={search}
+                onChange={setSearch}
+                fields={[
+                    { name: 'search', type: 'search', placeholder: 'Cari kode...' },
+                    { name: 'status', type: 'dropdown', placeholder: 'Pilih status', options: STATUS_OPTIONS },
+                    !isKasir() && { name: 'branch_id', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions },
+                ]}
+            />
 
             <Table
                 columns={columns}

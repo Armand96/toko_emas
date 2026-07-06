@@ -41,6 +41,7 @@ class SalesDetailSheet implements FromCollection, WithMapping, WithStyles, WithE
                 'product:id,product_name',
             ])
             ->whereHas('header', function ($q) {
+                $q->whereIn('approval_status', ['CETAK KWITANSI', 'SELESAI']);
                 if ($this->request->branch_id) {
                     $q->where('branch_id', $this->request->branch_id);
                 }

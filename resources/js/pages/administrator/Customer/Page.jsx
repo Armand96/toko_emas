@@ -3,9 +3,9 @@ import { PlusCircleIcon } from "@phosphor-icons/react";
 import CodeBadge from "../../../components/CodeBadge";
 import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
 import Badge from "../../../components/Badge";
+import { useQueryParams } from "../../../utils/useQueryParams";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
-import InputGroup from '../../../components/FormElement/InputGroup';
 import FilterBar from '../../../components/FilterBar';
 import { showAlert } from '../../../utils/showAlert';
 import CustomerApis from "../../../Services/Customer.apis";
@@ -18,7 +18,11 @@ const MasterCustomer = () => {
     const setLoading = LoadingStore((state) => state.setLoading);
     const can = PermissionStore((s) => s.can);
     const [paramFetch, setParamFetch] = useState({ data: [], page: 1, total: 0, pageSize: 10 });
-    const [search, setSearch] = useState({ name: '', status: '' });
+    const [
+        { name: urlName, status: urlStatus, page: urlPage, per_page: urlPerPage },
+        setQuery,
+    ] = useQueryParams({ name: '', status: '', page: 1, per_page: 10 });
+    const [search, setSearch] = useState({ name: urlName, status: urlStatus });
     const [showModalAdd, setShowModalAdd] = useState(false);
     const [formData, setFormData] = useState({});
     const [formError, setFormError] = useState({});
@@ -48,11 +52,12 @@ const MasterCustomer = () => {
     };
 
     useEffect(() => {
-        fetchData();
+        fetchData(urlPage, urlPerPage, { name: urlName, status: urlStatus });
     }, []);
 
     useEffect(() => {
         if (firstLoading) {
+            setQuery({ name: searchBounce.name, status: searchBounce.status, page: 1 });
             fetchData(1, paramFetch.pageSize, searchBounce);
         }
     }, [searchBounce]);
@@ -164,10 +169,12 @@ const MasterCustomer = () => {
     ];
 
     const onChangePage = (page) => {
+        setQuery({ page, per_page: paramFetch.pageSize });
         fetchData(page, paramFetch.pageSize, search);
     };
 
     const onChangePageSize = (pageSize) => {
+        setQuery({ page: 1, per_page: pageSize });
         fetchData(1, pageSize, search);
     };
 
@@ -180,38 +187,19 @@ const MasterCustomer = () => {
                 onClick={can('create') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah Customer"
             />
-            <FilterBar>
-                <FilterBar.Search>
-                    <InputGroup
-                        fields={[{
-                            name: 'name',
-                            label: '',
-                            type: 'search',
-                            placeholder: 'Cari customer...'
-                        }]}
-                        formData={search}
-                        cols='1'
-                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
-                    />
-                </FilterBar.Search>
-                <FilterBar.Item width="sm:w-[170px]">
-                    <InputGroup
-                        fields={[{
-                            name: 'status',
-                            label: '',
-                            type: 'dropdown',
-                            placeholder: 'Pilih status',
-                            options: [
-                                { value: '1', label: 'Aktif' },
-                                { value: '0', label: 'Tidak Aktif' },
-                            ],
-                        }]}
-                        formData={search}
-                        cols='1'
-                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
-                    />
-                </FilterBar.Item>
-            </FilterBar>
+            <FilterBar
+                value={search}
+                onChange={setSearch}
+                fields={[
+                    { name: 'name', type: 'search', placeholder: 'Cari customer...' },
+                    {
+                        name: 'status', type: 'dropdown', placeholder: 'Pilih status', width: 'sm:w-[170px]', options: [
+                            { value: '1', label: 'Aktif' },
+                            { value: '0', label: 'Tidak Aktif' },
+                        ]
+                    },
+                ]}
+            />
             <Table
                 columns={columns}
                 data={paramFetch.data}

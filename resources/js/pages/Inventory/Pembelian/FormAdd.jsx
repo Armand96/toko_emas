@@ -54,6 +54,7 @@ const requiredItem = [
 ];
 
 const FormPembelian = ({ setCurentState }) => {
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const setLoading = LoadingStore((state) => state.setLoading);
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
@@ -228,6 +229,7 @@ const FormPembelian = ({ setCurentState }) => {
     };
 
     const handleSubmitBatch = async () => {
+        if (isSubmitting) return;
         if (batch.length === 0) {
             showAlert({
                 title: "Perhatian",
@@ -256,6 +258,7 @@ const FormPembelian = ({ setCurentState }) => {
         };
 
         setLoading(true);
+        setIsSubmitting(true);
         try {
             const res = await InventoryApis.PostPembelian(payload);
             const created = res?.data?.data || [];
@@ -295,6 +298,7 @@ const FormPembelian = ({ setCurentState }) => {
             });
         } finally {
             setLoading(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -538,10 +542,10 @@ const FormPembelian = ({ setCurentState }) => {
                         </div>
                         <button
                             onClick={handleSubmitBatch}
-                            disabled={batch.length === 0}
+                            disabled={batch.length === 0 || isSubmitting}
                             className="btn-primary py-2 px-4 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <FloppyDiskIcon size={20} /> Simpan &amp; Ajukan Pembelian
+                            <FloppyDiskIcon size={20} /> {isSubmitting ? "Menyimpan..." : "Simpan & Ajukan Pembelian"}
                         </button>
                     </div>
 

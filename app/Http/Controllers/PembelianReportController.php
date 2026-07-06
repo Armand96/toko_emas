@@ -35,7 +35,7 @@ class PembelianReportController extends Controller
 
     public function pembelianKategoriReport(Request $request)
     {
-        $query = Pembelian::query();
+        $query = Pembelian::query()->where('status', PembelianStatus::DISETUJUI);
 
         if ($request->branch_id) {
             $query->where('branch_id', $request->branch_id);
@@ -92,7 +92,7 @@ class PembelianReportController extends Controller
 
     public function pembelianKaratReport(Request $request)
     {
-        $query = Pembelian::query();
+        $query = Pembelian::query()->where('status', PembelianStatus::DISETUJUI);
 
         if ($request->branch_id) {
             $query->where('branch_id', $request->branch_id);
@@ -123,7 +123,7 @@ class PembelianReportController extends Controller
 
     public function pembelianDetail(Request $request)
     {
-        $query = Pembelian::query();
+        $query = Pembelian::query()->where('status', PembelianStatus::DISETUJUI);
 
         if ($request->branch_id) {
             $query->where('branch_id', $request->branch_id);

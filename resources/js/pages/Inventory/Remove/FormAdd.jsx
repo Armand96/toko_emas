@@ -107,6 +107,7 @@ const FormAdd = ({ setCurentState }) => {
     };
 
     const handleSubmit = async () => {
+        if (isSubmitting) return;
         if (!validate()) return;
 
         setIsSubmitting(true);

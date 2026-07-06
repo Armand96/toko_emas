@@ -4,8 +4,8 @@ import ActionButton, { ActionButtonGroup } from "../../../components/ActionButto
 import Badge from "../../../components/Badge";
 import { useDebounce } from "use-debounce";
 
+import { useQueryParams } from "../../../utils/useQueryParams";
 import HeaderSection from "../../../components/HeaderSection";
-import InputGroup from "../../../components/FormElement/InputGroup";
 import FilterBar from "../../../components/FilterBar";
 import Table from "../../../components/Table/Table";
 import CodeBadge from "../../../components/CodeBadge";
@@ -28,7 +28,9 @@ const MainPembelian = ({ setCurentState }) => {
     const user = AuthStore((s) => s.user);
     const ensureCategories = OptionsStore((s) => s.ensureCategories);
     const ensureUsers = OptionsStore((s) => s.ensureUsers);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const [categoryOptions, setCategoryOptions] = useState([]);
+    const [branchOptions, setBranchOptions] = useState([]);
     const [userMap, setUserMap] = useState({});
 
     const [paramFetch, setParamFetch] = useState({
@@ -37,7 +39,10 @@ const MainPembelian = ({ setCurentState }) => {
         total: 0,
         per_page: 10,
     });
-    const [search, setSearch] = useState({ search: "", status: "", category_id: "" });
+    const [{ search: urlSearch, status: urlStatus, category_id: urlCategoryId, branch_id: urlBranchId, page: urlPage, per_page: urlPerPage }, setQuery] = useQueryParams({
+        search: "", status: "", category_id: "", branch_id: "", page: 1, per_page: 10,
+    });
+    const [search, setSearch] = useState({ search: urlSearch, status: urlStatus, category_id: urlCategoryId, branch_id: urlBranchId });
     const [searchBounce] = useDebounce(search, 500);
     const [firstLoading, setFirstLoading] = useState(false);
 
@@ -53,6 +58,7 @@ const MainPembelian = ({ setCurentState }) => {
             if (params.status) query.append('status', params.status);
             if (params.category_id) query.append('category_id', params.category_id);
             if (isKasir() && user?.branch_id) query.append('branch_id', user.branch_id);
+            else if (params.branch_id) query.append('branch_id', params.branch_id);
 
             const res = await InventoryApis.GetPembelian(`?${query.toString()}`);
             setParamFetch(res);
@@ -80,17 +86,23 @@ const MainPembelian = ({ setCurentState }) => {
     };
 
     useEffect(() => {
-        fetchData(1, 10, search);
+        fetchData(urlPage, urlPerPage, { search: urlSearch, status: urlStatus, category_id: urlCategoryId, branch_id: urlBranchId });
         ensureCategories()
             .then((data) => setCategoryOptions(HelperFunctions.formatDropdown(data, "id", "category_name")))
             .catch((err) => console.error(err));
         ensureUsers()
             .then((data) => setUserMap(Object.fromEntries((data || []).map((u) => [u.id, u.name]))))
             .catch((err) => console.error(err));
+        if (!isKasir()) {
+            ensureBranches()
+                .then((data) => setBranchOptions(HelperFunctions.formatDropdown(data, "id", "branch_name")))
+                .catch((err) => console.error(err));
+        }
     }, []);
 
     useEffect(() => {
         if (firstLoading) {
+            setQuery({ search: searchBounce.search, status: searchBounce.status, category_id: searchBounce.category_id, branch_id: searchBounce.branch_id, page: 1 });
             fetchData(1, paramFetch.per_page, search);
         }
     }, [searchBounce]);
@@ -283,11 +295,15 @@ const MainPembelian = ({ setCurentState }) => {
         },
     ];
 
-    const onChangePage = (page) =>
+    const onChangePage = (page) => {
+        setQuery({ page, per_page: paramFetch.per_page });
         fetchData(page, paramFetch.per_page, search);
+    };
 
-    const onChangePageSize = (pageSize) =>
+    const onChangePageSize = (pageSize) => {
+        setQuery({ page: 1, per_page: pageSize });
         fetchData(1, pageSize, search);
+    };
 
     return (
         <div className={`flex flex-col gap-6 w-full relative min-h-full ${selectedRows.length > 0 ? 'pb-24 lg:pb-28' : ''}`}>
@@ -299,45 +315,23 @@ const MainPembelian = ({ setCurentState }) => {
                 textButton="Tambah Pembelian"
             />
 
-            <FilterBar>
-                <FilterBar.Search>
-                    <InputGroup
-                        fields={[{
-                            name: "search",
-                            label: "",
-                            type: "search",
-                            placeholder: "Cari produk...",
-                        }]}
-                        formData={search}
-                        cols="1"
-                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
-                    />
-                </FilterBar.Search>
-                {[
-                    { name: 'status', placeholder: 'Pilih status', options: [
-                        { value: 'APPROVAL', label: 'Approval' },
-                        { value: 'DISETUJUI', label: 'Disetujui' },
-                        { value: 'DITOLAK', label: 'Ditolak' },
-                        { value: 'DIBATALKAN', label: 'Dibatalkan' },
-                    ]},
-                    { name: 'category_id', placeholder: 'Pilih kategori', options: categoryOptions.filter((c) => !c.details?.parent_id) },
-                ].map((field) => (
-                    <FilterBar.Item key={field.name}>
-                        <InputGroup
-                            fields={[{
-                                name: field.name,
-                                label: "",
-                                type: "dropdown",
-                                placeholder: field.placeholder,
-                                options: field.options,
-                            }]}
-                            formData={search}
-                            cols="1"
-                            onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
-                        />
-                    </FilterBar.Item>
-                ))}
-            </FilterBar>
+            <FilterBar
+                value={search}
+                onChange={setSearch}
+                fields={[
+                    { name: "search", type: "search", placeholder: "Cari produk..." },
+                    {
+                        name: 'status', type: 'dropdown', placeholder: 'Pilih status', options: [
+                            { value: 'APPROVAL', label: 'Approval' },
+                            { value: 'DISETUJUI', label: 'Disetujui' },
+                            { value: 'DITOLAK', label: 'Ditolak' },
+                            { value: 'DIBATALKAN', label: 'Dibatalkan' },
+                        ]
+                    },
+                    { name: 'category_id', type: 'dropdown', placeholder: 'Pilih kategori', options: categoryOptions.filter((c) => !c.details?.parent_id) },
+                    !isKasir() && { name: 'branch_id', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions },
+                ]}
+            />
 
             <Table
                 columns={columns}

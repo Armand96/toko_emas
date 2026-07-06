@@ -4,9 +4,9 @@ import dayjs from "dayjs";
 import { ArrowRight } from "@phosphor-icons/react";
 import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
 import Badge from "../../../components/Badge";
+import { useQueryParams } from "../../../utils/useQueryParams";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
-import InputGroup from "../../../components/FormElement/InputGroup";
 import FilterBar from "../../../components/FilterBar";
 import ModalDetailRemoveItem from "../../Approval/ApprovalRemoveItem/Modal";
 import InventoryApis from "../../../Services/Inventory.apis";
@@ -23,8 +23,13 @@ const Main = () => {
     const user = AuthStore((s) => s.user);
     const setLoading = LoadingStore((s) => s.setLoading);
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
+    const ensureBranches = OptionsStore((s) => s.ensureBranches);
 
-    const [filterData, setFilterData] = useState({ search: '' });
+    const [
+        { search: urlSearch, branch_id: urlBranchId, page: urlPage, per_page: urlPerPage },
+        setQuery,
+    ] = useQueryParams({ search: '', branch_id: '', page: 1, per_page: 10 });
+    const [filterData, setFilterData] = useState({ search: urlSearch, branch_id: urlBranchId });
     const [filterBounce] = useDebounce(filterData, 500);
     const didMount = useRef(false);
 
@@ -36,6 +41,7 @@ const Main = () => {
     });
 
     const [productMap, setProductMap] = useState({});
+    const [branchOptions, setBranchOptions] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedData, setSelectedData] = useState(null);
 
@@ -50,6 +56,7 @@ const Main = () => {
             });
             if (filters.search) params.append('code', filters.search);
             if (isKasir() && user?.branch_id) params.append('branch_id', user.branch_id);
+            else if (filters.branch_id) params.append('branch_id', filters.branch_id);
 
             const res = await InventoryApis.GetRemoveItem(`?${params.toString()}`);
             setParamFetch(res);
@@ -67,7 +74,12 @@ const Main = () => {
                 data.forEach((p) => { map[p.id] = p.product_name; });
                 setProductMap(map);
             });
-        fetchData();
+        if (!isKasir()) {
+            ensureBranches()
+                .then((data) => setBranchOptions(HelperFunctions.formatDropdown(data, "id", "branch_name")))
+                .catch((err) => console.error(err));
+        }
+        fetchData(urlPage, urlPerPage, { search: urlSearch, branch_id: urlBranchId });
     }, []);
 
     useEffect(() => {
@@ -75,13 +87,9 @@ const Main = () => {
             didMount.current = true;
             return;
         }
+        setQuery({ search: filterBounce.search, branch_id: filterBounce.branch_id, page: 1 });
         fetchData(1, paramFetch.per_page, filterBounce);
     }, [filterBounce]);
-
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        setFilterData(prev => ({ ...prev, [name]: value }));
-    };
 
     const handleViewDetail = async (row) => {
         setLoading(true);
@@ -157,7 +165,7 @@ const Main = () => {
         {
             header: 'Lama Repair',
             accessor: 'lama_repair',
-            render: (row) => getLamaRepair(row.created_at),
+            render: (row) => getLamaRepair(row.updated_at),
         },
         { header: 'Cabang', accessor: 'branch', render: (row) => row.branch?.branch_name || row.branch?.name || '-' },
         {
@@ -186,29 +194,28 @@ const Main = () => {
                 title="Item Repair"
                 description="Kelola item inventory yang sedang dalam proses perbaikan dan kembalikan ke inventory aktif setelah repair selesai."
             />
-            <FilterBar>
-                <FilterBar.Search>
-                    <InputGroup
-                        fields={[{
-                            name: 'search',
-                            label: '',
-                            type: 'search',
-                            placeholder: 'Cari kode...',
-                        }]}
-                        formData={filterData}
-                        cols="1"
-                        onChange={handleFilterChange}
-                    />
-                </FilterBar.Search>
-            </FilterBar>
+            <FilterBar
+                value={filterData}
+                onChange={setFilterData}
+                fields={[
+                    { name: 'search', type: 'search', placeholder: 'Cari kode...' },
+                    !isKasir() && { name: 'branch_id', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions },
+                ]}
+            />
             <Table
                 columns={columns}
                 data={paramFetch.data}
                 page={paramFetch.current_page}
                 pageSize={paramFetch.per_page}
                 total={paramFetch.total}
-                onPageChange={(page) => fetchData(page, paramFetch.per_page, filterData)}
-                onPageSizeChange={(pageSize) => fetchData(1, pageSize, filterData)}
+                onPageChange={(page) => {
+                    setQuery({ page, per_page: paramFetch.per_page });
+                    fetchData(page, paramFetch.per_page, filterData);
+                }}
+                onPageSizeChange={(pageSize) => {
+                    setQuery({ page: 1, per_page: pageSize });
+                    fetchData(1, pageSize, filterData);
+                }}
             />
             <ModalDetailRemoveItem
                 isOpen={isModalOpen}

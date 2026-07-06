@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     ReceiptIcon,
     ChatTextIcon,
@@ -13,6 +13,7 @@ import HelperFunctions from "../../../utils/HelperFunctions";
 import LoadingStore from "../../../Store/LoadingStore";
 import OptionsStore from "../../../Store/OptionsStore";
 import ReportApis from "../../../Services/Report.apis";
+import { useQueryParams } from "../../../utils/useQueryParams";
 import StatCard from "./Component/StatCard";
 import ChartCard from "./Component/ChartCard";
 import BarChartH from "./Component/BarChartH";
@@ -28,9 +29,14 @@ const ReportPenjualan = () => {
 
 
 
+    const [
+        { cabang: urlCabang, page: urlPage, per_page: urlPerPage },
+        setQuery,
+    ] = useQueryParams({ cabang: "", page: 1, per_page: 10 });
+
     const [filter, setFilter] = useState({
         dateRange: { mode: "all", start: "", end: "" },
-        cabang: "",
+        cabang: urlCabang,
     });
 
     const [branchOptions, setBranchOptions] = useState([{ value: "", label: "Semua Cabang" }]);
@@ -154,8 +160,16 @@ const ReportPenjualan = () => {
         });
     }, []);
 
+    const didMount = useRef(false);
+
     useEffect(() => {
         fetchCharts();
+        if (!didMount.current) {
+            didMount.current = true;
+            fetchDetail(urlPage, urlPerPage);
+            return;
+        }
+        setQuery({ cabang: filter.cabang, page: 1 });
         fetchDetail(1, detail.per_page);
     }, [filter.dateRange, filter.cabang]);
 
@@ -258,8 +272,14 @@ const ReportPenjualan = () => {
         }
     };
 
-    const onChangePage = (page) => fetchDetail(page, detail.per_page);
-    const onChangePageSize = (size) => fetchDetail(1, size);
+    const onChangePage = (page) => {
+        setQuery({ page, per_page: detail.per_page });
+        fetchDetail(page, detail.per_page);
+    };
+    const onChangePageSize = (size) => {
+        setQuery({ page: 1, per_page: size });
+        fetchDetail(1, size);
+    };
 
     return (
         <div className="flex w-full flex-col gap-6">

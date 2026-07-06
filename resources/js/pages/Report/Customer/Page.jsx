@@ -13,6 +13,7 @@ import InputGroup from "../../../components/FormElement/InputGroup";
 import HelperFunctions from "../../../utils/HelperFunctions";
 import LoadingStore from "../../../Store/LoadingStore";
 import ReportApis from "../../../Services/Report.apis";
+import { useQueryParams } from "../../../utils/useQueryParams";
 import StatCard from "./Component/StatCard";
 import ChartCard from "./Component/ChartCard";
 import BarChartH from "./Component/BarChartH";
@@ -39,10 +40,15 @@ const mapCustomer = (c) => ({
 const ReportCustomer = () => {
     const setLoading = LoadingStore((s) => s.setLoading);
 
+    const [
+        { sort: urlSort, search: urlSearch, page: urlPage, per_page: urlPerPage },
+        setQuery,
+    ] = useQueryParams({ sort: "total", search: "", page: 1, per_page: 10 });
+
     const [filter, setFilter] = useState({
         dateRange: { mode: "all", start: "", end: "" },
-        sort: "total",
-        search: "",
+        sort: urlSort,
+        search: urlSearch,
     });
     const [searchBounce] = useDebounce(filter.search, 500);
 
@@ -129,7 +135,7 @@ const ReportCustomer = () => {
     // initial load
     useEffect(() => {
         fetchSummary();
-        fetchDetail();
+        fetchDetail(urlPage, urlPerPage, urlSearch);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -137,6 +143,7 @@ const ReportCustomer = () => {
     useEffect(() => {
         if (firstLoaded) {
             fetchSummary();
+            setQuery({ search: searchBounce, page: 1 });
             fetchDetail(1, detail.per_page, searchBounce);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -144,7 +151,10 @@ const ReportCustomer = () => {
 
     // refetch saat search berubah (debounced)
     useEffect(() => {
-        if (firstLoaded) fetchDetail(1, detail.per_page, searchBounce);
+        if (firstLoaded) {
+            setQuery({ search: searchBounce, page: 1 });
+            fetchDetail(1, detail.per_page, searchBounce);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchBounce]);
 
@@ -194,8 +204,14 @@ const ReportCustomer = () => {
         }
     };
 
-    const onChangePage = (page) => fetchDetail(page, detail.per_page, searchBounce);
-    const onChangePageSize = (size) => fetchDetail(1, size, searchBounce);
+    const onChangePage = (page) => {
+        setQuery({ page, per_page: detail.per_page });
+        fetchDetail(page, detail.per_page, searchBounce);
+    };
+    const onChangePageSize = (size) => {
+        setQuery({ page: 1, per_page: size });
+        fetchDetail(1, size, searchBounce);
+    };
 
     return (
         <div className="flex w-full flex-col gap-6">
@@ -239,7 +255,10 @@ const ReportCustomer = () => {
                                 fields={[{ name: "sort", label: "", type: "dropdown", options: SORT_OPTIONS, placeholder: "Pilih kategori" }]}
                                 formData={filter}
                                 cols="1"
-                                onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
+                                onChange={(e) => {
+                                    setFilter({ ...filter, [e.target.name]: e.target.value });
+                                    setQuery({ sort: e.target.value });
+                                }}
                             />
                         </div>
                     }

@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Helpers\PembelianStatus;
 use App\Models\Pembelian;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -31,7 +32,9 @@ class PembelianSummarySheet implements FromCollection, WithMapping, WithStyles, 
 
     public function collection()
     {
-        $query = Pembelian::query()->with(['branch:id,branch_name']);
+        $query = Pembelian::query()
+            ->with(['branch:id,branch_name'])
+            ->where('status', PembelianStatus::DISETUJUI);
 
         if ($this->request->branch_id) {
             $query->where('branch_id', $this->request->branch_id);

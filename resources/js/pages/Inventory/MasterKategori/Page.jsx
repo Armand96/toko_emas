@@ -4,7 +4,6 @@ import HeaderSection from "../../../components/HeaderSection";
 import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
 import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
-import InputGroup from "../../../components/FormElement/InputGroup";
 import FilterBar from "../../../components/FilterBar";
 import { showAlert } from "../../../utils/showAlert";
 import InventoryApis from "../../../Services/Inventory.apis";
@@ -199,21 +198,13 @@ const MasterKategori = () => {
                 onClick={can('create') ? () => handleOpenModal("add") : undefined}
                 textButton="Tambah Kategori"
             />
-            <FilterBar>
-                <FilterBar.Search>
-                    <InputGroup
-                        fields={[{
-                            name: "category_name",
-                            label: "",
-                            type: "search",
-                            placeholder: "Cari kategori...",
-                        }]}
-                        formData={search}
-                        cols="1"
-                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
-                    />
-                </FilterBar.Search>
-            </FilterBar>
+            <FilterBar
+                value={search}
+                onChange={setSearch}
+                fields={[
+                    { name: "category_name", type: "search", placeholder: "Cari kategori..." },
+                ]}
+            />
             <Table
                 columns={columns}
                 data={paramFetch.data}

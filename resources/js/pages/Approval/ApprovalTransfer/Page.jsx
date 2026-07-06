@@ -6,7 +6,6 @@ import Badge from "../../../components/Badge";
 import dayjs from "dayjs";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
-import InputGroup from "../../../components/FormElement/InputGroup";
 import FilterBar from "../../../components/FilterBar";
 import ModalDetailTransfer from "./Modal";
 import { showAlert } from '../../../utils/showAlert';
@@ -15,6 +14,7 @@ import LoadingStore from "../../../Store/LoadingStore";
 import InventoryApis from "../../../Services/Inventory.apis";
 import OptionsStore from "../../../Store/OptionsStore";
 import PermissionStore from "../../../Store/PermissionStore";
+import { useQueryParams } from "../../../utils/useQueryParams";
 
 const STATUS_OPTIONS = [
     { value: 'Approval', label: 'Approval' },
@@ -45,7 +45,12 @@ const ApprovalTransfer = () => {
         per_page: 10,
     });
 
-    const [filter, setFilter] = useState({ search: '', status: 'Approval', branch_id: '' });
+    const [
+        { search: urlSearch, status: urlStatus, branch_id: urlBranchId, page: urlPage, per_page: urlPerPage },
+        setQuery,
+    ] = useQueryParams({ search: '', status: 'Approval', branch_id: '', page: 1, per_page: 10 });
+
+    const [filter, setFilter] = useState({ search: urlSearch, status: urlStatus, branch_id: urlBranchId });
     const [filterBounce] = useDebounce(filter, 500);
     const [firstLoading, setFirstLoading] = useState(false);
     const [productMap, setProductMap] = useState({});
@@ -84,11 +89,12 @@ const ApprovalTransfer = () => {
         ensureBranches().then((data) => {
             setBranchOptions(HelperFunctions.formatDropdown(data, 'id', 'branch_name'));
         });
-        fetchData(1, 10, filter);
+        fetchData(urlPage, urlPerPage, filter);
     }, []);
 
     useEffect(() => {
         if (firstLoading) {
+            setQuery({ search: filterBounce.search, status: filterBounce.status, branch_id: filterBounce.branch_id, page: 1 });
             fetchData(1, paramFetch.per_page, filterBounce);
         }
     }, [filterBounce]);
@@ -223,40 +229,15 @@ const ApprovalTransfer = () => {
                 icon={CheckSquareOffsetIcon}
             />
 
-            <FilterBar>
-                <FilterBar.Search>
-                    <InputGroup
-                        fields={[{
-                            name: "search",
-                            label: "",
-                            type: "search",
-                            placeholder: "Cari kode...",
-                        }]}
-                        formData={filter}
-                        cols="1"
-                        onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
-                    />
-                </FilterBar.Search>
-                {[
-                    { name: 'status', placeholder: 'Pilih status', options: STATUS_OPTIONS },
-                    { name: 'branch_id', placeholder: 'Pilih cabang', options: branchOptions },
-                ].map((field) => (
-                    <FilterBar.Item key={field.name}>
-                        <InputGroup
-                            fields={[{
-                                name: field.name,
-                                label: "",
-                                type: "dropdown",
-                                placeholder: field.placeholder,
-                                options: field.options,
-                            }]}
-                            formData={filter}
-                            cols="1"
-                            onChange={(e) => setFilter({ ...filter, [e.target.name]: e.target.value })}
-                        />
-                    </FilterBar.Item>
-                ))}
-            </FilterBar>
+            <FilterBar
+                value={filter}
+                onChange={setFilter}
+                fields={[
+                    { name: "search", type: "search", placeholder: "Cari kode..." },
+                    { name: 'status', type: 'dropdown', placeholder: 'Pilih status', options: STATUS_OPTIONS },
+                    { name: 'branch_id', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions },
+                ]}
+            />
 
             <Table
                 columns={columns}
@@ -264,8 +245,14 @@ const ApprovalTransfer = () => {
                 page={paramFetch.current_page}
                 pageSize={paramFetch.per_page}
                 total={paramFetch.total}
-                onPageChange={(page) => fetchData(page, paramFetch.per_page, filterBounce)}
-                onPageSizeChange={(pageSize) => fetchData(1, pageSize, filterBounce)}
+                onPageChange={(page) => {
+                    setQuery({ page, per_page: paramFetch.per_page });
+                    fetchData(page, paramFetch.per_page, filterBounce);
+                }}
+                onPageSizeChange={(pageSize) => {
+                    setQuery({ page: 1, per_page: pageSize });
+                    fetchData(1, pageSize, filterBounce);
+                }}
             />
 
             <ModalDetailTransfer

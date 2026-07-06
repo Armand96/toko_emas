@@ -80,8 +80,8 @@ const PrintBarcode = () => {
                     border-bottom: none;
                 }
                 .qr-img {
-                    width: 5mm;
-                    height: 5mm;
+                    width: 10mm;
+                    height: 10mm;
                     aspect-ratio: 1 / 1;
                     object-fit: contain;
                     display: block;
@@ -132,8 +132,8 @@ const PrintBarcode = () => {
                         border-bottom: none;
                     }
                     .qr-img {
-                        width: 6.5mm;
-                        height: 6.5mm;
+                        width: 1mm;
+                        height: 1mm;
                     }
                 }
             `}</style>

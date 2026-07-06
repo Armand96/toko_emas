@@ -5,7 +5,6 @@ import ActionButton, { ActionButtonGroup } from "../../../components/ActionButto
 import Badge from "../../../components/Badge";
 import Table from "../../../components/Table/Table";
 import ModalUser from "./Modal";
-import InputGroup from '../../../components/FormElement/InputGroup';
 import FilterBar from '../../../components/FilterBar';
 import { showAlert } from '../../../utils/showAlert';
 import UsersApis from "../../../Services/User.apis";
@@ -219,52 +218,20 @@ const MasterUser = () => {
                 onClick={can('create') ? () => handleOpenModal('add') : undefined}
                 textButton="Tambah User"
             />
-            <FilterBar>
-                <FilterBar.Search>
-                    <InputGroup
-                        fields={[{
-                            name: 'name',
-                            label: '',
-                            type: 'search',
-                            placeholder: 'Cari nama...'
-                        }]}
-                        formData={search}
-                        cols='1'
-                        onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })}
-                    />
-                </FilterBar.Search>
-                <FilterBar.Item>
-                    <InputGroup
-                        fields={[{
-                            name: 'status',
-                            label: '',
-                            type: 'dropdown',
-                            placeholder: 'Pilih status',
-                            options: [
-                                { value: '1', label: 'Aktif' },
-                                { value: '0', label: 'Tidak Aktif' },
-                            ],
-                        }]}
-                        formData={filter}
-                        cols='1'
-                        onChange={handleFilterChange}
-                    />
-                </FilterBar.Item>
-                <FilterBar.Item width="sm:w-[180px]">
-                    <InputGroup
-                        fields={[{
-                            name: 'branch_id',
-                            label: '',
-                            type: 'dropdown',
-                            placeholder: 'Pilih cabang',
-                            options: branchOptions,
-                        }]}
-                        formData={filter}
-                        cols='1'
-                        onChange={handleFilterChange}
-                    />
-                </FilterBar.Item>
-            </FilterBar>
+            <FilterBar
+                value={search}
+                onChange={setSearch}
+                fields={[
+                    { name: 'name', type: 'search', placeholder: 'Cari nama...' },
+                    {
+                        name: 'status', type: 'dropdown', placeholder: 'Pilih status', options: [
+                            { value: '1', label: 'Aktif' },
+                            { value: '0', label: 'Tidak Aktif' },
+                        ], formData: filter, onChange: handleFilterChange,
+                    },
+                    { name: 'branch_id', type: 'dropdown', placeholder: 'Pilih cabang', options: branchOptions, width: 'sm:w-[180px]', formData: filter, onChange: handleFilterChange },
+                ]}
+            />
             <Table
                 columns={columns}
                 data={paramFetch.data}

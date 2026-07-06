@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Helpers\PembelianStatus;
 use App\Models\Pembelian;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -31,12 +32,14 @@ class PembelianDetailSheet implements FromCollection, WithMapping, WithStyles, W
 
     public function collection()
     {
-        $query = Pembelian::query()->with([
-            'branch:id,branch_name',
-            'product:id,product_name',
-            'category:id,category_name',
-            'subcategory:id,category_name',
-        ]);
+        $query = Pembelian::query()
+            ->with([
+                'branch:id,branch_name',
+                'product:id,product_name',
+                'category:id,category_name',
+                'subcategory:id,category_name',
+            ])
+            ->where('status', PembelianStatus::DISETUJUI);
 
         if ($this->request->branch_id) {
             $query->where('branch_id', $this->request->branch_id);

@@ -105,7 +105,12 @@ const FormAdd = ({ setCurentState }) => {
             const res = await InventoryApis.GetInventory(`?inventory_code=${scannedCode}&branch_id=${user?.branch_id}`);
             const list = res?.data || [];
             if (list.length > 0) {
-                addItemFromInventory(list[0]);
+                const inv = list[0];
+                if (inv.status !== 'AVAILABLE') {
+                    showAlert({ title: 'Barang Tidak Tersedia', message: `Item dengan kode ${scannedCode} berstatus ${inv.status} dan tidak bisa ditransfer.`, icon: 'error', confirmText: 'OK' });
+                    return;
+                }
+                addItemFromInventory(inv);
             } else {
                 showAlert({ title: 'Tidak Ditemukan', message: `Item dengan kode ${scannedCode} tidak ditemukan di cabang ini.`, icon: 'error', confirmText: 'OK' });
             }
@@ -129,6 +134,7 @@ const FormAdd = ({ setCurentState }) => {
     };
 
     const handleSubmit = async () => {
+        if (isSubmitting) return;
         if (!validate()) return;
 
         setIsSubmitting(true);

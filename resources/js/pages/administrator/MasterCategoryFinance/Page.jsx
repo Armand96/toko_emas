@@ -5,7 +5,6 @@ import Badge from "../../../components/Badge";
 import HeaderSection from "../../../components/HeaderSection";
 import Table from "../../../components/Table/Table";
 import Modal from "./Modal";
-import InputGroup from '../../../components/FormElement/InputGroup';
 import FilterBar from '../../../components/FilterBar';
 import { showAlert } from '../../../utils/showAlert';
 import LoadingStore from '../../../Store/LoadingStore';
@@ -153,11 +152,13 @@ const MasterCategoryFinance = () => {
     return (
         <div className="flex flex-col gap-6 w-full">
             <HeaderSection title="Master Kategori Finance" description="Kelola daftar kategori transaksi keuangan." icon={PlusCircleIcon} onClick={() => handleOpenModal('add')} textButton="Tambah Kategori" />
-            <FilterBar>
-                <FilterBar.Search>
-                    <InputGroup fields={[{ name: 'category_name', label: '', type: 'search', placeholder: 'Cari kategori...' }]} formData={search} cols='1' onChange={(e) => setSearch({ ...search, [e.target.name]: e.target.value })} />
-                </FilterBar.Search>
-            </FilterBar>
+            <FilterBar
+                value={search}
+                onChange={setSearch}
+                fields={[
+                    { name: 'category_name', type: 'search', placeholder: 'Cari kategori...' },
+                ]}
+            />
             <Table columns={columns} data={paramFetch.data} onPageChange={onChangePage} onPageSizeChange={onChangePageSize} total={paramFetch.total} page={paramFetch.current_page} pageSize={paramFetch.per_page} />
             <Modal isOpen={showModalAdd} onClose={handleCloseModal} onSubmit={handleSubmit} formData={formData} onChange={handleChange} formError={formError} isView={isView} />
         </div>

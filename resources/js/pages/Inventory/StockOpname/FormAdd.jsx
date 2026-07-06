@@ -155,6 +155,7 @@ const FormAdd = ({ setCurentState }) => {
 
     // ── Finalisasi ───────────────────────────────────────────────
     const handleFinalize = async () => {
+        if (isSubmitting) return;
         if (totalScanned === 0) {
             showAlert({ title: 'Belum Ada Item', message: 'Scan / input minimal 1 item sebelum finalisasi.', icon: 'warning', confirmText: 'OK' });
             return;
