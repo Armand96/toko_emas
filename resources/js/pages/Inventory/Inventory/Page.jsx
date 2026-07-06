@@ -602,7 +602,7 @@ const MasterInventory = () => {
             accessor: "status",
             render: (row) => {
                 const status = toTitleCase(row.status);
-                const toneMap = { Available: 'success', Reserved: 'warning', Transit: 'warning', Sold: 'gray', Repair: 'info', Lost: 'danger' };
+                const toneMap = { Available: 'success', Reserved: 'warning', Transit: 'warning', Sold: 'gray', Repair: 'purple', Lost: 'danger' };
                 return <Badge tone={toneMap[status] || 'gray'}>{status}</Badge>;
             },
         },
