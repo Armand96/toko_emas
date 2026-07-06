@@ -142,7 +142,15 @@ class TSalesController extends Controller
 
             // $dateNow = date('Y-m-d H:i:s');
             $status = SalesStatus::from($validated['status']);
-            $data = TSales::where('id', $validated['penjualan_id'])->first();
+
+            // Lock the row to prevent concurrent requests from double-processing the same sale
+            $data = TSales::where('id', $validated['penjualan_id'])->lockForUpdate()->first();
+
+            if (!$data) {
+                DB::rollBack();
+                return ApiResponse::error('Penjualan tidak ditemukan', null, 404);
+            }
+
             $data->update([
                 'approval_status' => $validated['status'],
                 'note' => isset($validated['note']) ? $validated['note'] : null
