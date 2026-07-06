@@ -126,10 +126,12 @@ export default function ModalView({ isOpen, onClose, data }) {
                             <span className="text-sm text-neutral-500">Harga Modal</span>
                             <span className="text-sm font-medium text-neutral-900">{HelperFunctions.formatCurrency(data?.modal)}</span>
                         </div>
-                        <div className="flex flex-col gap-1">
-                            <span className="text-sm text-neutral-500">Harga Jual</span>
-                            <span className="text-sm font-medium text-neutral-900">{HelperFunctions.formatCurrency(data?.jual)}</span>
-                        </div>
+                        {data?.jual > 0 && (
+                            <div className="flex flex-col gap-1">
+                                <span className="text-sm text-neutral-500">Harga Jual</span>
+                                <span className="text-sm font-medium text-neutral-900">{HelperFunctions.formatCurrency(data.jual)}</span>
+                            </div>
+                        )}
                     </div>
 
                     <div className={`rounded-md p-3 flex justify-between items-center mt-1 ${margin < 0 ? 'bg-danger-50' : 'bg-success-50'}`}>

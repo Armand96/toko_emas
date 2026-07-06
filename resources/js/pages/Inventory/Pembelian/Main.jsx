@@ -247,7 +247,7 @@ const MainPembelian = ({ setCurentState }) => {
         {
             header: "Jual",
             accessor: "jual",
-            render: (row) => HelperFunctions.formatCurrency(row.jual || 0),
+            render: (row) => row.jual > 0 ? HelperFunctions.formatCurrency(row.jual) : "-",
         },
         {
             header: "Cabang",

@@ -33,6 +33,7 @@ const sidebarData = [
         icon: CheckSquareOffsetIcon,
         subItems: [
           { label: "Penjualan", link: "/approval/penjualan" },
+          { label: "Buyback", link: "/approval/buyback" },
           { label: "Pembelian", link: "/approval/pembelian" },
           { label: "Remove Item", link: "/approval/remove-item" },
           { label: "Transfer", link: "/approval/transfer" }
@@ -62,6 +63,7 @@ const sidebarData = [
             label: "Penjualan",
             link: "/transaksi/penjualan"
           },
+          { label: "Buyback", link: "/transaksi/buyback" },
           { label: "Pembelian", link: "/transaksi/pembelian" },
 
         ]

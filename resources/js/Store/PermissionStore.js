@@ -20,6 +20,8 @@ const PERMISSIONS = [
 
     { link: '/approval/penjualan',
         create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER] },
+    { link: '/approval/buyback',
+        create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER] },
     { link: '/approval/pembelian',
         create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER] },
     { link: '/approval/remove-item',
@@ -28,6 +30,8 @@ const PERMISSIONS = [
         create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER] },
 
     { link: '/transaksi/penjualan',
+        create: [SUPER_ADMIN, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN, KASIR], delete: [SUPER_ADMIN, KASIR] },
+    { link: '/transaksi/buyback',
         create: [SUPER_ADMIN, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN, KASIR], delete: [SUPER_ADMIN, KASIR] },
     { link: '/transaksi/pembelian',
         create: [SUPER_ADMIN, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN, KASIR], delete: [SUPER_ADMIN, KASIR] },

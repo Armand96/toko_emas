@@ -1,40 +1,53 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { useDebounce } from "use-debounce";
-import { MagnifyingGlassIcon } from "@phosphor-icons/react";
+import { MagnifyingGlassIcon, PlusCircleIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../components/HeaderSection";
-import ModalScanBarcode from "./ModaScanBarcode";
-import InventoryItemCard from "../../components/InventoryItemCard";
 import FormSectionCard from "../../components/FormSectionCard";
 import EmptyState from "../../components/EmptyState";
-import ItemPickerRow from "../../components/ItemPickerRow";
+import InventoryItemCard from "../../components/InventoryItemCard";
+import ModalCustom from "../../components/modalCustom";
+import Dropdown from "../../components/FormElement/SingleElement/Dropdown";
+import Input from "../../components/FormElement/SingleElement/Input";
+import PhotoInput from "../../components/FormElement/SingleElement/PhotoInput";
+import CurrencyInput from "../../components/FormElement/SingleElement/CurrencyInput";
+import CodeBadge from "../../components/CodeBadge";
 import HelperFunctions from "../../utils/HelperFunctions";
 import LoadingStore from "../../Store/LoadingStore";
 import { showAlert } from "../../utils/showAlert";
+import { useDebounce } from "use-debounce";
 import CustomerApis from "../../Services/Customer.apis";
-import InventoryApis from "../../Services/Inventory.apis";
 import BankApis from "../../Services/Bank.apis";
-import PenjualanApis from "../../Services/Penjualan.apis";
+import BuybackApis from "../../Services/Buyback.apis";
 import OptionsStore from "../../Store/OptionsStore";
 import AuthStore from "../../Store/AuthStore";
-import CurrencyInput from "../../components/FormElement/SingleElement/CurrencyInput";
-import CodeBadge from "../../components/CodeBadge";
+
+const emptyItem = {
+    product_id: null,
+    category_id: null,
+    subcategory_id: null,
+    berat: "",
+    karat: "",
+    no_seri: "",
+    price: "",
+    foto: null,
+    _produk_label: "",
+};
+
+const requiredItem = [
+    ["product_id", "Produk wajib dipilih"],
+    ["berat", "Berat wajib diisi"],
+    ["karat", "Karat wajib diisi"],
+    ["price", "Harga beli wajib diisi"],
+];
 
 const FormAdd = ({ setCurentState }) => {
     const setLoading = LoadingStore((state) => state.setLoading);
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
     const user = AuthStore((s) => s.user);
 
-    // State Tab Customer
+    // ── DATA CUSTOMER ──────────────────────────────────────────
     const [customerType, setCustomerType] = useState('baru'); // 'baru' | 'terdaftar'
+    const [customerData, setCustomerData] = useState({ nama: "", hp: "", alamat: "" });
 
-    // State Customer Baru
-    const [customerData, setCustomerData] = useState({
-        nama: "",
-        hp: "",
-        alamat: ""
-    });
-
-    // State Member Terdaftar (Search & Suggestion)
     const [searchQuery, setSearchQuery] = useState("");
     const [searchQueryBounce] = useDebounce(searchQuery, 500);
     const [memberOptions, setMemberOptions] = useState([]);
@@ -42,7 +55,6 @@ const FormAdd = ({ setCurentState }) => {
     const [selectedMember, setSelectedMember] = useState(null);
     const searchRef = useRef(null);
 
-    // Ambil opsi member saat tab "terdaftar" aktif & setiap kata kunci berubah (debounced).
     useEffect(() => {
         if (customerType !== 'terdaftar') return;
         CustomerApis.GetCustomer(`?customer_name=${searchQueryBounce}&per_page=20`)
@@ -50,7 +62,6 @@ const FormAdd = ({ setCurentState }) => {
             .catch((err) => console.error(err));
     }, [customerType, searchQueryBounce]);
 
-    // Handle klik di luar untuk menutup dropdown suggestion
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -61,35 +72,125 @@ const FormAdd = ({ setCurentState }) => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // State Keranjang Penjualan
-    const [cartItems, setCartItems] = useState([]);
-
-    // State Pilih Item (dropdown)
-    const [inventoryOptions, setInventoryOptions] = useState([]);
+    // ── BARANG (item dibeli dari customer) ─────────────────────
+    const [items, setItems] = useState([]);
     const [productOptions, setProductOptions] = useState([]);
 
     useEffect(() => {
-        const branchFilter = user?.branch_id ? `&branch_id=${user.branch_id}` : '';
-        InventoryApis.GetInventory(`?status=AVAILABLE&per_page=10000000${branchFilter}`)
-            .then((res) => setInventoryOptions(res?.data || []))
-            .catch((err) => console.error(err));
-
         ensureProducts()
-            .then((data) => setProductOptions(data))
+            .then((data) => {
+                setProductOptions((data || []).map((p) => {
+                    const categoryName = p.category?.parent?.category_name || p.category?.category_name || "";
+                    const subcategoryName = p.subcategory?.category_name || "";
+                    const detail = [categoryName, subcategoryName].filter(Boolean).join(" · ");
+                    return {
+                        value: p.id,
+                        label: detail ? `${p.product_name} · ${detail}` : p.product_name,
+                        details: p,
+                    };
+                }));
+            })
             .catch((err) => console.error(err));
-    }, [user?.branch_id]);
+    }, []);
 
-    const getProductName = (productId) => {
-        const product = productOptions.find((p) => p.id === productId);
-        return product?.product_name ?? 'Produk';
+    // Modal Tambah Item
+    const [isItemModalOpen, setIsItemModalOpen] = useState(false);
+    const [item, setItem] = useState(emptyItem);
+    const [itemErrors, setItemErrors] = useState({});
+
+    const openItemModal = () => {
+        setItem(emptyItem);
+        setItemErrors({});
+        setIsItemModalOpen(true);
     };
 
-    // State Pembayaran
+    const handleItemChange = (e) => {
+        const { name, value } = e.target;
+
+        if (name === "foto") {
+            const file = e.target.files ? e.target.files[0] : value;
+            const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
+            if (file && !allowedTypes.includes(file.type)) {
+                showAlert({ title: "Format tidak didukung", message: "Foto harus berformat JPG, JPEG, PNG, atau GIF", type: "warning" });
+                return;
+            }
+            if (file && file.size > 3 * 1024 * 1024) {
+                showAlert({ title: "Ukuran file terlalu besar", message: "Ukuran foto maksimal 3 MB", type: "warning" });
+                return;
+            }
+            setItem((prev) => ({ ...prev, foto: file ?? null }));
+            return;
+        }
+
+        if (name === "berat" || name === "karat") {
+            const normalized = value.replace(/,/g, ".").replace(/[^0-9.]/g, "");
+            setItem((prev) => ({ ...prev, [name]: normalized }));
+            if (itemErrors[name]) setItemErrors((prev) => ({ ...prev, [name]: "" }));
+            return;
+        }
+
+        if (name === "price") {
+            setItem((prev) => ({ ...prev, price: value }));
+            if (itemErrors.price) setItemErrors((prev) => ({ ...prev, price: "" }));
+            return;
+        }
+
+        if (name === "product_id") {
+            const found = productOptions.find((p) => p.value === value);
+            const d = found?.details || {};
+            setItem((prev) => ({
+                ...prev,
+                product_id: value,
+                category_id: d.category_id ?? null,
+                subcategory_id: d.subcategory_id ?? null,
+                _produk_label: found?.details?.product_name ?? "",
+            }));
+            setItemErrors((prev) => ({ ...prev, product_id: "" }));
+            return;
+        }
+
+        setItem((prev) => ({ ...prev, [name]: value }));
+        if (itemErrors[name]) setItemErrors((prev) => ({ ...prev, [name]: "" }));
+    };
+
+    const validateItem = () => {
+        const errs = {};
+        requiredItem.forEach(([key, msg]) => {
+            const v = item[key];
+            if (v === null || v === undefined || v === "") errs[key] = msg;
+        });
+        setItemErrors(errs);
+        return Object.keys(errs).length === 0;
+    };
+
+    const handleSaveItem = () => {
+        if (!validateItem()) return;
+        setItems((prev) => [
+            ...prev,
+            {
+                ...item,
+                price: Number(item.price || 0),
+                _rowId: Date.now() + Math.random(),
+                _preview: item.foto ? URL.createObjectURL(item.foto) : null,
+            },
+        ]);
+        setIsItemModalOpen(false);
+        setItem(emptyItem);
+        setItemErrors({});
+    };
+
+    const handleRemoveItem = (rowId) => {
+        setItems((prev) => prev.filter((it) => it._rowId !== rowId));
+    };
+
+    // ── PEMBAYARAN ─────────────────────────────────────────────
     const [paymentMethod, setPaymentMethod] = useState('tunai');
     const [bankOptions, setBankOptions] = useState([]);
     const [selectedBankId, setSelectedBankId] = useState(null);
-    const [namaPengirim, setNamaPengirim] = useState('');
-    const [rekeningPengirim, setRekeningPengirim] = useState('');
+    const [namaPenerima, setNamaPenerima] = useState('');
+    const [bankPenerima, setBankPenerima] = useState('');
+    const [rekeningPenerima, setRekeningPenerima] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         if (paymentMethod === 'transfer' && user?.branch_id) {
@@ -103,141 +204,41 @@ const FormAdd = ({ setCurentState }) => {
     }, [paymentMethod, user?.branch_id]);
 
     useEffect(() => {
-        if (selectedMember && paymentMethod === 'transfer') {
-            setNamaPengirim(selectedMember.customer_name);
-        } else if (customerType === 'baru' && paymentMethod === 'transfer') {
-            setNamaPengirim(customerData.nama);
-        }
+        if (paymentMethod !== 'transfer') return;
+        if (selectedMember) setNamaPenerima(selectedMember.customer_name);
+        else if (customerType === 'baru') setNamaPenerima(customerData.nama);
     }, [selectedMember, customerType, customerData.nama, paymentMethod]);
 
-    const [uangDibayar, setUangDibayar] = useState(0);
-    const [isScanModalOpen, setIsScanModalOpen] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
-
-    const subTotal = useMemo(() => cartItems.reduce((sum, item) => sum + Number(item.price || 0), 0), [cartItems]);
-    const kembalian = useMemo(() => (uangDibayar || 0) - subTotal, [uangDibayar, subTotal]);
+    const subTotal = useMemo(() => items.reduce((sum, it) => sum + Number(it.price || 0), 0), [items]);
 
     const isFormValid = useMemo(() => {
-        if (cartItems.length === 0) return false;
-
+        if (items.length === 0) return false;
         if (customerType === 'baru') {
             if (!customerData.nama || !customerData.hp || !customerData.alamat) return false;
         } else if (!selectedMember) {
             return false;
         }
-
-        if (paymentMethod === 'tunai') {
-            if (!uangDibayar || uangDibayar < subTotal) return false;
-        } else {
-            if (!selectedBankId || !namaPengirim) return false;
+        if (paymentMethod === 'transfer') {
+            if (!selectedBankId || !namaPenerima || !bankPenerima || !rekeningPenerima) return false;
         }
-
         return true;
-    }, [cartItems, customerType, customerData, selectedMember, paymentMethod, uangDibayar, subTotal, selectedBankId, namaPengirim, rekeningPengirim]);
-
-    const mapInventoryToCartItem = (inv) => ({
-        inventory_code: inv.inventory_code,
-        product_id: inv.product_id,
-        branch_id: inv.branch_id,
-        name: getProductName(inv.product_id),
-        specs: `${inv.berat ? `${inv.berat}g` : ''}${inv.karat ? ` • ${inv.karat}K` : ''}`,
-        price: Number(inv.jual || 0),
-        image: HelperFunctions.getStorageUrl(inv.thumb_path),
-    });
-
-    const handleSelectItem = (e) => {
-        const inventoryId = e.target.value;
-        if (!inventoryId) return;
-
-        if (cartItems.some((item) => item.inventory_code === inventoryId)) {
-            showAlert({ icon: 'warning', title: 'Perhatian', message: 'Produk ini sudah ada di keranjang!' });
-            return;
-        }
-
-        const found = inventoryOptions.find((inv) => inv.inventory_code === inventoryId);
-        if (!found) return;
-
-        setCartItems((prev) => [...prev, mapInventoryToCartItem(found)]);
-    };
-
-    const itemDropdownOptions = useMemo(() => {
-        return inventoryOptions
-            .filter((inv) => !cartItems.some((item) => item.inventory_code === inv.inventory_code))
-            .map((inv) => ({
-                value: inv.inventory_code,
-                label: `${inv.inventory_code} - ${getProductName(inv.product_id)} (${inv.berat ?? '-'}g • ${inv.karat ?? '-'}K)`,
-            }));
-    }, [inventoryOptions, cartItems, productOptions]);
-
-    const handleRemoveItem = (idToRemove) => {
-        setCartItems(cartItems.filter(item => item.inventory_code !== idToRemove));
-    };
-
-    const handleScanSuccess = async (decodedText) => {
-        if (cartItems.some(item => item.inventory_code === decodedText)) {
-            showAlert({ icon: 'warning', title: 'Perhatian', message: 'Produk ini sudah ada di keranjang!' });
-            setIsScanModalOpen(false);
-            return;
-        }
-
-        const found = inventoryOptions.find((inv) => inv.inventory_code === decodedText || inv.barcode === decodedText);
-        if (found) {
-            setCartItems((prev) => [...prev, mapInventoryToCartItem(found)]);
-            setIsScanModalOpen(false);
-            return;
-        }
-
-        setLoading(true);
-        try {
-            const res = await InventoryApis.GetInventory(`?search=${decodedText}&status=AVAILABLE&per_page=10`);
-            const match = (res?.data || []).find((inv) => inv.inventory_code === decodedText || inv.barcode === decodedText);
-            if (match) {
-                setCartItems((prev) => [...prev, mapInventoryToCartItem(match)]);
-            } else {
-                showAlert({ icon: 'error', title: 'Tidak Ditemukan', message: `Item dengan kode ${decodedText} tidak ditemukan di inventory.` });
-            }
-        } catch (error) {
-            console.error(error);
-            showAlert({ icon: 'error', title: 'Gagal', message: 'Gagal mencari item di inventory.' });
-        } finally {
-            setLoading(false);
-            setIsScanModalOpen(false);
-        }
-    };
-
-
-    useEffect(() => {
-        if (selectedMember && paymentMethod === 'transfer') {
-            setNamaPengirim(selectedMember.customer_name);
-        } else if (customerType === 'baru' && paymentMethod === 'transfer') {
-            setNamaPengirim(customerData.nama);
-        }
-    }, [selectedMember, customerType, customerData.nama, paymentMethod]);
-
+    }, [items, customerType, customerData, selectedMember, paymentMethod, selectedBankId, namaPenerima, bankPenerima, rekeningPenerima]);
 
     const handleSubmit = async () => {
         if (submitting) return;
-        if (cartItems.length === 0) {
-            showAlert({ icon: 'warning', title: 'Perhatian', message: 'Keranjang penjualan masih kosong.' });
+        if (items.length === 0) {
+            showAlert({ icon: 'warning', title: 'Perhatian', message: 'Belum ada barang yang ditambahkan.' });
             return;
         }
-
         if (customerType === 'baru' && (!customerData.nama || !customerData.hp || !customerData.alamat)) {
             showAlert({ icon: 'warning', title: 'Perhatian', message: 'Lengkapi data customer baru.' });
             return;
         }
-
         if (customerType === 'terdaftar' && !selectedMember) {
             showAlert({ icon: 'warning', title: 'Perhatian', message: 'Pilih customer terdaftar.' });
             return;
         }
-
-        if (paymentMethod === 'tunai' && (!uangDibayar || uangDibayar < subTotal)) {
-            showAlert({ icon: 'warning', title: 'Perhatian', message: 'Uang dibayar belum diisi atau kurang dari total.' });
-            return;
-        }
-
-        if (paymentMethod === 'transfer' && (!selectedBankId || !namaPengirim)) {
+        if (paymentMethod === 'transfer' && (!selectedBankId || !namaPenerima || !bankPenerima || !rekeningPenerima)) {
             showAlert({ icon: 'warning', title: 'Perhatian', message: 'Lengkapi data transfer.' });
             return;
         }
@@ -246,7 +247,6 @@ const FormAdd = ({ setCurentState }) => {
         setLoading(true);
         try {
             let customerId = selectedMember?.id;
-
             if (customerType === 'baru') {
                 const customerRes = await CustomerApis.PostCustomer({
                     customer_name: customerData.nama,
@@ -261,29 +261,31 @@ const FormAdd = ({ setCurentState }) => {
                 user_id: user?.id,
                 branch_id: user?.branch_id,
                 payment_type: paymentMethod === 'tunai' ? 'TUNAI' : 'TRANSFER',
-                item: cartItems.map((item) => ({
-                    inventory_code: item.inventory_code,
-                    product_id: item.product_id,
-                    price: item.price,
+                item: items.map((it) => ({
+                    product_id: Number(it.product_id),
+                    category_id: it.category_id ? Number(it.category_id) : null,
+                    subcategory_id: it.subcategory_id ? Number(it.subcategory_id) : null,
+                    berat: Number(it.berat),
+                    karat: Number(it.karat),
+                    serial_number: it.no_seri || null,
+                    price: Number(it.price),
                 })),
             };
 
-            if (paymentMethod === 'tunai') {
-                payload.nominal_paid = uangDibayar;
-                payload.exchange = kembalian > 0 ? kembalian : 0;
-            } else {
-                payload.receiver_bank_id = selectedBankId;
-                payload.sender_bank_name = namaPengirim;
-                payload.sender_rekening = rekeningPengirim;
+            if (paymentMethod === 'transfer') {
+                payload.sender_bank_id = selectedBankId; // bank keluar (kas toko)
+                payload.receiver_name = namaPenerima;
+                payload.receiver_bank_name = bankPenerima;
+                payload.receiver_rekening = rekeningPenerima;
             }
 
-            await PenjualanApis.PostPenjualan(payload);
+            await BuybackApis.PostBuyback(payload);
 
-            showAlert({ icon: 'success', isAutoClose: false, title: 'Berhasil', message: 'Transaksi penjualan berhasil diajukan.' });
+            showAlert({ icon: 'success', isAutoClose: false, title: 'Berhasil', message: 'Transaksi buyback berhasil diajukan.' });
             setCurentState('main');
         } catch (error) {
             console.error(error);
-            showAlert({ icon: 'error', title: 'Gagal', message: error?.response?.data?.message || 'Gagal mengajukan transaksi penjualan.' });
+            showAlert({ icon: 'error', title: 'Gagal', message: error?.response?.data?.message || 'Gagal mengajukan transaksi buyback.' });
         } finally {
             setSubmitting(false);
             setLoading(false);
@@ -293,13 +295,12 @@ const FormAdd = ({ setCurentState }) => {
     return (
         <div className="flex flex-col gap-6 w-full">
             <HeaderSection
-                title="Input Penjualan"
-                description="Masukkan detail transaksi penjualan dan pilih item yang akan dijual."
+                title="Input Buyback"
+                description="Lengkapi informasi buyback dan detail item inventory."
             />
 
             {/* SECTION 1: DATA CUSTOMER */}
             <FormSectionCard title="Data Customer">
-
                 <div className="flex gap-2 p-1 bg-gray-50 border border-gray-200 rounded-lg w-full mb-6">
                     <button
                         onClick={() => setCustomerType('baru')}
@@ -424,48 +425,44 @@ const FormAdd = ({ setCurentState }) => {
                 )}
             </FormSectionCard>
 
-            {/* SECTION 2: KERANJANG PENJUALAN */}
-            <FormSectionCard title="Keranjang Penjualan">
-
-                <ItemPickerRow
-                    className="mb-6"
-                    onScan={() => setIsScanModalOpen(true)}
-                    options={itemDropdownOptions}
-                    onSelect={handleSelectItem}
-                />
-
-                {/* List Items */}
+            {/* SECTION 2: BARANG */}
+            <FormSectionCard title="Barang">
                 <div className="flex flex-col gap-3">
-                    {cartItems.map((item) => (
+                    {items.map((it) => (
                         <InventoryItemCard
-                            key={item.inventory_code}
-                            code={item.inventory_code}
-                            name={item.name}
-                            specs={item.specs}
-                            image={item.image}
-                            price={item.price}
-                            onRemove={() => handleRemoveItem(item.inventory_code)}
+                            key={it._rowId}
+                            code={it.no_seri || '-'}
+                            name={it._produk_label}
+                            specs={[
+                                it.berat ? `${it.berat} gr` : '',
+                                it.karat ? `${it.karat}K` : '',
+                            ].filter(Boolean).join(' • ')}
+                            image={it._preview}
+                            price={it.price}
+                            onRemove={() => handleRemoveItem(it._rowId)}
                         />
                     ))}
 
-                    {cartItems.length === 0 && (
-                        <EmptyState message="Belum ada item yang ditambahkan." />
+                    {items.length === 0 && (
+                        <EmptyState message="Belum ada barang yang ditambahkan." />
                     )}
+
+                    <button
+                        onClick={openItemModal}
+                        className="w-full py-3 border-2 border-dashed border-primary-300 text-primary-600 rounded-lg font-medium hover:bg-primary-50 transition-colors flex items-center justify-center gap-2"
+                    >
+                        <PlusCircleIcon size={20} /> Tambah Item
+                    </button>
                 </div>
             </FormSectionCard>
 
             {/* SECTION 3: PEMBAYARAN */}
             <FormSectionCard title="Pembayaran" divider>
-
                 <div className="flex flex-col mb-6">
                     <div className="flex justify-between py-3">
                         <span className="text-sm text-gray-500">Sub Total</span>
                         <span className="font-medium text-gray-800">{HelperFunctions.formatCurrency(subTotal)}</span>
                     </div>
-                    {/* <div className="flex justify-between py-3 border-b border-dashed border-gray-200">
-                        <span className="text-sm text-gray-500">Kembalian</span>
-                        <span className="font-medium text-gray-800">{HelperFunctions.formatCurrency(kembalian)}</span>
-                    </div> */}
                     <div className="flex justify-between py-4">
                         <span className="text-base font-bold text-gray-800">Total</span>
                         <span className="text-lg font-bold text-gray-900">{HelperFunctions.formatCurrency(subTotal)}</span>
@@ -489,35 +486,46 @@ const FormAdd = ({ setCurentState }) => {
                         </button>
                     </div>
 
-                    {/* --- UANG DIBAYAR & KEMBALIAN (HANYA MUNCUL JIKA TUNAI) --- */}
-                    {paymentMethod === 'tunai' && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                            <CurrencyInput
-                                label="Uang Dibayar"
-                                name="uangDibayar"
-                                value={uangDibayar}
-                                isRequired
-                                placeholder="0"
-                                onChange={(e) => setUangDibayar(Number(e.target.value))}
-                            />
-                            <div className="flex flex-col gap-1.5">
-                                <CurrencyInput
-                                label="Kembalian"
-                                name="kembalian"
-                                value={kembalian > 0 ? kembalian : 0}
-                                placeholder="0"
-                                isDisable={true}
-/>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* --- PILIHAN REKENING & NAMA PENGIRIM (HANYA MUNCUL JIKA TRANSFER) --- */}
                     {paymentMethod === 'transfer' && (
                         <div className="flex flex-col gap-4 mt-2">
-                            {/* Pilihan Rekening Tujuan */}
+                            {/* Rekening customer (penerima uang) */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-sm font-medium text-gray-900">Nama Penerima<span className="text-red-500"> *</span></label>
+                                    <input
+                                        type="text"
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                                        value={namaPenerima}
+                                        onChange={(e) => setNamaPenerima(e.target.value)}
+                                        placeholder="Masukkan nama penerima"
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-sm font-medium text-gray-900">Bank<span className="text-red-500"> *</span></label>
+                                    <input
+                                        type="text"
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                                        value={bankPenerima}
+                                        onChange={(e) => setBankPenerima(e.target.value)}
+                                        placeholder="Contoh: BCA"
+                                    />
+                                </div>
+                            </div>
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-sm font-medium text-gray-900">Rekening Tujuan<span className="text-red-500"> *</span></label>
+                                <label className="text-sm font-medium text-gray-900">No. Rekening<span className="text-red-500"> *</span></label>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                                    value={rekeningPenerima}
+                                    onChange={(e) => setRekeningPenerima(e.target.value.replace(/\D/g, ''))}
+                                    placeholder="Masukkan no. rekening penerima"
+                                />
+                            </div>
+
+                            {/* Bank Keluar (kas toko) */}
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-sm font-medium text-gray-900">Bank Keluar<span className="text-red-500"> *</span></label>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {bankOptions.map((bc) => (
                                         <div
@@ -543,38 +551,12 @@ const FormAdd = ({ setCurentState }) => {
                                     )}
                                 </div>
                             </div>
-
-                            {/* Input Nama & Rekening Pengirim */}
-                            <div className="grid gap-4">
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-sm font-medium text-gray-900">Nama Pengirim<span className="text-red-500"> *</span></label>
-                                    <input
-                                        type="text"
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                                        value={namaPengirim}
-                                        onChange={(e) => setNamaPengirim(e.target.value)}
-                                        placeholder="Masukkan nama pengirim"
-                                    />
-                                </div>
-                                {/* <div className="flex flex-col gap-1.5">
-                                    <label className="text-sm font-medium text-gray-900">No. Rekening Pengirim<span className="text-error-500">*</span></label>
-                                    <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                                        value={rekeningPengirim}
-                                        onChange={(e) => setRekeningPengirim(e.target.value.replace(/\D/g, ''))}
-                                        placeholder="Masukkan no. rekening pengirim"
-                                    />
-                                </div> */}
-                            </div>
                         </div>
                     )}
                 </div>
-
             </FormSectionCard>
 
-            {/* Action Buttons (inline di paling bawah konten) */}
+            {/* Action Buttons */}
             <div className="flex items-center justify-between">
                 <button
                     onClick={() => setCurentState('main')}
@@ -587,16 +569,86 @@ const FormAdd = ({ setCurentState }) => {
                     className={`px-6 py-2 rounded-lg font-medium text-white transition-colors ${isFormValid && !submitting ? 'bg-primary-500 hover:bg-primary-600' : 'bg-gray-300 cursor-not-allowed'}`}
                     disabled={!isFormValid || submitting}
                 >
-                    Ajukan Transaksi Penjualan
+                    Ajukan Transaksi Buyback
                 </button>
             </div>
 
-            {/* Panggil ModalScanBarcode */}
-            <ModalScanBarcode
-                isOpen={isScanModalOpen}
-                onClose={() => setIsScanModalOpen(false)}
-                onScanSuccess={handleScanSuccess}
-            />
+            {/* MODAL TAMBAH ITEM */}
+            <ModalCustom
+                isOpen={isItemModalOpen}
+                onClose={() => setIsItemModalOpen(false)}
+                title="Tambah Item"
+                confirmTextButton="Tambah"
+                cancelTextButton="Batal"
+                handleOnSubmit={handleSaveItem}
+            >
+                <div className="flex flex-col gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Dropdown
+                            label="Produk (master)"
+                            name="product_id"
+                            value={item.product_id}
+                            options={productOptions}
+                            placeholder="Pilih produk"
+                            isRequired
+                            error={itemErrors.product_id}
+                            onChange={handleItemChange}
+                        />
+                        <PhotoInput
+                            label="Foto Item"
+                            name="foto"
+                            value={item.foto}
+                            helperText="Foto berformat JPG, JPEG, atau PNG."
+                            accept="image/*"
+                            onChange={handleItemChange}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label="Berat (gr)"
+                            name="berat"
+                            type="text"
+                            inputMode="decimal"
+                            value={item.berat}
+                            placeholder="0"
+                            isRequired
+                            error={itemErrors.berat}
+                            onChange={handleItemChange}
+                        />
+                        <Input
+                            label="Karat"
+                            name="karat"
+                            type="text"
+                            inputMode="numeric"
+                            value={item.karat}
+                            placeholder="0"
+                            isRequired
+                            error={itemErrors.karat}
+                            onChange={handleItemChange}
+                        />
+                    </div>
+
+                    <Input
+                        label="No. Seri (opsional)"
+                        name="no_seri"
+                        type="text"
+                        value={item.no_seri}
+                        placeholder="Contoh: ABCD1234"
+                        onChange={handleItemChange}
+                    />
+
+                    <CurrencyInput
+                        label="Harga Beli"
+                        name="price"
+                        value={item.price}
+                        placeholder="0"
+                        isRequired
+                        error={itemErrors.price}
+                        onChange={handleItemChange}
+                    />
+                </div>
+            </ModalCustom>
         </div>
     );
 };

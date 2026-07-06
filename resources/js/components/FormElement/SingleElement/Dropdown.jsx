@@ -66,7 +66,7 @@ const Dropdown = ({
     }),
   };
 
-  const selectedValue = options.find((opt) => opt.value === value) || null;
+  const selectedValue = options.find((opt) => opt.value === value || String(opt.value) === String(value)) || null;
 
   const handleChange = (selectedOption) => {
     onChange({

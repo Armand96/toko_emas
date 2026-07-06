@@ -36,7 +36,7 @@ const STATUS_TONE = {
 const STATUS_LABEL = {
     AVAILABLE: "Available",
     RESERVED: "Reserved",
-    REPAIR: "In Repair",
+    REPAIR: "Repair",
     TRANSIT: "Transit",
     LOST: "Lost",
     SOLD: "Sold",
@@ -45,7 +45,7 @@ const STATUS_LABEL = {
 const STATUS_OPTIONS = [
     { value: "AVAILABLE", label: "Available" },
     { value: "RESERVED", label: "Reserved" },
-    { value: "REPAIR", label: "In Repair" },
+    { value: "REPAIR", label: "Repair" },
     { value: "TRANSIT", label: "Transit" },
     { value: "LOST", label: "Lost" },
     { value: "SOLD", label: "Sold" },
@@ -355,17 +355,17 @@ const ReportInventory = () => {
             </div>
 
             {/* KPI cards */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <StatCard label="Total Item Aktif" value={summary.totalItem.toLocaleString("id-ID")} icon={CubeIcon} tone="primary" />
                 <StatCard label="Total Berat Aktif" value={`${summary.totalBerat.toLocaleString("id-ID")} gr`} icon={ScalesIcon} tone="warning" />
                 <StatCard label="Total Nilai Modal" value={HelperFunctions.formatCurrency(summary.nilaiModal)} icon={CoinsIcon} tone="danger" />
-                <StatCard
+                {/* <StatCard
                     label="Total Nilai Jual"
                     value={HelperFunctions.formatCurrency(summary.nilaiJual)}
                     subLabel={`Margin ${summary.margin >= 0 ? "" : "-"}${HelperFunctions.formatCurrency(Math.abs(summary.margin))} • ${summary.margin >= 0 ? "" : "-"}${Math.abs(summary.marginPct)}%`}
                     icon={TrendUpIcon}
                     tone={summary.margin >= 0 ? "success" : "danger"}
-                />
+                /> */}
             </div>
 
             {/* Status sekunder */}
