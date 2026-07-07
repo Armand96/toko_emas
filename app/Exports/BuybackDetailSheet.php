@@ -33,7 +33,7 @@ class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, Wit
     {
         $query = BuybackDetail::query()
             ->with([
-                'header:id,buyback_id,branch_id,customer_id,payment_type,grand_total,created_at',
+                'header:id,buyback_code,branch_id,customer_id,payment_type,grand_total,created_at',
                 'header.branch:id,branch_name',
                 'header.customer:id,customer_name',
                 'product:id,product_name,category_id,subcategory_id',
@@ -66,7 +66,7 @@ class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, Wit
         $header      = $detail->header;
 
         return [
-            optional($header)->buyback_id,
+            optional($header)->buyback_code,
             optional($header->customer ?? null)->customer_name,
             optional($product)->product_name,
             optional(optional($product)->category)->category_name,

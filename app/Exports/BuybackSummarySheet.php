@@ -72,7 +72,7 @@ class BuybackSummarySheet implements FromCollection, WithEvents, WithMapping, Wi
 
         return [
             $buyback->created_at?->format('d/m/Y'),
-            $buyback->buyback_id,
+            $buyback->buyback_code,
             optional($buyback->customer)->customer_name,
             $totalItem,
             $totalBerat.' gr',

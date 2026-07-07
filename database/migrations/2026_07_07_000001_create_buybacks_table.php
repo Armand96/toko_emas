@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('buybacks', function (Blueprint $table) {
             $table->id();
-            $table->string('buyback_id', 50)->unique(); // e.g. BB-2605015
+            $table->string('buyback_code', 50)->unique(); // e.g. BB-2605015
             $table->bigInteger('customer_id', false, true);
             $table->bigInteger('branch_id', false, true);
             $table->bigInteger('created_by', false, true);

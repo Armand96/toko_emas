@@ -27,8 +27,8 @@ class BuybackController extends Controller
     {
         $query = Buyback::query();
 
-        if ($request->has('buyback_id') && $request->buyback_id != '') {
-            $query->where('buyback_id', 'like', '%' . $request->buyback_id . '%');
+        if ($request->has('buyback_code') && $request->buyback_code != '') {
+            $query->where('buyback_code', 'like', '%' . $request->buyback_code . '%');
         }
 
         if ($request->has('customer_id') && $request->customer_id != '') {
@@ -91,10 +91,10 @@ class BuybackController extends Controller
         try {
             // Generate sequential Buyback ID: BB-YYMM####
             $prefix = 'BB-' . date('ym');
-            $latestBuyback = Buyback::where('buyback_id', 'like', $prefix . '%')
+            $latestBuyback = Buyback::where('buyback_code', 'like', $prefix . '%')
                 ->lockForUpdate()
                 ->orderByDesc('id')
-                ->value('buyback_id');
+                ->value('buyback_code');
 
             $counter = $latestBuyback
                 ? (int) substr($latestBuyback, strrpos($latestBuyback, $prefix) + strlen($prefix)) + 1
@@ -104,7 +104,7 @@ class BuybackController extends Controller
 
             // Create header
             $header = Buyback::create([
-                'buyback_id'          => $buybackId,
+                'buyback_code'        => $buybackId,
                 'customer_id'         => $validated['customer_id'],
                 'branch_id'           => $validated['branch_id'],
                 'created_by'          => $request->user()->id,
