@@ -194,11 +194,15 @@ class BuybackController extends Controller
             ]);
 
             if ($newStatus === BuybackStatus::SELESAI) {
-                // Load details to create inventory entries for each bought-back item
-                $details  = BuybackDetail::where('buyback_id', $data->id)->get();
-                $dateNow  = date('Y-m-d H:i:s');
+                // Load details with product to cover all non-nullable inventory fields
+                $details = BuybackDetail::where('buyback_id', $data->id)
+                    ->with('product')
+                    ->get();
+                $dateNow = date('Y-m-d H:i:s');
 
                 foreach ($details as $detail) {
+                    $product = $detail->product;
+
                     // Determine next inventory_code for this product
                     $latestInventory = Inventory::where('product_id', $detail->product_id)
                         ->lockForUpdate()
@@ -210,8 +214,7 @@ class BuybackController extends Controller
                         : 0;
 
                     // Derive barcode prefix from product (same logic as pembelian)
-                    $product = $detail->product;
-                    $barcode = $product ? $product->barcode : 'BB';
+                    $barcode = $product?->barcode ?? 'BB';
 
                     $inventoryCode = $barcode . '-' . str_pad($seq + 1, 4, '0', STR_PAD_LEFT);
 
@@ -223,6 +226,9 @@ class BuybackController extends Controller
                         'inventory_code' => $inventoryCode,
                         'buyback_id'     => $data->id,
                         'product_id'     => $detail->product_id,
+                        'category_id'    => $product?->category_id,
+                        'subcategory_id' => $product?->subcategory_id,
+                        'barcode'        => $barcode,
                         'branch_id'      => $data->branch_id,
                         'berat'          => $detail->berat,
                         'karat'          => $detail->karat,
