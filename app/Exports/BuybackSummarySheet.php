@@ -14,9 +14,10 @@ use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class BuybackSummarySheet implements FromCollection, WithMapping, WithStyles, WithEvents, WithTitle
+class BuybackSummarySheet implements FromCollection, WithEvents, WithMapping, WithStyles, WithTitle
 {
     protected Request $request;
+
     protected int $headerRows = 5; // title, periode, cabang, blank, column headers
 
     public function __construct(Request $request)
@@ -39,7 +40,7 @@ class BuybackSummarySheet implements FromCollection, WithMapping, WithStyles, Wi
                 'details',
                 'senderBank.bank:id,bank_name',
             ])
-            ->whereIn('status', ['SELESAI', 'CETAK KWITANSI']);
+            ->whereIn('status', ['SELESAI']);
 
         if ($this->request->branch_id) {
             $query->where('branch_id', $this->request->branch_id);
@@ -59,13 +60,13 @@ class BuybackSummarySheet implements FromCollection, WithMapping, WithStyles, Wi
 
     public function map($buyback): array
     {
-        $totalItem  = $buyback->details->count();
+        $totalItem = $buyback->details->count();
         $totalBerat = $buyback->details->sum('berat');
 
         $bankInfo = null;
         if ($buyback->senderBank) {
             $bankName = optional($buyback->senderBank->bank)->bank_name ?? '';
-            $noRek    = $buyback->senderBank->nomor_rekening ?? '';
+            $noRek = $buyback->senderBank->nomor_rekening ?? '';
             $bankInfo = $bankName ? "{$bankName} - {$noRek}" : $noRek;
         }
 
@@ -74,7 +75,7 @@ class BuybackSummarySheet implements FromCollection, WithMapping, WithStyles, Wi
             $buyback->buyback_id,
             optional($buyback->customer)->customer_name,
             $totalItem,
-            $totalBerat . ' gr',
+            $totalBerat.' gr',
             $buyback->grand_total,
             $buyback->payment_type,
             $bankInfo,
@@ -93,7 +94,7 @@ class BuybackSummarySheet implements FromCollection, WithMapping, WithStyles, Wi
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                $sheet      = $event->sheet->getDelegate();
+                $sheet = $event->sheet->getDelegate();
                 $collection = $this->collection();
 
                 if ($collection->count() > 0) {
@@ -106,14 +107,14 @@ class BuybackSummarySheet implements FromCollection, WithMapping, WithStyles, Wi
 
                 // Row 2: Periode
                 $startDate = $this->request->start_date ?? '';
-                $endDate   = $this->request->end_date ?? '';
+                $endDate = $this->request->end_date ?? '';
 
                 $periodeText = 'Periode : ';
                 if ($startDate !== '' && $endDate !== '') {
                     $periodeText = 'Periode : '
-                        . Carbon::parse($startDate)->format('d/m/Y')
-                        . ' - '
-                        . Carbon::parse($endDate)->format('d/m/Y');
+                        .Carbon::parse($startDate)->format('d/m/Y')
+                        .' - '
+                        .Carbon::parse($endDate)->format('d/m/Y');
                 }
                 $sheet->setCellValue('A2', $periodeText);
 
@@ -122,7 +123,7 @@ class BuybackSummarySheet implements FromCollection, WithMapping, WithStyles, Wi
                 if ($collection->count() > 0 && $this->request->branch_id) {
                     $branchName = optional($collection->first()->branch)->branch_name ?? '';
                 }
-                $sheet->setCellValue('A3', 'Cabang : ' . $branchName);
+                $sheet->setCellValue('A3', 'Cabang : '.$branchName);
 
                 // Row 4: blank
 
@@ -150,7 +151,7 @@ class BuybackSummarySheet implements FromCollection, WithMapping, WithStyles, Wi
                 // Style numeric columns
                 if ($collection->count() > 0) {
                     $dataStart = $this->headerRows + 1;
-                    $dataEnd   = $this->headerRows + $collection->count();
+                    $dataEnd = $this->headerRows + $collection->count();
 
                     $sheet->getStyle("F{$dataStart}:F{$dataEnd}")
                         ->getAlignment()

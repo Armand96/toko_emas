@@ -18,7 +18,7 @@ class BuybackReportController extends Controller
     public function summary(Request $request)
     {
         $query = Buyback::query()
-            ->whereIn('status', ['SELESAI', 'CETAK KWITANSI']);
+            ->whereIn('status', ['SELESAI']);
 
         if ($request->branch_id) {
             $query->where('branch_id', $request->branch_id);
@@ -33,7 +33,7 @@ class BuybackReportController extends Controller
 
         $queryDetail = BuybackDetail::query()
             ->whereHas('header', function ($q) use ($request) {
-                $q->whereIn('status', ['SELESAI', 'CETAK KWITANSI']);
+                $q->whereIn('status', ['SELESAI']);
                 if ($request->branch_id) {
                     $q->where('branch_id', $request->branch_id);
                 }
@@ -46,10 +46,10 @@ class BuybackReportController extends Controller
             });
 
         return ApiResponse::success([
-            'jumlah_transaksi'  => (clone $query)->count(),
-            'total_item'        => (clone $queryDetail)->count(),
-            'total_berat'       => (clone $queryDetail)->sum('berat'),
-            'total_nilai'       => (clone $query)->sum('grand_total'),
+            'jumlah_transaksi' => (clone $query)->count(),
+            'total_item' => (clone $queryDetail)->count(),
+            'total_berat' => (clone $queryDetail)->sum('berat'),
+            'total_nilai' => (clone $query)->sum('grand_total'),
         ], 'OK', 200);
     }
 
@@ -60,7 +60,7 @@ class BuybackReportController extends Controller
     {
         $queryDetail = BuybackDetail::query()
             ->whereHas('header', function ($q) use ($request) {
-                $q->whereIn('status', ['SELESAI', 'CETAK KWITANSI']);
+                $q->whereIn('status', ['SELESAI']);
                 if ($request->branch_id) {
                     $q->where('branch_id', $request->branch_id);
                 }
@@ -101,7 +101,7 @@ class BuybackReportController extends Controller
             ->get();
 
         return ApiResponse::success([
-            'category'    => $category,
+            'category' => $category,
             'subcategory' => $subcategory,
         ], 'OK', 200);
     }
@@ -113,7 +113,7 @@ class BuybackReportController extends Controller
     {
         $data = BuybackDetail::query()
             ->whereHas('header', function ($q) use ($request) {
-                $q->whereIn('status', ['SELESAI', 'CETAK KWITANSI']);
+                $q->whereIn('status', ['SELESAI']);
                 if ($request->branch_id) {
                     $q->where('branch_id', $request->branch_id);
                 }
@@ -144,7 +144,7 @@ class BuybackReportController extends Controller
     public function buybackDetail(Request $request)
     {
         $query = Buyback::query()
-            ->whereIn('status', ['SELESAI', 'CETAK KWITANSI']);
+            ->whereIn('status', ['SELESAI']);
 
         if ($request->branch_id) {
             $query->where('branch_id', $request->branch_id);
@@ -180,7 +180,7 @@ class BuybackReportController extends Controller
      */
     public function exportBuyback(Request $request)
     {
-        $filename = 'buyback-report-' . date('Ymd-His') . '.xlsx';
+        $filename = 'buyback-report-'.date('Ymd-His').'.xlsx';
 
         return Excel::download(new BuybackExport($request), $filename);
     }
