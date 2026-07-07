@@ -15,6 +15,7 @@ use App\Http\Controllers\MCategoryFinanceController;
 use App\Http\Controllers\MCustomerController;
 use App\Http\Controllers\MProductController;
 use App\Http\Controllers\MSupplierController;
+use App\Http\Controllers\BuybackController;
 use App\Http\Controllers\PembelianController;
 use App\Http\Controllers\PembelianReportController;
 use App\Http\Controllers\RemoveItemController;
@@ -57,6 +58,11 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
     Route::get('sales', [TSalesController::class, 'index']);
     Route::post('sales', [TSalesController::class, 'createTrx']);
     Route::put('update-sales', [TSalesController::class, 'changeApproval']);
+
+    Route::get('buyback/{buyback}', [BuybackController::class, 'single']);
+    Route::get('buyback', [BuybackController::class, 'index']);
+    Route::post('buyback', [BuybackController::class, 'createTrx']);
+    Route::put('update-buyback', [BuybackController::class, 'changeApproval']);
 
     Route::get('transfer-item/{transferItem}', [TransferItemController::class, 'single']);
     Route::get('transfer-item', [TransferItemController::class, 'index']);

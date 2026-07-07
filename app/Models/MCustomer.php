@@ -23,4 +23,9 @@ class MCustomer extends Model
     {
         return $this->hasMany(TSales::class, 'customer_id', 'id');
     }
+
+    public function buybacks()
+    {
+        return $this->hasMany(Buyback::class, 'customer_id', 'id');
+    }
 }

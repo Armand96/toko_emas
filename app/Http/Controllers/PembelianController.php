@@ -83,7 +83,8 @@ class PembelianController extends Controller
 
         try {
 
-            $currentBatch = PembelianBatch::max('batch_sequence');
+            // Lock to prevent race condition: two concurrent requests reading the same max
+            $currentBatch = PembelianBatch::lockForUpdate()->max('batch_sequence') ?? 0;
             $batch = PembelianBatch::create(['batch_sequence' => $currentBatch + 1]);
             $dateNow = date('Y-m-d H:i:s');
             $result = [];
@@ -120,14 +121,25 @@ class PembelianController extends Controller
 
             // $dateNow = date('Y-m-d H:i:s');
 
-            Pembelian::whereIn('id', $validated['pembelian_ids'])->where('status', PembelianStatus::APPROVAL)->update([
+            // Lock rows first to prevent concurrent approvals from double-processing the same records
+            $lockedPembelians = Pembelian::whereIn('id', $validated['pembelian_ids'])
+                ->where('status', PembelianStatus::APPROVAL)
+                ->lockForUpdate()
+                ->get();
+
+            if ($lockedPembelians->isEmpty()) {
+                DB::rollBack();
+                return ApiResponse::error('Tidak ada pembelian dengan status APPROVAL yang ditemukan', null, 422);
+            }
+
+            Pembelian::whereIn('id', $lockedPembelians->pluck('id'))->update([
                 'status' => $validated['status'],
                 'note' => isset($validated['note']) ? $validated['note'] : null,
             ]);
 
             $status = PembelianStatus::from($validated['status']);
             if ($status == PembelianStatus::DISETUJUI) {
-                $dataPembelian = Pembelian::whereIn('id', $validated['pembelian_ids'])->get();
+                $dataPembelian = $lockedPembelians->fresh();
                 // $batchInsert = [];
                 $dateNow = date('Y-m-d');
 

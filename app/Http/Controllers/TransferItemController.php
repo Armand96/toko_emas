@@ -117,7 +117,18 @@ class TransferItemController extends Controller
 
             // $dateNow = date('Y-m-d H:i:s');
             $status = TransferItemStatus::from($validated['status']);
-            $data = TransferItem::where('id', $validated['transfer_item_id'])->where('status', TransferItemStatus::APPROVAL)->first();
+
+            // Lock the row to prevent concurrent requests from double-processing the same transfer
+            $data = TransferItem::where('id', $validated['transfer_item_id'])
+                ->where('status', TransferItemStatus::APPROVAL)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$data) {
+                DB::rollBack();
+                return ApiResponse::error('Transfer item tidak ditemukan atau sudah diproses', null, 422);
+            }
+
             $data->update([
                 'status' => $status,
                 'note_approval' => isset($validated['note']) ? $validated['note'] : null,
