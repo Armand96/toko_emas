@@ -171,6 +171,13 @@ const Main = ({ setCurentState }) => {
     const handlePrint = async (row) => {
         setLoading(true);
         try {
+            const res = await BuybackApis.GetBuybackDetail(row.id);
+            const detail = res?.data || row;
+            detail.details = await HelperFunctions.enrichSalesDetails(detail.details);
+
+            sessionStorage.setItem('print_buyback_kwitansi_data', JSON.stringify(detail));
+            window.open('/buyback/print-kwitansi', '_blank');
+
             if (row.status !== 'SELESAI') {
                 await BuybackApis.PutBuybackApproval({
                     buyback_id: row.id,

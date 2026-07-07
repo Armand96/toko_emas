@@ -127,13 +127,13 @@ const ApprovalBuyback = () => {
             handleCloseModal();
             fetchData(paramFetch.current_page, paramFetch.per_page, filterBounce);
 
-            const isApprove = status === 'SELESAI';
+            const isApprove = status === 'CETAK KWITANSI';
             showAlert({
                 icon: isApprove ? 'success' : 'error',
                 isAutoClose: true,
                 title: isApprove ? 'Berhasil Disetujui' : 'Berhasil Ditolak',
                 message: isApprove
-                    ? 'Transaksi buyback telah dicatat, stok inventory bertambah, dan kas keluar tercatat.'
+                    ? 'Transaksi buyback telah disetujui. Kasir dapat mencetak kwitansi untuk menyelesaikan transaksi.'
                     : 'Transaksi buyback telah ditolak dan tidak akan diproses lebih lanjut.',
             });
         } catch (error) {
@@ -149,12 +149,12 @@ const ApprovalBuyback = () => {
             icon: 'success',
             isAutoClose: false,
             title: 'Setujui Buyback',
-            message: 'Transaksi akan dicatat, item dari customer masuk sebagai stok inventory baru, dan kas keluar tercatat sesuai nominal buyback.',
+            message: 'Transaksi buyback akan disetujui. Kasir dapat melanjutkan dengan mencetak kwitansi untuk menyelesaikan transaksi.',
             confirmText: 'Setujui',
             cancelText: 'Batal',
         }).then((res) => {
             if (res.confirmed) {
-                updateStatus(id, 'SELESAI');
+                updateStatus(id, 'CETAK KWITANSI');
             }
         });
     };
