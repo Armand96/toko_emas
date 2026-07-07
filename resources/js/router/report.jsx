@@ -2,6 +2,7 @@ import ReportCustomer from "../pages/Report/Customer/Page";
 import ReportFinance from "../pages/Report/Finance/Page";
 import ReportPenjualan from "../pages/Report/Penjualan/Page";
 import ReportPembelian from "../pages/Report/Pembelian/Page";
+import ReportBuyback from "../pages/Report/Buyback/Page";
 import ReportInventory from "../pages/Report/Inventory/Page";
 
 export const Report = [
@@ -24,5 +25,9 @@ export const Report = [
     {
         path: "/report/pembelian",
         element: <ReportPembelian />,
+    },
+    {
+        path: "/report/buyback",
+        element: <ReportBuyback />,
     },
 ];

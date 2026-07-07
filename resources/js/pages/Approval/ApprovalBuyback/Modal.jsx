@@ -11,7 +11,6 @@ import BankApis from '../../../Services/Bank.apis';
 const APPROVAL_VIEW = {
     'APPROVAL': { Icon: TimerIcon, iconColor: 'text-warning-500', statusText: 'Menunggu Approval oleh' },
     'CETAK KWITANSI': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh' },
-    'DISETUJUI': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh' },
     'SELESAI': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh' },
     'DITOLAK': { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Ditolak oleh' },
     'DIBATALKAN': { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Dibatalkan oleh' },
@@ -38,11 +37,11 @@ export default function ModalDetailBuyback({
 
     if (!data) return null;
 
-    const { customer, user, details, approval_status, payment_type } = data;
+    const { customer, user, details, status, payment_type } = data;
     const isTransfer = payment_type === 'TRANSFER';
 
-    const isPending = approval_status === 'APPROVAL';
-    const approvalView = APPROVAL_VIEW[approval_status] || APPROVAL_VIEW['APPROVAL'];
+    const isPending = status === 'APPROVAL';
+    const approvalView = APPROVAL_VIEW[status] || APPROVAL_VIEW['APPROVAL'];
     const customerBadge = (customer?.sales_count ?? 0) > 1 ? 'Member Terdaftar' : 'Customer Baru';
 
     return (
@@ -163,7 +162,7 @@ export default function ModalDetailBuyback({
 
                 <div className="flex gap-4 text-xs text-neutral-500 border border-gray-200 rounded-lg px-6 py-3">
                     <div className="flex-1 border-r border-neutral-200 pr-4">
-                        Buyback ID <span className="font-bold text-neutral-900 ml-1">{data?.order_id || '-'}</span>
+                        Buyback ID <span className="font-bold text-neutral-900 ml-1">{data?.buyback_id || '-'}</span>
                     </div>
                     <div className="flex-1 border-r border-neutral-200 px-4">
                         Diajukan oleh <span className="font-bold text-neutral-900 ml-1">{user?.name || '-'}</span>
@@ -181,7 +180,7 @@ export default function ModalDetailBuyback({
                     pic="Owner"
                     date={data?.updated_at ? dayjs(data.updated_at).format('DD MMMM YYYY, HH:mm') : '-'}
                     reasonLabel="Alasan Penolakan"
-                    reason={approval_status === 'DITOLAK' ? data?.note : null}
+                    reason={status === 'DITOLAK' ? data?.note : null}
                 />
             </div>
         </ModalCustom>

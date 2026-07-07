@@ -136,12 +136,17 @@ const FormAdd = ({ setCurentState }) => {
     }, [cartItems, customerType, customerData, selectedMember, paymentMethod, uangDibayar, subTotal, selectedBankId, namaPengirim, rekeningPengirim]);
 
     const mapInventoryToCartItem = (inv) => ({
+        id: inv.id,
         inventory_code: inv.inventory_code,
         product_id: inv.product_id,
         branch_id: inv.branch_id,
+        berat: inv.berat,
+        karat: inv.karat,
+        serial_number: inv.serial_number ?? null,
         name: getProductName(inv.product_id),
         specs: `${inv.berat ? `${inv.berat}g` : ''}${inv.karat ? ` • ${inv.karat}K` : ''}`,
         price: Number(inv.jual || 0),
+        originalPrice: Number(inv.jual || 0),
         image: HelperFunctions.getStorageUrl(inv.thumb_path),
     });
 
@@ -171,6 +176,14 @@ const FormAdd = ({ setCurentState }) => {
 
     const handleRemoveItem = (idToRemove) => {
         setCartItems(cartItems.filter(item => item.inventory_code !== idToRemove));
+    };
+
+    const handlePriceChange = (inventoryCode, rawValue) => {
+        setCartItems((prev) => prev.map((item) =>
+            item.inventory_code === inventoryCode
+                ? { ...item, price: rawValue ? Number(rawValue) : 0 }
+                : item
+        ));
     };
 
     const handleScanSuccess = async (decodedText) => {
@@ -254,6 +267,17 @@ const FormAdd = ({ setCurentState }) => {
                     address: customerData.alamat,
                 });
                 customerId = customerRes?.data?.data?.id;
+            }
+
+            const changedPriceItems = cartItems.filter((item) => Number(item.price) !== Number(item.originalPrice));
+            for (const item of changedPriceItems) {
+                await InventoryApis.PutInventory(item.id, {
+                    product_id: item.product_id,
+                    berat: item.berat,
+                    karat: item.karat,
+                    jual: item.price,
+                    serial_number: item.serial_number,
+                });
             }
 
             const payload = {
@@ -444,6 +468,8 @@ const FormAdd = ({ setCurentState }) => {
                             specs={item.specs}
                             image={item.image}
                             price={item.price}
+                            editablePrice
+                            onPriceChange={(rawValue) => handlePriceChange(item.inventory_code, rawValue)}
                             onRemove={() => handleRemoveItem(item.inventory_code)}
                         />
                     ))}

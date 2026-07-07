@@ -18,7 +18,6 @@ import { useQueryParams } from "../../../utils/useQueryParams";
 
 const STATUS_TONE = {
     'APPROVAL': 'warning',
-    'DISETUJUI': 'success',
     'CETAK KWITANSI': 'info',
     'SELESAI': 'success',
     'DITOLAK': 'danger',
@@ -27,7 +26,8 @@ const STATUS_TONE = {
 
 const STATUS_LABEL = {
     'APPROVAL': 'Approval',
-    'DISETUJUI': 'Disetujui',
+    'CETAK KWITANSI': 'Cetak Kwitansi',
+    'SELESAI': 'Selesai',
     'DITOLAK': 'Ditolak',
     'DIBATALKAN': 'Dibatalkan',
 };
@@ -64,11 +64,8 @@ const ApprovalBuyback = () => {
                 page,
                 per_page: pageSize,
             });
-            if (params.status) {
-                query.append('approval_status', params.status);
-                query.append('status', params.status);
-            }
-            if (params.search) query.append('order_id', params.search);
+            if (params.status) query.append('status', params.status);
+            if (params.search) query.append('buyback_id', params.search);
             if (params.cabang) query.append('branch_id', params.cabang);
 
             const res = await BuybackApis.GetBuyback(`?${query.toString()}`);
@@ -130,12 +127,13 @@ const ApprovalBuyback = () => {
             handleCloseModal();
             fetchData(paramFetch.current_page, paramFetch.per_page, filterBounce);
 
+            const isApprove = status === 'CETAK KWITANSI';
             showAlert({
-                icon: status === 'DISETUJUI' ? 'success' : 'error',
+                icon: isApprove ? 'success' : 'error',
                 isAutoClose: true,
-                title: status === 'DISETUJUI' ? 'Berhasil Disetujui' : 'Berhasil Ditolak',
-                message: status === 'DISETUJUI'
-                    ? 'Transaksi buyback telah dicatat dan stok inventory telah diperbarui.'
+                title: isApprove ? 'Berhasil Disetujui' : 'Berhasil Ditolak',
+                message: isApprove
+                    ? 'Transaksi buyback telah disetujui. Kasir dapat mencetak kwitansi untuk menyelesaikan transaksi.'
                     : 'Transaksi buyback telah ditolak dan tidak akan diproses lebih lanjut.',
             });
         } catch (error) {
@@ -151,12 +149,12 @@ const ApprovalBuyback = () => {
             icon: 'success',
             isAutoClose: false,
             title: 'Setujui Buyback',
-            message: 'Transaksi buyback akan dicatat ke dalam sistem. Kasir dapat melanjutkan proses transaksi setelah persetujuan diberikan.',
+            message: 'Transaksi buyback akan disetujui. Kasir dapat melanjutkan dengan mencetak kwitansi untuk menyelesaikan transaksi.',
             confirmText: 'Setujui',
             cancelText: 'Batal',
         }).then((res) => {
             if (res.confirmed) {
-                updateStatus(id, 'DISETUJUI');
+                updateStatus(id, 'CETAK KWITANSI');
             }
         });
     };
@@ -194,7 +192,7 @@ const ApprovalBuyback = () => {
             accessor: 'created_at',
             render: (row) => row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY') : '-',
         },
-        { header: 'Buyback ID', accessor: 'order_id' },
+        { header: 'Buyback ID', accessor: 'buyback_id' },
         { header: 'Customer', accessor: 'customer', render: (row) => row.customer?.customer_name ?? '-' },
         {
             header: 'Item Produk',
@@ -210,10 +208,10 @@ const ApprovalBuyback = () => {
         { header: 'Cabang', accessor: 'branch', render: (row) => row.branch?.branch_name ?? '-' },
         {
             header: 'Status',
-            accessor: 'approval_status',
+            accessor: 'status',
             render: (row) => (
-                <Badge tone={STATUS_TONE[row.approval_status] || 'gray'}>
-                    {STATUS_LABEL[row.approval_status] || row.approval_status}
+                <Badge tone={STATUS_TONE[row.status] || 'gray'}>
+                    {STATUS_LABEL[row.status] || row.status}
                 </Badge>
             )
         },
@@ -242,7 +240,8 @@ const ApprovalBuyback = () => {
                     {
                         name: "status", type: "dropdown", placeholder: "Pilih status", options: [
                             { value: 'APPROVAL', label: 'Approval' },
-                            { value: 'DISETUJUI', label: 'Disetujui' },
+                            { value: 'CETAK KWITANSI', label: 'Cetak Kwitansi' },
+                            { value: 'SELESAI', label: 'Selesai' },
                             { value: 'DITOLAK', label: 'Ditolak' },
                             { value: 'DIBATALKAN', label: 'Dibatalkan' },
                         ]
