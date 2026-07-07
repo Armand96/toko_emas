@@ -46,4 +46,9 @@ class Buyback extends Model
     {
         return $this->hasMany(BuybackDetail::class, 'buyback_id', 'id');
     }
+
+    public function inventories()
+    {
+        return $this->hasMany(Inventory::class, 'buyback_id', 'id');
+    }
 }

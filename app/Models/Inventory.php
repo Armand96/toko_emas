@@ -12,6 +12,7 @@ class Inventory extends Model
         'category_id',
         'subcategory_id',
         'pembelian_id',
+        'buyback_id',
         'branch_id',
         'barcode',
         'berat',
@@ -58,6 +59,11 @@ class Inventory extends Model
     public function pembelian()
     {
         return $this->hasOne(Pembelian::class, 'inventory_code', 'inventory_code');
+    }
+
+    public function buyback()
+    {
+        return $this->belongsTo(Buyback::class, 'buyback_id', 'id');
     }
 
     public function transfer()

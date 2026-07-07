@@ -221,6 +221,7 @@ class BuybackController extends Controller
 
                     Inventory::create([
                         'inventory_code' => $inventoryCode,
+                        'buyback_id'     => $data->id,
                         'product_id'     => $detail->product_id,
                         'branch_id'      => $data->branch_id,
                         'berat'          => $detail->berat,
