@@ -16,6 +16,7 @@ use App\Http\Controllers\MCustomerController;
 use App\Http\Controllers\MProductController;
 use App\Http\Controllers\MSupplierController;
 use App\Http\Controllers\BuybackController;
+use App\Http\Controllers\BuybackReportController;
 use App\Http\Controllers\PembelianController;
 use App\Http\Controllers\PembelianReportController;
 use App\Http\Controllers\RemoveItemController;
@@ -115,6 +116,12 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
         Route::get('sales-by-category-karat', [SalesReportController::class, 'salesCategoryAndKarat']);
         Route::get('sales-detail', [SalesReportController::class, 'salesDetail']);
 
+        // BUYBACK
+        Route::get('buyback-summary', [BuybackReportController::class, 'summary']);
+        Route::get('buyback-by-category', [BuybackReportController::class, 'buybackKategoriReport']);
+        Route::get('buyback-by-karat', [BuybackReportController::class, 'buybackKaratReport']);
+        Route::get('buyback-detail', [BuybackReportController::class, 'buybackDetail']);
+
         // INVENTORY
         Route::get('inventory-summary', [InventoryReportController::class, 'inventorySummary']);
         Route::get('inventory-distribution', [InventoryReportController::class, 'inventoryDistribution']);
@@ -127,6 +134,7 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
         Route::get('export-finance', [FinanceReportController::class, 'exportFinance']);
         Route::get('export-inventory', [InventoryReportController::class, 'exportInventory']);
         Route::get('export-customer', [CustomerReportController::class, 'exportCustomer']);
+        Route::get('export-buyback', [BuybackReportController::class, 'exportBuyback']);
     });
 
     Route::get('profile', [UserController::class, 'profile']);

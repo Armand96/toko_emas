@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Buyback extends Model
 {
     protected $fillable = [
-        'buyback_id',
+        'buyback_code',
         'customer_id',
         'branch_id',
         'created_by',
