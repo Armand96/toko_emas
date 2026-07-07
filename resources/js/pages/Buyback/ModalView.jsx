@@ -10,7 +10,6 @@ import BankApis from "../../Services/Bank.apis";
 
 const APPROVAL_VIEW = {
     'APPROVAL': { Icon: TimerIcon, iconColor: 'text-warning-500', statusText: 'Menunggu Approval oleh' },
-    'DISETUJUI': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh' },
     'CETAK KWITANSI': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh' },
     'SELESAI': { Icon: CheckCircleIcon, iconColor: 'text-success-500', statusText: 'Disetujui oleh' },
     'DITOLAK': { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Ditolak oleh' },
@@ -32,9 +31,9 @@ const ModalViewBuyback = ({ isOpen, onClose, data }) => {
 
     if (!data) return null;
 
-    const { customer, user, details, approval_status } = data;
+    const { customer, user, details, status } = data;
     const isTransfer = data.payment_type === 'TRANSFER';
-    const approvalView = APPROVAL_VIEW[approval_status] || APPROVAL_VIEW['APPROVAL'];
+    const approvalView = APPROVAL_VIEW[status] || APPROVAL_VIEW['APPROVAL'];
     const customerBadge = (customer?.sales_count ?? 0) > 1 ? 'Member Terdaftar' : 'Customer Baru';
 
     return (
@@ -133,7 +132,7 @@ const ModalViewBuyback = ({ isOpen, onClose, data }) => {
                 <div className="flex items-center gap-4 border border-neutral-200 rounded-lg px-5 py-3 text-xs">
                     <div className="flex-1">
                         <span className="text-neutral-500">Buyback ID </span>
-                        <span className="font-bold text-neutral-900">{data.order_id}</span>
+                        <span className="font-bold text-neutral-900">{data.buyback_id}</span>
                     </div>
                     <div className="w-px h-8 bg-neutral-200"></div>
                     <div className="flex-1">
@@ -149,10 +148,10 @@ const ModalViewBuyback = ({ isOpen, onClose, data }) => {
                     Icon={approvalView.Icon}
                     iconColor={approvalView.iconColor}
                     statusText={approvalView.statusText}
-                    pic={approval_status === 'DIBATALKAN' ? (user?.name || '-') : 'Owner'}
+                    pic={status === 'DIBATALKAN' ? (user?.name || '-') : 'Owner'}
                     date={data.updated_at ? dayjs(data.updated_at).format('DD MMMM YYYY, HH:mm') : '-'}
-                    reasonLabel={approval_status === 'DITOLAK' ? 'Alasan Penolakan' : approval_status === 'DIBATALKAN' ? 'Alasan Pembatalan' : null}
-                    reason={(approval_status === 'DITOLAK' || approval_status === 'DIBATALKAN') ? data.note : null}
+                    reasonLabel={status === 'DITOLAK' ? 'Alasan Penolakan' : status === 'DIBATALKAN' ? 'Alasan Pembatalan' : null}
+                    reason={(status === 'DITOLAK' || status === 'DIBATALKAN') ? data.note : null}
                 />
             </div>
         </ModalCustom>

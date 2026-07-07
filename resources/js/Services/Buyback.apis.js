@@ -1,7 +1,6 @@
 import Apis from "../utils/Apis";
 
-// FE-only: endpoint mengikuti konvensi penamaan modul lain (sales/pembelian).
-// BE endpoint `api/buyback` disiapkan menyusul oleh tim backend.
+// Endpoint sesuai routes/api.php (BuybackController).
 const BuybackApis = {
     GetBuyback: (params) => {
         return Apis.Get(`api/buyback${params}`).then(({ data }) => data);

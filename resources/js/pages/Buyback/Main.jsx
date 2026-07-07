@@ -17,14 +17,24 @@ import AuthStore from "../../Store/AuthStore";
 import OptionsStore from "../../Store/OptionsStore";
 import { showAlert } from "../../utils/showAlert";
 
-const STATUS_OPTIONS_SIMPLE = [
-    { value: 'APPROVAL', label: 'Approval' },
-    { value: 'DISETUJUI', label: 'Disetujui' },
-    { value: 'DITOLAK', label: 'Ditolak' },
-    { value: 'DIBATALKAN', label: 'Dibatalkan' },
-];
+// Status buyback (BE enum): APPROVAL | CETAK KWITANSI | SELESAI | DITOLAK | DIBATALKAN
+const STATUS_LABEL = {
+    'APPROVAL': 'Approval',
+    'CETAK KWITANSI': 'Cetak Kwitansi',
+    'SELESAI': 'Selesai',
+    'DITOLAK': 'Ditolak',
+    'DIBATALKAN': 'Dibatalkan',
+};
 
-const STATUS_OPTIONS_KASIR = [
+const STATUS_TONE = {
+    'APPROVAL': 'warning',
+    'CETAK KWITANSI': 'info',
+    'SELESAI': 'success',
+    'DITOLAK': 'danger',
+    'DIBATALKAN': 'danger',
+};
+
+const STATUS_OPTIONS = [
     { value: 'APPROVAL', label: 'Approval' },
     { value: 'CETAK KWITANSI', label: 'Cetak Kwitansi' },
     { value: 'SELESAI', label: 'Selesai' },
@@ -39,40 +49,6 @@ const Main = ({ setCurentState }) => {
     const user = AuthStore((s) => s.user);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const [branchOptions, setBranchOptions] = useState([]);
-
-    const STATUS_LABEL = isKasir() ? {
-        'SELESAI': 'Selesai',
-        'DISETUJUI': 'Cetak Kwitansi',
-        'CETAK KWITANSI': 'Cetak Kwitansi',
-        'APPROVAL': 'Approval',
-        'DITOLAK': 'Ditolak',
-        'DIBATALKAN': 'Dibatalkan',
-    } : {
-        'SELESAI': 'Disetujui',
-        'DISETUJUI': 'Disetujui',
-        'CETAK KWITANSI': 'Disetujui',
-        'APPROVAL': 'Approval',
-        'DITOLAK': 'Ditolak',
-        'DIBATALKAN': 'Dibatalkan',
-    };
-
-    const STATUS_TONE = isKasir() ? {
-        'SELESAI': 'success',
-        'DISETUJUI': 'info',
-        'CETAK KWITANSI': 'info',
-        'APPROVAL': 'warning',
-        'DITOLAK': 'danger',
-        'DIBATALKAN': 'danger',
-    } : {
-        'SELESAI': 'success',
-        'DISETUJUI': 'success',
-        'CETAK KWITANSI': 'success',
-        'APPROVAL': 'warning',
-        'DITOLAK': 'danger',
-        'DIBATALKAN': 'danger',
-    };
-
-    const STATUS_OPTIONS = isKasir() ? STATUS_OPTIONS_KASIR : STATUS_OPTIONS_SIMPLE;
 
     const [paramFetch, setParamFetch] = useState({
         data: [],
@@ -106,11 +82,8 @@ const Main = ({ setCurentState }) => {
                 page,
                 per_page: pageSize,
             });
-            if (filters.search) params.append('order_id', filters.search);
-            if (filters.status) {
-                params.append('approval_status', filters.status === "CETAK KWITANSI" ? "DISETUJUI" : filters.status);
-                params.append('status', filters.status);
-            }
+            if (filters.search) params.append('buyback_id', filters.search);
+            if (filters.status) params.append('status', filters.status);
             if (isKasir() && user?.branch_id) params.append('branch_id', user.branch_id);
             else if (filters.branch_id) params.append('branch_id', filters.branch_id);
 
@@ -167,7 +140,7 @@ const Main = ({ setCurentState }) => {
             icon: 'warning',
             isAutoClose: false,
             title: 'Batalkan Transaksi Buyback',
-            message: `Apakah Anda yakin ingin membatalkan transaksi ${row.order_id}? Transaksi yang dibatalkan tidak dapat diproses kembali.`,
+            message: `Apakah Anda yakin ingin membatalkan transaksi ${row.buyback_id}? Transaksi yang dibatalkan tidak dapat diproses kembali.`,
             confirmText: 'Ya, Batalkan',
             cancelText: 'Kembali',
         }).then((res) => {
@@ -198,7 +171,7 @@ const Main = ({ setCurentState }) => {
     const handlePrint = async (row) => {
         setLoading(true);
         try {
-            if (row.approval_status !== 'SELESAI') {
+            if (row.status !== 'SELESAI') {
                 await BuybackApis.PutBuybackApproval({
                     buyback_id: row.id,
                     status: 'SELESAI',
@@ -230,7 +203,7 @@ const Main = ({ setCurentState }) => {
             accessor: 'created_at',
             render: (row) => row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY') : '-',
         },
-        { header: 'Buyback ID', accessor: 'order_id' },
+        { header: 'Buyback ID', accessor: 'buyback_id' },
         { header: 'Customer', accessor: 'customer', render: (row) => row.customer?.customer_name ?? '-' },
         {
             header: 'Item Produk',
@@ -245,10 +218,10 @@ const Main = ({ setCurentState }) => {
         { header: 'User', accessor: 'user', render: (row) => row.user?.name ?? '-' },
         {
             header: 'Status',
-            accessor: 'approval_status',
+            accessor: 'status',
             render: (row) => (
-                <Badge tone={STATUS_TONE[row.approval_status] || 'gray'}>
-                    {STATUS_LABEL[row.approval_status] || row.approval_status}
+                <Badge tone={STATUS_TONE[row.status] || 'gray'}>
+                    {STATUS_LABEL[row.status] || row.status}
                 </Badge>
             ),
         },
@@ -257,11 +230,11 @@ const Main = ({ setCurentState }) => {
             accessor: 'aksi',
             render: (row) => (
                 <ActionButtonGroup>
-                    {['APPROVAL', 'DISETUJUI'].includes(row.approval_status) && isKasir() && can('delete') && (
+                    {['APPROVAL', 'CETAK KWITANSI'].includes(row.status) && isKasir() && can('delete') && (
                         <ActionButton variant="cancel" title="Batalkan" onClick={() => handleCancel(row)} />
                     )}
                     <ActionButton variant="view" title="Lihat Detail" onClick={() => handleViewTransaction(row)} />
-                    {((row.approval_status === 'SELESAI' || row.approval_status === 'DISETUJUI' || row.approval_status === 'CETAK KWITANSI') && isKasir()) && (
+                    {(['SELESAI', 'CETAK KWITANSI'].includes(row.status) && isKasir()) && (
                         <ActionButton variant="print" title="Cetak Kwitansi" onClick={() => handlePrint(row)} />
                     )}
                 </ActionButtonGroup>

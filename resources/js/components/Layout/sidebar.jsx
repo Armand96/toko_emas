@@ -82,6 +82,7 @@ const sidebarData = [
           { label: "Inventory", link: "/report/inventory" },
           { label: "Penjualan", link: "/report/penjualan" },
           { label: "Pembelian", link: "/report/pembelian" },
+          { label: "Buyback", link: "/report/buyback" },
           { label: "Finance", link: "/report/finance" },
           { label: "Customer", link: "/report/customer" }
         ]
