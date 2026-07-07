@@ -125,21 +125,25 @@ const DetailItemModal = ({ isOpen, onClose, item }) => {
                                 {item.berat} {"·"} {item.karat} {item.no_seri ? `· ${item.no_seri}` : ""}
                             </p>
 
-                            <div className="mt-2">
-                                <p className="text-xs text-gray-500">Harga Jual</p>
-                                <p className="text-lg font-semibold text-gray-900">
-                                    {HelperFunctions.formatCurrency(item.jual)}
-                                </p>
-                            </div>
+                            {item.jual > 0 && (
+                                <div className="mt-2">
+                                    <p className="text-xs text-gray-500">Harga Jual</p>
+                                    <p className="text-lg font-semibold text-gray-900">
+                                        {HelperFunctions.formatCurrency(item.jual)}
+                                    </p>
+                                </div>
+                            )}
 
                             <div className="flex flex-wrap items-center gap-2 mt-2">
                                 <div>
                                     <p className="text-xs text-gray-500">Harga Modal</p>
                                     <p className="text-sm text-gray-700">{HelperFunctions.formatCurrency(item.modal)}</p>
                                 </div>
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${margin >= 0 ? "bg-success-100 text-success-700" : "bg-danger-100 text-danger-700"}`}>
-                                    Margin keuntungan {margin >= 0 ? "↗" : "↘"} {HelperFunctions.formatCurrency(Math.abs(margin))} ({margin >= 0 ? "+" : "-"}{Math.abs(marginPct)}%)
-                                </span>
+                                {item.jual > 0 && (
+                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${margin >= 0 ? "bg-success-100 text-success-700" : "bg-danger-100 text-danger-700"}`}>
+                                        Margin keuntungan {margin >= 0 ? "↗" : "↘"} {HelperFunctions.formatCurrency(Math.abs(margin))} ({margin >= 0 ? "+" : "-"}{Math.abs(marginPct)}%)
+                                    </span>
+                                )}
                             </div>
                         </div>
 
@@ -157,7 +161,10 @@ const DetailItemModal = ({ isOpen, onClose, item }) => {
                                 <span className="text-gray-900">{item.cabang}</span>
                             </div>
                             {item.keterangan && (
-                                <p className="text-gray-900 mt-1">{item.keterangan}</p>
+                                <div className="flex">
+                                    <span className="w-28 flex-shrink-0 text-gray-500">Deskripsi</span>
+                                    <span className="text-gray-900">{item.keterangan}</span>
+                                </div>
                             )}
                         </div>
                     </div>

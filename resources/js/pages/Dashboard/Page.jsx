@@ -211,7 +211,7 @@ const Dashboard = () => {
         {
             header: "Customer",
             accessor: "customer",
-            render: (row) => row.customer?.name || row.customer_name || "-",
+            render: (row) => row.customer?.customer_name || row.customer_name || "-",
         },
         {
             header: "Status",
@@ -229,7 +229,7 @@ const Dashboard = () => {
         {
             header: "Cabang",
             accessor: "branch",
-            render: (row) => row.branch?.name || row.branch_name || "-",
+            render: (row) => row.branch?.branch_name || row.branch_name || "-",
         },
     ];
 
@@ -333,7 +333,7 @@ const Dashboard = () => {
             </ChartCard>
 
             {/* Penjualan Terkini + Status */}
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="grid grid-cols-1">
                 <ChartCard
                     title="Penjualan Terkini"
                     subtitle="5 Transaksi terakhir"

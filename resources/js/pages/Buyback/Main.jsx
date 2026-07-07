@@ -9,9 +9,9 @@ import Badge from "../../components/Badge";
 import FilterBar from "../../components/FilterBar";
 import Table from "../../components/Table/Table";
 import LoadingStore from "../../Store/LoadingStore";
-import ModalViewPenjualan from "./ModalView";
+import ModalViewBuyback from "./ModalView";
 import HelperFunctions from "../../utils/HelperFunctions";
-import PenjualanApis from "../../Services/Penjualan.apis";
+import BuybackApis from "../../Services/Buyback.apis";
 import PermissionStore from "../../Store/PermissionStore";
 import AuthStore from "../../Store/AuthStore";
 import OptionsStore from "../../Store/OptionsStore";
@@ -31,7 +31,6 @@ const STATUS_OPTIONS_KASIR = [
     { value: 'DITOLAK', label: 'Ditolak' },
     { value: 'DIBATALKAN', label: 'Dibatalkan' },
 ];
-
 
 const Main = ({ setCurentState }) => {
     const setLoading = LoadingStore((state) => state.setLoading);
@@ -75,7 +74,6 @@ const Main = ({ setCurentState }) => {
 
     const STATUS_OPTIONS = isKasir() ? STATUS_OPTIONS_KASIR : STATUS_OPTIONS_SIMPLE;
 
-
     const [paramFetch, setParamFetch] = useState({
         data: [],
         current_page: 1,
@@ -116,7 +114,7 @@ const Main = ({ setCurentState }) => {
             if (isKasir() && user?.branch_id) params.append('branch_id', user.branch_id);
             else if (filters.branch_id) params.append('branch_id', filters.branch_id);
 
-            const res = await PenjualanApis.GetPenjualan(`?${params.toString()}`);
+            const res = await BuybackApis.GetBuyback(`?${params.toString()}`);
             setParamFetch(res);
             setFirstLoading(true);
         } catch (error) {
@@ -145,7 +143,7 @@ const Main = ({ setCurentState }) => {
     const handleViewTransaction = async (row) => {
         setLoading(true);
         try {
-            const res = await PenjualanApis.GetPenjualanDetail(row.id);
+            const res = await BuybackApis.GetBuybackDetail(row.id);
             const detail = res?.data || null;
             if (detail) {
                 detail.details = await HelperFunctions.enrichSalesDetails(detail.details);
@@ -168,14 +166,14 @@ const Main = ({ setCurentState }) => {
         showAlert({
             icon: 'warning',
             isAutoClose: false,
-            title: 'Batalkan Transaksi Penjualan',
+            title: 'Batalkan Transaksi Buyback',
             message: `Apakah Anda yakin ingin membatalkan transaksi ${row.order_id}? Transaksi yang dibatalkan tidak dapat diproses kembali.`,
             confirmText: 'Ya, Batalkan',
             cancelText: 'Kembali',
         }).then((res) => {
             if (res.confirmed) {
-                PenjualanApis.PutPenjualanApproval({
-                    penjualan_id: row.id,
+                BuybackApis.PutBuybackApproval({
+                    buyback_id: row.id,
                     status: 'DIBATALKAN',
                 }).then(() => {
                     fetchData(paramFetch.current_page, paramFetch.per_page, searchBounce);
@@ -183,7 +181,7 @@ const Main = ({ setCurentState }) => {
                         icon: 'success',
                         isAutoClose: true,
                         title: 'Berhasil Dibatalkan',
-                        message: 'Transaksi penjualan telah dibatalkan.',
+                        message: 'Transaksi buyback telah dibatalkan.',
                     });
                 }).catch((error) => {
                     console.error(error);
@@ -200,16 +198,9 @@ const Main = ({ setCurentState }) => {
     const handlePrint = async (row) => {
         setLoading(true);
         try {
-            const res = await PenjualanApis.GetPenjualanDetail(row.id);
-            const detail = res?.data || row;
-            detail.details = await HelperFunctions.enrichSalesDetails(detail.details);
-
-            sessionStorage.setItem('print_kwitansi_data', JSON.stringify(detail));
-            window.open('/penjualan/print-kwitansi', '_blank');
-
             if (row.approval_status !== 'SELESAI') {
-                await PenjualanApis.PutPenjualanApproval({
-                    penjualan_id: row.id,
+                await BuybackApis.PutBuybackApproval({
+                    buyback_id: row.id,
                     status: 'SELESAI',
                 });
 
@@ -239,7 +230,7 @@ const Main = ({ setCurentState }) => {
             accessor: 'created_at',
             render: (row) => row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY') : '-',
         },
-        { header: 'Order ID', accessor: 'order_id' },
+        { header: 'Buyback ID', accessor: 'order_id' },
         { header: 'Customer', accessor: 'customer', render: (row) => row.customer?.customer_name ?? '-' },
         {
             header: 'Item Produk',
@@ -249,6 +240,9 @@ const Main = ({ setCurentState }) => {
                 (d) => d.product?.product_name
             ),
         },
+        { header: 'Nominal', accessor: 'grand_total', render: (row) => HelperFunctions.formatCurrency(row.grand_total || 0) },
+        { header: 'Pembayaran', accessor: 'payment_type', render: (row) => row.payment_type === 'TUNAI' ? 'Tunai' : 'Transfer' },
+        { header: 'User', accessor: 'user', render: (row) => row.user?.name ?? '-' },
         {
             header: 'Status',
             accessor: 'approval_status',
@@ -258,9 +252,6 @@ const Main = ({ setCurentState }) => {
                 </Badge>
             ),
         },
-        { header: 'Nominal', accessor: 'grand_total', render: (row) => HelperFunctions.formatCurrency(row.grand_total || 0) },
-        { header: 'Pembayaran', accessor: 'payment_type', render: (row) => row.payment_type === 'TUNAI' ? 'Tunai' : 'Transfer' },
-        { header: 'User', accessor: 'user', render: (row) => row.user?.name ?? '-' },
         {
             header: 'Aksi',
             accessor: 'aksi',
@@ -270,7 +261,7 @@ const Main = ({ setCurentState }) => {
                         <ActionButton variant="cancel" title="Batalkan" onClick={() => handleCancel(row)} />
                     )}
                     <ActionButton variant="view" title="Lihat Detail" onClick={() => handleViewTransaction(row)} />
-                    {((row.approval_status === 'SELESAI' || row.approval_status === 'DISETUJUI' || row.approval_status === 'CETAK KWITANSI')  && isKasir()) && (
+                    {((row.approval_status === 'SELESAI' || row.approval_status === 'DISETUJUI' || row.approval_status === 'CETAK KWITANSI') && isKasir()) && (
                         <ActionButton variant="print" title="Cetak Kwitansi" onClick={() => handlePrint(row)} />
                     )}
                 </ActionButtonGroup>
@@ -291,8 +282,8 @@ const Main = ({ setCurentState }) => {
     return (
         <div className="flex flex-col gap-6 w-full relative">
             <HeaderSection
-                title="Penjualan"
-                description="Catat dan kelola transaksi penjualan barang kepada pelanggan."
+                title="Buyback"
+                description="Kelola transaksi pembelian kembali emas dari customer."
                 icon={PlusCircleIcon}
                 onClick={can('create') ? () => setCurentState('form') : undefined}
                 textButton="Transaksi Baru"
@@ -318,7 +309,7 @@ const Main = ({ setCurentState }) => {
                 onPageSizeChange={onChangePageSize}
             />
 
-            <ModalViewPenjualan
+            <ModalViewBuyback
                 isOpen={isViewModalOpen}
                 onClose={() => {
                     setIsViewModalOpen(false);

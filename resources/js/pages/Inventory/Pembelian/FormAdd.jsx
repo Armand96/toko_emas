@@ -48,9 +48,8 @@ const requiredItem = [
     ["berat", "Berat wajib diisi"],
     ["karat", "Karat wajib diisi"],
     ["modal", "Harga modal wajib diisi"],
-    ["jual", "Harga jual wajib diisi"],
     ["branch_id", "Cabang wajib dipilih"],
-    // ["supplier_id", "Supplier wajib dipilih"],
+    ["supplier_id", "Supplier wajib dipilih"],
 ];
 
 const FormPembelian = ({ setCurentState }) => {
@@ -111,7 +110,16 @@ const FormPembelian = ({ setCurentState }) => {
             }
             return String(p.branch_id) === String(branchId);
         });
-        setProductOptions(HelperFunctions.formatDropdown(filtered, "id", "product_name"));
+        setProductOptions(filtered.map((p) => {
+            const categoryName = p.category?.parent?.category_name || p.category?.category_name || "";
+            const subcategoryName = p.subcategory?.category_name || "";
+            const detail = [categoryName, subcategoryName].filter(Boolean).join(" · ");
+            return {
+                value: p.id,
+                label: detail ? `${p.product_name} · ${detail}` : p.product_name,
+                details: p,
+            };
+        }));
 
         setItem({ ...emptyItem, branch_id: branchId });
         setErrors({});
@@ -253,7 +261,7 @@ const FormPembelian = ({ setCurentState }) => {
                 berat: Number(b.berat),
                 karat: Number(b.karat),
                 modal: Number(b.modal),
-                jual: Number(b.jual),
+                jual: b.jual ? Number(b.jual) : 0,
             })),
         };
 
@@ -330,7 +338,7 @@ const FormPembelian = ({ setCurentState }) => {
         {
             header: "Jual",
             accessor: "jual",
-            render: (row) => HelperFunctions.formatCurrency(row.jual || 0),
+            render: (row) => row.jual > 0 ? HelperFunctions.formatCurrency(row.jual) : "-",
         },
         {
             header: "Supplier",
@@ -470,11 +478,10 @@ const FormPembelian = ({ setCurentState }) => {
                                 onChange={handleChange}
                             />
                             <CurrencyInput
-                                label="Harga Jual"
+                                label="Harga Jual (Opsional)"
                                 name="jual"
                                 value={item.jual}
                                 placeholder="0"
-                                isRequired
                                 error={errors.jual}
                                 onChange={handleChange}
                             />
@@ -486,7 +493,7 @@ const FormPembelian = ({ setCurentState }) => {
                             value={item.supplier_id}
                             options={supplierOptions}
                             placeholder="Pilih supplier"
-                            // isRequired
+                            isRequired
                             error={errors.supplier_id}
                             onChange={handleChange}
                         />
