@@ -28,7 +28,7 @@ class BuybackController extends Controller
         $query = Buyback::query();
 
         if ($request->has('buyback_code') && $request->buyback_code != '') {
-            $query->where('buyback_code', 'like', '%' . $request->buyback_code . '%');
+            $query->where('buyback_code', 'like', '%'.$request->buyback_code.'%');
         }
 
         if ($request->has('customer_id') && $request->customer_id != '') {
@@ -90,8 +90,8 @@ class BuybackController extends Controller
 
         try {
             // Generate sequential Buyback ID: BB-YYMM####
-            $prefix = 'BB-' . date('ym');
-            $latestBuyback = Buyback::where('buyback_code', 'like', $prefix . '%')
+            $prefix = 'BB-'.date('ym');
+            $latestBuyback = Buyback::where('buyback_code', 'like', $prefix.'%')
                 ->lockForUpdate()
                 ->orderByDesc('id')
                 ->value('buyback_code');
@@ -100,47 +100,47 @@ class BuybackController extends Controller
                 ? (int) substr($latestBuyback, strrpos($latestBuyback, $prefix) + strlen($prefix)) + 1
                 : 1;
 
-            $buybackId = $prefix . str_pad($counter, 4, '0', STR_PAD_LEFT);
+            $buybackId = $prefix.str_pad($counter, 4, '0', STR_PAD_LEFT);
 
             // Create header
             $header = Buyback::create([
-                'buyback_code'        => $buybackId,
-                'customer_id'         => $validated['customer_id'],
-                'branch_id'           => $validated['branch_id'],
-                'created_by'          => $request->user()->id,
-                'sub_total'           => 0,
-                'grand_total'         => 0,
-                'payment_type'        => $validated['payment_type'],
-                'receiver_name'       => $validated['receiver_name'] ?? null,
-                'receiver_bank_name'  => $validated['receiver_bank_name'] ?? null,
-                'receiver_rekening'   => $validated['receiver_rekening'] ?? null,
-                'sender_bank_id'      => $validated['sender_bank_id'] ?? null,
-                'status'              => BuybackStatus::APPROVAL,
+                'buyback_code' => $buybackId,
+                'customer_id' => $validated['customer_id'],
+                'branch_id' => $validated['branch_id'],
+                'created_by' => $request->user()->id,
+                'sub_total' => 0,
+                'grand_total' => 0,
+                'payment_type' => $validated['payment_type'],
+                'receiver_name' => $validated['receiver_name'] ?? null,
+                'receiver_bank_name' => $validated['receiver_bank_name'] ?? null,
+                'receiver_rekening' => $validated['receiver_rekening'] ?? null,
+                'sender_bank_id' => $validated['sender_bank_id'] ?? null,
+                'status' => BuybackStatus::APPROVAL,
             ]);
 
             // Create details
             $insertBatch = [];
-            $subTotal    = 0;
+            $subTotal = 0;
 
             foreach ($validated['item'] as $value) {
                 $subTotal += $value['price'];
 
                 $insertBatch[] = [
-                    'buyback_id'     => $header->id,
-                    'product_id'     => $value['product_id'],
+                    'buyback_id' => $header->id,
+                    'product_id' => $value['product_id'],
                     'inventory_code' => $value['inventory_code'] ?? null,
-                    'berat'          => $value['berat'],
-                    'karat'          => $value['karat'],
-                    'serial_number'  => $value['serial_number'] ?? null,
-                    'price'          => $value['price'],
-                    'created_at'     => $header->created_at,
-                    'updated_at'     => $header->created_at,
+                    'berat' => $value['berat'],
+                    'karat' => $value['karat'],
+                    'serial_number' => $value['serial_number'] ?? null,
+                    'price' => $value['price'],
+                    'created_at' => $header->created_at,
+                    'updated_at' => $header->created_at,
                 ];
             }
 
             BuybackDetail::insert($insertBatch);
 
-            $header->sub_total   = $subTotal;
+            $header->sub_total = $subTotal;
             $header->grand_total = $subTotal;
             $header->save();
 
@@ -181,8 +181,9 @@ class BuybackController extends Controller
                 ->lockForUpdate()
                 ->first();
 
-            if (!$data) {
+            if (! $data) {
                 DB::rollBack();
+
                 return ApiResponse::error('Buyback tidak ditemukan', null, 404);
             }
 
@@ -190,7 +191,7 @@ class BuybackController extends Controller
 
             $data->update([
                 'status' => $validated['status'],
-                'note'   => $validated['note'] ?? null,
+                'note' => $validated['note'] ?? null,
             ]);
 
             if ($newStatus === BuybackStatus::SELESAI) {
@@ -216,7 +217,7 @@ class BuybackController extends Controller
                     // Derive barcode prefix from product (same logic as pembelian)
                     $barcode = $product?->barcode ?? 'BB';
 
-                    $inventoryCode = $barcode . '-' . str_pad($seq + 1, 4, '0', STR_PAD_LEFT);
+                    $inventoryCode = $barcode.'-'.str_pad($seq + 1, 4, '0', STR_PAD_LEFT);
 
                     // Update detail with generated inventory code
                     $detail->inventory_code = $inventoryCode;
@@ -224,34 +225,39 @@ class BuybackController extends Controller
 
                     Inventory::create([
                         'inventory_code' => $inventoryCode,
-                        'buyback_id'     => $data->id,
-                        'product_id'     => $detail->product_id,
-                        'category_id'    => $product?->category_id,
+                        'buyback_id' => $data->id,
+                        'product_id' => $detail->product_id,
+                        'category_id' => $product?->category_id,
                         'subcategory_id' => $product?->subcategory_id,
-                        'barcode'        => $barcode,
-                        'branch_id'      => $data->branch_id,
-                        'berat'          => $detail->berat,
-                        'karat'          => $detail->karat,
-                        'serial_number'  => $detail->serial_number,
-                        'modal'          => $detail->price,
-                        'jual'           => $detail->price,
-                        'status'         => InventoryStatus::AVAILABLE,
-                        'created_at'     => $dateNow,
+                        'barcode' => $barcode,
+                        'branch_id' => $data->branch_id,
+                        'berat' => $detail->berat,
+                        'karat' => $detail->karat,
+                        'serial_number' => $detail->serial_number,
+                        'modal' => $detail->price,
+                        'jual' => $detail->price,
+                        'status' => InventoryStatus::AVAILABLE,
+                        'created_at' => $dateNow,
                     ]);
                 }
 
                 // Record cash-out finance entry (store pays the customer)
-                $categoryFinance = MCategoryFinance::where('category_name', 'like', '%Buyback%')->first();
+                // firstOrCreate ensures a Buyback category always exists — category_finance_id is NOT NULL
+                $categoryFinance = MCategoryFinance::firstOrCreate(
+                    ['category_name' => 'Pembelian'],
+                    ['type' => 'CASH OUT']
+                );
+
                 Finance::create([
-                    'branch_id'          => $data->branch_id,
-                    'category_finance_id' => $categoryFinance?->id,
-                    'bank_cabang_id'     => $data->payment_type === 'TUNAI' ? 0 : ($data->sender_bank_id ?? 0),
-                    'type'               => FinanceType::CASHOUT,
-                    'payment_method'     => $data->payment_type === 'TUNAI'
+                    'branch_id' => $data->branch_id,
+                    'category_finance_id' => $categoryFinance->id,
+                    'bank_cabang_id' => $data->payment_type === 'TUNAI' ? 0 : ($data->sender_bank_id ?? 0),
+                    'type' => FinanceType::CASHOUT,
+                    'payment_method' => $data->payment_type === 'TUNAI'
                         ? FinancePaymentMethod::TUNAI
                         : FinancePaymentMethod::TRANSFER,
-                    'nominal'            => $data->grand_total,
-                    'is_auto'            => true,
+                    'nominal' => $data->grand_total,
+                    'is_auto' => true,
                 ]);
             }
 
