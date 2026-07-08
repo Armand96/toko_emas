@@ -109,7 +109,10 @@ export default function ModalDetailBuyback({
                                     item.inventory?.berat ? `${item.inventory.berat}g` : (item.berat ? `${item.berat}g` : ''),
                                     item.inventory?.karat ? `${item.inventory.karat}K` : (item.karat ? `${item.karat}K` : ''),
                                 ].filter(Boolean).join(' • ')}
-                                image={item.inventory?.thumb_path ? HelperFunctions.getStorageUrl(item.inventory.thumb_path) : null}
+                                image={(() => {
+                                    const p = item.inventory?.image_path || item.product?.image_path;
+                                    return p ? `/storage/${p}` : null;
+                                })()}
                                 price={item.price}
                             />
                         ))}
@@ -162,7 +165,7 @@ export default function ModalDetailBuyback({
 
                 <div className="flex gap-4 text-xs text-neutral-500 border border-gray-200 rounded-lg px-6 py-3">
                     <div className="flex-1 border-r border-neutral-200 pr-4">
-                        Buyback ID <span className="font-bold text-neutral-900 ml-1">{data?.buyback_id || '-'}</span>
+                        Buyback ID <span className="font-bold text-neutral-900 ml-1">{data?.buyback_code || '-'}</span>
                     </div>
                     <div className="flex-1 border-r border-neutral-200 px-4">
                         Diajukan oleh <span className="font-bold text-neutral-900 ml-1">{user?.name || '-'}</span>

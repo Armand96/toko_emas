@@ -76,7 +76,10 @@ const ModalViewBuyback = ({ isOpen, onClose, data }) => {
                                     item.inventory?.berat ? `${item.inventory.berat}g` : (item.berat ? `${item.berat}g` : ''),
                                     item.inventory?.karat ? `${item.inventory.karat}K` : (item.karat ? `${item.karat}K` : ''),
                                 ].filter(Boolean).join(' • ')}
-                                image={item.inventory?.thumb_path ? HelperFunctions.getStorageUrl(item.inventory.thumb_path) : null}
+                                image={(() => {
+                                    const p = item.inventory?.image_path || item.product?.image_path;
+                                    return p ? `/storage/${p}` : null;
+                                })()}
                                 price={item.price}
                             />
                         ))}
@@ -132,7 +135,7 @@ const ModalViewBuyback = ({ isOpen, onClose, data }) => {
                 <div className="flex items-center gap-4 border border-neutral-200 rounded-lg px-5 py-3 text-xs">
                     <div className="flex-1">
                         <span className="text-neutral-500">Buyback ID </span>
-                        <span className="font-bold text-neutral-900">{data.buyback_id}</span>
+                        <span className="font-bold text-neutral-900">{data.buyback_code || '-'}</span>
                     </div>
                     <div className="w-px h-8 bg-neutral-200"></div>
                     <div className="flex-1">

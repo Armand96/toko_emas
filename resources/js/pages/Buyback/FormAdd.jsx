@@ -601,7 +601,7 @@ const FormAdd = ({ setCurentState }) => {
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                         <Input
                             label="Berat (gr)"
                             name="berat"
@@ -624,16 +624,15 @@ const FormAdd = ({ setCurentState }) => {
                             error={itemErrors.karat}
                             onChange={handleItemChange}
                         />
+                        <Input
+                            label="No. Seri (opsional)"
+                            name="no_seri"
+                            type="text"
+                            value={item.no_seri}
+                            placeholder="Contoh: ABCD1234"
+                            onChange={handleItemChange}
+                        />
                     </div>
-
-                    <Input
-                        label="No. Seri (opsional)"
-                        name="no_seri"
-                        type="text"
-                        value={item.no_seri}
-                        placeholder="Contoh: ABCD1234"
-                        onChange={handleItemChange}
-                    />
 
                     <CurrencyInput
                         label="Harga Beli"

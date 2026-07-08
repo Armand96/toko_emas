@@ -65,6 +65,7 @@ const Dashboard = () => {
         { key: "pembelian", label: "Pembelian", count: 0, path: "/approval/pembelian" },
         { key: "remove-item", label: "Remove Item", count: 0, path: "/approval/remove-item" },
         { key: "transfer-item", label: "Transfer Item", count: 0, path: "/approval/transfer" },
+        { key: "buyback", label: "Buyback", count: 0, path: "/approval/buyback" },
     ]);
 
     const [stats, setStats] = useState({
@@ -136,6 +137,7 @@ const Dashboard = () => {
                     { key: "pembelian", label: "Pembelian", count: takeAction.count_pembelian || 0, path: "/approval/pembelian" },
                     { key: "remove-item", label: "Remove Item", count: takeAction.count_remove_item || 0, path: "/approval/remove-item" },
                     { key: "transfer-item", label: "Transfer Item", count: takeAction.count_transfer_item || 0, path: "/approval/transfer" },
+                    { key: "buyback", label: "Buyback", count: takeAction.count_buyback || 0, path: "/approval/buyback" },
                 ]);
             }
 
@@ -277,7 +279,7 @@ const Dashboard = () => {
                             </span>
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
                         {pendingActions.map((action) => (
                             <ActionCard
                                 key={action.key}
