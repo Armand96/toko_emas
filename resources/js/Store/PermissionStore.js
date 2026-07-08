@@ -56,6 +56,8 @@ const PERMISSIONS = [
 
     { link: '/report/pembelian',
         create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER], delete: [SUPER_ADMIN, OWNER] },
+    { link: '/report/buyback',
+        create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER], delete: [SUPER_ADMIN, OWNER] },
     { link: '/report/penjualan',
         create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER], delete: [SUPER_ADMIN, OWNER] },
     { link: '/report/finance',

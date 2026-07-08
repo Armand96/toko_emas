@@ -77,6 +77,26 @@ const ReportApis = {
         return Apis.Get(`api/report/pembelian-detail${params}`).then(({ data }) => data?.data ?? data);
     },
 
+    /* ── BUYBACK ──────────────────────────────────────────────
+       Semua endpoint dibungkus ApiResponse::success → unwrap .data */
+
+    // { jumlah_transaksi, total_item, total_berat, total_nilai }
+    GetBuybackSummary: (params = "") => {
+        return Apis.Get(`api/report/buyback-summary${params}`).then(({ data }) => data?.data ?? data);
+    },
+    // { category: [{category_name, total_nilai, total_berat, total_item}], subcategory: [{subcategory_name, ...}] }
+    GetBuybackByCategory: (params = "") => {
+        return Apis.Get(`api/report/buyback-by-category${params}`).then(({ data }) => data?.data ?? data);
+    },
+    // [{ karat, total_nilai, total_berat, total_item }]
+    GetBuybackByKarat: (params = "") => {
+        return Apis.Get(`api/report/buyback-by-karat${params}`).then(({ data }) => data?.data ?? data);
+    },
+    // paginated → { data, current_page, total, per_page }
+    GetBuybackDetail: (params = "") => {
+        return Apis.Get(`api/report/buyback-detail${params}`).then(({ data }) => data?.data ?? data);
+    },
+
     /* ── INVENTORY ────────────────────────────────────────────
        Semua endpoint dibungkus ApiResponse::success → unwrap .data */
 
@@ -103,6 +123,9 @@ const ReportApis = {
 
     ExportPembelian: (params = {}) =>
         Apis.Download("api/report/export-pembelian", "pembelian-report.xlsx", params),
+
+    ExportBuyback: (params = {}) =>
+        Apis.Download("api/report/export-buyback", "buyback-report.xlsx", params),
 
     ExportFinance: (params = {}) =>
         Apis.Download("api/report/export-finance", "finance-report.xlsx", params),

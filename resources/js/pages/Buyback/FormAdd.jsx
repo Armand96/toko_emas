@@ -258,13 +258,10 @@ const FormAdd = ({ setCurentState }) => {
 
             const payload = {
                 customer_id: customerId,
-                user_id: user?.id,
                 branch_id: user?.branch_id,
                 payment_type: paymentMethod === 'tunai' ? 'TUNAI' : 'TRANSFER',
                 item: items.map((it) => ({
                     product_id: Number(it.product_id),
-                    category_id: it.category_id ? Number(it.category_id) : null,
-                    subcategory_id: it.subcategory_id ? Number(it.subcategory_id) : null,
                     berat: Number(it.berat),
                     karat: Number(it.karat),
                     serial_number: it.no_seri || null,

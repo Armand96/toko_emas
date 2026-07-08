@@ -8,6 +8,8 @@ const InventoryItemCard = ({
     specs,
     image,
     price,
+    editablePrice = false,
+    onPriceChange,
     codeBadgeVariant = "default",
     onRemove,
 }) => {
@@ -36,10 +38,27 @@ const InventoryItemCard = ({
                 </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-                {price !== undefined && price !== null && (
-                    <span className="text-sm font-bold text-gray-900">
-                        {HelperFunctions.formatCurrency(price)}
-                    </span>
+                {editablePrice ? (
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-gray-500 whitespace-nowrap">Harga Jual :</span>
+                        <div className="relative flex items-center">
+                            <span className="absolute left-2 text-xs font-medium text-gray-500 select-none">Rp</span>
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                value={price ? HelperFunctions.formatNumberInput(price) : ''}
+                                onChange={(e) => onPriceChange?.(HelperFunctions.unformatNumberInput(e.target.value))}
+                                placeholder="0"
+                                className="w-32 pl-7 pr-2 py-1.5 text-sm font-bold text-gray-900 border border-gray-300 rounded-md outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                            />
+                        </div>
+                    </div>
+                ) : (
+                    price !== undefined && price !== null && (
+                        <span className="text-sm font-bold text-gray-900">
+                            {HelperFunctions.formatCurrency(price)}
+                        </span>
+                    )
                 )}
                 {onRemove && (
                     <button
