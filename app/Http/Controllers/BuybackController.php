@@ -120,7 +120,6 @@ class BuybackController extends Controller
                 'receiver_bank_name' => $validated['receiver_bank_name'] ?? null,
                 'receiver_rekening' => $validated['receiver_rekening'] ?? null,
                 'sender_bank_id' => $validated['sender_bank_id'] ?? null,
-                'bank_cabang_id' => $validated['bank_cabang_id'] ?? null,
                 'status' => BuybackStatus::APPROVAL,
             ]);
 
