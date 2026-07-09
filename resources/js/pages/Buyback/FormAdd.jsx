@@ -280,7 +280,23 @@ const FormAdd = ({ setCurentState }) => {
                 payload.receiver_rekening = rekeningPenerima;
             }
 
-            await BuybackApis.PostBuyback(payload);
+            const res = await BuybackApis.PostBuyback(payload);
+            const createdDetails = res?.data?.data?.details || [];
+
+            // Map items with foto to their corresponding detail IDs
+            const itemsWithFoto = items
+                .map((it, index) => ({ foto: it.foto, detailId: createdDetails[index]?.id }))
+                .filter((it) => it.foto && it.detailId);
+
+            if (itemsWithFoto.length > 0) {
+                const buybackDetailIds = itemsWithFoto.map((it) => it.detailId).join(',');
+                const formData = new FormData();
+                formData.append('buyback_detail_ids', buybackDetailIds);
+                for (let i = 0; i < itemsWithFoto.length; i++) {
+                    formData.append('images[]', itemsWithFoto[i].foto);
+                }
+                await BuybackApis.PostBuybackImage(formData);
+            }
 
             showAlert({ icon: 'success', isAutoClose: false, title: 'Berhasil', message: 'Transaksi buyback berhasil diajukan.' });
             setCurentState('main');

@@ -25,7 +25,7 @@ class BuybackImageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'buyback_ids' => 'required|string',
+            'buyback_detail_ids' => 'required|string',
 
             'images' => 'required',
             'images.*' => [

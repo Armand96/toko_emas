@@ -20,8 +20,6 @@ class Buyback extends Model
         'sender_bank_id',
         'status',
         'note',
-        'image_path',
-        'thumb_path',
     ];
 
     public function user()
