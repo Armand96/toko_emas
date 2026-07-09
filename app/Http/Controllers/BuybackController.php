@@ -7,6 +7,7 @@ use App\Helpers\BuybackStatus;
 use App\Helpers\FinancePaymentMethod;
 use App\Helpers\FinanceType;
 use App\Helpers\InventoryStatus;
+use App\Http\Requests\BuybackImageRequest;
 use App\Http\Requests\BuybackRequest;
 use App\Http\Requests\UpdateStatusBuybackRequest;
 use App\Models\Buyback;
@@ -17,6 +18,8 @@ use App\Models\MCategoryFinance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
 
 class BuybackController extends Controller
 {
@@ -117,6 +120,7 @@ class BuybackController extends Controller
                 'receiver_bank_name' => $validated['receiver_bank_name'] ?? null,
                 'receiver_rekening' => $validated['receiver_rekening'] ?? null,
                 'sender_bank_id' => $validated['sender_bank_id'] ?? null,
+                'bank_cabang_id' => $validated['bank_cabang_id'] ?? null,
                 'status' => BuybackStatus::APPROVAL,
             ]);
 
@@ -269,6 +273,71 @@ class BuybackController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             Log::error($th);
+
+            return ApiResponse::error($th->getMessage(), $th, 500);
+        }
+    }
+
+    public function buybackImage(BuybackImageRequest $request)
+    {
+        $validated = $request->validated();
+
+        DB::beginTransaction();
+        $imagePath = [];
+
+        try {
+            $ids = explode(',', $validated['buyback_ids']);
+
+            foreach ($ids as $index => $value) {
+                $dataInsert = [
+                    'image_path' => '',
+                    'thumb_path' => '',
+                ];
+
+                // Upload new image
+                $image = $request->file('images')[$index];
+
+                $imageName = 'buyback_'.$value.'_'.date('Y-m-d').'.'.$image->getClientOriginalExtension();
+
+                $image->storeAs(
+                    'images',
+                    $imageName,
+                    'public'
+                );
+
+                $dataInsert['image_path'] = 'images/'.$imageName;
+                $dataInsert['thumb_path'] = 'thumbs/'.$imageName;
+
+                // Generate thumbnail
+                $thumb = Image::decode($image)
+                    ->scale(height: 200);
+
+                Storage::disk('public')->put(
+                    $dataInsert['thumb_path'],
+                    $thumb->encodeUsingFileExtension(
+                        $image->getClientOriginalExtension(),
+                        quality: 70
+                    )
+                );
+                array_push($imagePath, $dataInsert);
+
+                Buyback::where('id', $value)->update($dataInsert);
+            }
+
+            DB::commit();
+
+            return ApiResponse::success([], 'Success Upload Image', 200);
+        } catch (\Throwable $th) {
+            foreach ($imagePath as $key => $value) {
+                if ($value['image_path'] != null && Storage::disk('public')->exists($value['image_path'])) {
+                    Storage::disk('public')->delete($value['image_path']);
+                }
+                if ($value['thumb_path'] != null && Storage::disk('public')->exists($value['thumb_path'])) {
+                    Storage::disk('public')->delete($value['thumb_path']);
+                }
+            }
+
+            DB::rollBack();
 
             return ApiResponse::error($th->getMessage(), $th, 500);
         }

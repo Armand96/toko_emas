@@ -33,9 +33,10 @@ class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, Wit
     {
         $query = BuybackDetail::query()
             ->with([
-                'header:id,buyback_code,branch_id,customer_id,payment_type,grand_total,created_at',
+                'header:id,buyback_code,branch_id,customer_id,payment_type,grand_total,bank_cabang_id,created_at',
                 'header.branch:id,branch_name',
-                'header.customer:id,customer_name',
+                'header.customer:id,customer_name,customer_code',
+                'header.bankCabang.bank:id,bank_name',
                 'product:id,product_name,category_id,subcategory_id',
                 'product.category:id,category_name',
                 'product.subcategory:id,category_name',
@@ -65,8 +66,16 @@ class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, Wit
         $product     = $detail->product;
         $header      = $detail->header;
 
+        $bankCabangInfo = null;
+        if ($header?->bankCabang) {
+            $bankName = optional($header->bankCabang->bank)->bank_name ?? '';
+            $noRek    = $header->bankCabang->nomor_rekening ?? '';
+            $bankCabangInfo = $bankName ? "{$bankName} - {$noRek}" : $noRek;
+        }
+
         return [
             optional($header)->buyback_code,
+            optional($header->customer ?? null)->customer_code,
             optional($header->customer ?? null)->customer_name,
             optional($product)->product_name,
             optional(optional($product)->category)->category_name,
@@ -75,8 +84,7 @@ class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, Wit
             ($detail->karat ?? '') . 'K',
             $detail->serial_number ?? '-',
             $detail->price,
-            optional($header)->payment_type,
-            optional(optional($header)->branch)->branch_name,
+            $bankCabangInfo,
         ];
     }
 
@@ -126,16 +134,16 @@ class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, Wit
                 // Row 5: Column headers
                 $headers = [
                     'A5' => 'Buyback ID',
-                    'B5' => 'Customer',
-                    'C5' => 'Produk',
-                    'D5' => 'Kategori',
-                    'E5' => 'Sub Kategori',
-                    'F5' => 'Berat',
-                    'G5' => 'Karat',
-                    'H5' => 'No. Seri',
-                    'I5' => 'Harga Buyback',
-                    'J5' => 'Pembayaran',
-                    'K5' => 'Cabang',
+                    'B5' => 'Kode Customer',
+                    'C5' => 'Customer',
+                    'D5' => 'Produk',
+                    'E5' => 'Kategori',
+                    'F5' => 'Sub Kategori',
+                    'G5' => 'Berat',
+                    'H5' => 'Karat',
+                    'I5' => 'No. Seri',
+                    'J5' => 'Harga Buyback',
+                    'K5' => 'Bank Masuk',
                 ];
 
                 foreach ($headers as $cell => $value) {
@@ -149,11 +157,11 @@ class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, Wit
                     $dataStart = $this->headerRows + 1;
                     $dataEnd   = $this->headerRows + $collection->count();
 
-                    $sheet->getStyle("I{$dataStart}:I{$dataEnd}")
+                    $sheet->getStyle("J{$dataStart}:J{$dataEnd}")
                         ->getAlignment()
                         ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
-                    $sheet->getStyle("I{$dataStart}:I{$dataEnd}")
+                    $sheet->getStyle("J{$dataStart}:J{$dataEnd}")
                         ->getNumberFormat()
                         ->setFormatCode('#,##0');
                 }
