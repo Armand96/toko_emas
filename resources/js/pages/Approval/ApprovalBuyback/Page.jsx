@@ -65,7 +65,7 @@ const ApprovalBuyback = () => {
                 per_page: pageSize,
             });
             if (params.status) query.append('status', params.status);
-            if (params.search) query.append('buyback_id', params.search);
+            if (params.search) query.append('buyback_code', params.search);
             if (params.cabang) query.append('branch_id', params.cabang);
 
             const res = await BuybackApis.GetBuyback(`?${query.toString()}`);
@@ -240,7 +240,7 @@ const ApprovalBuyback = () => {
                     {
                         name: "status", type: "dropdown", placeholder: "Pilih status", options: [
                             { value: 'APPROVAL', label: 'Approval' },
-                            { value: 'CETAK KWITANSI', label: 'Disetujui' },
+                            { value: 'CETAK KWITANSI,SELESAI', label: 'Disetujui' },
                             { value: 'DITOLAK', label: 'Ditolak' },
                             { value: 'DIBATALKAN', label: 'Dibatalkan' },
                         ]

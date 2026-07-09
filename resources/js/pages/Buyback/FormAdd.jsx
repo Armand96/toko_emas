@@ -144,6 +144,8 @@ const FormAdd = ({ setCurentState }) => {
                 category_id: d.category_id ?? null,
                 subcategory_id: d.subcategory_id ?? null,
                 _produk_label: found?.details?.product_name ?? "",
+                _produk_barcode: d.barcode ?? "",
+                _produk_image: d.image_path ?? null,
             }));
             setItemErrors((prev) => ({ ...prev, product_id: "" }));
             return;
@@ -171,7 +173,9 @@ const FormAdd = ({ setCurentState }) => {
                 ...item,
                 price: Number(item.price || 0),
                 _rowId: Date.now() + Math.random(),
-                _preview: item.foto ? URL.createObjectURL(item.foto) : null,
+                _preview: item.foto
+                    ? URL.createObjectURL(item.foto)
+                    : (item._produk_image ? `/storage/${item._produk_image}` : null),
             },
         ]);
         setIsItemModalOpen(false);
@@ -428,11 +432,12 @@ const FormAdd = ({ setCurentState }) => {
                     {items.map((it) => (
                         <InventoryItemCard
                             key={it._rowId}
-                            code={it.no_seri || '-'}
+                            code={it._produk_barcode || '-'}
                             name={it._produk_label}
                             specs={[
                                 it.berat ? `${it.berat} gr` : '',
                                 it.karat ? `${it.karat}K` : '',
+                                it.no_seri ? `Seri: ${it.no_seri}` : '',
                             ].filter(Boolean).join(' • ')}
                             image={it._preview}
                             price={it.price}

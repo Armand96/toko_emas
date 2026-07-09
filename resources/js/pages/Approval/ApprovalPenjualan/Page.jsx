@@ -16,10 +16,12 @@ import PermissionStore from "../../../Store/PermissionStore";
 import OptionsStore from "../../../Store/OptionsStore";
 import { useQueryParams } from "../../../utils/useQueryParams";
 
+// Di Menu Approval Penjualan status dirangkap jadi 4:
+// Approval, Disetujui (SELESAI/CETAK KWITANSI ikut Disetujui), Ditolak, Dibatalkan.
 const STATUS_TONE = {
     'APPROVAL': 'warning',
     'DISETUJUI': 'success',
-    'CETAK KWITANSI': 'info',
+    'CETAK KWITANSI': 'success',
     'SELESAI': 'success',
     'DITOLAK': 'danger',
     'DIBATALKAN': 'danger',
@@ -28,6 +30,8 @@ const STATUS_TONE = {
 const STATUS_LABEL = {
     'APPROVAL': 'Approval',
     'DISETUJUI': 'Disetujui',
+    'CETAK KWITANSI': 'Disetujui',
+    'SELESAI': 'Disetujui',
     'DITOLAK': 'Ditolak',
     'DIBATALKAN': 'Dibatalkan',
 };

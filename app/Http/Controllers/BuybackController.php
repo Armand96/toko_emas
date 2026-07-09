@@ -36,7 +36,9 @@ class BuybackController extends Controller
         }
 
         if ($request->has('status') && $request->status != '') {
-            $query->where('status', $request->status);
+            // Support grouped filter (comma-separated), e.g. "CETAK KWITANSI,SELESAI" = Disetujui
+            $statuses = array_filter(array_map('trim', explode(',', $request->status)));
+            $query->whereIn('status', $statuses);
         }
 
         if ($request->has('branch_id') && $request->branch_id != '') {
@@ -244,7 +246,7 @@ class BuybackController extends Controller
                 // Record cash-out finance entry (store pays the customer)
                 // firstOrCreate ensures a Buyback category always exists — category_finance_id is NOT NULL
                 $categoryFinance = MCategoryFinance::firstOrCreate(
-                    ['category_name' => 'Pembelian'],
+                    ['category_name' => 'Buyback'],
                     ['type' => 'CASH OUT']
                 );
 

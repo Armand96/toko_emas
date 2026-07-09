@@ -140,7 +140,7 @@ const Main = ({ setCurentState }) => {
             icon: 'warning',
             isAutoClose: false,
             title: 'Batalkan Transaksi Buyback',
-            message: `Apakah Anda yakin ingin membatalkan transaksi ${row.buyback_id}? Transaksi yang dibatalkan tidak dapat diproses kembali.`,
+            message: `Apakah Anda yakin ingin membatalkan transaksi ${row.buyback_code}? Transaksi yang dibatalkan tidak dapat diproses kembali.`,
             confirmText: 'Ya, Batalkan',
             cancelText: 'Kembali',
         }).then((res) => {

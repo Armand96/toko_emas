@@ -103,11 +103,12 @@ export default function ModalDetailBuyback({
                         {(details || []).map((item, index) => (
                             <InventoryItemCard
                                 key={index}
-                                code={item.serial_number || item.inventory_code || '-'}
+                                code={item.inventory_code || item.inventory?.inventory_code || item.product?.barcode || '-'}
                                 name={item.product?.product_name}
                                 specs={[
                                     item.inventory?.berat ? `${item.inventory.berat}g` : (item.berat ? `${item.berat}g` : ''),
                                     item.inventory?.karat ? `${item.inventory.karat}K` : (item.karat ? `${item.karat}K` : ''),
+                                    (item.serial_number || item.inventory?.serial_number) ? `Seri: ${item.serial_number || item.inventory.serial_number}` : '',
                                 ].filter(Boolean).join(' • ')}
                                 image={(() => {
                                     const p = item.inventory?.image_path || item.product?.image_path;
