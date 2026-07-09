@@ -14,9 +14,10 @@ use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, WithEvents, WithTitle
+class BuybackDetailSheet implements FromCollection, WithEvents, WithMapping, WithStyles, WithTitle
 {
     protected Request $request;
+
     protected int $headerRows = 5; // title, periode, cabang, blank, column headers
 
     public function __construct(Request $request)
@@ -33,10 +34,9 @@ class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, Wit
     {
         $query = BuybackDetail::query()
             ->with([
-                'header:id,buyback_code,branch_id,customer_id,payment_type,grand_total,bank_cabang_id,created_at',
+                'header:id,buyback_code,branch_id,customer_id,payment_type,grand_total,receiver_bank_name,receiver_rekening,created_at',
                 'header.branch:id,branch_name',
                 'header.customer:id,customer_name,customer_code',
-                'header.bankCabang.bank:id,bank_name',
                 'product:id,product_name,category_id,subcategory_id',
                 'product.category:id,category_name',
                 'product.subcategory:id,category_name',
@@ -63,14 +63,12 @@ class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, Wit
 
     public function map($detail): array
     {
-        $product     = $detail->product;
-        $header      = $detail->header;
+        $product = $detail->product;
+        $header = $detail->header;
 
-        $bankCabangInfo = null;
-        if ($header?->bankCabang) {
-            $bankName = optional($header->bankCabang->bank)->bank_name ?? '';
-            $noRek    = $header->bankCabang->nomor_rekening ?? '';
-            $bankCabangInfo = $bankName ? "{$bankName} - {$noRek}" : $noRek;
+        $receiverInfo = null;
+        if ($header?->receiver_bank_name || $header?->receiver_rekening) {
+            $receiverInfo = trim(($header->receiver_bank_name ?? '').' - '.($header->receiver_rekening ?? ''), ' -');
         }
 
         return [
@@ -80,11 +78,10 @@ class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, Wit
             optional($product)->product_name,
             optional(optional($product)->category)->category_name,
             optional(optional($product)->subcategory)->category_name,
-            ($detail->berat ?? '') . ' gr',
-            ($detail->karat ?? '') . 'K',
+            ($detail->berat ?? '').' gr',
+            ($detail->karat ?? '').'K',
             $detail->serial_number ?? '-',
             $detail->price,
-            $bankCabangInfo,
         ];
     }
 
@@ -97,7 +94,7 @@ class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, Wit
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                $sheet      = $event->sheet->getDelegate();
+                $sheet = $event->sheet->getDelegate();
                 $collection = $this->collection();
 
                 if ($collection->count() > 0) {
@@ -110,14 +107,14 @@ class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, Wit
 
                 // Row 2: Periode
                 $startDate = $this->request->start_date ?? '';
-                $endDate   = $this->request->end_date ?? '';
+                $endDate = $this->request->end_date ?? '';
 
                 $periodeText = 'Periode : ';
                 if ($startDate !== '' && $endDate !== '') {
                     $periodeText = 'Periode : '
-                        . Carbon::parse($startDate)->format('d/m/Y')
-                        . ' - '
-                        . Carbon::parse($endDate)->format('d/m/Y');
+                        .Carbon::parse($startDate)->format('d/m/Y')
+                        .' - '
+                        .Carbon::parse($endDate)->format('d/m/Y');
                 }
                 $sheet->setCellValue('A2', $periodeText);
 
@@ -127,7 +124,7 @@ class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, Wit
                     $first = $collection->first();
                     $branchName = optional(optional($first->header)->branch)->branch_name ?? '';
                 }
-                $sheet->setCellValue('A3', 'Cabang : ' . $branchName);
+                $sheet->setCellValue('A3', 'Cabang : '.$branchName);
 
                 // Row 4: blank
 
@@ -143,7 +140,6 @@ class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, Wit
                     'H5' => 'Karat',
                     'I5' => 'No. Seri',
                     'J5' => 'Harga Buyback',
-                    'K5' => 'Bank Masuk',
                 ];
 
                 foreach ($headers as $cell => $value) {
@@ -155,7 +151,7 @@ class BuybackDetailSheet implements FromCollection, WithMapping, WithStyles, Wit
                 // Style numeric column (Harga Buyback)
                 if ($collection->count() > 0) {
                     $dataStart = $this->headerRows + 1;
-                    $dataEnd   = $this->headerRows + $collection->count();
+                    $dataEnd = $this->headerRows + $collection->count();
 
                     $sheet->getStyle("J{$dataStart}:J{$dataEnd}")
                         ->getAlignment()

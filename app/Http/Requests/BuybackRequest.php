@@ -32,7 +32,6 @@ class BuybackRequest extends FormRequest
             'receiver_bank_name'  => ['nullable', 'string'],
             'receiver_rekening'   => ['nullable', 'string'],
             'sender_bank_id'      => ['nullable', 'integer'],
-            'bank_cabang_id'      => ['nullable', 'integer'],
 
             'item'                => ['required', 'array', 'min:1'],
             'item.*.product_id'   => ['required', 'integer'],
