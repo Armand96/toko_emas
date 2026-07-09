@@ -16,7 +16,7 @@ const InventoryItemCard = ({
     return (
         <div className="flex items-center justify-between gap-3 p-3 border border-gray-200 rounded-lg bg-white">
             <div className="flex items-center gap-3 min-w-0 flex-1">
-                <CodeBadge variant={codeBadgeVariant} className="hidden sm:inline-flex">{code}</CodeBadge>
+                {/* <CodeBadge variant={codeBadgeVariant} className="hidden sm:inline-flex">{code}</CodeBadge> */}
                 <div className="w-10 h-10 rounded-md bg-amber-100/50 overflow-hidden flex-shrink-0 border border-gray-200 flex items-center justify-center">
                     {image ? (
                         <img
