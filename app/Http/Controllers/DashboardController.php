@@ -8,6 +8,8 @@ use App\Helpers\PembelianStatus;
 use App\Helpers\RemoveItemStatus;
 use App\Helpers\SalesStatus;
 use App\Helpers\TransferItemStatus;
+use App\Helpers\BuybackStatus;
+use App\Models\Buyback;
 use App\Models\Finance;
 use App\Models\Inventory;
 use App\Models\Pembelian;
@@ -34,12 +36,16 @@ class DashboardController extends Controller
         $transferItem = TransferItem::where('status', TransferItemStatus::APPROVAL)
             ->when($request->branch_id, fn ($q) => $q->where('branch_source_id', $request->branch_id))
             ->count();
+        $buyback = Buyback::where('status', BuybackStatus::APPROVAL)
+            ->when($request->branch_id, fn ($q) => $q->where('branch_id', $request->branch_id))
+            ->count();
 
         return ApiResponse::success([
             'count_penjualan' => $penjualan,
             'count_pembelian' => $pembelian,
             'count_remove_item' => $removeItem,
             'count_transfer_item' => $transferItem,
+            'count_buyback' => $buyback,
         ]);
     }
 

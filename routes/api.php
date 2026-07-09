@@ -63,6 +63,7 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
     Route::get('buyback/{buyback}', [BuybackController::class, 'single']);
     Route::get('buyback', [BuybackController::class, 'index']);
     Route::post('buyback', [BuybackController::class, 'createTrx']);
+    Route::post('buyback-image', [BuybackController::class, 'buybackImage']);
     Route::put('update-buyback', [BuybackController::class, 'changeApproval']);
 
     Route::get('transfer-item/{transferItem}', [TransferItemController::class, 'single']);

@@ -38,6 +38,7 @@ class PembelianDetailSheet implements FromCollection, WithMapping, WithStyles, W
                 'product:id,product_name',
                 'category:id,category_name',
                 'subcategory:id,category_name',
+                'supplier:id,supplier_name',
             ])
             ->where('status', PembelianStatus::DISETUJUI);
 
@@ -69,6 +70,7 @@ class PembelianDetailSheet implements FromCollection, WithMapping, WithStyles, W
             $pembelian->karat . 'K',
             $pembelian->modal,
             $pembelian->jual,
+            optional($pembelian->supplier)->supplier_name,
         ];
     }
 
@@ -128,6 +130,7 @@ class PembelianDetailSheet implements FromCollection, WithMapping, WithStyles, W
                     'G5' => 'Karat',
                     'H5' => 'Modal',
                     'I5' => 'Harga Jual',
+                    'J5' => 'Supplier',
                 ];
 
                 foreach ($headers as $cell => $value) {
@@ -135,7 +138,7 @@ class PembelianDetailSheet implements FromCollection, WithMapping, WithStyles, W
                 }
 
                 // Style row 5 headers: bold
-                $sheet->getStyle('A5:I5')->getFont()->setBold(true);
+                $sheet->getStyle('A5:J5')->getFont()->setBold(true);
 
                 // Style numeric columns
                 if ($collection->count() > 0) {
@@ -153,7 +156,7 @@ class PembelianDetailSheet implements FromCollection, WithMapping, WithStyles, W
                 }
 
                 // Auto-size columns
-                foreach (range('A', 'I') as $col) {
+                foreach (range('A', 'J') as $col) {
                     $sheet->getColumnDimension($col)->setAutoSize(true);
                 }
             },

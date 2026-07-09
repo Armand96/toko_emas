@@ -18,7 +18,7 @@ import { useQueryParams } from "../../../utils/useQueryParams";
 
 const STATUS_TONE = {
     'APPROVAL': 'warning',
-    'CETAK KWITANSI': 'info',
+    'CETAK KWITANSI': 'success',
     'SELESAI': 'success',
     'DITOLAK': 'danger',
     'DIBATALKAN': 'danger',
@@ -26,8 +26,8 @@ const STATUS_TONE = {
 
 const STATUS_LABEL = {
     'APPROVAL': 'Approval',
-    'CETAK KWITANSI': 'Cetak Kwitansi',
-    'SELESAI': 'Selesai',
+    'CETAK KWITANSI': 'Disetujui',
+    'SELESAI': 'Disetujui',
     'DITOLAK': 'Ditolak',
     'DIBATALKAN': 'Dibatalkan',
 };
@@ -65,7 +65,7 @@ const ApprovalBuyback = () => {
                 per_page: pageSize,
             });
             if (params.status) query.append('status', params.status);
-            if (params.search) query.append('buyback_id', params.search);
+            if (params.search) query.append('buyback_code', params.search);
             if (params.cabang) query.append('branch_id', params.cabang);
 
             const res = await BuybackApis.GetBuyback(`?${query.toString()}`);
@@ -192,7 +192,7 @@ const ApprovalBuyback = () => {
             accessor: 'created_at',
             render: (row) => row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY') : '-',
         },
-        { header: 'Buyback ID', accessor: 'buyback_id' },
+        { header: 'Buyback ID', accessor: 'buyback_code' },
         { header: 'Customer', accessor: 'customer', render: (row) => row.customer?.customer_name ?? '-' },
         {
             header: 'Item Produk',
@@ -240,8 +240,7 @@ const ApprovalBuyback = () => {
                     {
                         name: "status", type: "dropdown", placeholder: "Pilih status", options: [
                             { value: 'APPROVAL', label: 'Approval' },
-                            { value: 'CETAK KWITANSI', label: 'Cetak Kwitansi' },
-                            { value: 'SELESAI', label: 'Selesai' },
+                            { value: 'CETAK KWITANSI,SELESAI', label: 'Disetujui' },
                             { value: 'DITOLAK', label: 'Ditolak' },
                             { value: 'DIBATALKAN', label: 'Dibatalkan' },
                         ]

@@ -146,19 +146,23 @@ export default function Modal({
                             <span className="text-sm text-neutral-500">Harga Modal</span>
                             <span className="text-sm font-medium text-neutral-900">{HelperFunctions.formatCurrency(data?.modal)}</span>
                         </div>
-                        <div className="flex flex-col gap-1">
-                            <span className="text-sm text-neutral-500">Harga Jual</span>
-                            <span className="text-sm font-medium text-neutral-900">{HelperFunctions.formatCurrency(data?.jual)}</span>
-                        </div>
+                        {data?.jual > 0 && (
+                            <div className="flex flex-col gap-1">
+                                <span className="text-sm text-neutral-500">Harga Jual</span>
+                                <span className="text-sm font-medium text-neutral-900">{HelperFunctions.formatCurrency(data.jual)}</span>
+                            </div>
+                        )}
                     </div>
 
-                    <div className={`rounded-md p-3 flex justify-between items-center mt-1 ${margin < 0 ? 'bg-danger-50' : 'bg-success-50'}`}>
-                        <span className={`text-sm font-medium ${margin < 0 ? 'text-danger-700' : 'text-success-700'}`}>Margin keuntungan</span>
-                        <div className={`flex items-center gap-2 text-sm font-medium ${margin < 0 ? 'text-danger-700' : 'text-success-700'}`}>
-                            {margin < 0 ? <TrendDownIcon size={16} weight="bold" /> : <TrendUpIcon size={16} weight="bold" />}
-                            {HelperFunctions.formatCurrency(margin)} ({margin < 0 ? '' : '+'}{marginPercent}%)
+                    {data?.jual > 0 && (
+                        <div className={`rounded-md p-3 flex justify-between items-center mt-1 ${margin < 0 ? 'bg-danger-50' : 'bg-success-50'}`}>
+                            <span className={`text-sm font-medium ${margin < 0 ? 'text-danger-700' : 'text-success-700'}`}>Margin keuntungan</span>
+                            <div className={`flex items-center gap-2 text-sm font-medium ${margin < 0 ? 'text-danger-700' : 'text-success-700'}`}>
+                                {margin < 0 ? <TrendDownIcon size={16} weight="bold" /> : <TrendUpIcon size={16} weight="bold" />}
+                                {HelperFunctions.formatCurrency(margin)} ({margin < 0 ? '' : '+'}{marginPercent}%)
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     <hr className="border-dashed border-neutral-200 my-1" />
 

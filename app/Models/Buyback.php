@@ -20,6 +20,9 @@ class Buyback extends Model
         'sender_bank_id',
         'status',
         'note',
+        'image_path',
+        'thumb_path',
+        'bank_cabang_id',
     ];
 
     public function user()
@@ -40,6 +43,11 @@ class Buyback extends Model
     public function senderBank()
     {
         return $this->belongsTo(BankCabang::class, 'sender_bank_id', 'id');
+    }
+
+    public function bankCabang()
+    {
+        return $this->belongsTo(BankCabang::class, 'bank_cabang_id', 'id');
     }
 
     public function details()

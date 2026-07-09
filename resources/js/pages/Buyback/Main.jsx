@@ -82,7 +82,7 @@ const Main = ({ setCurentState }) => {
                 page,
                 per_page: pageSize,
             });
-            if (filters.search) params.append('buyback_id', filters.search);
+            if (filters.search) params.append('buyback_code', filters.search);
             if (filters.status) params.append('status', filters.status);
             if (isKasir() && user?.branch_id) params.append('branch_id', user.branch_id);
             else if (filters.branch_id) params.append('branch_id', filters.branch_id);
@@ -140,7 +140,7 @@ const Main = ({ setCurentState }) => {
             icon: 'warning',
             isAutoClose: false,
             title: 'Batalkan Transaksi Buyback',
-            message: `Apakah Anda yakin ingin membatalkan transaksi ${row.buyback_id}? Transaksi yang dibatalkan tidak dapat diproses kembali.`,
+            message: `Apakah Anda yakin ingin membatalkan transaksi ${row.buyback_code}? Transaksi yang dibatalkan tidak dapat diproses kembali.`,
             confirmText: 'Ya, Batalkan',
             cancelText: 'Kembali',
         }).then((res) => {
@@ -210,7 +210,7 @@ const Main = ({ setCurentState }) => {
             accessor: 'created_at',
             render: (row) => row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY') : '-',
         },
-        { header: 'Buyback ID', accessor: 'buyback_id' },
+        { header: 'Buyback ID', accessor: 'buyback_code' },
         { header: 'Customer', accessor: 'customer', render: (row) => row.customer?.customer_name ?? '-' },
         {
             header: 'Item Produk',

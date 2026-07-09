@@ -17,14 +17,7 @@ import AuthStore from "../../Store/AuthStore";
 import OptionsStore from "../../Store/OptionsStore";
 import { showAlert } from "../../utils/showAlert";
 
-const STATUS_OPTIONS_SIMPLE = [
-    { value: 'APPROVAL', label: 'Approval' },
-    { value: 'DISETUJUI', label: 'Disetujui' },
-    { value: 'DITOLAK', label: 'Ditolak' },
-    { value: 'DIBATALKAN', label: 'Dibatalkan' },
-];
-
-const STATUS_OPTIONS_KASIR = [
+const STATUS_OPTIONS_LENGKAP = [
     { value: 'APPROVAL', label: 'Approval' },
     { value: 'CETAK KWITANSI', label: 'Cetak Kwitansi' },
     { value: 'SELESAI', label: 'Selesai' },
@@ -41,39 +34,27 @@ const Main = ({ setCurentState }) => {
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const [branchOptions, setBranchOptions] = useState([]);
 
-    const STATUS_LABEL = isKasir() ? {
+    // Menu Penjualan menampilkan status lengkap untuk semua role (Owner & Kasir).
+    // Status ringkas (4 status) hanya dipakai di Menu Approval Penjualan.
+    const STATUS_LABEL = {
         'SELESAI': 'Selesai',
         'DISETUJUI': 'Cetak Kwitansi',
         'CETAK KWITANSI': 'Cetak Kwitansi',
         'APPROVAL': 'Approval',
         'DITOLAK': 'Ditolak',
         'DIBATALKAN': 'Dibatalkan',
-    } : {
-        'SELESAI': 'Disetujui',
-        'DISETUJUI': 'Disetujui',
-        'CETAK KWITANSI': 'Disetujui',
-        'APPROVAL': 'Approval',
-        'DITOLAK': 'Ditolak',
-        'DIBATALKAN': 'Dibatalkan',
     };
 
-    const STATUS_TONE = isKasir() ? {
+    const STATUS_TONE = {
         'SELESAI': 'success',
         'DISETUJUI': 'info',
         'CETAK KWITANSI': 'info',
         'APPROVAL': 'warning',
         'DITOLAK': 'danger',
         'DIBATALKAN': 'danger',
-    } : {
-        'SELESAI': 'success',
-        'DISETUJUI': 'success',
-        'CETAK KWITANSI': 'success',
-        'APPROVAL': 'warning',
-        'DITOLAK': 'danger',
-        'DIBATALKAN': 'danger',
     };
 
-    const STATUS_OPTIONS = isKasir() ? STATUS_OPTIONS_KASIR : STATUS_OPTIONS_SIMPLE;
+    const STATUS_OPTIONS = STATUS_OPTIONS_LENGKAP;
 
 
     const [paramFetch, setParamFetch] = useState({

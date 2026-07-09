@@ -39,6 +39,7 @@ class BuybackSummarySheet implements FromCollection, WithEvents, WithMapping, Wi
                 'user:id,name',
                 'details',
                 'senderBank.bank:id,bank_name',
+                'bankCabang.bank:id,bank_name',
             ])
             ->whereIn('status', ['SELESAI']);
 
@@ -70,6 +71,13 @@ class BuybackSummarySheet implements FromCollection, WithEvents, WithMapping, Wi
             $bankInfo = $bankName ? "{$bankName} - {$noRek}" : $noRek;
         }
 
+        $bankCabangInfo = null;
+        if ($buyback->bankCabang) {
+            $bankName = optional($buyback->bankCabang->bank)->bank_name ?? '';
+            $noRek = $buyback->bankCabang->nomor_rekening ?? '';
+            $bankCabangInfo = $bankName ? "{$bankName} - {$noRek}" : $noRek;
+        }
+
         return [
             $buyback->created_at?->format('d/m/Y'),
             $buyback->buyback_code,
@@ -79,9 +87,9 @@ class BuybackSummarySheet implements FromCollection, WithEvents, WithMapping, Wi
             $buyback->grand_total,
             $buyback->payment_type,
             $bankInfo,
+            $bankCabangInfo,
             optional($buyback->branch)->branch_name,
             optional($buyback->user)->name,
-            $buyback->status,
         ];
     }
 
@@ -137,9 +145,9 @@ class BuybackSummarySheet implements FromCollection, WithEvents, WithMapping, Wi
                     'F5' => 'Total Nominal',
                     'G5' => 'Pembayaran',
                     'H5' => 'Bank Keluar',
-                    'I5' => 'Cabang',
-                    'J5' => 'User',
-                    'K5' => 'Status',
+                    'I5' => 'Bank Masuk',
+                    'J5' => 'Cabang',
+                    'K5' => 'User',
                 ];
 
                 foreach ($headers as $cell => $value) {
