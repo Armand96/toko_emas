@@ -241,6 +241,8 @@ class BuybackController extends Controller
                         'serial_number' => $detail->serial_number,
                         'modal' => $detail->price,
                         'jual' => $detail->price,
+                        'image_path' => $detail->image_path,
+                        'thumb_path' => $detail->thumb_path,
                         'status' => InventoryStatus::AVAILABLE,
                         'created_at' => $dateNow,
                     ]);
@@ -285,7 +287,7 @@ class BuybackController extends Controller
         $imagePath = [];
 
         try {
-            $ids = explode(',', $validated['buyback_ids']);
+            $ids = explode(',', $validated['buyback_detail_ids']);
 
             foreach ($ids as $index => $value) {
                 $dataInsert = [
@@ -296,7 +298,7 @@ class BuybackController extends Controller
                 // Upload new image
                 $image = $request->file('images')[$index];
 
-                $imageName = 'buyback_'.$value.'_'.date('Y-m-d').'.'.$image->getClientOriginalExtension();
+                $imageName = 'buyback_detail_'.$value.'_'.date('Y-m-d').'.'.$image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
@@ -320,7 +322,7 @@ class BuybackController extends Controller
                 );
                 array_push($imagePath, $dataInsert);
 
-                Buyback::where('id', $value)->update($dataInsert);
+                BuybackDetail::where('id', $value)->update($dataInsert);
             }
 
             DB::commit();

@@ -11,6 +11,11 @@ const BuybackApis = {
     PostBuyback: (body) => {
         return Apis.Post(`api/buyback`, body);
     },
+    PostBuybackImage: (body) => {
+        return Apis.Post(`api/buyback-image`, body, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+    },
     PutBuybackApproval: (body) => {
         return Apis.Put(`api/update-buyback`, body);
     },

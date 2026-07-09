@@ -14,6 +14,8 @@ class BuybackDetail extends Model
         'karat',
         'serial_number',
         'price',
+        'image_path',
+        'thumb_path',
     ];
 
     protected $hidden = [
