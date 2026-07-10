@@ -70,7 +70,7 @@ const ModalViewBuyback = ({ isOpen, onClose, data }) => {
                         {(details || []).map((item, index) => (
                             <InventoryItemCard
                                 key={index}
-                                code={item.inventory_code || item.inventory?.inventory_code || item.product?.barcode || '-'}
+                                // code={item.inventory_code || item.inventory?.inventory_code || item.product?.barcode || '-'}
                                 name={item.product?.product_name}
                                 specs={[
                                     item.inventory?.berat ? `${item.inventory.berat}g` : (item.berat ? `${item.berat}g` : ''),
@@ -78,7 +78,7 @@ const ModalViewBuyback = ({ isOpen, onClose, data }) => {
                                     (item.serial_number || item.inventory?.serial_number) ? `Seri: ${item.serial_number || item.inventory.serial_number}` : '',
                                 ].filter(Boolean).join(' • ')}
                                 image={(() => {
-                                    const p = item.inventory?.image_path || item.product?.image_path;
+                                    const p = item?.image_path || item.product?.image_path;
                                     return p ? `/storage/${p}` : null;
                                 })()}
                                 price={item.price}

@@ -111,7 +111,7 @@ export default function ModalDetailBuyback({
                                     (item.serial_number || item.inventory?.serial_number) ? `Seri: ${item.serial_number || item.inventory.serial_number}` : '',
                                 ].filter(Boolean).join(' • ')}
                                 image={(() => {
-                                    const p = item.inventory?.image_path || item.product?.image_path;
+                                    const p = item?.image_path || item.product?.image_path;
                                     return p ? `/storage/${p}` : null;
                                 })()}
                                 price={item.price}
