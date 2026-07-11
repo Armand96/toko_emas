@@ -143,10 +143,14 @@ class PembelianReportController extends Controller
         $data = $query
             ->with([
                 'branch:id,branch_name',
+                'supplier:id,supplier_name',
             ])
+            ->leftJoin('m_suppliers', 'm_suppliers.id', '=', 'pembelians.supplier_id')
             ->selectRaw('
             batch,
             branch_id,
+            supplier_id,
+            m_suppliers.supplier_name,
             DATE(pembelians.created_at) as tanggal,
 
             COUNT(*) as total_item,
@@ -158,6 +162,8 @@ class PembelianReportController extends Controller
             ->groupBy(
                 'batch',
                 'branch_id',
+                'supplier_id',
+                'm_suppliers.supplier_name',
                 'tanggal'
             )
             ->orderByDesc('tanggal')

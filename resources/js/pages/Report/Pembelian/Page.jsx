@@ -181,6 +181,10 @@ const ReportPembelian = () => {
             header: "Tanggal", accessor: "tanggal",
             render: (row) => (row.tanggal ? new Date(row.tanggal).toLocaleDateString("id-ID") : "-"),
         },
+        {
+            header: "Supplier", accessor: "supplier_name",
+            render: (row) => row.supplier_name ?? row.supplier?.supplier_name ?? "-",
+        },
         { header: "Batch", accessor: "batch" },
         {
             header: "Cabang", accessor: "branch",
