@@ -72,20 +72,19 @@ class BuybackSummarySheet implements FromCollection, WithEvents, WithMapping, Wi
 
         $receiverInfo = null;
         if ($buyback->receiver_bank_name || $buyback->receiver_rekening) {
-            $receiverInfo = trim(($buyback->receiver_bank_name ?? '') . ' - ' . ($buyback->receiver_rekening ?? ''), ' -');
+            $receiverInfo = trim(($buyback->receiver_bank_name ?? '').' - '.($buyback->receiver_rekening ?? ''), ' -');
         }
 
         return [
             $buyback->created_at?->format('d/m/Y'),
             $buyback->buyback_code,
-            optional($buyback->customer)->customer_code,
             optional($buyback->customer)->customer_name,
             $totalItem,
             $totalBerat.' gr',
             $buyback->grand_total,
             $buyback->payment_type,
-            $bankInfo,
             $receiverInfo,
+            $bankInfo,
             optional($buyback->branch)->branch_name,
             optional($buyback->user)->name,
         ];
@@ -137,40 +136,39 @@ class BuybackSummarySheet implements FromCollection, WithEvents, WithMapping, Wi
                 $headers = [
                     'A5' => 'Tanggal',
                     'B5' => 'Buyback ID',
-                    'C5' => 'Kode Customer',
-                    'D5' => 'Customer',
-                    'E5' => 'Total Item',
-                    'F5' => 'Total Berat',
-                    'G5' => 'Total Nominal',
-                    'H5' => 'Pembayaran',
+                    'C5' => 'Customer',
+                    'D5' => 'Total Item',
+                    'E5' => 'Total Berat',
+                    'F5' => 'Total Buyback',
+                    'G5' => 'Pembayaran',
+                    'H5' => 'Bank Tujuan',
                     'I5' => 'Bank Keluar',
-                    'J5' => 'Bank Masuk',
-                    'K5' => 'Cabang',
-                    'L5' => 'User',
+                    'J5' => 'Cabang',
+                    'K5' => 'Kasir',
                 ];
 
                 foreach ($headers as $cell => $value) {
                     $sheet->setCellValue($cell, $value);
                 }
 
-                $sheet->getStyle('A5:L5')->getFont()->setBold(true);
+                $sheet->getStyle('A5:K5')->getFont()->setBold(true);
 
                 // Style numeric columns
                 if ($collection->count() > 0) {
                     $dataStart = $this->headerRows + 1;
                     $dataEnd = $this->headerRows + $collection->count();
 
-                    $sheet->getStyle("G{$dataStart}:G{$dataEnd}")
+                    $sheet->getStyle("F{$dataStart}:F{$dataEnd}")
                         ->getAlignment()
                         ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
-                    $sheet->getStyle("G{$dataStart}:G{$dataEnd}")
+                    $sheet->getStyle("F{$dataStart}:F{$dataEnd}")
                         ->getNumberFormat()
                         ->setFormatCode('#,##0');
                 }
 
                 // Auto-size columns
-                foreach (range('A', 'L') as $col) {
+                foreach (range('A', 'K') as $col) {
                     $sheet->getColumnDimension($col)->setAutoSize(true);
                 }
             },
