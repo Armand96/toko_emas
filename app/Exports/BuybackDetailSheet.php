@@ -42,7 +42,7 @@ class BuybackDetailSheet implements FromCollection, WithEvents, WithMapping, Wit
                 'product.subcategory:id,category_name',
             ])
             ->whereHas('header', function ($q) {
-                $q->whereIn('status', ['SELESAI', 'CETAK KWITANSI']);
+                $q->whereIn('status', ['SELESAI']);
 
                 if ($this->request->branch_id) {
                     $q->where('branch_id', $this->request->branch_id);
@@ -73,14 +73,12 @@ class BuybackDetailSheet implements FromCollection, WithEvents, WithMapping, Wit
 
         return [
             optional($header)->buyback_code,
-            optional($header->customer ?? null)->customer_code,
-            optional($header->customer ?? null)->customer_name,
+            $detail->inventory_code ?? '-',
             optional($product)->product_name,
             optional(optional($product)->category)->category_name,
             optional(optional($product)->subcategory)->category_name,
             ($detail->berat ?? '').' gr',
             ($detail->karat ?? '').'K',
-            $detail->serial_number ?? '-',
             $detail->price,
         ];
     }
@@ -131,39 +129,37 @@ class BuybackDetailSheet implements FromCollection, WithEvents, WithMapping, Wit
                 // Row 5: Column headers
                 $headers = [
                     'A5' => 'Buyback ID',
-                    'B5' => 'Kode Customer',
-                    'C5' => 'Customer',
-                    'D5' => 'Produk',
-                    'E5' => 'Kategori',
-                    'F5' => 'Sub Kategori',
-                    'G5' => 'Berat',
-                    'H5' => 'Karat',
-                    'I5' => 'No. Seri',
-                    'J5' => 'Harga Buyback',
+                    'B5' => 'Kode',
+                    'C5' => 'Produk',
+                    'D5' => 'Kategori',
+                    'E5' => 'Sub Kategori',
+                    'F5' => 'Berat',
+                    'G5' => 'Karat',
+                    'H5' => 'Harga Buyback',
                 ];
 
                 foreach ($headers as $cell => $value) {
                     $sheet->setCellValue($cell, $value);
                 }
 
-                $sheet->getStyle('A5:K5')->getFont()->setBold(true);
+                $sheet->getStyle('A5:H5')->getFont()->setBold(true);
 
                 // Style numeric column (Harga Buyback)
                 if ($collection->count() > 0) {
                     $dataStart = $this->headerRows + 1;
                     $dataEnd = $this->headerRows + $collection->count();
 
-                    $sheet->getStyle("J{$dataStart}:J{$dataEnd}")
+                    $sheet->getStyle("H{$dataStart}:H{$dataEnd}")
                         ->getAlignment()
                         ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
-                    $sheet->getStyle("J{$dataStart}:J{$dataEnd}")
+                    $sheet->getStyle("H{$dataStart}:H{$dataEnd}")
                         ->getNumberFormat()
                         ->setFormatCode('#,##0');
                 }
 
                 // Auto-size columns
-                foreach (range('A', 'K') as $col) {
+                foreach (range('A', 'H') as $col) {
                     $sheet->getColumnDimension($col)->setAutoSize(true);
                 }
             },
