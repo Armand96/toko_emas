@@ -5,6 +5,7 @@ import { PlusCircleIcon } from "@phosphor-icons/react";
 import { useQueryParams } from "../../utils/useQueryParams";
 import HeaderSection from "../../components/HeaderSection";
 import ActionButton, { ActionButtonGroup } from "../../components/ActionButton";
+import PrintDropdown from "../../components/PrintDropdown";
 import Badge from "../../components/Badge";
 import FilterBar from "../../components/FilterBar";
 import Table from "../../components/Table/Table";
@@ -204,6 +205,26 @@ const Main = ({ setCurentState }) => {
         }
     };
 
+    const handlePrintLabel = (row) => {
+        const items = (row.details || [])
+            .filter((d) => d.inventory_code || d.inventory?.inventory_code)
+            .map((d) => ({
+                barcode: d.inventory_code || d.inventory?.inventory_code,
+                label: d.product?.product_name ?? d.product?.name ?? '',
+            }));
+
+        if (items.length === 0) {
+            showAlert({
+                icon: 'warning',
+                title: 'Tidak Ada Label',
+                message: 'Item pada transaksi ini belum memiliki kode inventory.',
+            });
+            return;
+        }
+
+        HelperFunctions.printBarcode(items.map((i) => i.barcode), { items });
+    };
+
     const columns = [
         {
             header: 'Tanggal',
@@ -241,8 +262,17 @@ const Main = ({ setCurentState }) => {
                         <ActionButton variant="cancel" title="Batalkan" onClick={() => handleCancel(row)} />
                     )}
                     <ActionButton variant="view" title="Lihat Detail" onClick={() => handleViewTransaction(row)} />
-                    {(['SELESAI', 'CETAK KWITANSI'].includes(row.status) && isKasir()) && (
+                    {(row.status === 'CETAK KWITANSI' && isKasir()) && (
                         <ActionButton variant="print" title="Cetak Kwitansi" onClick={() => handlePrint(row)} />
+                    )}
+                    {(row.status === 'SELESAI' && isKasir()) && (
+                        <PrintDropdown
+                            title="Cetak"
+                            options={[
+                                { label: 'Cetak Kwitansi', onClick: () => handlePrint(row) },
+                                { label: 'Cetak Label', onClick: () => handlePrintLabel(row) },
+                            ]}
+                        />
                     )}
                 </ActionButtonGroup>
             ),

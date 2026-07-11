@@ -153,7 +153,7 @@ const EditItemModal = ({ isOpen, onClose, formData, initialFormData, errors = {}
                             name="jual"
                             value={formData.jual}
                             placeholder="0"
-                            isRequired
+                            // isRequired
                             error={errors.jual}
                             onChange={onChange}
                         />

@@ -86,6 +86,7 @@ const DetailItemModal = ({ isOpen, onClose, item }) => {
         HelperFunctions.printBarcode(item.inventory_code, { label: item.produk });
     };
 
+
     return (
         <ModalCustom
             isOpen={isOpen}
@@ -160,12 +161,9 @@ const DetailItemModal = ({ isOpen, onClose, item }) => {
                                 <span className="w-28 flex-shrink-0 text-gray-500">Cabang</span>
                                 <span className="text-gray-900">{item.cabang}</span>
                             </div>
-                            {item.keterangan && (
-                                <div className="flex">
-                                    <span className="w-28 flex-shrink-0 text-gray-500">Deskripsi</span>
-                                    <span className="text-gray-900">{item.keterangan}</span>
-                                </div>
-                            )}
+                            <div className="flex">
+                                <span className="text-gray-900">{item.category?.description}</span>
+                            </div>
                         </div>
                     </div>
 
