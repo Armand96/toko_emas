@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\CustomerExport;
 use App\Helpers\ApiResponse;
 use App\Models\MCustomer;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -27,25 +28,25 @@ class CustomerReportController extends Controller
 
     public function topCustomer(Request $request)
     {
-        $query = MCustomer::query();
+        $startDate = ($request->has('start_date') && $request->start_date != '')
+            ? Carbon::parse($request->start_date)->startOfDay()->format('Y-m-d H:i:s')
+            : null;
+        $endDate = ($request->has('end_date') && $request->end_date != '')
+            ? Carbon::parse($request->end_date)->endOfDay()->format('Y-m-d H:i:s')
+            : null;
 
-        if ($request->has('start_date') && $request->start_date != "") {
-            $query->where('created_at', '>=',  $request->start_date . " 00:00:00");
-        }
-        if ($request->has('end_date') && $request->end_date != "") {
-            $query->where('created_at', '<=',  $request->end_date . " 23:59:59");
-        }
+        $salesFilter = function ($q) use ($startDate, $endDate) {
+            $q->where('approval_status', 'SELESAI');
+            if ($startDate) $q->where('t_sales.created_at', '>=', $startDate);
+            if ($endDate)   $q->where('t_sales.created_at', '<=', $endDate);
+        };
 
-        $customers = $query->select(
-            [
-                'id',
-                'customer_name',
-                'phone_number'
-            ]
-        )
-            ->withCount(['sales' => fn($q) => $q->where('approval_status', 'SELESAI')])
-            ->withSum(['sales' => fn($q) => $q->where('approval_status', 'SELESAI')], 'grand_total')
-            ->withMax(['sales' => fn($q) => $q->where('approval_status', 'SELESAI')], 'created_at')
+        $customers = MCustomer::query()
+            ->select(['id', 'customer_name', 'phone_number'])
+            ->whereHas('sales', $salesFilter)
+            ->withCount(['sales' => $salesFilter])
+            ->withSum(['sales' => $salesFilter], 'grand_total')
+            ->withMax(['sales' => $salesFilter], 'created_at')
             ->orderByDesc('sales_sum_grand_total')
             ->limit(5)
             ->get();
@@ -55,26 +56,26 @@ class CustomerReportController extends Controller
 
     public function topCustomerPagination(Request $request)
     {
-        $query = MCustomer::query();
+        $startDate = ($request->has('start_date') && $request->start_date != '')
+            ? Carbon::parse($request->start_date)->startOfDay()->format('Y-m-d H:i:s')
+            : null;
+        $endDate = ($request->has('end_date') && $request->end_date != '')
+            ? Carbon::parse($request->end_date)->endOfDay()->format('Y-m-d H:i:s')
+            : null;
 
-        if ($request->has('start_date') && $request->start_date != "") {
-            $query->where('created_at', '>=',  $request->start_date . " 00:00:00");
-        }
-        if ($request->has('end_date') && $request->end_date != "") {
-            $query->where('created_at', '<=',  $request->end_date . " 23:59:59");
-        }
+        $salesFilter = function ($q) use ($startDate, $endDate) {
+            $q->where('approval_status', 'SELESAI');
+            if ($startDate) $q->where('t_sales.created_at', '>=', $startDate);
+            if ($endDate)   $q->where('t_sales.created_at', '<=', $endDate);
+        };
 
         $perPage = $request->input('per_page', 10);
-        $customers = $query->select(
-            [
-                'id',
-                'customer_name',
-                'phone_number'
-            ]
-        )
-            ->withCount(['sales' => fn($q) => $q->where('approval_status', 'SELESAI')])
-            ->withSum(['sales' => fn($q) => $q->where('approval_status', 'SELESAI')], 'grand_total')
-            ->withMax(['sales' => fn($q) => $q->where('approval_status', 'SELESAI')], 'created_at')
+        $customers = MCustomer::query()
+            ->select(['id', 'customer_name', 'phone_number'])
+            ->whereHas('sales', $salesFilter)
+            ->withCount(['sales' => $salesFilter])
+            ->withSum(['sales' => $salesFilter], 'grand_total')
+            ->withMax(['sales' => $salesFilter], 'created_at')
             ->orderByDesc('sales_sum_grand_total')
             ->paginate($perPage);
 
