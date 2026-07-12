@@ -117,14 +117,15 @@ class SalesReportController extends Controller
 
                 inventories.karat,
 
-                AVG(inventories.berat) as berat,
+                inventories.berat as berat,
 
                 COUNT(*) as terjual
             ')
             ->groupBy(
                 'm_products.id',
                 'm_products.product_name',
-                'inventories.karat'
+                'inventories.karat',
+                'inventories.berat'
             )
             ->orderByDesc('terjual')
             ->limit(5)
