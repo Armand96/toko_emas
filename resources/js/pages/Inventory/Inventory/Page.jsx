@@ -468,7 +468,7 @@ const MasterInventory = () => {
         if (!formData.product_id) newErrors.product_id = "Produk wajib dipilih";
         if (!formData.berat) newErrors.berat = "Berat wajib diisi";
         if (!formData.karat) newErrors.karat = "Karat wajib diisi";
-        if (!formData.jual) newErrors.jual = "Harga jual wajib diisi";
+        // if (!formData.jual) newErrors.jual = "Harga jual wajib diisi";
 
         if (Object.keys(newErrors).length > 0) {
             setFormErrors(newErrors);
