@@ -1,185 +1,212 @@
 import { useEffect, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
-import { PrinterIcon } from "@phosphor-icons/react";
+import { PrinterIcon, BluetoothIcon } from "@phosphor-icons/react";
+import { NiimbotPrinter, canvasToBitmap, PRINTHEAD_PX } from "./Niimbotprinter";
 
-const QR_PX = 320;
+const STORAGE_KEY = "print_barcode_data";
+const QR_SOURCE_PX = 320; // resolusi source QR sebelum di-downscale ke label
+
+// Ukuran fisik label (mm). SESUAIKAN dengan roll yang beneran ke-insert di printer --
+// ini bukan angka bebas, harus cocok fisik label die-cut yang lo pasang.
+const LABEL_WIDTH_MM = 40;
+const LABEL_HEIGHT_MM = 20;
+const PX_PER_MM = 8; // fixed, 203dpi hardware B1/B21
+
+function readItemsFromStorage() {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return { items: [], error: null };
+
+    try {
+        const parsed = JSON.parse(raw);
+        const barcodes = parsed?.barcodes || [];
+        const extra = parsed?.extra || {};
+        const perItem = parsed?.items || extra?.items || null;
+
+        const items = barcodes.map((code, i) => ({
+            barcode: code,
+            label: perItem?.[i]?.label || extra.label || extra.produk || "",
+        }));
+
+        return { items, error: null };
+    } catch (error) {
+        console.error("Gagal parse print_barcode_data:", error);
+        return { items: [], error: "Data cetak tidak valid atau rusak." };
+    }
+}
+
+function waitForNextPaint() {
+    return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+// Gabungin QR canvas (offscreen) + teks jadi satu canvas label, ukuran fixed sesuai fisik label.
+function composeLabelCanvas(qrCanvas, item) {
+    const widthPx = Math.min(LABEL_WIDTH_MM * PX_PER_MM, PRINTHEAD_PX);
+    const heightPx = LABEL_HEIGHT_MM * PX_PER_MM;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = widthPx;
+    canvas.height = heightPx;
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, widthPx, heightPx);
+
+    const qrSizePx = heightPx - 8; // QR square, sedikit margin atas-bawah
+    ctx.drawImage(qrCanvas, 4, 4, qrSizePx, qrSizePx);
+
+    const textX = qrSizePx + 12;
+    ctx.fillStyle = "#000";
+    ctx.textBaseline = "top";
+    ctx.font = "bold 14px sans-serif";
+    ctx.fillText(item.barcode, textX, 6, widthPx - textX - 4);
+
+    if (item.label) {
+        ctx.font = "11px sans-serif";
+        ctx.fillText(item.label, textX, 24, widthPx - textX - 4);
+    }
+
+    return canvas;
+}
 
 const PrintBarcode = () => {
     const [items, setItems] = useState([]);
-    const [images, setImages] = useState({});
-    const canvasRefs = useRef({});
+    const [loadError, setLoadError] = useState(null);
+    const [qrReady, setQrReady] = useState(false);
+    const qrCanvasRefs = useRef({});
+
+    const [printerStatus, setPrinterStatus] = useState("disconnected"); // disconnected | connecting | connected
+    const [printProgress, setPrintProgress] = useState(null); // { current, total } | null
+    const [printError, setPrintError] = useState(null);
+    const printerRef = useRef(null);
 
     useEffect(() => {
-        const raw = sessionStorage.getItem("print_barcode_data");
-        if (!raw) return;
-
-        try {
-            const parsed = JSON.parse(raw);
-            const barcodes = parsed?.barcodes || [];
-            const extra = parsed?.extra || {};
-            const perItem = parsed?.items || extra?.items || null;
-
-            setItems(
-                barcodes.map((code, i) => ({
-                    barcode: code,
-                    label: perItem?.[i]?.label || extra.label || extra.produk || "",
-                }))
-            );
-        } catch (error) {
-            console.error(error);
-        }
+        const { items, error } = readItemsFromStorage();
+        setItems(items);
+        setLoadError(error);
     }, []);
 
     useEffect(() => {
-        if (items.length === 0) return;
-        const id = setTimeout(() => {
-            const next = {};
-            items.forEach((_, index) => {
-                const canvas = canvasRefs.current[index];
-                if (canvas) next[index] = canvas.toDataURL("image/png");
-            });
-            setImages(next);
-        }, 100);
-        return () => clearTimeout(id);
+        if (items.length === 0) {
+            setQrReady(false);
+            return;
+        }
+        let cancelled = false;
+        setQrReady(false);
+        waitForNextPaint().then(() => {
+            if (!cancelled) setQrReady(true);
+        });
+        return () => {
+            cancelled = true;
+        };
     }, [items]);
 
+    async function handleConnect() {
+        setPrintError(null);
+        setPrinterStatus("connecting");
+        try {
+            printerRef.current = new NiimbotPrinter();
+            await printerRef.current.connect();
+            setPrinterStatus("connected");
+        } catch (err) {
+            console.error(err);
+            setPrintError("Gagal connect ke printer: " + err.message);
+            setPrinterStatus("disconnected");
+        }
+    }
+
+    async function handlePrintAll() {
+        if (!printerRef.current || printerStatus !== "connected") return;
+        setPrintError(null);
+
+        for (let i = 0; i < items.length; i++) {
+            setPrintProgress({ current: i + 1, total: items.length });
+            try {
+                const qrCanvas = qrCanvasRefs.current[i];
+                if (!qrCanvas) continue;
+                const labelCanvas = composeLabelCanvas(qrCanvas, items[i]);
+                const bitmap = canvasToBitmap(labelCanvas);
+                await printerRef.current.printLabel(bitmap);
+            } catch (err) {
+                console.error(err);
+                setPrintError(`Gagal print label ke-${i + 1} (${items[i].barcode}): ${err.message}`);
+                break;
+            }
+        }
+
+        setPrintProgress(null);
+    }
+
+    const canPrint = printerStatus === "connected" && qrReady && items.length > 0 && !printProgress;
+
     return (
-        <div className="qr-print-page">
-            <style>{`
-                .qr-print-page {
-                    min-height: 100vh;
-                    background: #f3f4f6;
-                    padding: 24px;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 16px;
-                }
-                .qr-toolbar {
-                    width: 100%;
-                    max-width: 360px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                }
-                .qr-list {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 0;
-                }
-                .qr-label {
-                    width: 58mm;
-                    box-sizing: border-box;
-                    background: #fff;
-                    padding: 1mm 1.5mm;
-                    display: flex;
-                    flex-direction: row;
-                    align-items: center;
-                    gap: 1.5mm;
-                    border-bottom: none;
-                }
-                .qr-img {
-                    width: 10mm;
-                    height: 10mm;
-                    aspect-ratio: 1 / 1;
-                    object-fit: contain;
-                    display: block;
-                    flex-shrink: 0;
-                    image-rendering: pixelated;
-                }
-                .qr-text {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0.3mm;
-                    min-width: 0;
-                }
-                .qr-code {
-                    font-size: 4pt;
-                    font-weight: 600;
-                    color: #111827;
-                    line-height: 1.1;
-                    word-break: break-all;
-                }
-                .qr-name {
-                    font-size: 3pt;
-                    color: #374151;
-                    line-height: 1.1;
-                    word-break: break-word;
-                }
-                .qr-source { position: absolute; left: -99999px; top: 0; }
-
-                @media print {
-                    @page { size: 58mm auto; margin: 0; }
-                    html, body {
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        width: 58mm;
-                        background: #fff !important;
-                    }
-                    .qr-print-page {
-                        min-height: 0;
-                        background: #fff;
-                        padding: 0;
-                        gap: 0;
-                        display: block;
-                    }
-                    .no-print { display: none !important; }
-                    .qr-list { display: block; }
-                    .qr-label {
-                        width: 58mm;
-                        padding: 1mm 1.5mm;
-                        border-bottom: none;
-                    }
-                    .qr-img {
-                        width: 1mm;
-                        height: 1mm;
-                    }
-                }
-            `}</style>
-
-            <div className="qr-toolbar no-print">
+        <div className="min-h-screen bg-gray-100 p-6 flex flex-col items-center gap-4">
+            <div className="w-full max-w-md flex items-center justify-between">
                 <div>
-                    <h1 className="text-lg font-semibold text-gray-900">Cetak QR Code</h1>
-                    <p className="text-sm text-gray-500">
-                        {items.length} label siap dicetak (thermal 58mm)
-                    </p>
+                    <h1 className="text-lg font-semibold text-gray-900">Cetak Label (NIIMBOT)</h1>
+                    <p className="text-sm text-gray-500">{items.length} label siap dicetak</p>
                 </div>
-                <button
-                    onClick={() => window.print()}
-                    className="btn-primary py-2 px-4 rounded-lg flex items-center gap-2"
-                >
-                    <PrinterIcon size={20} /> Cetak
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={handleConnect}
+                        disabled={printerStatus === "connecting" || printerStatus === "connected"}
+                        className="px-3 py-2 bg-gray-800 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
+                    >
+                        <BluetoothIcon size={18} />
+                        {printerStatus === "connected"
+                            ? "Terhubung"
+                            : printerStatus === "connecting"
+                            ? "Menghubungkan..."
+                            : "Connect"}
+                    </button>
+                    <button
+                        onClick={handlePrintAll}
+                        disabled={!canPrint}
+                        className="px-3 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
+                    >
+                        <PrinterIcon size={18} />
+                        {printProgress ? `${printProgress.current}/${printProgress.total}` : "Print Semua"}
+                    </button>
+                </div>
             </div>
 
-            <div className="qr-source" aria-hidden="true">
+            {loadError && <p className="text-sm text-red-600">{loadError}</p>}
+            {printError && <p className="text-sm text-red-600 max-w-md">{printError}</p>}
+            {printerStatus === "disconnected" && items.length > 0 && (
+                <p className="text-xs text-gray-400 max-w-md text-center">
+                    Klik Connect dulu, pilih printer NIIMBOT dari daftar Bluetooth (Chrome/Edge only).
+                </p>
+            )}
+
+            {/* QR source disembunyikan -- cuma dipakai buat digambar ulang ke canvas label */}
+            <div style={{ position: "absolute", left: -99999, top: 0 }} aria-hidden="true">
                 {items.map((item, index) => (
                     <QRCodeCanvas
-                        key={index}
+                        key={`${item.barcode}-${index}`}
                         value={item.barcode}
-                        size={QR_PX}
+                        size={QR_SOURCE_PX}
                         level="M"
                         marginSize={2}
-                        ref={(el) => (canvasRefs.current[index] = el)}
+                        ref={(el) => (qrCanvasRefs.current[index] = el)}
                     />
                 ))}
             </div>
 
-            <div className="qr-list">
-                {items.length === 0 && (
-                    <p className="text-sm text-gray-500 text-center py-8 no-print">
-                        Tidak ada data untuk dicetak.
-                    </p>
+            {/* Preview visual di layar (bukan yang dikirim ke printer, cuma referensi) */}
+            <div className="flex flex-col gap-2 w-full max-w-md">
+                {items.length === 0 && !loadError && (
+                    <p className="text-sm text-gray-500 text-center py-8">Tidak ada data untuk dicetak.</p>
                 )}
                 {items.map((item, index) => (
-                    <div key={index} className="qr-label">
-                        {images[index] && (
-                            <img src={images[index]} alt={item.barcode} className="qr-img" />
-                        )}
-                        <div className="qr-text">
-                            <span className="qr-code">{item.barcode}</span>
-                            {item.label && <span className="qr-name">{item.label}</span>}
+                    <div
+                        key={`${item.barcode}-${index}`}
+                        className="bg-white border border-gray-200 rounded-lg p-3 flex items-center gap-3"
+                    >
+                        <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center text-[8px] text-gray-400">
+                            QR
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-900">{item.barcode}</p>
+                            {item.label && <p className="text-xs text-gray-500">{item.label}</p>}
                         </div>
                     </div>
                 ))}
