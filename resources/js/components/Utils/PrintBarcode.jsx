@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { PrinterIcon, BluetoothIcon } from "@phosphor-icons/react";
-import { NiimbotPrinter, canvasToBitmap, PRINTHEAD_PX } from "./niimbotPrinter";
+import { NiimbotPrinter, canvasToBitmap, PRINTHEAD_PX } from "./Niimbotprinter";
 
 const STORAGE_KEY = "print_barcode_data";
 const QR_SOURCE_PX = 320; // resolusi source QR sebelum di-downscale ke label
