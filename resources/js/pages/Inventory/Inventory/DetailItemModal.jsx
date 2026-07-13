@@ -162,7 +162,7 @@ const DetailItemModal = ({ isOpen, onClose, item }) => {
                                 <span className="text-gray-900">{item.cabang}</span>
                             </div>
                             <div className="flex">
-                                <span className="text-gray-900">{item.category?.description}</span>
+                                <span className="text-gray-900">{item.product?.description}</span>
                             </div>
                         </div>
                     </div>
