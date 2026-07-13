@@ -57,9 +57,18 @@ function wrapText(ctx, text, maxWidth) {
     return lines;
 }
 
+// Gambar teks yang di-rotate 90 derajat (vertikal, extend ke bawah dari titik x,y)
+function drawVerticalText(ctx, text, x, y) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.PI / 2);
+    ctx.fillText(text, 0, 0);
+    ctx.restore();
+}
+
 // Gabungin QR canvas (offscreen) + teks jadi satu canvas label, ukuran fixed sesuai fisik label.
-// Layout: QR di kiri (diperkecil), teks di kanan bertumpuk vertikal (multi-baris).
-// Konten nempel di bagian atas canvas, sisanya dibiarin blank (gak nambah kerja print row kosong).
+// Layout: QR di kiri (normal, gak dirotate), teks di kanan VERTIKAL (rotate 90, extend ke bawah).
+// Konten nempel di bagian atas canvas, sisanya dibiarin blank.
 function composeLabelCanvas(qrCanvas, item) {
     const widthPx = Math.min(LABEL_WIDTH_MM * PX_PER_MM, PRINTHEAD_PX);
     const heightPx = LABEL_HEIGHT_MM * PX_PER_MM;
@@ -73,29 +82,31 @@ function composeLabelCanvas(qrCanvas, item) {
     ctx.fillRect(0, 0, widthPx, heightPx);
 
     const margin = 8;
-    const qrSizePx = Math.round(widthPx * 0.32); // QR diperkecil lagi
+    const qrSizePx = Math.round(widthPx * 0.32);
     ctx.drawImage(qrCanvas, margin, margin, qrSizePx, qrSizePx);
 
-    const textX = margin + qrSizePx + 10;
-    const maxTextWidth = widthPx - textX - margin;
-    let cursorY = margin;
+    const textStartX = margin + qrSizePx + 10;
+    // Karena teks di-rotate 90, "panjang" teks sekarang terbatas oleh TINGGI label, bukan lebar.
+    const maxTextLength = heightPx - margin * 2;
 
     ctx.fillStyle = "#000";
     ctx.textBaseline = "top";
     ctx.textAlign = "left";
 
+    let cursorX = textStartX; // tiap baris baru geser ke KANAN (karena teksnya vertikal)
+
     ctx.font = "bold 13px sans-serif";
-    for (const line of wrapText(ctx, item.barcode, maxTextWidth)) {
-        ctx.fillText(line, textX, cursorY, maxTextWidth);
-        cursorY += 15;
+    for (const line of wrapText(ctx, item.barcode, maxTextLength)) {
+        drawVerticalText(ctx, line, cursorX, margin);
+        cursorX += 15;
     }
 
     if (item.label) {
-        cursorY += 4;
+        cursorX += 4;
         ctx.font = "10px sans-serif";
-        for (const line of wrapText(ctx, item.label, maxTextWidth)) {
-            ctx.fillText(line, textX, cursorY, maxTextWidth);
-            cursorY += 12;
+        for (const line of wrapText(ctx, item.label, maxTextLength)) {
+            drawVerticalText(ctx, line, cursorX, margin);
+            cursorX += 12;
         }
     }
 
