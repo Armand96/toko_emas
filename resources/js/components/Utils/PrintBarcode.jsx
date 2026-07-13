@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { PrinterIcon, BluetoothIcon } from "@phosphor-icons/react";
-import { NiimbotPrinter, canvasToBitmap, PRINTHEAD_PX } from "./Niimbotprinter";
+import { NiimbotPrinter, canvasToBitmap, PRINTHEAD_PX } from "./niimbotPrinter";
 
 const STORAGE_KEY = "print_barcode_data";
 const QR_SOURCE_PX = 320; // resolusi source QR sebelum di-downscale ke label
 
-// Ukuran fisik label (mm). SESUAIKAN dengan roll yang beneran ke-insert di printer --
-// ini bukan angka bebas, harus cocok fisik label die-cut yang lo pasang.
-const LABEL_WIDTH_MM = 40;
-const LABEL_HEIGHT_MM = 20;
+// Ukuran fisik label (mm) -- dikonfirmasi 30mm x 70mm.
+// Kalau roll diganti ukuran lain, angka ini WAJIB diupdate juga.
+const LABEL_WIDTH_MM = 30;
+const LABEL_HEIGHT_MM = 70;
 const PX_PER_MM = 8; // fixed, 203dpi hardware B1/B21
 
 function readItemsFromStorage() {
@@ -38,7 +38,27 @@ function waitForNextPaint() {
     return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
 
+// Word-wrap manual -- Canvas API gak punya built-in wrap, jadi kita ukur tiap kata sendiri.
+function wrapText(ctx, text, maxWidth) {
+    const words = text.split(" ");
+    const lines = [];
+    let current = "";
+
+    for (const word of words) {
+        const test = current ? `${current} ${word}` : word;
+        if (ctx.measureText(test).width > maxWidth && current) {
+            lines.push(current);
+            current = word;
+        } else {
+            current = test;
+        }
+    }
+    if (current) lines.push(current);
+    return lines;
+}
+
 // Gabungin QR canvas (offscreen) + teks jadi satu canvas label, ukuran fixed sesuai fisik label.
+// Layout VERTIKAL: QR di depan/atas (row 0 = ujung yang keluar duluan dari printer), teks di belakang/bawah.
 function composeLabelCanvas(qrCanvas, item) {
     const widthPx = Math.min(LABEL_WIDTH_MM * PX_PER_MM, PRINTHEAD_PX);
     const heightPx = LABEL_HEIGHT_MM * PX_PER_MM;
@@ -51,18 +71,31 @@ function composeLabelCanvas(qrCanvas, item) {
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, widthPx, heightPx);
 
-    const qrSizePx = heightPx - 8; // QR square, sedikit margin atas-bawah
-    ctx.drawImage(qrCanvas, 4, 4, qrSizePx, qrSizePx);
+    const margin = 8;
+    const qrSizePx = widthPx - margin * 2; // QR selebar label (dikurangi margin kiri-kanan)
+    ctx.drawImage(qrCanvas, margin, margin, qrSizePx, qrSizePx);
 
-    const textX = qrSizePx + 12;
+    // Teks mulai tepat di bawah QR
+    let cursorY = margin + qrSizePx + 10;
     ctx.fillStyle = "#000";
     ctx.textBaseline = "top";
-    ctx.font = "bold 14px sans-serif";
-    ctx.fillText(item.barcode, textX, 6, widthPx - textX - 4);
+    ctx.textAlign = "center";
+    const centerX = widthPx / 2;
+    const maxTextWidth = widthPx - margin * 2;
+
+    ctx.font = "bold 16px sans-serif";
+    for (const line of wrapText(ctx, item.barcode, maxTextWidth)) {
+        ctx.fillText(line, centerX, cursorY, maxTextWidth);
+        cursorY += 18;
+    }
 
     if (item.label) {
-        ctx.font = "11px sans-serif";
-        ctx.fillText(item.label, textX, 24, widthPx - textX - 4);
+        cursorY += 4;
+        ctx.font = "12px sans-serif";
+        for (const line of wrapText(ctx, item.label, maxTextWidth)) {
+            ctx.fillText(line, centerX, cursorY, maxTextWidth);
+            cursorY += 14;
+        }
     }
 
     return canvas;
