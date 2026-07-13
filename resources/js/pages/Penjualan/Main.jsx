@@ -91,8 +91,8 @@ const Main = ({ setCurentState }) => {
             });
             if (filters.search) params.append('order_id', filters.search);
             if (filters.status) {
-                params.append('approval_status',  filters.status);
-                params.append('status', filters.status);
+                params.append('approval_status',  filters.status === "DISETUJUI" ? "CETAK_KWINTANSI" : filters.status);
+                params.append('status', filters.status === "DISETUJUI" ? "CETAK_KWINTANSI" : filters.status);
             }
             if (isKasir() && user?.branch_id) params.append('branch_id', user.branch_id);
             else if (filters.branch_id) params.append('branch_id', filters.branch_id);
