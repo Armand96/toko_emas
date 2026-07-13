@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('inventory_edit_histories', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('inventory_id', false, true);
-            $table->bigInteger('pembelian_id', false, true);
+            $table->bigInteger('pembelian_id', false, true)->nullable();
             $table->bigInteger('product_id', false, true);
             $table->bigInteger('category_id', false, true);
             $table->bigInteger('subcategory_id', false, true);

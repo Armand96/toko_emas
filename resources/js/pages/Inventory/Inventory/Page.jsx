@@ -21,11 +21,11 @@ import AuthStore from "../../../Store/AuthStore";
 
 const STATUS_CONFIG = {
     Available: { bg: "bg-success-100", text: "text-success-700" },
-    Reserved:  { bg: "bg-warning-100", text: "text-warning-700" },
-    Transit:   { bg: "bg-warning-100", text: "text-warning-700" },
-    Sold:      { bg: "bg-gray-100",    text: "text-gray-600" },
-    Repair:    { bg: "bg-info-100",    text: "text-info-700" },
-    Lost:      { bg: "bg-danger-100",  text: "text-danger-700" },
+    Reserved: { bg: "bg-warning-100", text: "text-warning-700" },
+    Transit: { bg: "bg-warning-100", text: "text-warning-700" },
+    Sold: { bg: "bg-gray-100", text: "text-gray-600" },
+    Repair: { bg: "bg-info-100", text: "text-info-700" },
+    Lost: { bg: "bg-danger-100", text: "text-danger-700" },
 };
 
 const STATUS_OPTIONS = ["AVAILABLE", "RESERVED", "TRANSIT", "SOLD", "REPAIR", "LOST"]
@@ -46,23 +46,23 @@ const MasterInventory = () => {
         { kode: urlKode, status: urlStatus, kategori: urlKategori, cabang: urlCabang, page: urlPage, per_page: urlPerPage },
         setQuery,
     ] = useQueryParams({ kode: "", status: "", kategori: "", cabang: "", page: 1, per_page: 10 });
-    const [search, setSearch]         = useState({ kode: urlKode });
-    const [filter, setFilter]         = useState({ status: urlStatus, kategori: urlKategori, cabang: urlCabang });
+    const [search, setSearch] = useState({ kode: urlKode });
+    const [filter, setFilter] = useState({ status: urlStatus, kategori: urlKategori, cabang: urlCabang });
     const [firstLoading, setFirstLoading] = useState(false);
     const [searchBounce] = useDebounce(search, 500);
 
-    const [productOptions, setProductOptions]   = useState([]);
-    const [branchOptions, setBranchOptions]     = useState([]);
+    const [productOptions, setProductOptions] = useState([]);
+    const [branchOptions, setBranchOptions] = useState([]);
     const [categoryOptions, setCategoryOptions] = useState([]);
     const [kategoriFilterOptions, setKategoriFilterOptions] = useState([]);
 
     const [showDetailModal, setShowDetailModal] = useState(false);
-    const [showEditModal, setShowEditModal]     = useState(false);
-    const [selectedItem, setSelectedItem]       = useState(null);
-    const [formData, setFormData]               = useState(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [formData, setFormData] = useState(null);
     const [initialFormData, setInitialFormData] = useState(null);
-    const [formErrors, setFormErrors]           = useState({});
-    const [selectedRows, setSelectedRows]       = useState([]);
+    const [formErrors, setFormErrors] = useState({});
+    const [selectedRows, setSelectedRows] = useState([]);
 
     const setLoading = LoadingStore((state) => state.setLoading);
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
@@ -256,8 +256,8 @@ const MasterInventory = () => {
     };
 
     const mapInventory = (row, editHistories = null, currentData = null, detail = null) => {
-        const product  = row.product || productOptions.find((p) => p.value === row.product_id)?.details;
-        const branch   = row.branch || branchOptions.find((b) => b.value === row.branch_id)?.details;
+        const product = row.product || productOptions.find((p) => p.value === row.product_id)?.details;
+        const branch = row.branch || branchOptions.find((b) => b.value === row.branch_id)?.details;
 
         const kategori = row.sub_category
             ? (row.category?.category_name || '-')
@@ -351,7 +351,7 @@ const MasterInventory = () => {
         }
     }, [searchBounce]);
 
-    const onChangePage     = (page)     => {
+    const onChangePage = (page) => {
         setQuery({ page, per_page: paramFetch.per_page });
         fetchData(page, paramFetch.per_page, search.kode, filter.status, filter.kategori, filter.cabang);
     };
@@ -590,7 +590,7 @@ const MasterInventory = () => {
         {
             header: "Jual",
             accessor: "jual",
-            render: (row) => <span className="text-gray-700">{HelperFunctions.formatCurrency(row.jual)}</span>,
+            render: (row) => <span className="text-gray-700">{row.jual <= 0 ? "-" : HelperFunctions.formatCurrency(row.jual)}</span>,
         },
         {
             header: "Cabang",
