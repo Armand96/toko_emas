@@ -12,6 +12,20 @@ const LABEL_WIDTH_MM = 30;
 const LABEL_HEIGHT_MM = 70;
 const PX_PER_MM = 8; // fixed, 203dpi hardware B1/B21
 
+// Caller ada yang kirim nilai raw (2.5 / 24) ada yang sudah berformat ("2.5g" / "24K"),
+// jadi dinormalisasi dulu sebelum ditempel unit.
+function formatBerat(value) {
+    if (value === null || value === undefined || value === "") return "";
+    const raw = String(value).replace(/\s*(gram|gr|g)$/i, "").trim();
+    return raw ? `${raw}gr` : "";
+}
+
+function formatKarat(value) {
+    if (value === null || value === undefined || value === "") return "";
+    const raw = String(value).replace(/\s*k$/i, "").trim();
+    return raw ? `${raw}K` : "";
+}
+
 function readItemsFromStorage() {
     const raw = sessionStorage.getItem(STORAGE_KEY);
     if (!raw) return { items: [], error: null };
@@ -25,6 +39,8 @@ function readItemsFromStorage() {
         const items = barcodes.map((code, i) => ({
             barcode: code,
             label: perItem?.[i]?.label || extra.label || extra.produk || "",
+            berat: formatBerat(perItem?.[i]?.berat ?? extra.berat),
+            karat: formatKarat(perItem?.[i]?.karat ?? extra.karat),
         }));
 
         return { items, error: null };
@@ -67,8 +83,8 @@ function drawVerticalText(ctx, text, x, y) {
 }
 
 // Gabungin QR canvas (offscreen) + teks jadi satu canvas label, ukuran fixed sesuai fisik label.
-// Layout: QR di kiri (normal, gak dirotate), teks di kanan VERTIKAL (rotate 90, extend ke bawah).
-// Konten nempel di bagian atas canvas, sisanya dibiarin blank.
+// Layout: QR di atas (center horizontal, gak dirotate), teks di bawahnya VERTIKAL
+// (rotate 90, extend ke bawah), grup kolom teks juga di-center horizontal.
 function composeLabelCanvas(qrCanvas, item) {
     const widthPx = Math.min(LABEL_WIDTH_MM * PX_PER_MM, PRINTHEAD_PX);
     const heightPx = LABEL_HEIGHT_MM * PX_PER_MM;
@@ -102,12 +118,20 @@ function composeLabelCanvas(qrCanvas, item) {
     }
 
     if (item.label) {
-        cursorX += 4;
-        ctx.font = "10px sans-serif";
+        cursorX += 70;
+        ctx.font = "16px sans-serif";
         for (const line of wrapText(ctx, item.label, maxTextLength)) {
             drawVerticalText(ctx, line, cursorX, margin);
             cursorX += 12;
         }
+    }
+
+    const meta = [item.berat, item.karat].filter(Boolean).join(" · ");
+    if (meta) {
+        cursorX += 8;
+        ctx.font = "bold 14px sans-serif";
+        drawVerticalText(ctx, meta, cursorX, margin);
+        cursorX += 16;
     }
 
     return canvas;
@@ -251,7 +275,11 @@ const PrintBarcode = () => {
                         </div>
                         <div>
                             <p className="text-sm font-medium text-gray-900">{item.barcode}</p>
-                            {item.label && <p className="text-xs text-gray-500">{item.label}</p>}
+                            {(item.label || item.berat || item.karat) && (
+                                <p className="text-xs text-gray-500">
+                                    {[item.label, item.berat, item.karat].filter(Boolean).join(" · ")}
+                                </p>
+                            )}
                         </div>
                     </div>
                 ))}

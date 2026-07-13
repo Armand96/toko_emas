@@ -43,7 +43,7 @@ export default function Modal({
                         </button>
                         <button
                             type="button"
-                            onClick={() => HelperFunctions.printBarcode(data?.barcode, { label: data?.product?.product_name })}
+                            onClick={() => HelperFunctions.printBarcode(data?.barcode, { label: data?.product?.product_name, berat: data?.berat, karat: data?.karat })}
                             className="btn-primary flex items-center gap-2 rounded-lg py-2 px-4"
                         >
                             <PrinterIcon size={18} weight="bold" /> Cetak QR Code

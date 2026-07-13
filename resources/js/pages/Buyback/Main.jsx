@@ -211,6 +211,8 @@ const Main = ({ setCurentState }) => {
             .map((d) => ({
                 barcode: d.inventory_code || d.inventory?.inventory_code,
                 label: d.product?.product_name ?? d.product?.name ?? '',
+                berat: d.berat ?? d.inventory?.berat,
+                karat: d.karat ?? d.inventory?.karat,
             }));
 
         if (items.length === 0) {

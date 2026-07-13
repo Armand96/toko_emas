@@ -83,7 +83,7 @@ const DetailItemModal = ({ isOpen, onClose, item }) => {
     const marginPct = item.modal ? ((margin / item.modal) * 100).toFixed(1) : 0;
 
     const handlePrintBarcode = () => {
-        HelperFunctions.printBarcode(item.inventory_code, { label: item.produk });
+        HelperFunctions.printBarcode(item.inventory_code, { label: item.produk, berat: item.berat, karat: item.karat });
     };
 
 

@@ -519,6 +519,8 @@ const MasterInventory = () => {
             return {
                 barcode: item.inventory_code,
                 label: product?.product_name ?? '',
+                berat: item.berat,
+                karat: item.karat,
             };
         });
         HelperFunctions.printBarcode(barcodes, { items });

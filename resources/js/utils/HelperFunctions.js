@@ -15,7 +15,7 @@ const HelperFunctions = {
      * Dipakai di Pembelian (batch baru) & Item Inventory (item existing).
      *
      * @param {string|string[]} barcodes - satu barcode atau array barcode
-     * @param {object} [extra] - data tambahan per barcode untuk ditampilkan (mis. { label, produk })
+     * @param {object} [extra] - data tambahan per barcode untuk ditampilkan (mis. { label, produk, berat, karat })
      */
     printBarcode: (barcodes, extra = {}) => {
         const list = Array.isArray(barcodes) ? barcodes : [barcodes];
