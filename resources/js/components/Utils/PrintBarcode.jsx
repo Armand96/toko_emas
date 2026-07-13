@@ -58,7 +58,8 @@ function wrapText(ctx, text, maxWidth) {
 }
 
 // Gabungin QR canvas (offscreen) + teks jadi satu canvas label, ukuran fixed sesuai fisik label.
-// Layout VERTIKAL: QR di depan/atas (row 0 = ujung yang keluar duluan dari printer), teks di belakang/bawah.
+// Layout: QR di kiri (diperkecil), teks di kanan bertumpuk vertikal (multi-baris).
+// Konten nempel di bagian atas canvas, sisanya dibiarin blank (gak nambah kerja print row kosong).
 function composeLabelCanvas(qrCanvas, item) {
     const widthPx = Math.min(LABEL_WIDTH_MM * PX_PER_MM, PRINTHEAD_PX);
     const heightPx = LABEL_HEIGHT_MM * PX_PER_MM;
@@ -72,29 +73,29 @@ function composeLabelCanvas(qrCanvas, item) {
     ctx.fillRect(0, 0, widthPx, heightPx);
 
     const margin = 8;
-    const qrSizePx = widthPx - margin * 2; // QR selebar label (dikurangi margin kiri-kanan)
+    const qrSizePx = Math.round(widthPx * 0.32); // QR diperkecil lagi
     ctx.drawImage(qrCanvas, margin, margin, qrSizePx, qrSizePx);
 
-    // Teks mulai tepat di bawah QR
-    let cursorY = margin + qrSizePx + 10;
+    const textX = margin + qrSizePx + 10;
+    const maxTextWidth = widthPx - textX - margin;
+    let cursorY = margin;
+
     ctx.fillStyle = "#000";
     ctx.textBaseline = "top";
-    ctx.textAlign = "center";
-    const centerX = widthPx / 2;
-    const maxTextWidth = widthPx - margin * 2;
+    ctx.textAlign = "left";
 
-    ctx.font = "bold 16px sans-serif";
+    ctx.font = "bold 13px sans-serif";
     for (const line of wrapText(ctx, item.barcode, maxTextWidth)) {
-        ctx.fillText(line, centerX, cursorY, maxTextWidth);
-        cursorY += 18;
+        ctx.fillText(line, textX, cursorY, maxTextWidth);
+        cursorY += 15;
     }
 
     if (item.label) {
         cursorY += 4;
-        ctx.font = "12px sans-serif";
+        ctx.font = "10px sans-serif";
         for (const line of wrapText(ctx, item.label, maxTextWidth)) {
-            ctx.fillText(line, centerX, cursorY, maxTextWidth);
-            cursorY += 14;
+            ctx.fillText(line, textX, cursorY, maxTextWidth);
+            cursorY += 12;
         }
     }
 
