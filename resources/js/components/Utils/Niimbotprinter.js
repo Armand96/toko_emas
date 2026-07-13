@@ -143,7 +143,10 @@ export class NiimbotPrinter {
     const start = Date.now();
     while (Date.now() - start < 25000) {
       const resp = await this._send(0xa3, [1], 0xb3);
-      const page = (resp[6] << 8) | resp[7];
+      // Frame: [0x55,0x55,cmd,len,...data,crc,0xAA,0xAA] -- data mulai di index 4.
+      // page(u16 BE) = data[0..1] = resp[4..5]. SEBELUMNYA salah baca resp[6]/resp[7]
+      // (itu print%/feed%, bukan page) -- itu penyebab PrintEnd kekirim kepagian & label kepotong.
+      const page = (resp[4] << 8) | resp[5];
       if (page >= 1) break;
       await sleep(200);
     }
