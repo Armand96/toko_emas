@@ -38,9 +38,9 @@ function readItemsFromStorage() {
 
         const items = barcodes.map((code, i) => ({
             barcode: code,
-            label: perItem?.[i]?.label || extra.label || extra.produk || "",
             berat: formatBerat(perItem?.[i]?.berat ?? extra.berat),
             karat: formatKarat(perItem?.[i]?.karat ?? extra.karat),
+            label: perItem?.[i]?.label || extra.label || extra.produk || "",
         }));
 
         return { items, error: null };
