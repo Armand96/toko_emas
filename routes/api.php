@@ -54,6 +54,7 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
     Route::get('inventory/{inventory}', [InventoryController::class, 'single']);
     Route::put('inventory/{inventory}', [InventoryController::class, 'update']);
     Route::get('inventory', [InventoryController::class, 'index']);
+    Route::post('inventory', [InventoryController::class, 'store']);
 
     Route::get('sales/{sales}', [TSalesController::class, 'single']);
     Route::get('sales', [TSalesController::class, 'index']);

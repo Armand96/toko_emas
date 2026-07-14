@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import { useDebounce } from "use-debounce";
-import { PrinterIcon } from "@phosphor-icons/react";
+import { PlusCircleIcon, PrinterIcon } from "@phosphor-icons/react";
 import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
 import Badge from "../../../components/Badge";
 import CodeBadge from "../../../components/CodeBadge";
@@ -38,7 +39,9 @@ const toTitleCase = (status) => {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 const MasterInventory = () => {
+    const navigate = useNavigate();
     const can = PermissionStore((s) => s.can);
+    const canAddInventory = PermissionStore((s) => s.can('create', '/inventory/inventory/add'));
     const isKasir = PermissionStore((s) => s.isKasir);
     const user = AuthStore((s) => s.user);
     const [paramFetch, setParamFetch] = useState({ data: [], current_page: 1, total: 0, per_page: 10 });
@@ -627,6 +630,9 @@ const MasterInventory = () => {
             <HeaderSection
                 title="Item Inventory"
                 description="List item inventory untuk tracking status stok dan informasi detail setiap item."
+                icon={canAddInventory ? PlusCircleIcon : undefined}
+                textButton={canAddInventory ? "Tambah Inventory" : undefined}
+                onClick={canAddInventory ? () => navigate("/inventory/inventory/add") : undefined}
             />
 
             {/* Filter row */}

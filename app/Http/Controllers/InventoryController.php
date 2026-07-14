@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 // use App\Helpers\ApiResponse;
 
 use App\Helpers\ApiResponse;
+use App\Helpers\InventoryStatus;
+use App\Http\Requests\StoreInventoryRequest;
 use App\Http\Requests\UpdateInventoryRequest;
+use App\Models\MProduct;
 use App\Models\Inventory;
 use App\Models\InventoryEditHistory;
 use Illuminate\Http\Request;
@@ -51,6 +54,57 @@ class InventoryController extends Controller
         $inventories = $query->with(['branch', 'product', 'category', 'subCategory'])->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($inventories);
+    }
+
+    /**
+     * Tambah item inventory secara langsung (bukan lewat pembelian/buyback).
+     * Dibatasi FE untuk role Owner, Super Admin, PIC — dicek ulang di sini sebagai defense-in-depth.
+     */
+    public function store(StoreInventoryRequest $request)
+    {
+        if (!in_array($request->user()->role_id, [1, 2, 3])) {
+            return ApiResponse::error('Anda tidak memiliki akses untuk menambah item inventory', null, 403);
+        }
+
+        $validated = $request->validated();
+
+        DB::beginTransaction();
+
+        try {
+            $product = MProduct::findOrFail($validated['product_id']);
+
+            $latestInventory = Inventory::where('product_id', $validated['product_id'])
+                ->lockForUpdate()
+                ->orderByDesc('id')
+                ->value('inventory_code');
+            $lastSeq = $latestInventory ? (int) substr($latestInventory, strrpos($latestInventory, '-') + 1) : 0;
+            $inventoryCode = $product->barcode.'-'.str_pad($lastSeq + 1, 4, '0', STR_PAD_LEFT);
+
+            $inventory = Inventory::create([
+                'inventory_code' => $inventoryCode,
+                'pembelian_id' => null,
+                'buyback_id' => null,
+                'product_id' => $validated['product_id'],
+                'category_id' => $validated['category_id'],
+                'subcategory_id' => $validated['subcategory_id'] ?? null,
+                'branch_id' => $validated['branch_id'],
+                'barcode' => $product->barcode,
+                'berat' => $validated['berat'],
+                'karat' => $validated['karat'],
+                'modal' => $validated['modal'],
+                'jual' => $validated['jual'] ?? 0,
+                'note' => $validated['note'] ?? null,
+                'serial_number' => $validated['serial_number'] ?? null,
+                'status' => InventoryStatus::AVAILABLE,
+            ]);
+
+            DB::commit();
+
+            return ApiResponse::success($inventory, 'Item inventory berhasil ditambahkan', 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return ApiResponse::error($th->getMessage(), $th, 500);
+        }
     }
 
     public function single(Inventory $inventory)

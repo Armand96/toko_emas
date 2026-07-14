@@ -49,6 +49,9 @@ const InventoryApis = {
     PutInventory: (id, body) => {
         return Apis.Put(`api/inventory/${id}`, body);
     },
+    PostInventory: (body) => {
+        return Apis.Post(`api/inventory`, body);
+    },
     GetRemoveItem: (params) => {
         return Apis.Get(`api/remove-item${params}`).then(({ data }) => data);
     },
