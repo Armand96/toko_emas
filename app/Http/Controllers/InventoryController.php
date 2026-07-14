@@ -54,7 +54,7 @@ class InventoryController extends Controller
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
-        $inventories = $query->with(['branch', 'product', 'category', 'subCategory'])->orderBy('created_at', 'desc')->paginate($perPage);
+        $inventories = $query->with(['branch', 'product', 'category', 'subCategory'])->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($inventories);
     }

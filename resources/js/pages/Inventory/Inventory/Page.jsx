@@ -301,9 +301,9 @@ const MasterInventory = () => {
                 + (effectiveBranch ? `&branch_id=${effectiveBranch}` : "");
 
             const res = await InventoryApis.GetInventory(params);
-            if (res?.data) {
-                res.data = [...res.data].sort((a, b) => (a.inventory_code || '').localeCompare(b.inventory_code || ''));
-            }
+            // if (res?.data) {
+            //     res.data = [...res.data].sort((a, b) => (a.inventory_code || '').localeCompare(b.inventory_code || ''));
+            // }
             setParamFetch(res);
             setFirstLoading(true);
         } catch (error) {
