@@ -1,5 +1,4 @@
 import MasterInventory from "../pages/Inventory/Inventory/Page";
-import FormAddInventory from "../pages/Inventory/Inventory/FormAdd";
 import MasterKategori from "../pages/Inventory/MasterKategori/Page";
 import MasterProduk from "../pages/Inventory/MasterProduk/Page";
 import TransferInventory from "../pages/Inventory/transfer/Page";
@@ -20,10 +19,6 @@ export const Inventory = [
       {
         path: "/inventory/inventory",
         element: <MasterInventory />,
-    },
-      {
-        path: "/inventory/inventory/add",
-        element: <FormAddInventory />,
     },
       {
         path: "/inventory/transfer",

@@ -52,6 +52,11 @@ const InventoryApis = {
     PostInventory: (body) => {
         return Apis.Post(`api/inventory`, body);
     },
+    PostInventoryImage: (body) => {
+        return Apis.Post(`api/inventory-image`, body, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+    },
     GetRemoveItem: (params) => {
         return Apis.Get(`api/remove-item${params}`).then(({ data }) => data);
     },

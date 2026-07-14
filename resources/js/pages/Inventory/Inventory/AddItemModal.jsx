@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
-import { CaretLeftIcon, FloppyDiskIcon } from "@phosphor-icons/react";
-import GenerateQR from "../../../components/Utils/GenerateQR";
-
-import HeaderSection from "../../../components/HeaderSection";
+import ModalCustom from "../../../components/modalCustom";
 import Dropdown from "../../../components/FormElement/SingleElement/Dropdown";
 import Input from "../../../components/FormElement/SingleElement/Input";
 import CurrencyInput from "../../../components/FormElement/SingleElement/CurrencyInput";
+import PhotoInput from "../../../components/FormElement/SingleElement/PhotoInput";
 
 import { showAlert } from "../../../utils/showAlert";
 import HelperFunctions from "../../../utils/HelperFunctions";
@@ -26,8 +23,7 @@ const emptyItem = {
     modal: "",
     jual: "",
     note: "",
-    _produk_label: "",
-    _produk_barcode: "",
+    foto: null,
 };
 
 const requiredItem = [
@@ -38,8 +34,7 @@ const requiredItem = [
     ["modal", "Harga modal wajib diisi"],
 ];
 
-const FormAddInventory = () => {
-    const navigate = useNavigate();
+const AddItemModal = ({ isOpen, onClose, onSuccess }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const setLoading = LoadingStore((state) => state.setLoading);
     const ensureProducts = OptionsStore((s) => s.ensureProducts);
@@ -51,9 +46,13 @@ const FormAddInventory = () => {
     const [allProducts, setAllProducts] = useState([]);
     const [productOptions, setProductOptions] = useState([]);
     const [branchOptions, setBranchOptions] = useState([]);
-    const [selectedBranch, setSelectedBranch] = useState(null);
 
     useEffect(() => {
+        if (!isOpen) return;
+        setItem(emptyItem);
+        setErrors({});
+        setProductOptions([]);
+
         setLoading(true);
         Promise.all([ensureProducts(), ensureBranches()])
             .then(([productData, branchData]) => {
@@ -62,11 +61,9 @@ const FormAddInventory = () => {
             })
             .catch((error) => console.error(error))
             .finally(() => setLoading(false));
-    }, []);
+    }, [isOpen]);
 
     const selectBranch = (branchId) => {
-        setSelectedBranch(branchId);
-
         const filtered = (allProducts || []).filter((p) => {
             if (p.branches && Array.isArray(p.branches)) {
                 return p.branches.some((b) => String(b.branch_id) === String(branchId));
@@ -88,12 +85,19 @@ const FormAddInventory = () => {
         setErrors({});
     };
 
-    const handleBranchChange = (e) => {
-        selectBranch(e.target.value);
-    };
-
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, files } = e.target;
+
+        if (name === "branch_id") {
+            selectBranch(value);
+            return;
+        }
+
+        if (name === "foto") {
+            const file = files ? files[0] : value;
+            setItem((prev) => ({ ...prev, foto: file ?? null }));
+            return;
+        }
 
         if (name === "berat" || name === "karat") {
             const normalized = value.replace(/,/g, ".").replace(/[^0-9.]/g, "");
@@ -116,8 +120,6 @@ const FormAddInventory = () => {
                 product_id: value,
                 category_id: d.category_id ?? null,
                 subcategory_id: d.subcategory_id ?? null,
-                _produk_label: found?.label ?? "",
-                _produk_barcode: d.barcode ?? "",
             }));
             setErrors((prev) => ({ ...prev, product_id: "" }));
             return;
@@ -157,9 +159,19 @@ const FormAddInventory = () => {
         setLoading(true);
         setIsSubmitting(true);
         try {
-            await InventoryApis.PostInventory(payload);
+            const res = await InventoryApis.PostInventory(payload);
+            const created = res?.data?.data || res?.data;
+
+            if (item.foto && created?.id) {
+                const formData = new FormData();
+                formData.append("inventory_ids", String(created.id));
+                formData.append("images[]", item.foto);
+                await InventoryApis.PostInventoryImage(formData);
+            }
+
             showAlert({ icon: "success", isAutoClose: true, title: "Berhasil", message: "Item inventory berhasil ditambahkan." });
-            navigate("/inventory/inventory");
+            onClose();
+            if (onSuccess) onSuccess();
         } catch (error) {
             console.error(error);
             showAlert({ icon: "error", title: "Gagal", message: "Terjadi kesalahan saat menyimpan item inventory." });
@@ -170,128 +182,104 @@ const FormAddInventory = () => {
     };
 
     return (
-        <div className="flex flex-col gap-4 w-full">
-            <button
-                onClick={() => navigate("/inventory/inventory")}
-                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 w-fit cursor-pointer"
-            >
-                <CaretLeftIcon size={18} /> Kembali
-            </button>
+        <ModalCustom
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Tambah Item Inventory"
+            size="md"
+            confirmTextButton={isSubmitting ? "Menyimpan..." : "Simpan"}
+            cancelTextButton="Batal"
+            handleOnSubmit={handleSubmit}
+            disabledBtn={isSubmitting}
+        >
+            <div className="flex flex-col gap-3">
+                <Dropdown
+                    label="Cabang"
+                    name="branch_id"
+                    value={item.branch_id}
+                    options={branchOptions}
+                    placeholder="Pilih cabang"
+                    isRequired
+                    error={errors.branch_id}
+                    onChange={handleChange}
+                />
 
-            <HeaderSection
-                title="Tambah Item Inventory"
-                description="Tambahkan item inventory secara langsung tanpa melalui proses pembelian."
-            />
+                <Dropdown
+                    label="Produk (master)"
+                    name="product_id"
+                    value={item.product_id}
+                    options={productOptions}
+                    placeholder={item.branch_id ? "Pilih produk" : "Pilih cabang dulu"}
+                    isRequired
+                    isDisable={!item.branch_id}
+                    error={errors.product_id}
+                    onChange={handleChange}
+                />
 
-            <div className="w-full max-w-xl p-6 bg-white rounded-lg border border-gray-200">
-                <div className="flex flex-col gap-4">
-                    <Dropdown
-                        label="Cabang"
-                        name="branch_id"
-                        value={selectedBranch}
-                        options={branchOptions}
-                        placeholder="Pilih cabang"
-                        isRequired
-                        error={errors.branch_id}
-                        onChange={handleBranchChange}
-                    />
+                <PhotoInput
+                    label="Foto Item (Opsional)"
+                    name="foto"
+                    value={item.foto}
+                    helperText="Foto berformat JPG, JPEG, PNG, atau GIF. Maksimal 3 MB."
+                    onChange={handleChange}
+                />
 
-                    <Dropdown
-                        label="Produk (master)"
-                        name="product_id"
-                        value={item.product_id}
-                        options={productOptions}
-                        placeholder={selectedBranch ? "Pilih produk" : "Pilih cabang dulu"}
-                        isRequired
-                        isDisable={!selectedBranch}
-                        error={errors.product_id}
-                        onChange={handleChange}
-                    />
-
-                    {item._produk_barcode && (
-                        <div className="flex items-center gap-3 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                            <GenerateQR value={item._produk_barcode} size={40} showText={false} />
-                            <div className="flex flex-col">
-                                <span className="text-xs text-gray-500">Kode Produk</span>
-                                <span className="text-sm font-medium text-gray-900">{item._produk_barcode}</span>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <Input
-                            label="Berat (g)"
-                            name="berat"
-                            type="text"
-                            inputMode="decimal"
-                            value={item.berat}
-                            placeholder="0.00"
-                            isRequired
-                            error={errors.berat}
-                            onChange={handleChange}
-                        />
-                        <Input
-                            label="Karat"
-                            name="karat"
-                            type="text"
-                            inputMode="numeric"
-                            value={item.karat}
-                            placeholder="0"
-                            isRequired
-                            error={errors.karat}
-                            onChange={handleChange}
-                        />
-                    </div>
-
+                <div className="grid grid-cols-2 gap-3">
                     <Input
-                        label="No Seri (Opsional)"
-                        name="no_seri"
+                        label="Berat (g)"
+                        name="berat"
                         type="text"
-                        value={item.no_seri}
-                        placeholder="Contoh: ABCD1234"
+                        inputMode="decimal"
+                        value={item.berat}
+                        placeholder="0.00"
+                        isRequired
+                        error={errors.berat}
                         onChange={handleChange}
                     />
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <CurrencyInput
-                            label="Harga Modal"
-                            name="modal"
-                            value={item.modal}
-                            placeholder="0"
-                            isRequired
-                            error={errors.modal}
-                            onChange={handleChange}
-                        />
-                        <CurrencyInput
-                            label="Harga Jual (Opsional)"
-                            name="jual"
-                            value={item.jual}
-                            placeholder="0"
-                            error={errors.jual}
-                            onChange={handleChange}
-                        />
-                    </div>
-
                     <Input
-                        label="Keterangan (Opsional)"
-                        name="note"
+                        label="Karat"
+                        name="karat"
                         type="text"
-                        value={item.note}
-                        placeholder="Catatan tambahan"
+                        inputMode="numeric"
+                        value={item.karat}
+                        placeholder="0"
+                        isRequired
+                        error={errors.karat}
                         onChange={handleChange}
                     />
+                </div>
 
-                    <button
-                        onClick={handleSubmit}
-                        disabled={isSubmitting}
-                        className="btn-primary mt-2 py-2 w-full rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <FloppyDiskIcon size={20} /> {isSubmitting ? "Menyimpan..." : "Simpan Item Inventory"}
-                    </button>
+                <Input
+                    label="No Seri (Opsional)"
+                    name="no_seri"
+                    type="text"
+                    value={item.no_seri}
+                    placeholder="Contoh: ABCD1234"
+                    onChange={handleChange}
+                />
+
+                <div className="grid grid-cols-2 gap-3">
+                    <CurrencyInput
+                        label="Harga Modal"
+                        name="modal"
+                        value={item.modal}
+                        placeholder="0"
+                        isRequired
+                        error={errors.modal}
+                        onChange={handleChange}
+                    />
+                    <CurrencyInput
+                        label="Harga Jual (Opsional)"
+                        name="jual"
+                        value={item.jual}
+                        placeholder="0"
+                        error={errors.jual}
+                        onChange={handleChange}
+                    />
                 </div>
             </div>
-        </div>
+        </ModalCustom>
     );
 };
 
-export default FormAddInventory;
+export default AddItemModal;

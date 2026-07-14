@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
 use App\Helpers\InventoryStatus;
+use App\Http\Requests\InventoryImageRequest;
 use App\Http\Requests\StoreInventoryRequest;
 use App\Http\Requests\UpdateInventoryRequest;
 use App\Models\MProduct;
@@ -13,6 +14,8 @@ use App\Models\Inventory;
 use App\Models\InventoryEditHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
 
 // use InventoryStatus;
 
@@ -102,6 +105,68 @@ class InventoryController extends Controller
 
             return ApiResponse::success($inventory, 'Item inventory berhasil ditambahkan', 201);
         } catch (\Throwable $th) {
+            DB::rollBack();
+            return ApiResponse::error($th->getMessage(), $th, 500);
+        }
+    }
+
+    public function uploadImage(InventoryImageRequest $request)
+    {
+        $validated = $request->validated();
+
+        DB::beginTransaction();
+        $imagePath = [];
+
+        try {
+            $ids = explode(',', $validated['inventory_ids']);
+
+            foreach ($ids as $index => $value) {
+                $dataInsert = [
+                    'image_path' => '',
+                    'thumb_path' => '',
+                ];
+
+                $image = $request->file('images')[$index];
+
+                $imageName = 'inventory_'.$value.'_'.date('Y-m-d').'.'.$image->getClientOriginalExtension();
+
+                $image->storeAs(
+                    'images',
+                    $imageName,
+                    'public'
+                );
+
+                $dataInsert['image_path'] = 'images/'.$imageName;
+                $dataInsert['thumb_path'] = 'thumbs/'.$imageName;
+
+                $thumb = Image::decode($image)
+                    ->scale(height: 200);
+
+                Storage::disk('public')->put(
+                    $dataInsert['thumb_path'],
+                    $thumb->encodeUsingFileExtension(
+                        $image->getClientOriginalExtension(),
+                        quality: 70
+                    )
+                );
+                array_push($imagePath, $dataInsert);
+
+                Inventory::where('id', $value)->update($dataInsert);
+            }
+
+            DB::commit();
+
+            return ApiResponse::success([], 'Success Upload Image', 200);
+        } catch (\Throwable $th) {
+            foreach ($imagePath as $key => $value) {
+                if ($value['image_path'] != null && Storage::disk('public')->exists($value['image_path'])) {
+                    Storage::disk('public')->delete($value['image_path']);
+                }
+                if ($value['thumb_path'] != null && Storage::disk('public')->exists($value['thumb_path'])) {
+                    Storage::disk('public')->delete($value['thumb_path']);
+                }
+            }
+
             DB::rollBack();
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
