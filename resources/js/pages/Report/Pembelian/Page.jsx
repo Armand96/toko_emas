@@ -3,6 +3,7 @@ import {
     PackageIcon,
     ScalesIcon,
     CurrencyCircleDollarIcon,
+    TrendUpIcon,
     ExportIcon,
 } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
@@ -45,7 +46,7 @@ const ReportPembelian = () => {
 
     const [branchOptions, setBranchOptions] = useState([{ value: "", label: "Semua Cabang" }]);
 
-    const [summary, setSummary] = useState({ totalItem: 0, totalBerat: 0, totalNilai: 0 });
+    const [summary, setSummary] = useState({ totalItem: 0, totalBerat: 0, totalNilai: 0, laba: 0 });
     const [perKategori, setPerKategori] = useState([]);
     const [perSubKategori, setPerSubKategori] = useState([]);
     const [perKarat, setPerKarat] = useState([]);
@@ -83,6 +84,7 @@ const ReportPembelian = () => {
                 totalItem: Number(total?.total_item_dibeli) || 0,
                 totalBerat: Number(total?.total_berat) || 0,
                 totalNilai: Number(total?.total_nilai) || 0,
+                laba: Number(total?.laba) || 0,
             });
             setPerKategori(toCategoryChart(category?.category, "category_name"));
             setPerSubKategori(toCategoryChart(category?.subcategory, "subcategory_name"));
@@ -229,10 +231,11 @@ const ReportPembelian = () => {
             </div>
 
             {/* KPI cards */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard label="Total Item Dibeli" value={summary.totalItem.toLocaleString("id-ID")} icon={PackageIcon} tone="info" />
                 <StatCard label="Total Berat" value={`${summary.totalBerat.toLocaleString("id-ID")} gr`} icon={ScalesIcon} tone="success" />
                 <StatCard label="Total Nilai Pembelian" value={HelperFunctions.formatCurrency(summary.totalNilai)} icon={CurrencyCircleDollarIcon} tone="warning" />
+                <StatCard label="Laba" value={HelperFunctions.formatCurrency(summary.laba)} icon={TrendUpIcon} tone="success" />
             </div>
 
             {/* Per Kategori/Sub Kategori + Per Karat */}
