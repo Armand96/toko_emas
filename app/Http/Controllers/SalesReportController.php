@@ -86,8 +86,8 @@ class SalesReportController extends Controller
 
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('t_sales.created_at', [
-                $request->start_date,
-                $request->end_date,
+                $request->start_date.' 00:00:00',
+                $request->end_date.' 23:59:59',
             ]);
         }
 
@@ -148,8 +148,8 @@ class SalesReportController extends Controller
                 }
                 if ($request->start_date && $request->end_date) {
                     $dtlQry->whereBetween('t_sales.created_at', [
-                        $request->start_date,
-                        $request->end_date,
+                        $request->start_date.' 00:00:00',
+                        $request->end_date.' 23:59:59',
                     ]);
                 }
             });
@@ -249,8 +249,8 @@ class SalesReportController extends Controller
 
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('t_sales.created_at', [
-                $request->start_date,
-                $request->end_date,
+                $request->start_date.' 00:00:00',
+                $request->end_date.' 23:59:59',
             ]);
         }
 

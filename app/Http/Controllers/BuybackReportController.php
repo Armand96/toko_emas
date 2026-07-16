@@ -26,8 +26,8 @@ class BuybackReportController extends Controller
 
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('buybacks.created_at', [
-                $request->start_date,
-                $request->end_date,
+                $request->start_date.' 00:00:00',
+                $request->end_date.' 23:59:59',
             ]);
         }
 
@@ -156,8 +156,8 @@ class BuybackReportController extends Controller
 
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('buybacks.created_at', [
-                $request->start_date,
-                $request->end_date,
+                $request->start_date.' 00:00:00',
+                $request->end_date.' 23:59:59',
             ]);
         }
 
