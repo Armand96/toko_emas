@@ -5,6 +5,9 @@ import InputGroup from '../../components/FormElement/InputGroup';
 import HelperFunctions from '../../utils/HelperFunctions';
 import FinanceApis from '../../Services/Finance.apis';
 import OptionsStore from '../../Store/OptionsStore';
+import { showAlert } from '../../utils/showAlert';
+
+const MAX_ATTACHMENT_SIZE = 2 * 1024 * 1024; // 2 MB
 
 const METODE_OPTIONS = [
     { value: 'TUNAI', label: 'Tunai' },
@@ -223,7 +226,15 @@ const ModalTransaksi = ({ isOpen, onClose, mode = 'add', data = null, onSubmit }
                             <input
                                 type="file"
                                 className="hidden"
-                                onChange={(e) => setForm(prev => ({ ...prev, attachment: e.target.files?.[0] || null }))}
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0] || null;
+                                    if (file && file.size > MAX_ATTACHMENT_SIZE) {
+                                        showAlert({ icon: 'error', title: 'File Terlalu Besar', message: 'Ukuran attachment maksimal 2 MB.', confirmText: 'OK' });
+                                        e.target.value = '';
+                                        return;
+                                    }
+                                    setForm(prev => ({ ...prev, attachment: file }));
+                                }}
                             />
                         </label>
                     )}
