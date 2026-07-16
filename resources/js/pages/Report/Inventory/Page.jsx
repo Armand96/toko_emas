@@ -64,8 +64,8 @@ const ReportInventory = () => {
     const setLoading = LoadingStore((s) => s.setLoading);
     const ensureBranches = OptionsStore((s) => s.ensureBranches);
     const ensureCategories = OptionsStore((s) => s.ensureCategories);
-      const user = AuthStore((s) => s.user);
-        const isKasir = PermissionStore((s) => s.isKasir);
+    const user = AuthStore((s) => s.user);
+    const isKasir = PermissionStore((s) => s.isKasir);
 
     const [
         {
@@ -120,7 +120,7 @@ const ReportInventory = () => {
 
     const buildParams = (extra = {}) => {
         const q = new URLSearchParams();
-        if (filter.cabang ||  isKasir()) q.append("branch_id",   isKasir() ? user?.branch_id : filter.cabang );
+        if (filter.cabang || isKasir()) q.append("branch_id", isKasir() ? user?.branch_id : filter.cabang);
         if (filter.kategori) q.append("category_id", filter.kategori);
         Object.entries(extra).forEach(([k, v]) => {
             if (v !== "" && v !== undefined && v !== null) q.append(k, v);
@@ -260,6 +260,8 @@ const ReportInventory = () => {
             const params = {};
             if (filter.cabang) params.branch_id = filter.cabang;
             if (filter.kategori) params.category_id = filter.kategori;
+            if (filter.statusDetail) params.status = filter.statusDetail;
+            if (filter.agingDetail) params.aging = filter.agingDetail;
             await ReportApis.ExportInventory(params);
         } catch (error) {
             console.error(error);

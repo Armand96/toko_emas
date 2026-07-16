@@ -48,7 +48,7 @@ class FinanceReportController extends Controller
             ), 0) as total_transfer
         ")->first();
 
-        return ApiResponse::success($data, "OK", 200);
+        return ApiResponse::success($data, 'OK', 200);
     }
 
     public function totalGroupedCabang()
@@ -67,15 +67,15 @@ class FinanceReportController extends Controller
                 END
             ) as balance
         ")
-        ->groupBy('branch_id', 'bank_cabang_id')
-        ->with([
-            'branch:id,branch_name,branch_code',
-            'bankCabang:id,bank_id,nomor_rekening',
-            'bankCabang.bank:id,bank_name,bank_code'
-        ])
-        ->get();
+            ->groupBy('branch_id', 'bank_cabang_id')
+            ->with([
+                'branch:id,branch_name,branch_code',
+                'bankCabang:id,bank_id,nomor_rekening',
+                'bankCabang.bank:id,bank_name,bank_code',
+            ])
+            ->get();
 
-        return ApiResponse::success($data, "OK", 200);
+        return ApiResponse::success($data, 'OK', 200);
     }
 
     public function financeSummary(Request $request)
@@ -100,8 +100,8 @@ class FinanceReportController extends Controller
 
             if ($request->start_date && $request->end_date) {
                 $query->whereBetween('finances.created_at', [
-                    $request->start_date,
-                    $request->end_date
+                    $request->start_date.' 00:00:00',
+                    $request->end_date.' 23:59:59',
                 ]);
             }
 
@@ -125,7 +125,7 @@ class FinanceReportController extends Controller
 
             $openingBalance = 0;
             if ($request->start_date) {
-                $obQuery = Finance::where('finances.created_at', '<', $request->start_date . " 00:00:00");
+                $obQuery = Finance::where('finances.created_at', '<', $request->start_date.' 00:00:00');
                 if ($request->branch_id) {
                     $obQuery->where('branch_id', $request->branch_id);
                 }
@@ -151,34 +151,34 @@ class FinanceReportController extends Controller
             $closingBalance = $openingBalance + $summary->total_cash_in - $summary->total_cash_out;
 
             $cashInCategory = (clone $query)
-            ->where('finances.type', 'CASH IN')
-            ->join(
-                'm_category_finances',
-                'm_category_finances.id',
-                '=',
-                'finances.category_finance_id'
-            )->selectRaw("
+                ->where('finances.type', 'CASH IN')
+                ->join(
+                    'm_category_finances',
+                    'm_category_finances.id',
+                    '=',
+                    'finances.category_finance_id'
+                )->selectRaw('
                 m_category_finances.category_name,
                 SUM(finances.nominal) as total
-            ")->groupBy(
-                'm_category_finances.id',
-                'm_category_finances.category_name'
-            )->get();
+            ')->groupBy(
+                    'm_category_finances.id',
+                    'm_category_finances.category_name'
+                )->get();
 
             $cashOutCategory = (clone $query)
-            ->where('finances.type', 'CASH OUT')
-            ->join(
-                'm_category_finances',
-                'm_category_finances.id',
-                '=',
-                'finances.category_finance_id'
-            )->selectRaw("
+                ->where('finances.type', 'CASH OUT')
+                ->join(
+                    'm_category_finances',
+                    'm_category_finances.id',
+                    '=',
+                    'finances.category_finance_id'
+                )->selectRaw('
                 m_category_finances.category_name,
                 SUM(finances.nominal) as total
-            ")->groupBy(
-                'm_category_finances.id',
-                'm_category_finances.category_name'
-            )->get();
+            ')->groupBy(
+                    'm_category_finances.id',
+                    'm_category_finances.category_name'
+                )->get();
 
             return ApiResponse::success([
                 'summary' => [
@@ -200,7 +200,7 @@ class FinanceReportController extends Controller
         $query = Finance::with([
             'branch',
             'category',
-            'bankCabang.bank'
+            'bankCabang.bank',
         ]);
 
         if ($request->branch_id) {
@@ -223,17 +223,17 @@ class FinanceReportController extends Controller
         }
 
         if ($request->start_date && $request->end_date) {
-            $query->whereBetween('created_at', [
-                $request->start_date,
-                $request->end_date
+            $query->whereBetween('finances.created_at', [
+                $request->start_date.' 00:00:00',
+                $request->end_date.' 23:59:59',
             ]);
         }
 
         $data = $query
-        ->latest()
-        ->paginate(
-            $request->per_page ?? 10
-        );
+            ->latest()
+            ->paginate(
+                $request->per_page ?? 10
+            );
 
         return ApiResponse::success(
             $data,
@@ -244,7 +244,8 @@ class FinanceReportController extends Controller
 
     public function exportFinance(Request $request)
     {
-        $filename = 'finance-report-' . date('Ymd-His') . '.xlsx';
+        $filename = 'finance-report-'.date('Ymd-His').'.xlsx';
+
         return Excel::download(new FinanceExport($request), $filename);
     }
 }

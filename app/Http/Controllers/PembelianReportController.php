@@ -17,8 +17,8 @@ class PembelianReportController extends Controller
 
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('pembelians.created_at', [
-                $request->start_date,
-                $request->end_date,
+                $request->start_date.' 00:00:00',
+                $request->end_date.' 23:59:59',
             ]);
         }
 
@@ -26,10 +26,17 @@ class PembelianReportController extends Controller
             $query->where('branch_id', $request->branch_id);
         }
 
+        $labaQuery = (clone $query)
+            ->where('pembelians.status', PembelianStatus::DISETUJUI)
+            ->join('t_sales_details', 't_sales_details.inventory_code', '=', 'pembelians.inventory_code')
+            ->selectRaw('SUM(t_sales_details.price - pembelians.modal) as laba')
+            ->value('laba');
+
         return ApiResponse::success([
             'total_item_dibeli' => (clone $query)->where('status', PembelianStatus::DISETUJUI)->count(),
             'total_berat' => (clone $query)->where('status', PembelianStatus::DISETUJUI)->sum('berat'),
-            'total_nilai' => $query->where('status', PembelianStatus::DISETUJUI)->sum('modal'),
+            'total_nilai' => (clone $query)->where('status', PembelianStatus::DISETUJUI)->sum('modal'),
+            'laba' => $labaQuery ?? 0,
         ], 'OK', 200);
     }
 
@@ -43,8 +50,8 @@ class PembelianReportController extends Controller
 
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('pembelians.created_at', [
-                $request->start_date,
-                $request->end_date,
+                $request->start_date.' 00:00:00',
+                $request->end_date.' 23:59:59',
             ]);
         }
 
@@ -100,8 +107,8 @@ class PembelianReportController extends Controller
 
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('pembelians.created_at', [
-                $request->start_date,
-                $request->end_date,
+                $request->start_date.' 00:00:00',
+                $request->end_date.' 23:59:59',
             ]);
         }
 
@@ -112,7 +119,7 @@ class PembelianReportController extends Controller
         ')
             ->groupBy('karat')
             ->orderByDesc('karat')
-            ->get();
+            ->toSql();
 
         return ApiResponse::success(
             $data,
@@ -131,8 +138,8 @@ class PembelianReportController extends Controller
 
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('pembelians.created_at', [
-                $request->start_date,
-                $request->end_date,
+                $request->start_date.' 00:00:00',
+                $request->end_date.' 23:59:59',
             ]);
         }
 
