@@ -240,7 +240,7 @@ class BuybackController extends Controller
                         'karat' => $detail->karat,
                         'serial_number' => $detail->serial_number,
                         'modal' => $detail->price,
-                        'jual' => $detail->price,
+                        'jual' => 0,
                         'image_path' => $detail->image_path,
                         'thumb_path' => $detail->thumb_path,
                         'status' => InventoryStatus::AVAILABLE,

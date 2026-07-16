@@ -42,6 +42,13 @@ class FinanceRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'attachment.max' => 'Ukuran file terlalu besar. Maksimal ukuran file adalah 2 MB.',
+        ];
+    }
+
     protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(response()->json([
