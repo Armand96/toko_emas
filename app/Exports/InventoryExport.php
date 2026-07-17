@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Inventory;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithEvents;
@@ -12,9 +13,10 @@ use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class InventoryExport implements FromCollection, WithMapping, WithStyles, WithEvents
+class InventoryExport implements FromCollection, WithEvents, WithMapping, WithStyles
 {
     protected Request $request;
+
     protected int $headerRows = 5; // title, tanggal, cabang, blank, column headers
 
     public function __construct(Request $request)
@@ -45,14 +47,23 @@ class InventoryExport implements FromCollection, WithMapping, WithStyles, WithEv
         }
         if ($this->request->search) {
             $query->where(function ($q) {
-                $q->where('inventory_code', 'like', '%' . $this->request->search . '%')
-                  ->orWhereHas('product', function ($p) {
-                      $p->where('product_name', 'like', '%' . $this->request->search . '%');
-                  });
+                $q->where('inventory_code', 'like', '%'.$this->request->search.'%')
+                    ->orWhereHas('product', function ($p) {
+                        $p->where('product_name', 'like', '%'.$this->request->search.'%');
+                    });
             });
         }
 
-        return $query->selectRaw('*, DATEDIFF(NOW(), created_at) as aging_days')->latest()->get();
+        return $query->selectRaw("
+            *,
+            COALESCE(
+                CASE
+                    WHEN status IN ('SOLD', 'LOST')
+                    THEN DATEDIFF(NOW(), created_at)
+                    ELSE NULL
+                END,
+            0) as aging_days
+        ")->latest()->get();
     }
 
     public function map($inventory): array
@@ -62,13 +73,13 @@ class InventoryExport implements FromCollection, WithMapping, WithStyles, WithEv
             optional($inventory->product)->product_name,
             optional($inventory->category)->category_name,
             optional($inventory->subCategory)->category_name,
-            $inventory->berat . ' gr',
+            $inventory->berat.' gr',
             $inventory->karat,
             $inventory->modal,
             $inventory->jual,
             optional($inventory->branch)->branch_name,
             $inventory->created_at?->format('d/m/Y'),
-            $inventory->aging_days,
+            (string) ($inventory->aging_days ?? 0),
             $inventory->status,
         ];
     }
@@ -82,7 +93,7 @@ class InventoryExport implements FromCollection, WithMapping, WithStyles, WithEv
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                $sheet      = $event->sheet->getDelegate();
+                $sheet = $event->sheet->getDelegate();
                 $collection = $this->collection();
 
                 // Shift data rows down to make room for header rows
@@ -96,15 +107,15 @@ class InventoryExport implements FromCollection, WithMapping, WithStyles, WithEv
 
                 // Row 2: Tanggal
                 $startDate = $this->request->start_date ?? '';
-                $endDate   = $this->request->end_date ?? '';
+                $endDate = $this->request->end_date ?? '';
 
                 if ($startDate !== '' && $endDate !== '') {
                     $tanggalText = 'Tanggal : '
-                        . \Carbon\Carbon::parse($startDate)->format('d/m/Y')
-                        . '-'
-                        . \Carbon\Carbon::parse($endDate)->format('d/m/Y');
+                        .Carbon::parse($startDate)->format('d/m/Y')
+                        .'-'
+                        .Carbon::parse($endDate)->format('d/m/Y');
                 } elseif ($startDate !== '') {
-                    $tanggalText = 'Tanggal : ' . \Carbon\Carbon::parse($startDate)->format('d/m/Y');
+                    $tanggalText = 'Tanggal : '.Carbon::parse($startDate)->format('d/m/Y');
                 } else {
                     $tanggalText = 'Tanggal : ';
                 }
@@ -116,7 +127,7 @@ class InventoryExport implements FromCollection, WithMapping, WithStyles, WithEv
                 if ($collection->count() > 0 && $this->request->branch_id) {
                     $branchName = optional($collection->first()->branch)->branch_name ?? '';
                 }
-                $sheet->setCellValue('A3', 'Cabang : ' . $branchName);
+                $sheet->setCellValue('A3', 'Cabang : '.$branchName);
 
                 // Row 4: blank (already blank)
 
@@ -146,7 +157,7 @@ class InventoryExport implements FromCollection, WithMapping, WithStyles, WithEv
                 // Style Modal & Harga Jual columns: right-aligned + number format
                 if ($collection->count() > 0) {
                     $dataStart = $this->headerRows + 1;
-                    $dataEnd   = $this->headerRows + $collection->count();
+                    $dataEnd = $this->headerRows + $collection->count();
 
                     $sheet->getStyle("G{$dataStart}:H{$dataEnd}")
                         ->getAlignment()
