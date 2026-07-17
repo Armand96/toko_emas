@@ -76,8 +76,8 @@ const FormAdd = ({ setCurentState }) => {
     const [items, setItems] = useState([]);
     const [productOptions, setProductOptions] = useState([]);
 
-    useEffect(() => {
-        ensureProducts()
+    const fetchProductOptions = (forceRefresh = false) => {
+        ensureProducts(forceRefresh)
             .then((data) => {
                 setProductOptions((data || []).map((p) => {
                     const categoryName = p.category?.parent?.category_name || p.category?.category_name || "";
@@ -91,6 +91,10 @@ const FormAdd = ({ setCurentState }) => {
                 }));
             })
             .catch((err) => console.error(err));
+    };
+
+    useEffect(() => {
+        fetchProductOptions();
     }, []);
 
     // Modal Tambah Item
@@ -611,6 +615,7 @@ const FormAdd = ({ setCurentState }) => {
                             isRequired
                             error={itemErrors.product_id}
                             onChange={handleItemChange}
+                            onMenuOpen={() => fetchProductOptions(true)}
                         />
                         <PhotoInput
                             label="Foto Item"

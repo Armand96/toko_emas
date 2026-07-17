@@ -11,6 +11,7 @@ const Dropdown = ({
   isRequired,
   error,
   onChange,
+  onMenuOpen,
 }) => {
   const customStyles = {
     control: (base, state) => ({
@@ -95,6 +96,7 @@ const Dropdown = ({
         styles={customStyles}
         classNamePrefix="react-select"
         isClearable
+        onMenuOpen={onMenuOpen}
       />
       {error && <span className="text-xs text-danger-500 mt-1">{error}</span>}
     </div>

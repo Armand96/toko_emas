@@ -101,9 +101,41 @@ const FormPembelian = ({ setCurentState }) => {
         fetchOptions();
     }, []);
 
-    const selectBranch = (branchId, products = allProducts) => {
-        setSelectedBranch(branchId);
+    const refetchBranchOptions = async () => {
+        try {
+            const branchData = await ensureBranches(true);
+            setBranchOptions(
+                HelperFunctions.formatDropdown(branchData, "id", "branch_name")
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
+    const refetchSupplierOptions = async () => {
+        try {
+            const supplierData = await ensureSuppliers(true);
+            setSupplierOptions(
+                HelperFunctions.formatDropdown(supplierData, "id", "supplier_name")
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const refetchProductOptions = async () => {
+        try {
+            const productData = await ensureProducts(true);
+            setAllProducts(productData || []);
+            if (selectedBranch) {
+                selectBranchProducts(selectedBranch, productData || []);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const selectBranchProducts = (branchId, products = allProducts) => {
         const filtered = (products || []).filter((p) => {
             if (p.branches && Array.isArray(p.branches)) {
                 return p.branches.some((b) => String(b.branch_id) === String(branchId));
@@ -120,6 +152,11 @@ const FormPembelian = ({ setCurentState }) => {
                 details: p,
             };
         }));
+    };
+
+    const selectBranch = (branchId, products = allProducts) => {
+        setSelectedBranch(branchId);
+        selectBranchProducts(branchId, products);
 
         setItem({ ...emptyItem, branch_id: branchId });
         setErrors({});
@@ -130,6 +167,13 @@ const FormPembelian = ({ setCurentState }) => {
                 setBankOptions(HelperFunctions.formatDropdownBank(res?.data || []));
             });
         }
+    };
+
+    const refetchBankOptions = () => {
+        if (!selectedBranch) return;
+        BankApis.GetBankBranch(`?branch_id=${selectedBranch}&is_active=1`).then((res) => {
+            setBankOptions(HelperFunctions.formatDropdownBank(res?.data || []));
+        });
     };
 
     // Kasir: cabang otomatis ikut cabang user login, tanpa perlu pilih.
@@ -409,6 +453,7 @@ const FormPembelian = ({ setCurentState }) => {
                                 isRequired
                                 error={errors.branch_id}
                                 onChange={handleBranchChange}
+                                onMenuOpen={refetchBranchOptions}
                             />
                         )}
 
@@ -422,6 +467,7 @@ const FormPembelian = ({ setCurentState }) => {
                             isDisable={!selectedBranch}
                             error={errors.product_id}
                             onChange={handleChange}
+                            onMenuOpen={refetchProductOptions}
                         />
 
                         <PhotoInput
@@ -496,6 +542,7 @@ const FormPembelian = ({ setCurentState }) => {
                             isRequired
                             error={errors.supplier_id}
                             onChange={handleChange}
+                            onMenuOpen={refetchSupplierOptions}
                         />
 
                         <Dropdown
@@ -524,6 +571,7 @@ const FormPembelian = ({ setCurentState }) => {
                                 isRequired
                                 error={errors.bank_id}
                                 onChange={handleChange}
+                                onMenuOpen={refetchBankOptions}
                             />
                         )}
 
