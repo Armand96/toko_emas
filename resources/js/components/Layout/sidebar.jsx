@@ -36,7 +36,7 @@ const sidebarData = [
           { label: "Buyback", link: "/approval/buyback" },
           { label: "Pembelian", link: "/approval/pembelian" },
           { label: "Remove Item", link: "/approval/remove-item" },
-          { label: "Transfer", link: "/approval/transfer" }
+          { label: "Transfer Item", link: "/approval/transfer" }
         ]
       },
       {
