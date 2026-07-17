@@ -10,6 +10,8 @@ import Input from "../../components/FormElement/SingleElement/Input";
 import PhotoInput from "../../components/FormElement/SingleElement/PhotoInput";
 import CurrencyInput from "../../components/FormElement/SingleElement/CurrencyInput";
 import CodeBadge from "../../components/CodeBadge";
+import ItemPickerRow from "../../components/ItemPickerRow";
+import ModalScanBarcode from "../Penjualan/ModaScanBarcode";
 import HelperFunctions from "../../utils/HelperFunctions";
 import LoadingStore from "../../Store/LoadingStore";
 import { showAlert } from "../../utils/showAlert";
@@ -17,6 +19,7 @@ import { useDebounce } from "use-debounce";
 import CustomerApis from "../../Services/Customer.apis";
 import BankApis from "../../Services/Bank.apis";
 import BuybackApis from "../../Services/Buyback.apis";
+import InventoryApis from "../../Services/Inventory.apis";
 import OptionsStore from "../../Store/OptionsStore";
 import AuthStore from "../../Store/AuthStore";
 
@@ -102,9 +105,84 @@ const FormAdd = ({ setCurentState }) => {
     const [item, setItem] = useState(emptyItem);
     const [itemErrors, setItemErrors] = useState({});
 
+    // 'baru' = barang baru dari luar toko, 'existing' = pilih item inventory toko yang sudah ada
+    const [itemSourceType, setItemSourceType] = useState('baru');
+    const [inventoryOptions, setInventoryOptions] = useState([]);
+    const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+
+    const fetchInventoryOptions = () => {
+        InventoryApis.GetInventory(`?status=AVAILABLE&per_page=10000000${user?.branch_id ? `&branch_id=${user.branch_id}` : ''}`)
+            .then((res) => setInventoryOptions(res?.data || []))
+            .catch((err) => console.error(err));
+    };
+
+    useEffect(() => {
+        fetchInventoryOptions();
+    }, [user?.branch_id]);
+
+    const inventoryDropdownOptions = useMemo(() => {
+        return inventoryOptions.map((inv) => ({
+            value: inv.inventory_code,
+            label: `${inv.inventory_code} - ${inv.product?.product_name ?? 'Produk'} (${inv.berat ?? '-'}g • ${inv.karat ?? '-'}K)`,
+        }));
+    }, [inventoryOptions]);
+
+    const applyInventoryToItem = (inv) => {
+        if (!inv) return;
+        setItem((prev) => ({
+            ...prev,
+            product_id: inv.product_id,
+            category_id: inv.category_id ?? null,
+            subcategory_id: inv.subcategory_id ?? null,
+            berat: inv.berat != null ? String(inv.berat) : "",
+            karat: inv.karat != null ? String(inv.karat) : "",
+            no_seri: inv.serial_number ?? "",
+            foto: null,
+            _produk_label: inv.product?.product_name ?? "",
+            _produk_barcode: inv.barcode ?? "",
+            _produk_image: inv.thumb_path || inv.image_path || inv.product?.image_path || null,
+            _inventory_code: inv.inventory_code,
+        }));
+        setItemErrors({});
+    };
+
+    const handleSelectInventory = (e) => {
+        const inventoryCode = e.target.value;
+        if (!inventoryCode) return;
+        const found = inventoryOptions.find((inv) => inv.inventory_code === inventoryCode);
+        applyInventoryToItem(found);
+    };
+
+    const handleScanInventory = async (decodedText) => {
+        setIsScanModalOpen(false);
+        const found = inventoryOptions.find((inv) => inv.inventory_code === decodedText || inv.barcode === decodedText);
+        if (found) {
+            applyInventoryToItem(found);
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const res = await InventoryApis.GetInventory(`?search=${decodedText}&status=AVAILABLE&per_page=10`);
+            const match = (res?.data || []).find((inv) => inv.inventory_code === decodedText || inv.barcode === decodedText);
+            if (match) {
+                setInventoryOptions((prev) => prev.some((inv) => inv.inventory_code === match.inventory_code) ? prev : [...prev, match]);
+                applyInventoryToItem(match);
+            } else {
+                showAlert({ icon: 'error', title: 'Tidak Ditemukan', message: `Item dengan kode ${decodedText} tidak ditemukan di inventory.` });
+            }
+        } catch (error) {
+            console.error(error);
+            showAlert({ icon: 'error', title: 'Gagal', message: 'Gagal mencari item di inventory.' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const openItemModal = () => {
         setItem(emptyItem);
         setItemErrors({});
+        setItemSourceType('baru');
         setIsItemModalOpen(true);
     };
 
@@ -605,13 +683,41 @@ const FormAdd = ({ setCurentState }) => {
                 handleOnSubmit={handleSaveItem}
             >
                 <div className="flex flex-col gap-4">
+                    <div className="flex gap-2 p-1 bg-gray-50 border border-gray-200 rounded-lg w-full">
+                        <button
+                            type="button"
+                            onClick={() => { setItemSourceType('baru'); setItem(emptyItem); setItemErrors({}); }}
+                            className={`flex-1 py-2 text-left px-3 text-sm font-medium rounded-md transition-all ${itemSourceType === 'baru' ? 'bg-primary-50 text-primary-600 border border-primary-200 shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+                        >
+                            Barang Baru
+                            <div className="text-xs font-normal text-gray-400">Barang dari luar toko atau belum pernah terdaftar.</div>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => { setItemSourceType('existing'); setItem(emptyItem); setItemErrors({}); }}
+                            className={`flex-1 py-2 text-left px-3 text-sm font-medium rounded-md transition-all ${itemSourceType === 'existing' ? 'bg-primary-50 text-primary-600 border border-primary-200 shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+                        >
+                            Barang Existing Toko
+                            <div className="text-xs font-normal text-gray-400">Barang yang pernah dibeli di toko.</div>
+                        </button>
+                    </div>
+
+                    {itemSourceType === 'existing' && (
+                        <ItemPickerRow
+                            onScan={() => setIsScanModalOpen(true)}
+                            options={inventoryDropdownOptions}
+                            value={item._inventory_code ?? ""}
+                            onSelect={handleSelectInventory}
+                        />
+                    )}
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Dropdown
                             label="Produk (master)"
                             name="product_id"
                             value={item.product_id}
                             options={productOptions}
-                            placeholder="Pilih produk"
+                            placeholder={itemSourceType === 'existing' ? "Scan atau pilih item existing" : "Pilih produk"}
                             isRequired
                             error={itemErrors.product_id}
                             onChange={handleItemChange}
@@ -620,7 +726,7 @@ const FormAdd = ({ setCurentState }) => {
                         <PhotoInput
                             label="Foto Item"
                             name="foto"
-                            value={item.foto}
+                            value={item.foto ?? (item._produk_image ? HelperFunctions.getStorageUrl(item._produk_image) : null)}
                             helperText="Foto berformat JPG, JPEG, atau PNG."
                             accept="image/*"
                             onChange={handleItemChange}
@@ -671,6 +777,12 @@ const FormAdd = ({ setCurentState }) => {
                     />
                 </div>
             </ModalCustom>
+
+            <ModalScanBarcode
+                isOpen={isScanModalOpen}
+                onClose={() => setIsScanModalOpen(false)}
+                onScanSuccess={handleScanInventory}
+            />
         </div>
     );
 };

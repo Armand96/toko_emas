@@ -57,7 +57,7 @@ const ItemPickerRow = ({
                 <div className="flex-1">
                     <Dropdown
                         name="item_select"
-                        value=""
+                        value={value}
                         options={options}
                         placeholder={placeholder}
                         onChange={onSelect}
