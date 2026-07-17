@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { PrinterIcon } from "@phosphor-icons/react";
+import { QRCodeCanvas } from "qrcode.react";
 import HelperFunctions from "../../utils/HelperFunctions";
 import LogoKwintansi from "../../assets/images/logo_kwintansi.png";
 
@@ -148,8 +149,17 @@ const PrintKwitansi = () => {
                             <tr key={i} >
                                 <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">1</td>
                                 <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-left align-top break-words">
-                                    {item.product?.product_name ?? "-"}
-                                    {item.inventory_code ? ` (${item.inventory_code})` : ""}
+                                    <div className="flex items-start gap-1.5 my-1">
+                                        {item.inventory_code && (
+                                            <QRCodeCanvas value={item.inventory_code} size={30} level="M" marginSize={0} className="shrink-0 mt-px" />
+                                        )}
+                                        <div>
+                                            <div>{item.product?.product_name ?? "-"}</div>
+                                            {item.inventory_code && (
+                                                <div className="text-[8px] text-[#555]">{item.inventory_code}</div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </td>
                                 <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">{item.inventory?.karat ? `${item.inventory.karat}K` : "-"}</td>
                                 <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">{item.inventory?.berat ? `${item.inventory.berat}gr` : "-"}</td>
