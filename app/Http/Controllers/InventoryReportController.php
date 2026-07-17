@@ -110,10 +110,10 @@ class InventoryReportController extends Controller
                 '=',
                 'inventories.category_id'
             )
-            ->selectRaw("
+            ->selectRaw('
                 m_categories.category_name,
                 COUNT(*) as total_item
-            ")
+            ')
             ->where('inventories.status', 'AVAILABLE')
             ->groupBy(
                 'm_categories.id',
@@ -129,10 +129,10 @@ class InventoryReportController extends Controller
                 '=',
                 'inventories.subcategory_id'
             )
-            ->selectRaw("
+            ->selectRaw('
                 sub_categories.category_name as subcategory_name,
                 COUNT(*) as total_item
-            ")
+            ')
             ->where('inventories.status', 'AVAILABLE')
             ->groupBy(
                 'sub_categories.id',
@@ -142,10 +142,10 @@ class InventoryReportController extends Controller
             ->get();
 
         $karat = $query
-            ->selectRaw("
+            ->selectRaw('
                 karat,
                 COUNT(*) as total_item
-            ")
+            ')
             ->where('status', 'AVAILABLE')
             ->groupBy('karat')
             ->orderByDesc('karat')
@@ -171,10 +171,10 @@ class InventoryReportController extends Controller
         }
 
         $status = (clone $query)
-            ->selectRaw("
+            ->selectRaw('
                 status,
                 COUNT(*) as total
-            ")
+            ')
             ->groupBy('status')
             ->get();
 
@@ -195,7 +195,7 @@ class InventoryReportController extends Controller
 
                 COUNT(*) as total
             ")
-            ->where('status', 'AVAILABLE')
+            ->whereIn('status', ['SOLD', 'LOST'])
             ->groupBy('aging_group')
             ->get();
 
@@ -225,7 +225,7 @@ class InventoryReportController extends Controller
             $query->where('karat', $request->karat);
         }
 
-        if ($request->aging) {
+        if ($request->aging && in_array($request->status, ['SOLD', 'LOST'])) {
             $aging = 'DATEDIFF(NOW(), created_at)';
             switch ($request->aging) {
                 case '0-30':
@@ -249,7 +249,7 @@ class InventoryReportController extends Controller
                 $q->where(
                     'inventory_code',
                     'like',
-                    '%' . $request->search . '%'
+                    '%'.$request->search.'%'
                 )
 
                     ->orWhereHas('product', function ($product) use ($request) {
@@ -257,7 +257,7 @@ class InventoryReportController extends Controller
                         $product->where(
                             'product_name',
                             'like',
-                            '%' . $request->search . '%'
+                            '%'.$request->search.'%'
                         );
                     });
             });
@@ -268,15 +268,16 @@ class InventoryReportController extends Controller
                 'product:id,product_name,image_path',
                 'category:id,category_name',
                 'subCategory:id,category_name',
-                'branch:id,branch_name'
+                'branch:id,branch_name',
             ])
             ->selectRaw("
             *,
 
-            DATEDIFF(
-                NOW(),
-                created_at
-            ) as aging_days
+            CASE
+                WHEN status IN ('SOLD', 'LOST')
+                THEN DATEDIFF(NOW(), created_at)
+                ELSE NULL
+            END as aging_days
         ")
             ->latest()
             ->paginate(
@@ -292,7 +293,8 @@ class InventoryReportController extends Controller
 
     public function exportInventory(Request $request)
     {
-        $filename = 'inventory-report-' . date('Ymd-His') . '.xlsx';
+        $filename = 'inventory-report-'.date('Ymd-His').'.xlsx';
+
         return Excel::download(new InventoryExport($request), $filename);
     }
 }
