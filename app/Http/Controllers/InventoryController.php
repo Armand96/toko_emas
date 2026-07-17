@@ -9,9 +9,9 @@ use App\Helpers\InventoryStatus;
 use App\Http\Requests\InventoryImageRequest;
 use App\Http\Requests\StoreInventoryRequest;
 use App\Http\Requests\UpdateInventoryRequest;
-use App\Models\MProduct;
 use App\Models\Inventory;
 use App\Models\InventoryEditHistory;
+use App\Models\MProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -28,28 +28,28 @@ class InventoryController extends Controller
     {
         $query = Inventory::query();
 
-        if ($request->has('search') && $request->search != "") {
+        if ($request->has('search') && $request->search != '') {
             $query->where(function ($q) use ($request) {
                 $q->whereHas('product', function ($productQuery) use ($request) {
                     $productQuery
-                        ->where('barcode', 'like', '%' . $request->search . '%')
-                        ->orWhere('product_name', 'like', '%' . $request->search . '%');
+                        ->where('barcode', 'like', '%'.$request->search.'%')
+                        ->orWhere('product_name', 'like', '%'.$request->search.'%');
                 })
-                ->orWhere('inventory_code', 'like', '%' . $request->search . '%')
-                ->orWhere('berat', $request->search)
-                ->orWhere('karat', $request->search);
+                    ->orWhere('inventory_code', 'like', '%'.$request->search.'%')
+                    ->orWhere('berat', $request->search)
+                    ->orWhere('karat', $request->search);
             });
         }
-        if ($request->has('branch_id') && $request->branch_id != "") {
+        if ($request->has('branch_id') && $request->branch_id != '') {
             $query->where('branch_id', $request->branch_id);
         }
-        if ($request->has('inventory_code') && $request->inventory_code != "") {
+        if ($request->has('inventory_code') && $request->inventory_code != '') {
             $query->where('inventory_code', $request->inventory_code);
         }
-        if ($request->has('category_id') && $request->category_id != "") {
+        if ($request->has('category_id') && $request->category_id != '') {
             $query->where('category_id', $request->category_id);
         }
-        if ($request->has('status') && $request->status != "") {
+        if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
 
@@ -65,9 +65,9 @@ class InventoryController extends Controller
      */
     public function store(StoreInventoryRequest $request)
     {
-        if (!in_array($request->user()->role_id, [1, 2, 3])) {
-            return ApiResponse::error('Anda tidak memiliki akses untuk menambah item inventory', null, 403);
-        }
+        // if (!in_array($request->user()->role_id, [1, 2, 3])) {
+        //     return ApiResponse::error('Anda tidak memiliki akses untuk menambah item inventory', null, 403);
+        // }
 
         $validated = $request->validated();
 
@@ -106,6 +106,7 @@ class InventoryController extends Controller
             return ApiResponse::success($inventory, 'Item inventory berhasil ditambahkan', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -168,6 +169,7 @@ class InventoryController extends Controller
             }
 
             DB::rollBack();
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -191,7 +193,7 @@ class InventoryController extends Controller
             'removeDetails.header.user.role:id,role_name',
             'salesDetail.header.user:id,name,role_id',
             'salesDetail.header.user.role:id,role_name',
-        ]), "OK", 200);
+        ]), 'OK', 200);
     }
 
     public function update(UpdateInventoryRequest $request, Inventory $inventory)
@@ -212,9 +214,10 @@ class InventoryController extends Controller
 
             DB::commit();
 
-            return ApiResponse::success($dataEdit, "Update Success", 201);
+            return ApiResponse::success($dataEdit, 'Update Success', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
