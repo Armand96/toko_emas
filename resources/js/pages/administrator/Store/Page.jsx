@@ -102,18 +102,12 @@ const SettingStore = () => {
             body.append('shop_name', data.shop_name);
             body.append('website', data.website);
             body.append('email', data.email);
-            await data?.id ? StoreApis.PutSettingsStore(data.id, body) : StoreApis.PostSettingsStore(body);
-            setTimeout(() => {
-                fetchData();
-                handleCloseModal();
-                setLoading(false)
-                showAlert({ title: 'Berhasil', message: 'Data berhasil disimpan', icon: 'success' });
-            }, 500);
+            await (data?.id ? StoreApis.PutSettingsStore(data.id, body) : StoreApis.PostSettingsStore(body));
+            handleCloseModal();
+            window.location.reload();
         } catch (error) {
             setLoading(false);
         }
-
-        handleCloseModal();
     };
 
 

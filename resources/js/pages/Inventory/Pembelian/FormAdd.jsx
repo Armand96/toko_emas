@@ -201,7 +201,7 @@ const FormPembelian = ({ setCurentState }) => {
                 });
                 return;
             }
-            const MAX_SIZE_MB = 3;
+            const MAX_SIZE_MB = 10;
             if (file && file.size > MAX_SIZE_MB * 1024 * 1024) {
                 showAlert({
                     title: "Ukuran file terlalu besar",

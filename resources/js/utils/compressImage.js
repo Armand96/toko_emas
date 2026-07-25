@@ -18,7 +18,7 @@ const canvasToBlob = (canvas, quality) =>
 
 export const compressImage = async (
     file,
-    { maxSizeMB = 3, maxDimension = 1920, quality = 0.8 } = {}
+    { maxSizeMB = 10, maxDimension = 1920, quality = 0.8 } = {}
 ) => {
     if (!file || !file.type?.startsWith("image/")) return file;
 
