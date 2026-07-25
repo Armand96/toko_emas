@@ -24,6 +24,21 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
         }
     }, []);
 
+    // Aktifkan autofocus kamera (continuous) kalau device-nya support
+    const enableAutoFocus = useCallback(async (scanner) => {
+        try {
+            const capabilities = scanner.getRunningTrackCapabilities?.() || {};
+            const focusModes = capabilities.focusMode || [];
+            if (!focusModes.includes("continuous")) return;
+
+            await scanner.applyVideoConstraints({
+                advanced: [{ focusMode: "continuous" }],
+            });
+        } catch (_) {
+            // kamera tidak support autofocus — abaikan
+        }
+    }, []);
+
     const startScanner = useCallback(async () => {
         try {
             setError(null);
@@ -60,11 +75,12 @@ const ModalScanBarcode = ({ isOpen, onClose, onScanSuccess }) => {
             );
 
             scanningRef.current = true;
+            await enableAutoFocus(scanner);
         } catch (e) {
             console.error(e);
             setError("Gagal mengakses kamera. Pastikan izin kamera sudah diberikan.");
         }
-    }, [onScanSuccess, onClose, stopScanner]);
+    }, [onScanSuccess, onClose, stopScanner, enableAutoFocus]);
 
     useEffect(() => {
         if (!isOpen) {
