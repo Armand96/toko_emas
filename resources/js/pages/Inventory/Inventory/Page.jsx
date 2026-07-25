@@ -484,10 +484,19 @@ const MasterInventory = () => {
                 product_id: formData.product_id,
                 berat: Number(formData.berat),
                 karat: Number(formData.karat),
+                modal: Number(formData.modal),
                 jual: Number(formData.jual),
                 serial_number: formData.no_seri || null,
             };
             await InventoryApis.PutInventory(formData.id, body);
+
+            if (formData.foto instanceof File) {
+                const imageForm = new FormData();
+                imageForm.append("inventory_ids", String(formData.id));
+                imageForm.append("images[]", formData.foto);
+                await InventoryApis.PostInventoryImage(imageForm);
+            }
+
             showAlert({ icon: 'success', isAutoClose: true, title: 'Berhasil Diperbarui', message: 'Data item inventory berhasil disimpan.' });
             handleCloseEdit();
             fetchData(paramFetch.current_page, paramFetch.per_page, search.kode, filter.status, filter.kategori, filter.cabang);

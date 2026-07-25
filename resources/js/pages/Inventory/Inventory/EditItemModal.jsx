@@ -67,6 +67,7 @@ const EditItemModal = ({ isOpen, onClose, formData, initialFormData, errors = {}
     const hasChanges = initialFormData && (
         String(formData.berat) !== String(initialFormData.berat) ||
         String(formData.karat) !== String(initialFormData.karat) ||
+        Number(formData.modal) !== Number(initialFormData.modal) ||
         Number(formData.jual) !== Number(initialFormData.jual) ||
         (formData.no_seri || "") !== (initialFormData.no_seri || "") ||
         formData.product_id !== initialFormData.product_id ||
@@ -145,7 +146,7 @@ const EditItemModal = ({ isOpen, onClose, formData, initialFormData, errors = {}
                             name="modal"
                             value={formData.modal}
                             placeholder="0"
-                            isDisable
+                            // isDisable
                             onChange={onChange}
                         />
                         <CurrencyInput

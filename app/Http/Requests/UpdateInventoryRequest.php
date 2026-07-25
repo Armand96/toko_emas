@@ -27,6 +27,7 @@ class UpdateInventoryRequest extends FormRequest
         return [
             'product_id' => 'required|integer',
             'berat' => 'required|numeric',
+            'modal' => 'sometimes|numeric',
             'jual' => 'required|numeric',
             'karat' => 'required|integer',
             'serial_number' => 'nullable|string',

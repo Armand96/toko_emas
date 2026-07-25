@@ -41,7 +41,7 @@ const PERMISSIONS = [
     { link: '/inventory/master-produk',
         create: [SUPER_ADMIN, OWNER, PIC, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN, OWNER, PIC, KASIR], delete: [SUPER_ADMIN, OWNER, PIC, KASIR] },
     { link: '/inventory/inventory',
-        create: [SUPER_ADMIN, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN,PIC, KASIR], delete: [SUPER_ADMIN, PIC, KASIR] },
+        create: [SUPER_ADMIN, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN,PIC], delete: [SUPER_ADMIN, PIC] },
     { link: '/inventory/inventory/add',
         create: [SUPER_ADMIN, OWNER, PIC, KASIR], read: [SUPER_ADMIN, OWNER, PIC, KASIR], update: [SUPER_ADMIN, OWNER, PIC, KASIR], delete: [SUPER_ADMIN, OWNER, PIC, KASIR] },
     { link: '/inventory/remove',
