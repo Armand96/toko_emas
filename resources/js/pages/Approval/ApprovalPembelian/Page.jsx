@@ -64,7 +64,7 @@ const ApprovalPembelian = () => {
         setLoading(true);
         try {
             const { search: keyword = '', category_id = '', branch_id = '', status = '' } = params;
-            let query = `?page=${page}&limit=${pageSize}`;
+            let query = `?page=${page}&per_page=${pageSize}`;
             if (status) query += `&status=${status}`;
             if (keyword) query += `&search=${keyword}`;
             if (category_id) query += `&category_id=${category_id}`;

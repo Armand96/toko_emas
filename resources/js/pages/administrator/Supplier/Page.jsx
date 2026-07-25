@@ -33,7 +33,7 @@ const MasterSupplier = () => {
     const fetchData = async (page = 1, pageSize = 10, supplier_name = '') => {
         setLoading(true);
         try {
-            const res = await SupplierApis.GetSupplier(`?page=${page}&limit=${pageSize}${supplier_name ? `&supplier_name=${supplier_name}` : ''}`);
+            const res = await SupplierApis.GetSupplier(`?page=${page}&per_page=${pageSize}${supplier_name ? `&supplier_name=${supplier_name}` : ''}`);
             setParamFetch(res);
             setFirstLoading(true);
         } catch (error) {

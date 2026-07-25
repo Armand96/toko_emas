@@ -42,7 +42,7 @@ describe('Master User — create via UI', () => {
 
         await waitFor(async () => {
             as('super');
-            const found = list(await UsersApis.GetUser('?limit=200')).some((u) => u.username === username);
+            const found = list(await UsersApis.GetUser('?per_page=200')).some((u) => u.username === username);
             expect(found).toBe(true);
         }, { timeout: 15000 });
     }, 40000);

@@ -74,7 +74,7 @@ describe('Master Bank — create', () => {
 
         await waitFor(async () => {
             as('super');
-            const found = list(await BankApis.GetBankMaster(`?bank_name=${encodeURIComponent(name)}&limit=20`))
+            const found = list(await BankApis.GetBankMaster(`?bank_name=${encodeURIComponent(name)}&per_page=20`))
                 .some((x) => x.bank_name === name);
             expect(found).toBe(true);
         }, { timeout: 15000 });

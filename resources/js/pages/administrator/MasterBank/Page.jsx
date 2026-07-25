@@ -30,7 +30,7 @@ const MasterBank = () => {
     const fetchData = async (page = 1, pageSize = 10, category_name = '') => {
         setLoading(true);
         try {
-            const res = await BankApis.GetBankMaster(`?page=${page}&limit=${pageSize}${category_name ? `&bank_name=${category_name}` : ''}`);
+            const res = await BankApis.GetBankMaster(`?page=${page}&per_page=${pageSize}${category_name ? `&bank_name=${category_name}` : ''}`);
             setParamFetch(res);
             setFirstLoading(true);
         } catch (error) {

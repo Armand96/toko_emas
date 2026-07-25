@@ -175,6 +175,7 @@ const MainPembelian = ({ setCurentState }) => {
             label: item.product?.product_name ?? item.product?.name ?? '',
             berat: item.berat,
             karat: item.karat,
+            serial: item.serial_number ?? '',
         }));
         HelperFunctions.printBarcode(barcodes, { items });
     };
@@ -289,7 +290,7 @@ const MainPembelian = ({ setCurentState }) => {
                         <ActionButton
                             variant="print"
                             title="Cetak QR Code"
-                            onClick={() => HelperFunctions.printBarcode(row.inventory_code, { label: row.product?.product_name ?? row.product?.name, berat: row.berat, karat: row.karat })}
+                            onClick={() => HelperFunctions.printBarcode(row.inventory_code, { label: row.product?.product_name ?? row.product?.name, berat: row.berat, karat: row.karat, serial: row.serial_number })}
                         />
                     )}
                 </ActionButtonGroup>

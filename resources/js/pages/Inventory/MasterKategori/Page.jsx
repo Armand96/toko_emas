@@ -41,7 +41,7 @@ const MasterKategori = () => {
         setLoading(true);
         try {
             const res = await InventoryApis.GetCategories(
-                `?page=${page}&limit=${pageSize}${category_name ? `&category_name=${category_name}` : ""}`,
+                `?page=${page}&per_page=${pageSize}${category_name ? `&category_name=${category_name}` : ""}`,
             );
             setParamFetch(res);
             setFirstLoading(true);

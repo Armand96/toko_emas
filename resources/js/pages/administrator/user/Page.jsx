@@ -43,7 +43,7 @@ const MasterUser = () => {
     const fetchData = async (page = 1, pageSize = 10, name = '', status = '', branch_id = '') => {
         setLoading(true);
         try {
-            const params = `?page=${page}&limit=${pageSize}`
+            const params = `?page=${page}&per_page=${pageSize}`
                 + (name ? `&name=${name}` : '')
                 + (status !== '' ? `&is_active=${status}` : '')
                 + (branch_id ? `&branch_id=${branch_id}` : '');
@@ -60,7 +60,7 @@ const MasterUser = () => {
     const fetchOptions = async () => {
         try {
             const branchData = await ensureBranches();
-            const RoleData = await UsersApis.GetRole(`?limit=99999`);
+            const RoleData = await UsersApis.GetRole(`?per_page=99999`);
             setBranchOptions(HelperFunctions.formatDropdown(branchData, 'id', 'branch_name'));
             setRoleOptions(HelperFunctions.formatDropdown(RoleData?.data, 'id', 'role_name'));
         } catch (error) {

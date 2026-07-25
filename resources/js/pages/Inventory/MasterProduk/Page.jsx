@@ -55,7 +55,7 @@ const MasterProduk = () => {
         setLoading(true);
         try {
             const effectiveBranch = isKasir() && user?.branch_id ? user.branch_id : branch_id;
-            const res = await InventoryApis.GetProducts(`?page=${page}&limit=${pageSize}${product_name ? `&product_name=${product_name}` : ''}${category_id ? `&category_id=${category_id}` : ''}${effectiveBranch ? `&branch_id=${effectiveBranch}` : ''}`);
+            const res = await InventoryApis.GetProducts(`?page=${page}&per_page=${pageSize}${product_name ? `&product_name=${product_name}` : ''}${category_id ? `&category_id=${category_id}` : ''}${effectiveBranch ? `&branch_id=${effectiveBranch}` : ''}`);
             setParamFetch(res);
             setFirstLoading(true);
         } catch (error) {

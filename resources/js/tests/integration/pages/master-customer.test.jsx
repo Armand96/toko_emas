@@ -42,7 +42,7 @@ describe('Master Customer — create via UI', () => {
 
         await waitFor(async () => {
             as('super');
-            const found = list(await CustomerApis.GetCustomer(`?customer_name=${encodeURIComponent(newName)}&limit=20`))
+            const found = list(await CustomerApis.GetCustomer(`?customer_name=${encodeURIComponent(newName)}&per_page=20`))
                 .some((c) => c.customer_name === newName);
             expect(found).toBe(true);
         }, { timeout: 15000 });
@@ -68,7 +68,7 @@ describe('Master Customer — edit via UI', () => {
 
         await waitFor(async () => {
             as('super');
-            const c = list(await CustomerApis.GetCustomer(`?customer_name=${encodeURIComponent(renamed)}&limit=20`))
+            const c = list(await CustomerApis.GetCustomer(`?customer_name=${encodeURIComponent(renamed)}&per_page=20`))
                 .find((x) => x.id === editId);
             expect(c?.customer_name).toBe(renamed);
         }, { timeout: 15000 });

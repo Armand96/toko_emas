@@ -19,7 +19,7 @@ let picName = null;
 beforeAll(async () => {
     await loginAll();
     as('super');
-    picName = list(await UsersApis.GetUser('?is_active=1&limit=50')).find((u) => Number(u.is_active) === 1)?.name;
+    picName = list(await UsersApis.GetUser('?is_active=1&per_page=50')).find((u) => Number(u.is_active) === 1)?.name;
     if (!picName) throw new Error('User aktif utk PIC tak ada');
     OptionsStore.getState().invalidate('users');
 }, 30000);

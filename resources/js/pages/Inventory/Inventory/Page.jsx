@@ -294,7 +294,7 @@ const MasterInventory = () => {
         setLoading(true);
         try {
             const effectiveBranch = isKasir() && user?.branch_id ? user.branch_id : cabang;
-            const params = `?page=${page}&limit=${pageSize}`
+            const params = `?page=${page}&per_page=${pageSize}`
                 + (kode ? `&search=${kode}` : "")
                 + (status ? `&status=${status}` : "")
                 + (kategori ? `&category_id=${kategori}` : "")
@@ -533,6 +533,7 @@ const MasterInventory = () => {
                 label: product?.product_name ?? '',
                 berat: item.berat,
                 karat: item.karat,
+                serial: item.serial_number ?? '',
             };
         });
         HelperFunctions.printBarcode(barcodes, { items });

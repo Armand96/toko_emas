@@ -24,7 +24,7 @@ export default function Modal({
     useEffect(() => {
         setLoading(true);
         Promise.all([
-            InventoryApis.GetCategories('?only_parent=1&limit=1000'),
+            InventoryApis.GetCategories('?only_parent=1&per_page=1000'),
             ensureBranches(),
         ]).then(([categoryRes, branchData]) => {
             setCategoryOptions(HelperFunctions.formatDropdown(categoryRes.data, 'id', 'category_name'));
@@ -38,7 +38,7 @@ export default function Modal({
 
     useEffect(() => {
         if (isOpen && formData?.category) {
-            InventoryApis.GetCategories(`?parent_id=${formData.category}&limit=1000`).then(res => {
+            InventoryApis.GetCategories(`?parent_id=${formData.category}&per_page=1000`).then(res => {
                 setSubCategoriesOptions(HelperFunctions.formatDropdown(res.data, 'id', 'category_name'));
             });
         }
@@ -51,7 +51,7 @@ export default function Modal({
     const handleOnChange = (e) => {
         const { name, value, type } = e.target;
         if(name === 'category') {
-              InventoryApis.GetCategories(`?parent_id=${value}&limit=1000`).then(res => {
+              InventoryApis.GetCategories(`?parent_id=${value}&per_page=1000`).then(res => {
                 setSubCategoriesOptions(HelperFunctions.formatDropdown(res.data, 'id', 'category_name', ));
             })
             onChange({ target: { name: 'sub_category', value: '' }});

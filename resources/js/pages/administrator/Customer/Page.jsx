@@ -38,7 +38,7 @@ const MasterCustomer = () => {
     const fetchData = async (page = 1, pageSize = 10, params = {}) => {
         setLoading(true);
         try {
-            const query = new URLSearchParams({ page, limit: pageSize });
+            const query = new URLSearchParams({ page, per_page: pageSize });
             if (params.name) query.append('customer_name', params.name);
             if (params.status !== '' && params.status !== undefined) query.append('is_active', params.status);
             const res = await CustomerApis.GetCustomer(`?${query.toString()}`);

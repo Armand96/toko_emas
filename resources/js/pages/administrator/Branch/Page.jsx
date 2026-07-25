@@ -48,7 +48,7 @@ const Branch = () => {
     const fetchData = async (page = 1, pageSize = 10, branch_name = '', status = '') => {
         setLoading(true);
         try {
-            const res = await BranchApis.GetBranch(`?page=${page}&limit=${pageSize}${branch_name ? `&branch_name=${branch_name}` : ''}${status ? `&is_active=${status}` : ''}`);
+            const res = await BranchApis.GetBranch(`?page=${page}&per_page=${pageSize}${branch_name ? `&branch_name=${branch_name}` : ''}${status ? `&is_active=${status}` : ''}`);
             setParamFetch(res);
             setFirstLoading(true);
         } catch (error) {

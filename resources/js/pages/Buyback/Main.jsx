@@ -213,6 +213,7 @@ const Main = ({ setCurentState }) => {
                 label: d.product?.product_name ?? d.product?.name ?? '',
                 berat: d.berat ?? d.inventory?.berat,
                 karat: d.karat ?? d.inventory?.karat,
+                serial: d.serial_number ?? d.inventory?.serial_number ?? '',
             }));
 
         if (items.length === 0) {

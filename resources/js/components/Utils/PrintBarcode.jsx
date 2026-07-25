@@ -11,6 +11,11 @@ const QR_SOURCE_PX = 400; // resolusi source QR sebelum di-downscale ke label
 const LABEL_WIDTH_MM = 30;
 const LABEL_HEIGHT_MM = 70;
 const PX_PER_MM = 8; // fixed, 203dpi hardware B1/B21
+const QR_SIZE_RATIO = 0.45; // porsi lebar label yang dipakai QR (rasio x 30mm = ukuran fisiknya)
+// Jarak QR -> kolom teks pertama (gram/karat). Naikkan kalau baris paling bawah
+// kena lipatan label; semua baris ikut naik. Aman sampai ~60 sebelum kolom
+// terakhir mepet tepi kanan (dengan QR_SIZE_RATIO 0.45).
+const TEXT_GAP_PX = 40;
 
 // Caller ada yang kirim nilai raw (2.5 / 24) ada yang sudah berformat ("2.5g" / "24K"),
 // jadi dinormalisasi dulu sebelum ditempel unit.
@@ -24,6 +29,11 @@ function formatKarat(value) {
     if (value === null || value === undefined || value === "") return "";
     const raw = String(value).replace(/\s*k$/i, "").trim();
     return raw ? `${raw}K` : "";
+}
+
+function formatSerial(value) {
+    if (value === null || value === undefined) return "";
+    return String(value).trim();
 }
 
 function readItemsFromStorage() {
@@ -40,6 +50,7 @@ function readItemsFromStorage() {
             barcode: code,
             berat: formatBerat(perItem?.[i]?.berat ?? extra.berat),
             karat: formatKarat(perItem?.[i]?.karat ?? extra.karat),
+            serial: formatSerial(perItem?.[i]?.serial ?? extra.serial),
             label: perItem?.[i]?.label || extra.label || extra.produk || "",
         }));
 
@@ -98,10 +109,12 @@ function composeLabelCanvas(qrCanvas, item) {
     ctx.fillRect(0, 0, widthPx, heightPx);
 
     const margin = 8;
-    const qrSizePx = Math.round(widthPx * 0.32);
+    const qrSizePx = Math.round(widthPx * QR_SIZE_RATIO);
     ctx.drawImage(qrCanvas, margin, margin, qrSizePx, qrSizePx);
 
-    const textStartX = margin + qrSizePx + 10;
+    // Teks di-rotate 90 dan glyph-nya "tumbuh" ke KIRI dari titik anchor, jadi anchor
+    // kolom pertama harus digeser sebesar tinggi font + jarak biar gak nabrak QR.
+    const textStartX = margin + qrSizePx + TEXT_GAP_PX;
     // Karena teks di-rotate 90, "panjang" teks sekarang terbatas oleh TINGGI label, bukan lebar.
     const maxTextLength = heightPx - margin * 2;
 
@@ -109,7 +122,16 @@ function composeLabelCanvas(qrCanvas, item) {
     ctx.textBaseline = "top";
     ctx.textAlign = "left";
 
+    // Kolom paling kiri = baris paling BAWAH saat label dibaca (teksnya rotate 90),
+    // jadi urutan gambar dibalik: gram/karat dulu, baru kode di atasnya, produk paling atas.
     let cursorX = textStartX; // tiap baris baru geser ke KANAN (karena teksnya vertikal)
+
+    const meta = [item.berat, item.karat, item.serial].filter(Boolean).join(" · ");
+    if (meta) {
+        ctx.font = "bold 14px sans-serif";
+        drawVerticalText(ctx, meta, cursorX, margin);
+        cursorX += 18;
+    }
 
     ctx.font = "bold 13px sans-serif";
     for (const line of wrapText(ctx, item.barcode, maxTextLength)) {
@@ -118,20 +140,12 @@ function composeLabelCanvas(qrCanvas, item) {
     }
 
     if (item.label) {
-        cursorX += 70;
+        cursorX += 15;
         ctx.font = "16px sans-serif";
         for (const line of wrapText(ctx, item.label, maxTextLength)) {
             drawVerticalText(ctx, line, cursorX, margin);
             cursorX += 12;
         }
-    }
-
-    const meta = [item.berat, item.karat].filter(Boolean).join(" · ");
-    if (meta) {
-        cursorX += 8;
-        ctx.font = "bold 14px sans-serif";
-        drawVerticalText(ctx, meta, cursorX, margin);
-        cursorX += 16;
     }
 
     return canvas;
@@ -275,9 +289,9 @@ const PrintBarcode = () => {
                         </div>
                         <div>
                             <p className="text-sm font-medium text-gray-900">{item.barcode}</p>
-                            {(item.label || item.berat || item.karat) && (
+                            {(item.label || item.berat || item.karat || item.serial) && (
                                 <p className="text-xs text-gray-500">
-                                    {[item.label, item.berat, item.karat].filter(Boolean).join(" · ")}
+                                    {[item.label, item.berat, item.karat, item.serial].filter(Boolean).join(" · ")}
                                 </p>
                             )}
                         </div>
