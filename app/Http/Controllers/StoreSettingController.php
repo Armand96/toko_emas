@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 
-
 class StoreSettingController extends Controller
 {
     /**
@@ -46,7 +45,7 @@ class StoreSettingController extends Controller
                 // Upload new image
                 $image = $request->file('image');
 
-                $imageName = 'toko_cover_image' . "_" . date('Y-m-d') . "." . $image->getClientOriginalExtension();
+                $imageName = 'toko_cover_image'.'_'.date('Y-m-d H:i:s').'.'.$image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
@@ -54,9 +53,9 @@ class StoreSettingController extends Controller
                     'public'
                 );
 
-                $validated['image_path'] = 'images/' . $imageName;
+                $validated['image_path'] = 'images/'.$imageName;
 
-                $validated['thumb_path'] = 'thumbs/' . $imageName;
+                $validated['thumb_path'] = 'thumbs/'.$imageName;
 
                 // Generate thumbnail
                 $thumb = Image::decode($image)
@@ -71,10 +70,9 @@ class StoreSettingController extends Controller
                 );
             }
 
-
             $setting = StoreSetting::create($validated);
 
-            return ApiResponse::success($setting, "Success create store setting", 201);
+            return ApiResponse::success($setting, 'Success create store setting', 201);
         } catch (\Throwable $th) {
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
@@ -85,7 +83,7 @@ class StoreSettingController extends Controller
      */
     public function show(StoreSetting $storeSetting)
     {
-        return ApiResponse::success($storeSetting, "Success");
+        return ApiResponse::success($storeSetting, 'Success');
     }
 
     /**
@@ -119,7 +117,7 @@ class StoreSettingController extends Controller
                 // Upload new image
                 $image = $request->file('image');
 
-                $imageName = 'toko_cover_image' . "_" . date('Y-m-d') . "." . $image->getClientOriginalExtension();
+                $imageName = 'toko_cover_image'.'_'.date('Y-m-d').'.'.$image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
@@ -127,9 +125,9 @@ class StoreSettingController extends Controller
                     'public'
                 );
 
-                $validated['image_path'] = 'images/' . $imageName;
+                $validated['image_path'] = 'images/'.$imageName;
 
-                $validated['thumb_path'] = 'thumbs/' . $imageName;
+                $validated['thumb_path'] = 'thumbs/'.$imageName;
 
                 // Generate thumbnail
                 $thumb = Image::decode($image)
@@ -146,7 +144,7 @@ class StoreSettingController extends Controller
 
             $storeSetting->update($validated);
 
-            return ApiResponse::success($storeSetting, "Success update setting", 201);
+            return ApiResponse::success($storeSetting, 'Success update setting', 201);
         } catch (\Throwable $th) {
             return ApiResponse::error($th->getMessage(), $th, 500);
         }

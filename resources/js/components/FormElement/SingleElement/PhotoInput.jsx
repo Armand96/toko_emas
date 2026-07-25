@@ -49,7 +49,7 @@ const PhotoInput = ({
         if (file.type?.startsWith("image/")) {
             setIsCompressing(true);
             try {
-                finalFile = await compressImage(file, { maxSizeMB: 3 });
+                finalFile = await compressImage(file, { maxSizeMB: 10 });
             } catch {
                 finalFile = file;
             } finally {

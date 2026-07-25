@@ -31,7 +31,7 @@ class BuybackImageRequest extends FormRequest
             'images.*' => [
                 'image',
                 'mimes:jpeg,png,jpg,gif',
-                'max:3072',
+                'max:10240',
             ],
         ];
     }

@@ -27,7 +27,7 @@ class StoreSettingRequest extends FormRequest
         $imageRules = [
             'image',
             'mimes:jpeg,png,jpg,gif',
-            'max:2048',
+            'max:10240',
             'nullable'
         ];
 

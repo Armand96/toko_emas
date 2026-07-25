@@ -26,7 +26,7 @@ class FinanceRequest extends FormRequest
     {
         $FileRules = [
             'file',
-            'max:2048',
+            'max:10240',
             'nullable'
         ];
 
