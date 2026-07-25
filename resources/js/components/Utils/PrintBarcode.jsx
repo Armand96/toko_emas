@@ -4,7 +4,7 @@ import { PrinterIcon, BluetoothIcon } from "@phosphor-icons/react";
 import { NiimbotPrinter, canvasToBitmap, PRINTHEAD_PX } from "./Niimbotprinter";
 
 const STORAGE_KEY = "print_barcode_data";
-const QR_SOURCE_PX = 320; // resolusi source QR sebelum di-downscale ke label
+const QR_SOURCE_PX = 400; // resolusi source QR sebelum di-downscale ke label
 
 // Ukuran fisik label (mm) -- dikonfirmasi 30mm x 70mm.
 // Kalau roll diganti ukuran lain, angka ini WAJIB diupdate juga.
