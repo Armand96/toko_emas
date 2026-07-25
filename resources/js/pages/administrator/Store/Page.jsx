@@ -93,9 +93,12 @@ const SettingStore = () => {
 
         try {
             const body = new FormData();
-           if(data.image instanceof File) {
+            if (data?.id) {
+                body.append('_method', 'PUT');
+            }
+            if (data.image instanceof File) {
                 body.append('image', data.image);
-           }
+            }
             body.append('shop_name', data.shop_name);
             body.append('website', data.website);
             body.append('email', data.email);

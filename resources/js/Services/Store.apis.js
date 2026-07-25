@@ -8,7 +8,7 @@ const StoreApis = {
         return Apis.Post(`api/storeSettings`, body, { headers: { "Content-Type": "multipart/form-data" } });
     },
     PutSettingsStore: (id, body) => {
-        return Apis.Put(`api/storeSettings/${id}`, body, );
+        return Apis.Post(`api/storeSettings/${id}`, body, { headers: { "Content-Type": "multipart/form-data" } });
     }
 }
 
