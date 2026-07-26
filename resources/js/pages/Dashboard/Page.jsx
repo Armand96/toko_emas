@@ -9,6 +9,7 @@ import {
     ClipboardTextIcon,
     WalletIcon,
     CaretRightIcon,
+    RecycleIcon,
 } from "@phosphor-icons/react";
 import Badge from "../../components/Badge";
 import Table from "../../components/Table/Table";
@@ -72,8 +73,10 @@ const Dashboard = () => {
         available_inventory: 0,
         item_sold_today: 0,
         item_bought_today: 0,
+        item_buyback_today: 0,
         sales_today: 0,
         pembelian_today: 0,
+        buyback_today: 0,
         total_balance: 0,
     });
 
@@ -93,6 +96,7 @@ const Dashboard = () => {
         { key: "item-beli", label: "Item Beli Hari Ini", value: stats.item_bought_today?.toLocaleString("id-ID") ?? "0", icon: ShoppingCartIcon, tone: "info" },
         { key: "penjualan", label: "Penjualan Hari Ini", value: HelperFunctions.formatCurrency(stats.sales_today || 0), icon: ChatTextIcon, tone: "success", currency: true },
         { key: "pembelian", label: "Pembelian Hari Ini", value: HelperFunctions.formatCurrency(stats.pembelian_today || 0), icon: ClipboardTextIcon, tone: "danger", currency: true },
+        { key: "buyback", label: "Buyback Hari Ini", value: HelperFunctions.formatCurrency(stats.buyback_today || 0), icon: RecycleIcon, tone: "info", currency: true },
         { key: "saldo", label: "Saldo Kas & Bank Saat Ini", value: HelperFunctions.formatCurrency(stats.total_balance || 0), icon: WalletIcon, tone: "primary", currency: true },
     ];
 
@@ -146,8 +150,10 @@ const Dashboard = () => {
                     available_inventory: dataToday.available_inventory || 0,
                     item_sold_today: dataToday.item_sold_today || 0,
                     item_bought_today: dataToday.item_bought_today || 0,
+                    item_buyback_today: dataToday.item_buyback_today || 0,
                     sales_today: dataToday.sales_today || 0,
                     pembelian_today: dataToday.pembelian_today || 0,
+                    buyback_today: dataToday.buyback_today || 0,
                     total_balance: dataToday.total_balance || 0,
                 });
             }

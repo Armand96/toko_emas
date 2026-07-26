@@ -42,7 +42,7 @@ const PrintKwitansi = () => {
         );
     }
 
-    const { customer, user, details = [], branch, buyback_id, grand_total, created_at } = data;
+    const { customer, user, details = [], branch, buyback_code, grand_total, created_at } = data;
 
     const tanggal = created_at ? dayjs(created_at) : dayjs();
     const kota = branch?.lokasi_cabang || branch?.branch_name || "-";
@@ -74,7 +74,7 @@ const PrintKwitansi = () => {
             <div className="w-full max-w-[700px] flex justify-between items-center print:hidden">
                 <div>
                     <h1 className="text-lg font-semibold text-gray-900">Cetak Faktur Buyback</h1>
-                    <p className="text-sm text-gray-500">Buyback ID {buyback_id}</p>
+                    <p className="text-sm text-gray-500">Buyback ID {buyback_code}</p>
                 </div>
                 <button
                     onClick={() => window.print()}
@@ -122,7 +122,7 @@ const PrintKwitansi = () => {
                 {/* TITLE BAR */}
                 <div className="relative z-10 flex justify-between items-end border-b-[1.5px] border-black pb-[3px] mt-1">
                     <span className="text-[14px] font-extrabold tracking-[0.3px]">FAKTUR JUAL &amp; BELI</span>
-                    <span className="text-[11px]">No : <strong>{buyback_id ?? "-"}</strong></span>
+                    <span className="text-[11px]">No : <strong>{buyback_code ?? "-"}</strong></span>
                 </div>
 
                 {/* TABLE */}

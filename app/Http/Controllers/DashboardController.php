@@ -74,6 +74,14 @@ class DashboardController extends Controller
             COALESCE(SUM(modal), 0) as total_pembelian
         ')->first();
 
+        $buyback = Buyback::where('status', BuybackStatus::SELESAI)
+            ->where('updated_at', '>=', $today)
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->selectRaw('
+            COUNT(*) as total_item_buyback,
+            COALESCE(SUM(grand_total), 0) as total_buyback
+        ')->first();
+
         $finance = Finance::when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->selectRaw("
             COALESCE(SUM(
@@ -114,6 +122,9 @@ class DashboardController extends Controller
 
             'item_bought_today' => $pembelian->total_item_bought,
             'pembelian_today' => $pembelian->total_pembelian,
+
+            'item_buyback_today' => $buyback->total_item_buyback,
+            'buyback_today' => $buyback->total_buyback,
 
             'cash_balance' => $finance->cash_balance,
             'bank_balance' => $finance->bank_balance,
