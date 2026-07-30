@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -19,19 +20,19 @@ class UserController extends Controller
     {
         $query = User::query();
 
-        if ($request->has('username') && $request->username != "") {
-            $query->where('username', 'like', '%' . $request->username . '%');
+        if ($request->has('username') && $request->username != '') {
+            $query->where('username', 'like', '%'.$request->username.'%');
         }
-        if ($request->has('name') && $request->name != "") {
-            $query->where('name', 'like', '%' . $request->name . '%');
+        if ($request->has('name') && $request->name != '') {
+            $query->where('name', 'like', '%'.$request->name.'%');
         }
-        if ($request->has('email') && $request->email != "") {
-            $query->where('email', 'like', '%' . $request->email . '%');
+        if ($request->has('email') && $request->email != '') {
+            $query->where('email', 'like', '%'.$request->email.'%');
         }
-        if ($request->has('branch_id') && $request->branch_id != "") {
+        if ($request->has('branch_id') && $request->branch_id != '') {
             $query->where('branch_id', $request->branch_id);
         }
-        if ($request->has('is_active') && $request->is_active != "") {
+        if ($request->has('is_active') && $request->is_active != '') {
             $query->where('is_active', $request->is_active);
         }
 
@@ -60,8 +61,11 @@ class UserController extends Controller
             $validated['password'] = Hash::make($validated['password']);
             $user = User::create($validated);
 
-            return ApiResponse::success($user, "Success create user", 201);
+            return ApiResponse::success($user, 'Success create user', 201);
         } catch (\Throwable $th) {
+            Log::info('UserController@store payload', $request->except(['password']));
+            Log::error('UserController@store error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -71,7 +75,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return ApiResponse::success($user, "Success");
+        return ApiResponse::success($user, 'Success');
     }
 
     /**
@@ -90,11 +94,16 @@ class UserController extends Controller
         $validated = $request->validated();
 
         try {
-            if (isset($validated['password']) && $validated['password'] != "") $validated['password'] = Hash::make($validated['password']);
+            if (isset($validated['password']) && $validated['password'] != '') {
+                $validated['password'] = Hash::make($validated['password']);
+            }
             $user->update($validated);
 
-            return ApiResponse::success($user, "Success update user", 201);
+            return ApiResponse::success($user, 'Success update user', 201);
         } catch (\Throwable $th) {
+            Log::info('UserController@update payload', ['id' => $user->id, ...$request->except(['password'])]);
+            Log::error('UserController@update error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -109,7 +118,7 @@ class UserController extends Controller
 
     public function profile(Request $request)
     {
-        return ApiResponse::success($request->user(), "OK", 200);
+        return ApiResponse::success($request->user(), 'OK', 200);
     }
 
     public function login(LoginRequest $request)

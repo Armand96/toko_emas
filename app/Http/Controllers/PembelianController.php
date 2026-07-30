@@ -104,6 +104,7 @@ class PembelianController extends Controller
 
             return ApiResponse::success($result, 'Sukses buat pembelian', 201);
         } catch (\Throwable $th) {
+            Log::info('PembelianController@pembelian payload', $request->all());
             Log::error($th);
             DB::rollBack();
 
@@ -129,6 +130,7 @@ class PembelianController extends Controller
 
             if ($lockedPembelians->isEmpty()) {
                 DB::rollBack();
+
                 return ApiResponse::error('Tidak ada pembelian dengan status APPROVAL yang ditemukan', null, 422);
             }
 
@@ -141,7 +143,7 @@ class PembelianController extends Controller
             if ($status == PembelianStatus::DISETUJUI) {
                 $dataPembelian = $lockedPembelians->fresh();
                 // $batchInsert = [];
-                $dateNow = date('Y-m-d');
+                $dateNow = date('Y-m-d H:i:s');
 
                 foreach ($dataPembelian as $idx => $value) {
 
@@ -190,6 +192,8 @@ class PembelianController extends Controller
             return ApiResponse::success([], 'Sukses update status pembelian', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
+            Log::info('PembelianController@changeApproval payload', $request->all());
+            Log::error('PembelianController@changeApproval error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
 
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
@@ -214,7 +218,7 @@ class PembelianController extends Controller
                 // Upload new image
                 $image = $request->file('images')[$index];
 
-                $imageName = 'pembelian_'.$value.'_'.date('Y-m-d').'.'.$image->getClientOriginalExtension();
+                $imageName = 'pembelian_'.$value.'_'.date('Y-m-d_H:i:s').'.'.$image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
@@ -256,6 +260,8 @@ class PembelianController extends Controller
             }
 
             DB::rollBack();
+            Log::info('PembelianController@pembelianImage payload', $request->except(['images']));
+            Log::error('PembelianController@pembelianImage error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
 
             return ApiResponse::error($th->getMessage(), $th, 500);
         }

@@ -7,6 +7,7 @@ use App\Http\Requests\FinanceRequest;
 use App\Models\Finance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class FinanceController extends Controller
@@ -20,26 +21,26 @@ class FinanceController extends Controller
 
         $query = Finance::query();
 
-        if ($request->has('note') && $request->note != "") {
-            $query->where('note', 'like', '%' . $request->note . '%');
+        if ($request->has('note') && $request->note != '') {
+            $query->where('note', 'like', '%'.$request->note.'%');
         }
-        if ($request->has('branch_id') && $request->branch_id != "") {
+        if ($request->has('branch_id') && $request->branch_id != '') {
             $query->where('branch_id', $request->branch_id);
         }
-        if ($request->has('category_finance_id') && $request->category_finance_id != "") {
+        if ($request->has('category_finance_id') && $request->category_finance_id != '') {
             $query->where('category_finance_id', $request->category_finance_id);
         }
-        if ($request->has('type') && $request->type != "") {
+        if ($request->has('type') && $request->type != '') {
             $query->where('type', $request->type);
         }
-        if ($request->has('payment_method') && $request->payment_method != "") {
+        if ($request->has('payment_method') && $request->payment_method != '') {
             $query->where('payment_method', $request->payment_method);
         }
-        if ($request->has('start_date') && $request->start_date != "") {
-            $query->where('created_at', '>=', $request->start_date . " 00:00:00");
+        if ($request->has('start_date') && $request->start_date != '') {
+            $query->where('created_at', '>=', $request->start_date.' 00:00:00');
         }
-        if ($request->has('end_date') && $request->end_date != "") {
-            $query->where('created_at', '<=', $request->end_date . " 23:59:59");
+        if ($request->has('end_date') && $request->end_date != '') {
+            $query->where('created_at', '<=', $request->end_date.' 23:59:59');
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
@@ -70,7 +71,7 @@ class FinanceController extends Controller
                 // Upload new attachment
                 $attachment = $request->file('attachment');
 
-                $attachmentName = "finance_attachment_" . date('Y-m-d_H_i_s') . "." . $attachment->getClientOriginalExtension();
+                $attachmentName = 'finance_attachment_'.date('Y-m-d_H_i_s').'.'.$attachment->getClientOriginalExtension();
 
                 $attachment->storeAs(
                     'attachments',
@@ -78,13 +79,16 @@ class FinanceController extends Controller
                     'public'
                 );
 
-                $validated['attachment'] = 'attachments/' . $attachmentName;
+                $validated['attachment'] = 'attachments/'.$attachmentName;
             }
 
             $category = Finance::create($validated);
 
-            return ApiResponse::success($category, "Success create finance", 201);
+            return ApiResponse::success($category, 'Success create finance', 201);
         } catch (\Throwable $th) {
+            Log::info('FinanceController@store payload', $request->except(['attachment']));
+            Log::error('FinanceController@store error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -94,7 +98,7 @@ class FinanceController extends Controller
      */
     public function show(Finance $finance)
     {
-        return ApiResponse::success($finance->load(['branch', 'category', 'bankCabang']), "Success");
+        return ApiResponse::success($finance->load(['branch', 'category', 'bankCabang']), 'Success');
     }
 
     /**
@@ -128,7 +132,7 @@ class FinanceController extends Controller
                 // Upload new attachment
                 $attachment = $request->file('attachment');
 
-                $attachmentName = "finance_attachment_" . date('Y-m-d_H_i_s') . "." . $attachment->getClientOriginalExtension();
+                $attachmentName = 'finance_attachment_'.date('Y-m-d_H_i_s').'.'.$attachment->getClientOriginalExtension();
 
                 $attachment->storeAs(
                     'attachments',
@@ -136,13 +140,15 @@ class FinanceController extends Controller
                     'public'
                 );
 
-                $validated['attachment'] = 'attachments/' . $attachmentName;
+                $validated['attachment'] = 'attachments/'.$attachmentName;
             }
 
             $finance->update($validated);
 
-            return ApiResponse::success($finance, "Success update finance", 201);
+            return ApiResponse::success($finance, 'Success update finance', 201);
         } catch (\Throwable $th) {
+            Log::info('FinanceController@update payload', ['id' => $finance->id, ...$request->except(['attachment'])]);
+            Log::error('FinanceController@update error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
             ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -163,8 +169,11 @@ class FinanceController extends Controller
                 Storage::disk('public')->delete($finance->attachment);
             }
 
-            return ApiResponse::success($finance, "Finance deleted", 200);
+            return ApiResponse::success($finance, 'Finance deleted', 200);
         } catch (\Throwable $th) {
+            Log::info('FinanceController@destroy payload', ['id' => $finance->id]);
+            Log::error('FinanceController@destroy error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }

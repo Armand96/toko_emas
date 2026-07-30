@@ -6,6 +6,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Requests\MCategoryRequest;
 use App\Models\MCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -18,22 +19,22 @@ class MCategoryController extends Controller
     {
         $query = MCategory::query();
 
-        if ($request->has('category_name') && $request->category_name != "") {
-            $query->where('category_name', 'like', '%' . $request->category_name . '%');
+        if ($request->has('category_name') && $request->category_name != '') {
+            $query->where('category_name', 'like', '%'.$request->category_name.'%');
         }
-        if ($request->has('description') && $request->description != "") {
-            $query->where('description', 'like', '%' . $request->description . '%');
+        if ($request->has('description') && $request->description != '') {
+            $query->where('description', 'like', '%'.$request->description.'%');
         }
-        if ($request->has('parent_id') && $request->parent_id != "") {
+        if ($request->has('parent_id') && $request->parent_id != '') {
             $query->where('parent_id', $request->parent_id);
         }
-        if($request->has('has_subcategory') && $request->has_subcategory > 0) {
+        if ($request->has('has_subcategory') && $request->has_subcategory > 0) {
             $query->has('subcategories');
         }
-        if($request->has('has_parent') && $request->has_parent > 0) {
+        if ($request->has('has_parent') && $request->has_parent > 0) {
             $query->has('parent');
         }
-        if($request->has('only_parent') && $request->only_parent > 0) {
+        if ($request->has('only_parent') && $request->only_parent > 0) {
             $query->whereNull('parent_id');
         }
         // if ($request->has('is_active') && $request->is_active != "") {
@@ -68,7 +69,7 @@ class MCategoryController extends Controller
                 // Upload new image
                 $image = $request->file('image');
 
-                $imageName = $validated['category_name'] . "_" . date('Y-m-d') . "." . $image->getClientOriginalExtension();
+                $imageName = $validated['category_name'].'_'.date('Y-m-d_H:i:s').'.'.$image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
@@ -76,9 +77,9 @@ class MCategoryController extends Controller
                     'public'
                 );
 
-                $validated['image_path'] = 'images/' . $imageName;
+                $validated['image_path'] = 'images/'.$imageName;
 
-                $validated['thumb_path'] = 'thumbs/' . $imageName;
+                $validated['thumb_path'] = 'thumbs/'.$imageName;
 
                 // Generate thumbnail
                 $thumb = Image::decode($image)
@@ -95,8 +96,11 @@ class MCategoryController extends Controller
 
             $category = MCategory::create($validated);
 
-            return ApiResponse::success($category, "Success create category", 201);
+            return ApiResponse::success($category, 'Success create category', 201);
         } catch (\Throwable $th) {
+            Log::info('MCategoryController@store payload', $request->except(['image']));
+            Log::error('MCategoryController@store error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -106,7 +110,7 @@ class MCategoryController extends Controller
      */
     public function show(MCategory $category)
     {
-        return ApiResponse::success($category, "Success");
+        return ApiResponse::success($category, 'Success');
     }
 
     /**
@@ -136,11 +140,10 @@ class MCategoryController extends Controller
                     Storage::disk('public')->delete($category->thumb_path);
                 }
 
-
                 // Upload new image
                 $image = $request->file('image');
 
-                $imageName = $validated['category_name'] . "_" . date('Y-m-d') . "." . $image->getClientOriginalExtension();
+                $imageName = $validated['category_name'].'_'.date('Y-m-d_H:i:s').'.'.$image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
@@ -148,9 +151,9 @@ class MCategoryController extends Controller
                     'public'
                 );
 
-                $validated['image_path'] = 'images/' . $imageName;
+                $validated['image_path'] = 'images/'.$imageName;
 
-                $validated['thumb_path'] = 'thumbs/' . $imageName;
+                $validated['thumb_path'] = 'thumbs/'.$imageName;
 
                 // Generate thumbnail
                 $thumb = Image::decode($image)
@@ -167,8 +170,10 @@ class MCategoryController extends Controller
 
             $category->update($validated);
 
-            return ApiResponse::success($category, "Success update category", 201);
+            return ApiResponse::success($category, 'Success update category', 201);
         } catch (\Throwable $th) {
+            Log::info('MCategoryController@update payload', ['id' => $category->id, ...$request->except(['image'])]);
+            Log::error('MCategoryController@update error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
             ApiResponse::error($th->getMessage(), $th, 500);
         }
     }

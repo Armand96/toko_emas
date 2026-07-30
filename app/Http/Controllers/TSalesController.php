@@ -17,6 +17,7 @@ use App\Models\TSales;
 use App\Models\TSalesDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TSalesController extends Controller
 {
@@ -24,24 +25,24 @@ class TSalesController extends Controller
     {
         $query = TSales::query();
 
-        if ($request->has('order_id') && $request->order_id != "") {
-            $query->where('order_id', 'like', '%' . $request->order_id . '%');
+        if ($request->has('order_id') && $request->order_id != '') {
+            $query->where('order_id', 'like', '%'.$request->order_id.'%');
         }
-        if ($request->has('customer_name') && $request->customer_name != "") {
-            $query->where('customer.customer_name', 'like', '%' . $request->customer_name . '%');
+        if ($request->has('customer_name') && $request->customer_name != '') {
+            $query->where('customer.customer_name', 'like', '%'.$request->customer_name.'%');
         }
-        if ($request->has('approval_status') && $request->status != "") {
+        if ($request->has('approval_status') && $request->status != '') {
 
-                $query->where('approval_status', $request->status);
+            $query->where('approval_status', $request->status);
 
         }
-        if ($request->has('branch_id') && $request->branch_id != "") {
+        if ($request->has('branch_id') && $request->branch_id != '') {
             $query->where('branch_id', $request->branch_id);
         }
 
         $perPage = $request->input('per_page', 10); // Default to 10 items per page
         $sales = $query->orderBy('id', 'desc')->with([
-            'customer' => fn($q) => $q->withCount('sales'),
+            'customer' => fn ($q) => $q->withCount('sales'),
             'user', 'details.inventory', 'details.product', 'branch',
         ])->paginate($perPage);
 
@@ -51,7 +52,7 @@ class TSalesController extends Controller
     public function single(TSales $sales)
     {
         return ApiResponse::success($sales->load([
-            'customer' => fn($q) => $q->withCount('sales'),
+            'customer' => fn ($q) => $q->withCount('sales'),
             'user', 'details.inventory', 'details.product', 'branch',
         ]));
     }
@@ -63,12 +64,12 @@ class TSalesController extends Controller
         DB::beginTransaction();
 
         try {
-            $orderId = 'ORD-' . date('Ymd') . "-";
-            $latestOrder = TSales::where('order_id', 'like', $orderId . "%")->lockForUpdate()->orderByDesc('id')->value('order_id');
+            $orderId = 'ORD-'.date('Ymd').'-';
+            $latestOrder = TSales::where('order_id', 'like', $orderId.'%')->lockForUpdate()->orderByDesc('id')->value('order_id');
             $counter = $latestOrder ? (int) substr($latestOrder, strrpos($latestOrder, '-') + 1) + 1 : 1;
-            $orderId = $orderId . str_pad($counter, 4, "0", STR_PAD_LEFT);
+            $orderId = $orderId.str_pad($counter, 4, '0', STR_PAD_LEFT);
 
-            $hdrSales = array(
+            $hdrSales = [
                 'order_id' => $orderId,
                 'customer_id' => $validated['customer_id'],
                 'branch_id' => $validated['branch_id'],
@@ -83,7 +84,7 @@ class TSalesController extends Controller
                 'approval_status' => SalesStatus::APPROVAL,
                 'nominal_paid' => isset($validated['nominal_paid']) ? $validated['nominal_paid'] : null,
                 'exchange' => isset($validated['exchange']) ? $validated['exchange'] : null,
-            );
+            ];
 
             $hdrData = TSales::create($hdrSales);
 
@@ -94,13 +95,13 @@ class TSalesController extends Controller
             $whereInInventoryCode = [];
 
             foreach ($validated['item'] as $index => $value) {
-                $itemData = array(
+                $itemData = [
                     'sales_id' => $hdrData->id,
                     'product_id' => $value['product_id'],
                     'price' => $value['price'],
                     'inventory_code' => $value['inventory_code'],
-                    'created_at' => $hdrData->created_at
-                );
+                    'created_at' => $hdrData->created_at,
+                ];
 
                 $subTotal += $value['price'];
                 array_push($whereInInventoryCode, $value['inventory_code']);
@@ -110,7 +111,7 @@ class TSalesController extends Controller
             TSalesDetail::insert($insertBatch);
 
             Inventory::whereIn('inventory_code', $whereInInventoryCode)->update([
-                'status' => InventoryStatus::RESERVED
+                'status' => InventoryStatus::RESERVED,
             ]);
 
             $hdrData->sub_total = $subTotal;
@@ -119,9 +120,12 @@ class TSalesController extends Controller
 
             DB::commit();
 
-            return ApiResponse::success([], "Success create transaction", 200);
+            return ApiResponse::success([], 'Success create transaction', 200);
         } catch (\Throwable $th) {
             DB::rollback();
+            Log::info('TSalesController@createTrx payload', $request->all());
+            Log::error('TSalesController@createTrx error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -140,45 +144,49 @@ class TSalesController extends Controller
             // Lock the row to prevent concurrent requests from double-processing the same sale
             $data = TSales::where('id', $validated['penjualan_id'])->lockForUpdate()->first();
 
-            if (!$data) {
+            if (! $data) {
                 DB::rollBack();
+
                 return ApiResponse::error('Penjualan tidak ditemukan', null, 404);
             }
 
             $data->update([
                 'approval_status' => $validated['status'],
-                'note' => isset($validated['note']) ? $validated['note'] : null
+                'note' => isset($validated['note']) ? $validated['note'] : null,
             ]);
 
             if ($status == SalesStatus::SELESAI) {
                 $products = TSalesDetail::where('sales_id', $validated['penjualan_id'])->pluck('inventory_code')->toArray();
                 $dateNow = date('Y-m-d H:i:s');
 
-                Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::SOLD, 'updated_at' => $dateNow));
+                Inventory::whereIn('inventory_code', $products)->update(['status' => InventoryStatus::SOLD, 'updated_at' => $dateNow]);
 
                 $salesPaymentMethod = SalesPaymentMethod::from($data->payment_type);
                 $categoryFinance = MCategoryFinance::where('category_name', 'like', '%Penjualan%')->first();
-                Finance::create(array(
+                Finance::create([
                     'branch_id' => $data->branch_id,
                     'category_finance_id' => $categoryFinance->id,
                     'bank_cabang_id' => $salesPaymentMethod == SalesPaymentMethod::TUNAI ? 0 : ($data->receiver_bank_id ?? 0),
                     'type' => FinanceType::CASHIN,
                     'payment_method' => $salesPaymentMethod == SalesPaymentMethod::TUNAI ? FinancePaymentMethod::TUNAI : FinancePaymentMethod::TRANSFER,
                     'nominal' => $data->grand_total,
-                    'is_auto' => true
-                ));
+                    'is_auto' => true,
+                ]);
             } elseif ($status == SalesStatus::DITOLAK || $status == SalesStatus::DIBATALKAN) {
                 $products = TSalesDetail::where('sales_id', $validated['penjualan_id'])->pluck('inventory_code')->toArray();
                 $dateNow = date('Y-m-d H:i:s');
 
-                Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow));
+                Inventory::whereIn('inventory_code', $products)->update(['status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow]);
             }
 
             DB::commit();
 
-            return ApiResponse::success([], "Sukses update status penjualan", 201);
+            return ApiResponse::success([], 'Sukses update status penjualan', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
+            Log::info('TSalesController@changeApproval payload', $request->all());
+            Log::error('TSalesController@changeApproval error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }

@@ -13,6 +13,7 @@ use App\Models\TransferItem;
 use App\Models\TransferItemDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TransferItemController extends Controller
 {
@@ -102,6 +103,8 @@ class TransferItemController extends Controller
             return ApiResponse::success([], 'Success create pengajuan transfer', 200);
         } catch (\Throwable $th) {
             DB::rollback();
+            Log::info('TransferItemController@createTrx payload', $request->all());
+            Log::error('TransferItemController@createTrx error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
 
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
@@ -124,8 +127,9 @@ class TransferItemController extends Controller
                 ->lockForUpdate()
                 ->first();
 
-            if (!$data) {
+            if (! $data) {
                 DB::rollBack();
+
                 return ApiResponse::error('Transfer item tidak ditemukan atau sudah diproses', null, 422);
             }
 
@@ -163,6 +167,8 @@ class TransferItemController extends Controller
             return ApiResponse::success([], 'Sukses update status transfer item', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
+            Log::info('TransferItemController@changeApproval payload', $request->all());
+            Log::error('TransferItemController@changeApproval error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
 
             return ApiResponse::error($th->getMessage(), $th, 500);
         }

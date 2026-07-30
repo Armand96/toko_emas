@@ -6,6 +6,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Requests\MBankRequest;
 use App\Models\MBank;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MBankController extends Controller
 {
@@ -16,13 +17,13 @@ class MBankController extends Controller
     {
         $query = MBank::query();
 
-        if ($request->has('bank_name') && $request->bank_name != "") {
-            $query->where('bank_name', 'like', '%' . $request->bank_name . '%');
+        if ($request->has('bank_name') && $request->bank_name != '') {
+            $query->where('bank_name', 'like', '%'.$request->bank_name.'%');
         }
-        if ($request->has('bank_code') && $request->bank_code != "") {
-            $query->where('bank_code', 'like', '%' . $request->bank_code . '%');
+        if ($request->has('bank_code') && $request->bank_code != '') {
+            $query->where('bank_code', 'like', '%'.$request->bank_code.'%');
         }
-        if ($request->has('is_active') && $request->is_active != "") {
+        if ($request->has('is_active') && $request->is_active != '') {
             $query->where('is_active', $request->is_active);
         }
 
@@ -50,8 +51,11 @@ class MBankController extends Controller
         try {
             $bank = MBank::create($validated);
 
-            return ApiResponse::success($bank, "Success create bank", 201);
+            return ApiResponse::success($bank, 'Success create bank', 201);
         } catch (\Throwable $th) {
+            Log::info('MBankController@store payload', $request->all());
+            Log::error('MBankController@store error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -61,7 +65,7 @@ class MBankController extends Controller
      */
     public function show(MBank $bank)
     {
-        return ApiResponse::success($bank, "Success");
+        return ApiResponse::success($bank, 'Success');
     }
 
     /**
@@ -82,8 +86,11 @@ class MBankController extends Controller
         try {
             $bank->update($validated);
 
-            return ApiResponse::success($bank, "Success update bank", 201);
+            return ApiResponse::success($bank, 'Success update bank', 201);
         } catch (\Throwable $th) {
+            Log::info('MBankController@update payload', ['id' => $bank->id, ...$request->all()]);
+            Log::error('MBankController@update error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -93,10 +100,15 @@ class MBankController extends Controller
      */
     public function destroy(MBank $bank)
     {
+
         try {
             $bank->delete();
-            return ApiResponse::success($bank, "Bank deleted", 200);
+
+            return ApiResponse::success($bank, 'Bank deleted', 200);
         } catch (\Throwable $th) {
+            Log::info('MBankController@destroy payload', ['id' => $bank->id]);
+            Log::error('MBankController@destroy error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }

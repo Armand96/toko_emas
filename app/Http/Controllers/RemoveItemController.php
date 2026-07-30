@@ -14,6 +14,7 @@ use App\Models\RemoveItem;
 use App\Models\RemoveItemDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RemoveItemController extends Controller
 {
@@ -24,16 +25,16 @@ class RemoveItemController extends Controller
     {
         $query = RemoveItem::query();
 
-        if ($request->has('code') && $request->code != "") {
-            $query->where('code', 'like', '%' . $request->code . '%');
+        if ($request->has('code') && $request->code != '') {
+            $query->where('code', 'like', '%'.$request->code.'%');
         }
-        if ($request->has('branch_id') && $request->branch_id != "") {
+        if ($request->has('branch_id') && $request->branch_id != '') {
             $query->where('branch_id', $request->branch_id);
         }
-        if ($request->has('jenis') && $request->jenis != "") {
+        if ($request->has('jenis') && $request->jenis != '') {
             $query->where('jenis', $request->jenis);
         }
-        if ($request->has('status') && $request->status != "") {
+        if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
 
@@ -54,45 +55,45 @@ class RemoveItemController extends Controller
             ->with(['header.branch', 'header.user', 'product', 'inventory']);
 
         // Filter by specific header
-        if ($request->has('remove_header_id') && $request->remove_header_id != "") {
+        if ($request->has('remove_header_id') && $request->remove_header_id != '') {
             $query->where('remove_header_id', $request->remove_header_id);
         }
 
         // Filter by detail-level status (APPROVAL / DISETUJUI / DITOLAK / DIBATALKAN / RETURN)
-        if ($request->has('status') && $request->status != "") {
+        if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
 
         // Filter by inventory code
-        if ($request->has('inventory_code') && $request->inventory_code != "") {
-            $query->where('inventory_code', 'like', '%' . $request->inventory_code . '%');
+        if ($request->has('inventory_code') && $request->inventory_code != '') {
+            $query->where('inventory_code', 'like', '%'.$request->inventory_code.'%');
         }
 
         // Filter by product
-        if ($request->has('product_id') && $request->product_id != "") {
+        if ($request->has('product_id') && $request->product_id != '') {
             $query->where('product_id', $request->product_id);
         }
 
         // Filter through header relationship
         $hasHeaderFilter =
-            ($request->has('branch_id')     && $request->branch_id     != "") ||
-            ($request->has('jenis')          && $request->jenis          != "") ||
-            ($request->has('header_status')  && $request->header_status  != "") ||
-            ($request->has('code')           && $request->code           != "");
+            ($request->has('branch_id') && $request->branch_id != '') ||
+            ($request->has('jenis') && $request->jenis != '') ||
+            ($request->has('header_status') && $request->header_status != '') ||
+            ($request->has('code') && $request->code != '');
 
         if ($hasHeaderFilter) {
             $query->whereHas('header', function ($q) use ($request) {
-                if ($request->has('branch_id') && $request->branch_id != "") {
+                if ($request->has('branch_id') && $request->branch_id != '') {
                     $q->where('branch_id', $request->branch_id);
                 }
-                if ($request->has('jenis') && $request->jenis != "") {
+                if ($request->has('jenis') && $request->jenis != '') {
                     $q->where('jenis', $request->jenis);
                 }
-                if ($request->has('header_status') && $request->header_status != "") {
+                if ($request->has('header_status') && $request->header_status != '') {
                     $q->where('status', $request->header_status);
                 }
-                if ($request->has('code') && $request->code != "") {
-                    $q->where('code', 'like', '%' . $request->code . '%');
+                if ($request->has('code') && $request->code != '') {
+                    $q->where('code', 'like', '%'.$request->code.'%');
                 }
             });
         }
@@ -110,19 +111,19 @@ class RemoveItemController extends Controller
         DB::beginTransaction();
 
         try {
-            $code = 'RMV-' . date('Ymd') . "-";
-            $latestCode = RemoveItem::where('code', 'like', $code . "%")->lockForUpdate()->orderByDesc('id')->value('code');
+            $code = 'RMV-'.date('Ymd').'-';
+            $latestCode = RemoveItem::where('code', 'like', $code.'%')->lockForUpdate()->orderByDesc('id')->value('code');
             $counter = $latestCode ? (int) substr($latestCode, strrpos($latestCode, '-') + 1) + 1 : 1;
-            $code = $code . str_pad($counter, 4, "0", STR_PAD_LEFT);
+            $code = $code.str_pad($counter, 4, '0', STR_PAD_LEFT);
 
-            $hdrRemove = array(
+            $hdrRemove = [
                 'code' => $code,
                 'branch_id' => $validated['branch_id'],
                 'created_by' => $request->user()->id,
                 'note' => isset($validated['note']) ? $validated['note'] : null,
                 'jenis' => $validated['jenis'],
                 'status' => RemoveItemStatus::APPROVAL,
-            );
+            ];
 
             $hdrData = RemoveItem::create($hdrRemove);
 
@@ -131,12 +132,12 @@ class RemoveItemController extends Controller
             $whereInInventoryCode = [];
 
             foreach ($validated['item'] as $index => $value) {
-                $itemData = array(
+                $itemData = [
                     'remove_header_id' => $hdrData->id,
                     'product_id' => $value['product_id'],
                     'inventory_code' => $value['inventory_code'],
-                    'created_at' => $dateNow
-                );
+                    'created_at' => $dateNow,
+                ];
 
                 array_push($whereInInventoryCode, $value['inventory_code']);
                 array_push($insertBatch, $itemData);
@@ -145,14 +146,17 @@ class RemoveItemController extends Controller
             RemoveItemDetail::insert($insertBatch);
 
             Inventory::whereIn('inventory_code', $whereInInventoryCode)->update([
-                'status' => InventoryStatus::RESERVED
+                'status' => InventoryStatus::RESERVED,
             ]);
 
             DB::commit();
 
-            return ApiResponse::success([], "Success create remove item request", 200);
+            return ApiResponse::success([], 'Success create remove item request', 200);
         } catch (\Throwable $th) {
             DB::rollback();
+            Log::info('RemoveItemController@createRemoveItem payload', $request->all());
+            Log::error('RemoveItemController@createRemoveItem error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -170,7 +174,7 @@ class RemoveItemController extends Controller
             RemoveItem::where('id', $validated['remove_id'])->update([
                 'status' => $status,
                 'note_approval' => isset($validated['note']) ? $validated['note'] : null,
-                'updated_at' => $dateNow
+                'updated_at' => $dateNow,
             ]);
 
             $products = RemoveItemDetail::where('remove_header_id', $validated['remove_id'])->pluck('inventory_code')->toArray();
@@ -178,16 +182,19 @@ class RemoveItemController extends Controller
 
                 $removeItemData = RemoveItem::find($validated['remove_id']);
                 $jenis = RemoveItemJenis::from($removeItemData->jenis);
-                Inventory::whereIn('inventory_code', $products)->update(array('status' => $jenis == RemoveItemJenis::HILANG ? InventoryStatus::LOST : InventoryStatus::REPAIR, 'updated_at' => $dateNow));
+                Inventory::whereIn('inventory_code', $products)->update(['status' => $jenis == RemoveItemJenis::HILANG ? InventoryStatus::LOST : InventoryStatus::REPAIR, 'updated_at' => $dateNow]);
             } elseif ($status == RemoveItemStatus::RETURN || $status == RemoveItemStatus::DIBATALKAN || $status == RemoveItemStatus::DITOLAK) {
-                Inventory::whereIn('inventory_code', $products)->update(array('status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow));
+                Inventory::whereIn('inventory_code', $products)->update(['status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow]);
             }
 
             DB::commit();
 
-            return ApiResponse::success([], "Sukses update status removal", 201);
+            return ApiResponse::success([], 'Sukses update status removal', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
+            Log::info('RemoveItemController@changeApproval payload', $request->all());
+            Log::error('RemoveItemController@changeApproval error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -206,7 +213,7 @@ class RemoveItemController extends Controller
 
             // Bulk update status on all selected details
             RemoveItemDetail::whereIn('id', $detailIds)->update([
-                'status'     => $status,
+                'status' => $status,
                 'updated_at' => $dateNow,
             ]);
 
@@ -221,7 +228,7 @@ class RemoveItemController extends Controller
                 $inventoryStatus = $jenis == RemoveItemJenis::HILANG ? InventoryStatus::LOST : InventoryStatus::REPAIR;
 
                 Inventory::whereIn('inventory_code', $inventoryCodes)->update([
-                    'status'     => $inventoryStatus,
+                    'status' => $inventoryStatus,
                     'updated_at' => $dateNow,
                 ]);
             } elseif (
@@ -230,16 +237,19 @@ class RemoveItemController extends Controller
                 $status == RemoveItemStatus::RETURN
             ) {
                 Inventory::whereIn('inventory_code', $inventoryCodes)->update([
-                    'status'     => InventoryStatus::AVAILABLE,
+                    'status' => InventoryStatus::AVAILABLE,
                     'updated_at' => $dateNow,
                 ]);
             }
 
             DB::commit();
 
-            return ApiResponse::success([], "Sukses update status item removal", 201);
+            return ApiResponse::success([], 'Sukses update status item removal', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
+            Log::info('RemoveItemController@changeApprovalDetail payload', $request->all());
+            Log::error('RemoveItemController@changeApprovalDetail error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }

@@ -6,6 +6,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Requests\StoreSettingRequest;
 use App\Models\StoreSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -45,7 +46,7 @@ class StoreSettingController extends Controller
                 // Upload new image
                 $image = $request->file('image');
 
-                $imageName = 'toko_cover_image'.'_'.date('Y-m-d H:i:s').'.'.$image->getClientOriginalExtension();
+                $imageName = 'toko_cover_image'.'_'.date('Y-m-d_H:i:s').'.'.$image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
@@ -74,6 +75,9 @@ class StoreSettingController extends Controller
 
             return ApiResponse::success($setting, 'Success create store setting', 201);
         } catch (\Throwable $th) {
+            Log::info('StoreSettingController@store payload', $request->except(['image']));
+            Log::error('StoreSettingController@store error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -117,7 +121,7 @@ class StoreSettingController extends Controller
                 // Upload new image
                 $image = $request->file('image');
 
-                $imageName = 'toko_cover_image'.'_'.date('Y-m-d').'.'.$image->getClientOriginalExtension();
+                $imageName = 'toko_cover_image'.'_'.date('Y-m-d_H:i:s').'.'.$image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
@@ -146,6 +150,9 @@ class StoreSettingController extends Controller
 
             return ApiResponse::success($storeSetting, 'Success update setting', 201);
         } catch (\Throwable $th) {
+            Log::info('StoreSettingController@update payload', ['id' => $storeSetting->id, ...$request->except(['image'])]);
+            Log::error('StoreSettingController@update error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }

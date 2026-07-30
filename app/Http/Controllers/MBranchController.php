@@ -6,6 +6,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Requests\MBranchRequest;
 use App\Models\MBranch;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MBranchController extends Controller
 {
@@ -16,19 +17,19 @@ class MBranchController extends Controller
     {
         $query = MBranch::query();
 
-        if ($request->has('branch_name') && $request->branch_name != "") {
-            $query->where('branch_name', 'like', '%' . $request->branch_name . '%');
+        if ($request->has('branch_name') && $request->branch_name != '') {
+            $query->where('branch_name', 'like', '%'.$request->branch_name.'%');
         }
-        if ($request->has('branch_code') && $request->branch_code != "") {
-            $query->where('branch_code', 'like', '%' . $request->branch_code . '%');
+        if ($request->has('branch_code') && $request->branch_code != '') {
+            $query->where('branch_code', 'like', '%'.$request->branch_code.'%');
         }
-        if ($request->has('address') && $request->address != "") {
-            $query->where('address', 'like', '%' . $request->address . '%');
+        if ($request->has('address') && $request->address != '') {
+            $query->where('address', 'like', '%'.$request->address.'%');
         }
-        if ($request->has('lokasi_cabang') && $request->lokasi_cabang != "") {
-            $query->where('lokasi_cabang', 'like', '%' . $request->lokasi_cabang . '%');
+        if ($request->has('lokasi_cabang') && $request->lokasi_cabang != '') {
+            $query->where('lokasi_cabang', 'like', '%'.$request->lokasi_cabang.'%');
         }
-        if ($request->has('is_active') && $request->is_active != "") {
+        if ($request->has('is_active') && $request->is_active != '') {
             $query->where('is_active', $request->is_active);
         }
 
@@ -57,8 +58,11 @@ class MBranchController extends Controller
             $validated['pic'] = isset($validated['pic']) ? $validated['pic'] : 0;
             $branch = MBranch::create($validated);
 
-            return ApiResponse::success($branch, "Success create branch", 201);
+            return ApiResponse::success($branch, 'Success create branch', 201);
         } catch (\Throwable $th) {
+            Log::info('MBranchController@store payload', $request->all());
+            Log::error('MBranchController@store error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -68,7 +72,7 @@ class MBranchController extends Controller
      */
     public function show(MBranch $branch)
     {
-        return ApiResponse::success($branch->load(['bankCabang.bank', 'pic']), "Success");
+        return ApiResponse::success($branch->load(['bankCabang.bank', 'pic']), 'Success');
     }
 
     /**
@@ -89,8 +93,11 @@ class MBranchController extends Controller
         try {
             $branch->update($validated);
 
-            return ApiResponse::success($branch, "Success update branch", 201);
+            return ApiResponse::success($branch, 'Success update branch', 201);
         } catch (\Throwable $th) {
+            Log::info('MBranchController@update payload', ['id' => $branch->id, ...$request->all()]);
+            Log::error('MBranchController@update error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }

@@ -6,6 +6,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Requests\MCustomerRequest;
 use App\Models\MCustomer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MCustomerController extends Controller
 {
@@ -70,6 +71,9 @@ class MCustomerController extends Controller
 
             return ApiResponse::success($product, 'Success create new customer', 201);
         } catch (\Throwable $th) {
+            Log::info('MCustomerController@store payload', $request->all());
+            Log::error('MCustomerController@store error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -103,6 +107,9 @@ class MCustomerController extends Controller
 
             return ApiResponse::success($customer, 'Success update customer', 201);
         } catch (\Throwable $th) {
+            Log::info('MCustomerController@update payload', ['id' => $customer->id, ...$request->all()]);
+            Log::error('MCustomerController@update error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }

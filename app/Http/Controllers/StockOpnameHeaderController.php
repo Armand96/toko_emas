@@ -13,6 +13,7 @@ use App\Models\StockOpnameDetail;
 use App\Models\StockOpnameHeader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class StockOpnameHeaderController extends Controller
 {
@@ -23,27 +24,27 @@ class StockOpnameHeaderController extends Controller
     {
         $query = StockOpnameHeader::query();
 
-        if ($request->has('kode_sesi') && $request->kode_sesi != "") {
-            $query->where('kode_sesi', 'like', '%' . $request->kode_sesi . '%');
+        if ($request->has('kode_sesi') && $request->kode_sesi != '') {
+            $query->where('kode_sesi', 'like', '%'.$request->kode_sesi.'%');
         }
-        if ($request->has('branch_id') && $request->branch_id != "") {
+        if ($request->has('branch_id') && $request->branch_id != '') {
             $query->where('branch_id', $request->branch_id);
         }
-        if ($request->has('status') && $request->status != "") {
+        if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
 
-        if ($request->has('start_date') && $request->start_date != "") {
-            $query->where('created_at', '>=', $request->start_date . " 00:00:00");
+        if ($request->has('start_date') && $request->start_date != '') {
+            $query->where('created_at', '>=', $request->start_date.' 00:00:00');
         }
-        if ($request->has('end_date') && $request->end_date != "") {
-            $query->where('created_at', '<=', $request->end_date . " 23:59:59");
+        if ($request->has('end_date') && $request->end_date != '') {
+            $query->where('created_at', '<=', $request->end_date.' 23:59:59');
         }
 
-        if ($request->has('start_date_time') && $request->start_date_time != "") {
+        if ($request->has('start_date_time') && $request->start_date_time != '') {
             $query->where('start_date_time', '>=', $request->start_date_time);
         }
-        if ($request->has('end_date_time') && $request->end_date_time != "") {
+        if ($request->has('end_date_time') && $request->end_date_time != '') {
             $query->where('end_date_time', '<=', $request->end_date_time);
         }
 
@@ -55,7 +56,7 @@ class StockOpnameHeaderController extends Controller
 
     public function single(StockOpnameHeader $header)
     {
-        return ApiResponse::success($header->load(['details.inventory.category.parent', 'details.inventory.subCategory', 'details.product', 'branch']), "OK", 200);
+        return ApiResponse::success($header->load(['details.inventory.category.parent', 'details.inventory.subCategory', 'details.product', 'branch']), 'OK', 200);
     }
 
     public function createOpname(StockOpnameRequest $request)
@@ -66,10 +67,10 @@ class StockOpnameHeaderController extends Controller
         try {
 
             $dataBranch = MBranch::find($validated['branch_id']);
-            $kodeSesi = 'OPN-' . $dataBranch->branch_code . '-' . date('y') . date('m');
-            $latestSesi = StockOpnameHeader::where('kode_sesi', 'like', $kodeSesi . "%")->lockForUpdate()->orderByDesc('id')->value('kode_sesi');
+            $kodeSesi = 'OPN-'.$dataBranch->branch_code.'-'.date('y').date('m');
+            $latestSesi = StockOpnameHeader::where('kode_sesi', 'like', $kodeSesi.'%')->lockForUpdate()->orderByDesc('id')->value('kode_sesi');
             $counter = $latestSesi ? (int) substr($latestSesi, strrpos($latestSesi, '-') + 1) + 1 : 1;
-            $kodeSesi = $kodeSesi . "-" . str_pad($counter, 4, "0", STR_PAD_LEFT);
+            $kodeSesi = $kodeSesi.'-'.str_pad($counter, 4, '0', STR_PAD_LEFT);
 
             $totalInventoryBranch = Inventory::where('branch_id', $dataBranch->id)->where('status', InventoryStatus::AVAILABLE)->count();
 
@@ -80,7 +81,7 @@ class StockOpnameHeaderController extends Controller
             $dateNow = date('Y-m-d H:i:s');
 
             foreach ($validated['item'] as $key => $value) {
-                $dataTemp = array(
+                $dataTemp = [
                     'stockopname_header_id' => 0,
                     'inventory_code' => $value['inventory_code'],
                     'product_id' => $value['product_id'],
@@ -88,28 +89,34 @@ class StockOpnameHeaderController extends Controller
                     'opname_status' => $value['opname_status'],
                     'note' => isset($value['note']) ? $value['note'] : null,
                     'scanned_at' => isset($value['scanned_at']) ? $value['scanned_at'] : null,
-                    'created_at' => $dateNow
-                );
+                    'created_at' => $dateNow,
+                ];
 
                 $status = OpnameDetailStatus::from($value['opname_status']);
-                if($status == OpnameDetailStatus::EXTRA) $itemExtra++;
-                if($status == OpnameDetailStatus::INSTOCK) $itemInStock++;
-                if($status == OpnameDetailStatus::MISSING) $itemMissing++;
+                if ($status == OpnameDetailStatus::EXTRA) {
+                    $itemExtra++;
+                }
+                if ($status == OpnameDetailStatus::INSTOCK) {
+                    $itemInStock++;
+                }
+                if ($status == OpnameDetailStatus::MISSING) {
+                    $itemMissing++;
+                }
 
                 array_push($dataInsertBatch, $dataTemp);
             }
 
-            $dataHeader = StockOpnameHeader::create(array(
-                'kode_sesi'        => $kodeSesi,
-                'branch_id'        => $validated['branch_id'],
-                'total_item'       => $totalInventoryBranch,
-                'in_stock'         => $itemInStock,
-                'missing'          => $itemMissing,
-                'extra'            => $itemExtra,
-                'status'           => ($itemInStock == $totalInventoryBranch && $itemExtra == 0) ? OpnameHeaderStatus::SESUAI : OpnameHeaderStatus::SELISIH,
-                'start_date_time'  => isset($validated['start_date_time']) ? $validated['start_date_time'] : null,
-                'end_date_time'    => isset($validated['end_date_time']) ? $validated['end_date_time'] : null,
-            ));
+            $dataHeader = StockOpnameHeader::create([
+                'kode_sesi' => $kodeSesi,
+                'branch_id' => $validated['branch_id'],
+                'total_item' => $totalInventoryBranch,
+                'in_stock' => $itemInStock,
+                'missing' => $itemMissing,
+                'extra' => $itemExtra,
+                'status' => ($itemInStock == $totalInventoryBranch && $itemExtra == 0) ? OpnameHeaderStatus::SESUAI : OpnameHeaderStatus::SELISIH,
+                'start_date_time' => isset($validated['start_date_time']) ? $validated['start_date_time'] : null,
+                'end_date_time' => isset($validated['end_date_time']) ? $validated['end_date_time'] : null,
+            ]);
 
             foreach ($dataInsertBatch as $key => $value) {
                 $dataInsertBatch[$key]['stockopname_header_id'] = $dataHeader->id;
@@ -118,9 +125,13 @@ class StockOpnameHeaderController extends Controller
             StockOpnameDetail::insert($dataInsertBatch);
 
             DB::commit();
-            return ApiResponse::success([], "Success create opname", 201);
+
+            return ApiResponse::success([], 'Success create opname', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
+            Log::info('StockOpnameHeaderController@createOpname payload', $request->all());
+            Log::error('StockOpnameHeaderController@createOpname error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }

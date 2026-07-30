@@ -158,6 +158,7 @@ class BuybackController extends Controller
             );
         } catch (\Throwable $th) {
             DB::rollBack();
+            Log::info('BuybackController@createTrx payload', $request->all());
             Log::error($th);
 
             return ApiResponse::error($th->getMessage(), $th, 500);
@@ -273,6 +274,7 @@ class BuybackController extends Controller
             return ApiResponse::success([], 'Sukses update status buyback', 200);
         } catch (\Throwable $th) {
             DB::rollBack();
+            Log::info('BuybackController@changeApproval payload', $request->all());
             Log::error($th);
 
             return ApiResponse::error($th->getMessage(), $th, 500);
@@ -298,7 +300,7 @@ class BuybackController extends Controller
                 // Upload new image
                 $image = $request->file('images')[$index];
 
-                $imageName = 'buyback_detail_'.$value.'_'.date('Y-m-d').'.'.$image->getClientOriginalExtension();
+                $imageName = 'buyback_detail_'.$value.'_'.date('Y-m-d_H:i:s').'.'.$image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
@@ -339,6 +341,8 @@ class BuybackController extends Controller
             }
 
             DB::rollBack();
+            Log::info('BuybackController@buybackImage payload', $request->except(['images']));
+            Log::error('BuybackController@buybackImage error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
 
             return ApiResponse::error($th->getMessage(), $th, 500);
         }

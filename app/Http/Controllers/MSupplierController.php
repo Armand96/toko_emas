@@ -6,6 +6,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Requests\MSupplierRequest;
 use App\Models\MSupplier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MSupplierController extends Controller
 {
@@ -16,16 +17,16 @@ class MSupplierController extends Controller
     {
         $query = MSupplier::query();
 
-        if ($request->has('supplier_name') && $request->supplier_name != "") {
-            $query->where('supplier_name', 'like', '%' . $request->supplier_name . '%');
+        if ($request->has('supplier_name') && $request->supplier_name != '') {
+            $query->where('supplier_name', 'like', '%'.$request->supplier_name.'%');
         }
-        if ($request->has('address') && $request->address != "") {
-            $query->where('address', 'like', '%' . $request->address . '%');
+        if ($request->has('address') && $request->address != '') {
+            $query->where('address', 'like', '%'.$request->address.'%');
         }
-        if ($request->has('phone_number') && $request->phone_number != "") {
-            $query->where('phone_number', 'like', '%' . $request->phone_number . '%');
+        if ($request->has('phone_number') && $request->phone_number != '') {
+            $query->where('phone_number', 'like', '%'.$request->phone_number.'%');
         }
-        if ($request->has('is_active') && $request->is_active != "") {
+        if ($request->has('is_active') && $request->is_active != '') {
             $query->where('is_active', $request->is_active);
         }
 
@@ -53,8 +54,11 @@ class MSupplierController extends Controller
         try {
             $branch = MSupplier::create($validated);
 
-            return ApiResponse::success($branch, "Success create supplier", 201);
+            return ApiResponse::success($branch, 'Success create supplier', 201);
         } catch (\Throwable $th) {
+            Log::info('MSupplierController@store payload', $request->all());
+            Log::error('MSupplierController@store error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -64,7 +68,7 @@ class MSupplierController extends Controller
      */
     public function show(MSupplier $supplier)
     {
-        return ApiResponse::success($supplier, "Success");
+        return ApiResponse::success($supplier, 'Success');
     }
 
     /**
@@ -85,8 +89,11 @@ class MSupplierController extends Controller
         try {
             $supplier->update($validated);
 
-            return ApiResponse::success($supplier, "Success update supplier", 201);
+            return ApiResponse::success($supplier, 'Success update supplier', 201);
         } catch (\Throwable $th) {
+            Log::info('MSupplierController@update payload', ['id' => $supplier->id, ...$request->all()]);
+            Log::error('MSupplierController@update error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }

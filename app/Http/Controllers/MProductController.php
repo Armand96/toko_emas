@@ -9,6 +9,7 @@ use App\Models\MCategory;
 use App\Models\MProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -63,6 +64,7 @@ class MProductController extends Controller
     {
         DB::beginTransaction();
         $validated = $request->validated();
+
         try {
             if ($request->hasFile('image')) {
                 // Upload new image
@@ -98,6 +100,8 @@ class MProductController extends Controller
             return ApiResponse::success($product, 'Success create product', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
+            Log::info('MProductController@store payload', $request->except(['image']));
+            Log::error('MProductController@store error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
 
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
@@ -143,7 +147,7 @@ class MProductController extends Controller
                 // Upload new image
                 $image = $request->file('image');
 
-                $imageName = $validated['product_name'].'_'.date('Y-m-d').'.'.$image->getClientOriginalExtension();
+                $imageName = $validated['product_name'].'_'.date('_H:i:s').'.'.$image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
@@ -188,6 +192,9 @@ class MProductController extends Controller
 
             return ApiResponse::success($product, 'Success update product', 201);
         } catch (\Throwable $th) {
+            Log::info('MProductController@update payload', ['id' => $product->id, ...$request->except(['image'])]);
+            Log::error('MProductController@update error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }

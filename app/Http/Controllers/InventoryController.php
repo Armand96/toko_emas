@@ -14,6 +14,7 @@ use App\Models\InventoryEditHistory;
 use App\Models\MProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -106,6 +107,8 @@ class InventoryController extends Controller
             return ApiResponse::success($inventory, 'Item inventory berhasil ditambahkan', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
+            Log::info('InventoryController@store payload', $request->all());
+            Log::error('InventoryController@store error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
 
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
@@ -129,7 +132,7 @@ class InventoryController extends Controller
 
                 $image = $request->file('images')[$index];
 
-                $imageName = 'inventory_'.$value.'_'.date('Y-m-d H:i:s').'.'.$image->getClientOriginalExtension();
+                $imageName = 'inventory_'.$value.'_'.date('Y-m-d_H:i:s').'.'.$image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
@@ -169,6 +172,8 @@ class InventoryController extends Controller
             }
 
             DB::rollBack();
+            Log::info('InventoryController@uploadImage payload', $request->except(['images']));
+            Log::error('InventoryController@uploadImage error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
 
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
@@ -201,6 +206,7 @@ class InventoryController extends Controller
         DB::beginTransaction();
 
         $validated = $request->validated();
+
         try {
 
             $data = $inventory->toArray();
@@ -217,6 +223,8 @@ class InventoryController extends Controller
             return ApiResponse::success($dataEdit, 'Update Success', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
+            Log::info('InventoryController@update payload', ['id' => $inventory->id, ...$request->all()]);
+            Log::error('InventoryController@update error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
 
             return ApiResponse::error($th->getMessage(), $th, 500);
         }

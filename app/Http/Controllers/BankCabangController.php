@@ -6,6 +6,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Requests\BankCabangRequest;
 use App\Models\BankCabang;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class BankCabangController extends Controller
 {
@@ -16,19 +17,19 @@ class BankCabangController extends Controller
     {
         $query = BankCabang::query();
 
-        if ($request->has('nomor_rekening') && $request->nomor_rekening != "") {
-            $query->where('nomor_rekening', 'like', '%' . $request->nomor_rekening . '%');
+        if ($request->has('nomor_rekening') && $request->nomor_rekening != '') {
+            $query->where('nomor_rekening', 'like', '%'.$request->nomor_rekening.'%');
         }
-        if ($request->has('nama_pemilik') && $request->nama_pemilik != "") {
-            $query->where('nama_pemilik', 'like', '%' . $request->nama_pemilik . '%');
+        if ($request->has('nama_pemilik') && $request->nama_pemilik != '') {
+            $query->where('nama_pemilik', 'like', '%'.$request->nama_pemilik.'%');
         }
-        if ($request->has('branch_id') && $request->branch_id != "") {
+        if ($request->has('branch_id') && $request->branch_id != '') {
             $query->where('branch_id', $request->branch_id);
         }
-        if ($request->has('bank_id') && $request->bank_id != "") {
+        if ($request->has('bank_id') && $request->bank_id != '') {
             $query->where('bank_id', $request->bank_id);
         }
-        if ($request->has('is_active') && $request->is_active != "") {
+        if ($request->has('is_active') && $request->is_active != '') {
             $query->where('is_active', $request->is_active);
         }
 
@@ -56,8 +57,11 @@ class BankCabangController extends Controller
         try {
             $bank = BankCabang::create($validated);
 
-            return ApiResponse::success($bank, "Success create bank cabang", 201);
+            return ApiResponse::success($bank, 'Success create bank cabang', 201);
         } catch (\Throwable $th) {
+            Log::info('BankCabangController@store payload', $request->all());
+            Log::error('BankCabangController@store error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -67,7 +71,7 @@ class BankCabangController extends Controller
      */
     public function show(BankCabang $bankCabang)
     {
-        return ApiResponse::success($bankCabang->load(['branch', 'bank']), "Success");
+        return ApiResponse::success($bankCabang->load(['branch', 'bank']), 'Success');
     }
 
     /**
@@ -88,8 +92,11 @@ class BankCabangController extends Controller
         try {
             $bankCabang->update($validated);
 
-            return ApiResponse::success($bankCabang, "Success update bank cabang", 201);
+            return ApiResponse::success($bankCabang, 'Success update bank cabang', 201);
         } catch (\Throwable $th) {
+            Log::info('BankCabangController@update payload', ['id' => $bankCabang->id, ...$request->all()]);
+            Log::error('BankCabangController@update error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -100,6 +107,7 @@ class BankCabangController extends Controller
     public function destroy(BankCabang $bankCabang)
     {
         $bankCabang->delete();
-        return ApiResponse::success($bankCabang, "Bank Cabang deleted", 200);
+
+        return ApiResponse::success($bankCabang, 'Bank Cabang deleted', 200);
     }
 }

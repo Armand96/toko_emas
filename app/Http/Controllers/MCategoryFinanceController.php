@@ -6,6 +6,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Requests\MCategoryFinanceRequest;
 use App\Models\MCategoryFinance;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MCategoryFinanceController extends Controller
 {
@@ -16,10 +17,10 @@ class MCategoryFinanceController extends Controller
     {
         $query = MCategoryFinance::query();
 
-        if ($request->has('category_name') && $request->category_name != "") {
-            $query->where('category_name', 'like', '%' . $request->category_name . '%');
+        if ($request->has('category_name') && $request->category_name != '') {
+            $query->where('category_name', 'like', '%'.$request->category_name.'%');
         }
-        if ($request->has('is_active') && $request->is_active != "") {
+        if ($request->has('is_active') && $request->is_active != '') {
             $query->where('is_active', $request->is_active);
         }
 
@@ -48,8 +49,11 @@ class MCategoryFinanceController extends Controller
 
             $category = MCategoryFinance::create($validated);
 
-            return ApiResponse::success($category, "Success create category", 201);
+            return ApiResponse::success($category, 'Success create category', 201);
         } catch (\Throwable $th) {
+            Log::info('MCategoryFinanceController@store payload', $request->all());
+            Log::error('MCategoryFinanceController@store error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+
             return ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
@@ -59,7 +63,7 @@ class MCategoryFinanceController extends Controller
      */
     public function show(MCategoryFinance $categoryFinance)
     {
-        return ApiResponse::success($categoryFinance, "Success");
+        return ApiResponse::success($categoryFinance, 'Success');
     }
 
     /**
@@ -80,8 +84,10 @@ class MCategoryFinanceController extends Controller
         try {
             $categoryFinance->update($validated);
 
-            return ApiResponse::success($categoryFinance, "Success update category", 201);
+            return ApiResponse::success($categoryFinance, 'Success update category', 201);
         } catch (\Throwable $th) {
+            Log::info('MCategoryFinanceController@update payload', ['id' => $categoryFinance->id, ...$request->all()]);
+            Log::error('MCategoryFinanceController@update error', ['error' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
             ApiResponse::error($th->getMessage(), $th, 500);
         }
     }
