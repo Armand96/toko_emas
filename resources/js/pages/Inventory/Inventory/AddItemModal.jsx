@@ -147,7 +147,7 @@ const AddItemModal = ({ isOpen, onClose, onSuccess }) => {
             branch_id: Number(item.branch_id),
             product_id: Number(item.product_id),
             category_id: Number(item.category_id),
-            subcategory_id: item.subcategory_id ? Number(item.subcategory_id) : null,
+            subcategory_id: item.subcategory_id ? Number(item.subcategory_id) : 0,
             berat: Number(item.berat),
             karat: Number(item.karat),
             modal: Number(item.modal),
