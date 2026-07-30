@@ -129,7 +129,7 @@ class InventoryController extends Controller
 
                 $image = $request->file('images')[$index];
 
-                $imageName = 'inventory_'.$value.'_'.date('Y-m-d').'.'.$image->getClientOriginalExtension();
+                $imageName = 'inventory_'.$value.'_'.date('Y-m-d H:i:s').'.'.$image->getClientOriginalExtension();
 
                 $image->storeAs(
                     'images',
