@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\InventoryDetailSummaryExport;
 use App\Exports\InventoryExport;
 use App\Helpers\ApiResponse;
 use App\Models\Inventory;
@@ -291,10 +292,96 @@ class InventoryReportController extends Controller
         );
     }
 
+    public function inventoryDetailSummary(Request $request)
+    {
+        $query = Inventory::query();
+
+        if ($request->branch_id) {
+            $query->where('branch_id', $request->branch_id);
+        }
+
+        if ($request->category_id) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->karat) {
+            $query->where('karat', $request->karat);
+        }
+
+        if ($request->aging && in_array($request->status, ['SOLD', 'LOST'])) {
+            $aging = 'DATEDIFF(NOW(), created_at)';
+            switch ($request->aging) {
+                case '0-30':
+                    $query->whereRaw("$aging <= 30");
+                    break;
+                case '31-90':
+                    $query->whereRaw("$aging BETWEEN 31 AND 90");
+                    break;
+                case '91-180':
+                    $query->whereRaw("$aging BETWEEN 91 AND 180");
+                    break;
+                case '>180':
+                    $query->whereRaw("$aging > 180");
+                    break;
+            }
+        }
+
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+
+                $q->where(
+                    'inventory_code',
+                    'like',
+                    '%'.$request->search.'%'
+                )
+
+                    ->orWhereHas('product', function ($product) use ($request) {
+
+                        $product->where(
+                            'product_name',
+                            'like',
+                            '%'.$request->search.'%'
+                        );
+                    });
+            });
+        }
+
+        $data = $query
+            ->join('m_products', 'm_products.id', '=', 'inventories.product_id')
+            ->selectRaw('
+                m_products.id as product_id,
+                m_products.product_name,
+                COUNT(inventories.inventory_code) as total_item,
+                SUM(inventories.berat) as total_berat
+            ')
+            ->groupBy('m_products.id', 'm_products.product_name')
+            ->orderByDesc('total_item')
+            ->paginate(
+                $request->per_page ?? 10
+            );
+
+        return ApiResponse::success(
+            $data,
+            'OK',
+            200
+        );
+    }
+
     public function exportInventory(Request $request)
     {
         $filename = 'inventory-report-'.date('Ymd-His').'.xlsx';
 
         return Excel::download(new InventoryExport($request), $filename);
+    }
+
+    public function exportInventoryDetailSummary(Request $request)
+    {
+        $filename = 'inventory-summary-produk-'.date('Ymd-His').'.xlsx';
+
+        return Excel::download(new InventoryDetailSummaryExport($request), $filename);
     }
 }

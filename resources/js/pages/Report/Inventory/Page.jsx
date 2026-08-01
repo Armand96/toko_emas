@@ -116,7 +116,9 @@ const ReportInventory = () => {
     const [inventoryAging, setInventoryAging] = useState([]);
 
     const [detail, setDetail] = useState({ data: [], current_page: 1, total: 0, per_page: 10 });
+    const [detailSummary, setDetailSummary] = useState({ data: [], current_page: 1, total: 0, per_page: 10 });
     const [exporting, setExporting] = useState(false);
+    const [exportingSummary, setExportingSummary] = useState(false);
 
     const buildParams = (extra = {}) => {
         const q = new URLSearchParams();
@@ -202,6 +204,28 @@ const ReportInventory = () => {
         }
     };
 
+    const fetchDetailSummary = async (page = 1, perPage = 10) => {
+        setLoading(true);
+        try {
+            const extra = { page, per_page: perPage };
+            if (filter.search) extra.search = filter.search;
+            if (filter.statusDetail) extra.status = filter.statusDetail;
+            if (filter.agingDetail) extra.aging = filter.agingDetail;
+            const params = buildParams(extra);
+            const res = await ReportApis.GetInventoryDetailSummary(`?${params.toString()}`);
+            setDetailSummary({
+                data: Array.isArray(res?.data) ? res.data : [],
+                current_page: res?.current_page ?? 1,
+                total: res?.total ?? 0,
+                per_page: res?.per_page ?? perPage,
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         (async () => {
             try {
@@ -232,10 +256,12 @@ const ReportInventory = () => {
         if (!didMount.current) {
             didMount.current = true;
             fetchDetail(urlPage, urlPerPage);
+            fetchDetailSummary(1, 10);
             return;
         }
         setQuery({ cabang: filter.cabang, kategori: filter.kategori, page: 1 });
         fetchDetail(1, detail.per_page);
+        fetchDetailSummary(1, detailSummary.per_page);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filter.cabang, filter.kategori]);
 
@@ -243,6 +269,7 @@ const ReportInventory = () => {
         const t = setTimeout(() => {
             setQuery({ search: filter.search, statusDetail: filter.statusDetail, agingDetail: filter.agingDetail, page: 1 });
             fetchDetail(1, detail.per_page);
+            fetchDetailSummary(1, detailSummary.per_page);
         }, 400);
         return () => clearTimeout(t);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -258,15 +285,34 @@ const ReportInventory = () => {
         setExporting(true);
         try {
             const params = {};
-            if (filter.cabang) params.branch_id = filter.cabang;
+            if (filter.cabang || isKasir()) params.branch_id = isKasir() ? user?.branch_id : filter.cabang;
             if (filter.kategori) params.category_id = filter.kategori;
             if (filter.statusDetail) params.status = filter.statusDetail;
             if (filter.agingDetail) params.aging = filter.agingDetail;
+            if (filter.search) params.search = filter.search;
             await ReportApis.ExportInventory(params);
         } catch (error) {
             console.error(error);
         } finally {
             setExporting(false);
+        }
+    };
+
+    const handleExportSummary = async () => {
+        if (exportingSummary) return;
+        setExportingSummary(true);
+        try {
+            const params = {};
+            if (filter.cabang || isKasir()) params.branch_id = isKasir() ? user?.branch_id : filter.cabang;
+            if (filter.kategori) params.category_id = filter.kategori;
+            if (filter.statusDetail) params.status = filter.statusDetail;
+            if (filter.agingDetail) params.aging = filter.agingDetail;
+            if (filter.search) params.search = filter.search;
+            await ReportApis.ExportInventoryDetailSummary(params);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setExportingSummary(false);
         }
     };
 
@@ -278,6 +324,33 @@ const ReportInventory = () => {
         setQuery({ page: 1, per_page: size });
         fetchDetail(1, size);
     };
+
+    const onChangeSummaryPage = (page) => fetchDetailSummary(page, detailSummary.per_page);
+    const onChangeSummaryPageSize = (size) => fetchDetailSummary(1, size);
+
+    const summaryColumns = [
+        {
+            header: "Produk",
+            accessor: "product_name",
+            render: (row) => (
+                <span className="font-medium text-gray-900">{row.product_name ?? "-"}</span>
+            ),
+        },
+        {
+            header: "Total Item",
+            accessor: "total_item",
+            render: (row) => (
+                <span className="font-semibold text-primary-600">
+                    {Number(row.total_item || 0).toLocaleString("id-ID")}
+                </span>
+            ),
+        },
+        {
+            header: "Total Berat",
+            accessor: "total_berat",
+            render: (row) => `${Number(row.total_berat || 0).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} gr`,
+        },
+    ];
 
     const detailColumns = [
         {
@@ -404,6 +477,61 @@ const ReportInventory = () => {
                 <ChartCard title="Inventory Aging" subtitle="Distribusi item aktif berdasarkan lama tersimpan di inventory.">
                     <BarChartH data={inventoryAging} height={320} currency={false} />
                 </ChartCard>
+            </div>
+
+            {/* Ringkasan per Produk table */}
+            <div className="rounded-lg border border-gray-200 bg-neutral-white p-5">
+                <div className="mb-4 flex flex-col gap-1">
+                    <h3 className="text-base font-semibold text-gray-950">Ringkasan per Produk</h3>
+                    <p className="text-[13px] text-gray-500">Jumlah item dan total berat per produk sesuai filter yang dipilih.</p>
+                </div>
+
+                <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex flex-1 flex-col gap-3 sm:flex-row">
+                        <div className="w-full sm:max-w-[320px] sm:flex-1">
+                            <InputGroup
+                                fields={[{ name: "search", label: "", type: "search", placeholder: "Cari produk.." }]}
+                                formData={filter}
+                                cols="1"
+                                onChange={handleChange}
+                            />
+                        </div>
+                        <div className="w-full sm:w-[170px]">
+                            <InputGroup
+                                fields={[{ name: "statusDetail", label: "", type: "dropdown", options: STATUS_OPTIONS, placeholder: "Semua Status" }]}
+                                formData={filter}
+                                cols="1"
+                                onChange={handleChange}
+                            />
+                        </div>
+                        <div className="w-full sm:w-[170px]">
+                            <InputGroup
+                                fields={[{ name: "agingDetail", label: "", type: "dropdown", options: AGING_OPTIONS, placeholder: "Semua Aging" }]}
+                                formData={filter}
+                                cols="1"
+                                onChange={handleChange}
+                            />
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        disabled={exportingSummary}
+                        onClick={handleExportSummary}
+                        className="flex shrink-0 items-center gap-1.5 rounded-lg border border-primary-200 px-3.5 py-2.5 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50 disabled:opacity-50"
+                    >
+                        <ExportIcon size={18} /> {exportingSummary ? "Downloading..." : "Export Data"}
+                    </button>
+                </div>
+
+                <Table
+                    columns={summaryColumns}
+                    data={detailSummary.data}
+                    page={detailSummary.current_page}
+                    pageSize={detailSummary.per_page}
+                    total={detailSummary.total}
+                    onPageChange={onChangeSummaryPage}
+                    onPageSizeChange={onChangeSummaryPageSize}
+                />
             </div>
 
             {/* Detail table */}

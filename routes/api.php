@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\BankCabangController;
+use App\Http\Controllers\BuybackController;
+use App\Http\Controllers\BuybackReportController;
 use App\Http\Controllers\CustomerReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EnumController;
@@ -15,8 +17,6 @@ use App\Http\Controllers\MCategoryFinanceController;
 use App\Http\Controllers\MCustomerController;
 use App\Http\Controllers\MProductController;
 use App\Http\Controllers\MSupplierController;
-use App\Http\Controllers\BuybackController;
-use App\Http\Controllers\BuybackReportController;
 use App\Http\Controllers\PembelianController;
 use App\Http\Controllers\PembelianReportController;
 use App\Http\Controllers\RemoveItemController;
@@ -130,12 +130,14 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
         Route::get('inventory-distribution', [InventoryReportController::class, 'inventoryDistribution']);
         Route::get('inventory-status-aging', [InventoryReportController::class, 'inventoryStatusAndAging']);
         Route::get('inventory-detail', [InventoryReportController::class, 'inventoryDetail']);
+        Route::get('inventory-detail-summary', [InventoryReportController::class, 'inventoryDetailSummary']);
 
         // EXPORTS
         Route::get('export-sales', [SalesReportController::class, 'exportSales']);
         Route::get('export-pembelian', [PembelianReportController::class, 'exportPembelian']);
         Route::get('export-finance', [FinanceReportController::class, 'exportFinance']);
         Route::get('export-inventory', [InventoryReportController::class, 'exportInventory']);
+        Route::get('export-inventory-detail-summary', [InventoryReportController::class, 'exportInventoryDetailSummary']);
         Route::get('export-customer', [CustomerReportController::class, 'exportCustomer']);
         Route::get('export-buyback', [BuybackReportController::class, 'exportBuyback']);
     });

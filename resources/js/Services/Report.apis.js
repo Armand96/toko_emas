@@ -116,6 +116,10 @@ const ReportApis = {
     GetInventoryDetail: (params = "") => {
         return Apis.Get(`api/report/inventory-detail${params}`).then(({ data }) => data?.data ?? data);
     },
+    // paginated → { data: [{product_id, product_name, total_item, total_berat}], current_page, total, per_page }
+    GetInventoryDetailSummary: (params = "") => {
+        return Apis.Get(`api/report/inventory-detail-summary${params}`).then(({ data }) => data?.data ?? data);
+    },
     /* ── EXPORT (DOWNLOAD XLSX) ─────────────────────────────── */
 
     ExportSales: (params = {}) =>
@@ -132,6 +136,9 @@ const ReportApis = {
 
     ExportInventory: (params = {}) =>
         Apis.Download("api/report/export-inventory", "inventory-report.xlsx", params),
+
+    ExportInventoryDetailSummary: (params = {}) =>
+        Apis.Download("api/report/export-inventory-detail-summary", "inventory-summary-produk.xlsx", params),
 
     ExportCustomer: (params = {}) =>
         Apis.Download("api/report/export-customer", "customer-report.xlsx", params),
