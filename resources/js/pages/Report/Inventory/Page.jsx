@@ -117,8 +117,10 @@ const ReportInventory = () => {
 
     const [detail, setDetail] = useState({ data: [], current_page: 1, total: 0, per_page: 10 });
     const [detailSummary, setDetailSummary] = useState({ data: [], current_page: 1, total: 0, per_page: 10 });
+    const [karatSummary, setKaratSummary] = useState([]);
     const [exporting, setExporting] = useState(false);
     const [exportingSummary, setExportingSummary] = useState(false);
+    const [exportingKarat, setExportingKarat] = useState(false);
 
     const buildParams = (extra = {}) => {
         const q = new URLSearchParams();
@@ -204,6 +206,16 @@ const ReportInventory = () => {
         }
     };
 
+    const fetchKaratSummary = async () => {
+        try {
+            const params = buildParams();
+            const res = await ReportApis.GetInventoryKarat(`?${params.toString()}`);
+            setKaratSummary(Array.isArray(res) ? res : []);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     const fetchDetailSummary = async (page = 1, perPage = 10) => {
         setLoading(true);
         try {
@@ -253,6 +265,7 @@ const ReportInventory = () => {
 
     useEffect(() => {
         fetchCharts();
+        fetchKaratSummary();
         if (!didMount.current) {
             didMount.current = true;
             fetchDetail(urlPage, urlPerPage);
@@ -316,6 +329,21 @@ const ReportInventory = () => {
         }
     };
 
+    const handleExportKarat = async () => {
+        if (exportingKarat) return;
+        setExportingKarat(true);
+        try {
+            const params = {};
+            if (filter.cabang || isKasir()) params.branch_id = isKasir() ? user?.branch_id : filter.cabang;
+            if (filter.kategori) params.category_id = filter.kategori;
+            await ReportApis.ExportInventoryKarat(params);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setExportingKarat(false);
+        }
+    };
+
     const onChangePage = (page) => {
         setQuery({ page, per_page: detail.per_page });
         fetchDetail(page, detail.per_page);
@@ -327,6 +355,30 @@ const ReportInventory = () => {
 
     const onChangeSummaryPage = (page) => fetchDetailSummary(page, detailSummary.per_page);
     const onChangeSummaryPageSize = (size) => fetchDetailSummary(1, size);
+
+    const karatColumns = [
+        {
+            header: "Karat",
+            accessor: "karat",
+            render: (row) => (
+                <span className="font-semibold text-gray-900">{row.karat ? `${row.karat} K` : "-"}</span>
+            ),
+        },
+        {
+            header: "Total Item",
+            accessor: "total_item",
+            render: (row) => (
+                <span className="font-semibold text-primary-600">
+                    {Number(row.total_item || 0).toLocaleString("id-ID")}
+                </span>
+            ),
+        },
+        {
+            header: "Total Berat",
+            accessor: "total_berat",
+            render: (row) => `${Number(row.total_berat || 0).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} gr`,
+        },
+    ];
 
     const summaryColumns = [
         {
@@ -461,13 +513,16 @@ const ReportInventory = () => {
                     <ChartCard title="Item per Kategori" subtitle="Distribusi item aktif berdasarkan kategori produk.">
                         <BarChartH data={perKategori} height={180} currency={false} />
                     </ChartCard>
-                    <ChartCard title="Item per Sub Kategori" subtitle="Distribusi item aktif berdasarkan sub kategori produk.">
+                    {/* <ChartCard title="Item per Sub Kategori" subtitle="Distribusi item aktif berdasarkan sub kategori produk.">
                         <BarChartH data={perSubKategori} height={180} currency={false} />
-                    </ChartCard>
+                    </ChartCard> */}
                 </div>
-                <ChartCard title="Item per Karat" subtitle="Item aktif berdasarkan karat emas.">
-                    <BarChartH data={perKarat} height={400} currency={false} />
+                <ChartCard title="Item per Sub Kategori" subtitle="Distribusi item aktif berdasarkan sub kategori produk.">
+                    <BarChartH data={perSubKategori} height={180} currency={false} />
                 </ChartCard>
+                {/* <ChartCard title="Item per Karat" subtitle="Item aktif berdasarkan karat emas.">
+                    <BarChartH data={perKarat} height={400} currency={false} />
+                </ChartCard> */}
             </div>
 
             {/* Status inventory + Aging */}
@@ -482,6 +537,35 @@ const ReportInventory = () => {
                 <ChartCard title="Inventory Aging" subtitle="Distribusi item aktif berdasarkan lama tersimpan di inventory.">
                     <BarChartH data={inventoryAging} height={320} currency={false} />
                 </ChartCard>
+            </div>
+
+            {/* Ringkasan per Karat table */}
+            <div className="rounded-lg border border-gray-200 bg-neutral-white p-5">
+                <div className="mb-4 flex flex-col gap-1">
+                    <h3 className="text-base font-semibold text-gray-950">Ringkasan per Karat</h3>
+                    <p className="text-[13px] text-gray-500">Jumlah item dan total berat item aktif dikelompokkan berdasarkan karat emas.</p>
+                </div>
+
+                <div className="mb-4 flex justify-end">
+                    <button
+                        type="button"
+                        disabled={exportingKarat}
+                        onClick={handleExportKarat}
+                        className="flex shrink-0 items-center gap-1.5 rounded-lg border border-primary-200 px-3.5 py-2.5 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50 disabled:opacity-50"
+                    >
+                        <ExportIcon size={18} /> {exportingKarat ? "Downloading..." : "Export Data"}
+                    </button>
+                </div>
+
+                <Table
+                    columns={karatColumns}
+                    data={karatSummary}
+                    page={1}
+                    pageSize={karatSummary.length || 10}
+                    total={karatSummary.length}
+                    onPageChange={() => { }}
+                    onPageSizeChange={() => { }}
+                />
             </div>
 
             {/* Ringkasan per Produk table */}

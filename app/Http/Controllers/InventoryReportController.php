@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\InventoryDetailSummaryExport;
 use App\Exports\InventoryExport;
+use App\Exports\InventoryKaratExport;
 use App\Helpers\ApiResponse;
 use App\Models\Inventory;
 use Illuminate\Http\Request;
@@ -206,6 +207,78 @@ class InventoryReportController extends Controller
         ], 'OK', 200);
     }
 
+    public function inventoryKarat(Request $request)
+    {
+        $query = Inventory::query();
+
+        if ($request->branch_id) {
+            $query->where('branch_id', $request->branch_id);
+        }
+
+        if ($request->category_id) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->aging && in_array($request->status, ['SOLD', 'LOST'])) {
+            $aging = 'DATEDIFF(NOW(), created_at)';
+            switch ($request->aging) {
+                case '0-30':
+                    $query->whereRaw("$aging <= 30");
+                    break;
+                case '31-90':
+                    $query->whereRaw("$aging BETWEEN 31 AND 90");
+                    break;
+                case '91-180':
+                    $query->whereRaw("$aging BETWEEN 91 AND 180");
+                    break;
+                case '>180':
+                    $query->whereRaw("$aging > 180");
+                    break;
+            }
+        }
+
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+
+                $q->where(
+                    'inventory_code',
+                    'like',
+                    '%'.$request->search.'%'
+                )
+
+                    ->orWhereHas('product', function ($product) use ($request) {
+
+                        $product->where(
+                            'product_name',
+                            'like',
+                            '%'.$request->search.'%'
+                        );
+                    });
+            });
+        }
+
+        $data = $query
+            ->selectRaw('
+                karat,
+                COUNT(*) as total_item,
+                SUM(berat) as total_berat
+            ')
+            ->where('status', 'AVAILABLE')
+            ->groupBy('karat')
+            ->orderByDesc('karat')
+            ->get();
+
+        return ApiResponse::success(
+            $data,
+            'OK',
+            200
+        );
+    }
+
     public function inventoryDetail(Request $request)
     {
         $query = Inventory::query();
@@ -385,5 +458,12 @@ class InventoryReportController extends Controller
         $filename = 'inventory-summary-produk-'.date('Ymd-His').'.xlsx';
 
         return Excel::download(new InventoryDetailSummaryExport($request), $filename);
+    }
+
+    public function exportInventoryKarat(Request $request)
+    {
+        $filename = 'inventory-karat-'.date('Ymd-His').'.xlsx';
+
+        return Excel::download(new InventoryKaratExport($request), $filename);
     }
 }

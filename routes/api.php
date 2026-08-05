@@ -131,6 +131,7 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
         Route::get('inventory-status-aging', [InventoryReportController::class, 'inventoryStatusAndAging']);
         Route::get('inventory-detail', [InventoryReportController::class, 'inventoryDetail']);
         Route::get('inventory-detail-summary', [InventoryReportController::class, 'inventoryDetailSummary']);
+        Route::get('inventory-karat', [InventoryReportController::class, 'inventoryKarat']);
 
         // EXPORTS
         Route::get('export-sales', [SalesReportController::class, 'exportSales']);
@@ -138,6 +139,7 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
         Route::get('export-finance', [FinanceReportController::class, 'exportFinance']);
         Route::get('export-inventory', [InventoryReportController::class, 'exportInventory']);
         Route::get('export-inventory-detail-summary', [InventoryReportController::class, 'exportInventoryDetailSummary']);
+        Route::get('export-inventory-karat', [InventoryReportController::class, 'exportInventoryKarat']);
         Route::get('export-customer', [CustomerReportController::class, 'exportCustomer']);
         Route::get('export-buyback', [BuybackReportController::class, 'exportBuyback']);
     });

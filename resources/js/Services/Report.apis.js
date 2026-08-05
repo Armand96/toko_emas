@@ -120,6 +120,10 @@ const ReportApis = {
     GetInventoryDetailSummary: (params = "") => {
         return Apis.Get(`api/report/inventory-detail-summary${params}`).then(({ data }) => data?.data ?? data);
     },
+    // [{ karat, total_item, total_berat }]
+    GetInventoryKarat: (params = "") => {
+        return Apis.Get(`api/report/inventory-karat${params}`).then(({ data }) => data?.data ?? data);
+    },
     /* ── EXPORT (DOWNLOAD XLSX) ─────────────────────────────── */
 
     ExportSales: (params = {}) =>
@@ -139,6 +143,9 @@ const ReportApis = {
 
     ExportInventoryDetailSummary: (params = {}) =>
         Apis.Download("api/report/export-inventory-detail-summary", "inventory-summary-produk.xlsx", params),
+
+    ExportInventoryKarat: (params = {}) =>
+        Apis.Download("api/report/export-inventory-karat", "inventory-karat.xlsx", params),
 
     ExportCustomer: (params = {}) =>
         Apis.Download("api/report/export-customer", "customer-report.xlsx", params),
