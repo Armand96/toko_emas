@@ -70,11 +70,13 @@ class InventoryDetailSummaryExport implements FromCollection, WithEvents, WithMa
             ->selectRaw('
                 m_products.id as product_id,
                 m_products.product_name,
+                inventories.karat,
                 COUNT(inventories.inventory_code) as total_item,
                 SUM(inventories.berat) as total_berat
             ')
-            ->groupBy('m_products.id', 'm_products.product_name')
+            ->groupBy('m_products.id', 'm_products.product_name', 'inventories.karat')
             ->orderByDesc('total_item')
+            ->orderByDesc('inventories.karat')
             ->get();
     }
 
@@ -82,6 +84,7 @@ class InventoryDetailSummaryExport implements FromCollection, WithEvents, WithMa
     {
         return [
             $row->product_name,
+            $row->karat ? $row->karat.' K' : '-',
             $row->total_item,
             number_format($row->total_berat, 2, '.', '').' gr',
         ];
@@ -121,8 +124,9 @@ class InventoryDetailSummaryExport implements FromCollection, WithEvents, WithMa
                 // Row 4: Column headers
                 $headers = [
                     'A4' => 'Produk',
-                    'B4' => 'Total Item',
-                    'C4' => 'Total Berat (gr)',
+                    'B4' => 'Karat',
+                    'C4' => 'Total Item',
+                    'D4' => 'Total Berat (gr)',
                 ];
 
                 foreach ($headers as $cell => $value) {
@@ -130,10 +134,10 @@ class InventoryDetailSummaryExport implements FromCollection, WithEvents, WithMa
                 }
 
                 // Style header row bold
-                $sheet->getStyle('A4:C4')->getFont()->setBold(true);
+                $sheet->getStyle('A4:D4')->getFont()->setBold(true);
 
                 // Auto-size columns
-                foreach (range('A', 'C') as $col) {
+                foreach (range('A', 'D') as $col) {
                     $sheet->getColumnDimension($col)->setAutoSize(true);
                 }
             },

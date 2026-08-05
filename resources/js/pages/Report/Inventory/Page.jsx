@@ -337,6 +337,11 @@ const ReportInventory = () => {
             ),
         },
         {
+            header: "Karat",
+            accessor: "karat",
+            render: (row) => (row.karat ? `${row.karat} K` : "-"),
+        },
+        {
             header: "Total Item",
             accessor: "total_item",
             render: (row) => (

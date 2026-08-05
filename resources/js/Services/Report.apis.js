@@ -116,7 +116,7 @@ const ReportApis = {
     GetInventoryDetail: (params = "") => {
         return Apis.Get(`api/report/inventory-detail${params}`).then(({ data }) => data?.data ?? data);
     },
-    // paginated → { data: [{product_id, product_name, total_item, total_berat}], current_page, total, per_page }
+    // paginated → { data: [{product_id, product_name, karat, total_item, total_berat}], current_page, total, per_page }
     GetInventoryDetailSummary: (params = "") => {
         return Apis.Get(`api/report/inventory-detail-summary${params}`).then(({ data }) => data?.data ?? data);
     },

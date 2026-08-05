@@ -355,11 +355,13 @@ class InventoryReportController extends Controller
             ->selectRaw('
                 m_products.id as product_id,
                 m_products.product_name,
+                inventories.karat,
                 COUNT(inventories.inventory_code) as total_item,
                 SUM(inventories.berat) as total_berat
             ')
-            ->groupBy('m_products.id', 'm_products.product_name')
+            ->groupBy('m_products.id', 'm_products.product_name', 'inventories.karat')
             ->orderByDesc('total_item')
+            ->orderByDesc('inventories.karat')
             ->paginate(
                 $request->per_page ?? 10
             );
