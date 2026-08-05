@@ -118,6 +118,8 @@ const ReportInventory = () => {
     const [detail, setDetail] = useState({ data: [], current_page: 1, total: 0, per_page: 10 });
     const [detailSummary, setDetailSummary] = useState({ data: [], current_page: 1, total: 0, per_page: 10 });
     const [karatSummary, setKaratSummary] = useState([]);
+    const [karatPage, setKaratPage] = useState(1);
+    const [karatPageSize, setKaratPageSize] = useState(10);
     const [exporting, setExporting] = useState(false);
     const [exportingSummary, setExportingSummary] = useState(false);
     const [exportingKarat, setExportingKarat] = useState(false);
@@ -559,12 +561,12 @@ const ReportInventory = () => {
 
                 <Table
                     columns={karatColumns}
-                    data={karatSummary}
-                    page={1}
-                    pageSize={karatSummary.length || 10}
+                    data={karatSummary.slice((karatPage - 1) * karatPageSize, karatPage * karatPageSize)}
+                    page={karatPage}
+                    pageSize={karatPageSize}
                     total={karatSummary.length}
-                    onPageChange={() => { }}
-                    onPageSizeChange={() => { }}
+                    onPageChange={(page) => setKaratPage(page)}
+                    onPageSizeChange={(size) => { setKaratPageSize(size); setKaratPage(1); }}
                 />
             </div>
 
