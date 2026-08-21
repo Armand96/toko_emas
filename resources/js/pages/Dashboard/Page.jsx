@@ -8,6 +8,8 @@ import {
     ChatTextIcon,
     ClipboardTextIcon,
     WalletIcon,
+    MoneyIcon,
+    BankIcon,
     CaretRightIcon,
     RecycleIcon,
 } from "@phosphor-icons/react";
@@ -77,6 +79,8 @@ const Dashboard = () => {
         sales_today: 0,
         pembelian_today: 0,
         buyback_today: 0,
+        cash_balance: 0,
+        bank_balance: 0,
         total_balance: 0,
     });
 
@@ -100,7 +104,30 @@ const Dashboard = () => {
         { key: "saldo", label: "Saldo Kas & Bank Saat Ini", value: HelperFunctions.formatCurrency(stats.total_balance || 0), icon: WalletIcon, tone: "primary", currency: true },
     ];
 
-    const statCards = allStatCards;
+    // Khusus Kasir: rincian saldo kas laci & rekening bank.
+    // Nilainya sudah ter-scope ke cabang kasir karena branchId dikunci ke user.branch_id.
+    const kasirBalanceCards = [
+        {
+            key: "total-cash",
+            label: "Total Cash",
+            value: HelperFunctions.formatCurrency(stats.cash_balance || 0),
+            subLabel: "Saldo cabang Anda saat ini",
+            icon: MoneyIcon,
+            tone: "success",
+            currency: true,
+        },
+        {
+            key: "total-rekening",
+            label: "Total di Rekening",
+            value: HelperFunctions.formatCurrency(stats.bank_balance || 0),
+            subLabel: "Saldo cabang Anda saat ini",
+            icon: BankIcon,
+            tone: "info",
+            currency: true,
+        },
+    ];
+
+    const statCards = isKasir() ? [...allStatCards, ...kasirBalanceCards] : allStatCards;
 
     const donutData = useMemo(() => {
         return salesStatus.map((s) => ({
@@ -154,6 +181,8 @@ const Dashboard = () => {
                     sales_today: dataToday.sales_today || 0,
                     pembelian_today: dataToday.pembelian_today || 0,
                     buyback_today: dataToday.buyback_today || 0,
+                    cash_balance: dataToday.cash_balance || 0,
+                    bank_balance: dataToday.bank_balance || 0,
                     total_balance: dataToday.total_balance || 0,
                 });
             }
@@ -305,6 +334,7 @@ const Dashboard = () => {
                         key={stat.key}
                         label={stat.label}
                         value={stat.value}
+                        subLabel={stat.subLabel}
                         icon={stat.icon}
                         tone={stat.tone}
                     />

@@ -19,6 +19,12 @@ const PERHATIAN = [
     "Dengan menerima faktur ini konsumen setuju dengan syarat dan ketentuan yang berlaku",
 ];
 
+// Foto barang: pakai foto asli item inventory.
+const itemImageUrl = (item) => {
+    const path = item?.inventory?.image_path;
+    return path ? HelperFunctions.getStorageUrl(path) : null;
+};
+
 const PrintKwitansi = () => {
     const [data, setData] = useState(null);
 
@@ -68,6 +74,7 @@ const PrintKwitansi = () => {
                 @media print {
                     @page { size: A4 portrait; margin: 6mm; }
                     .fk-wm { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .fk-foto { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 }
             `}</style>
 
@@ -150,6 +157,17 @@ const PrintKwitansi = () => {
                                 <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">1</td>
                                 <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-left align-top break-words">
                                     <div className="flex items-start gap-1.5 my-1">
+                                        {(() => {
+                                            const foto = itemImageUrl(item);
+                                            return foto ? (
+                                                <img
+                                                    src={foto}
+                                                    alt={item.product?.product_name ?? "Foto barang"}
+                                                    className="fk-foto w-[34px] h-[34px] shrink-0 rounded-sm border border-[#ccc] object-cover bg-white"
+                                                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                                                />
+                                            ) : null;
+                                        })()}
                                         {item.inventory_code && (
                                             <QRCodeCanvas value={item.inventory_code} size={30} level="M" marginSize={0} className="shrink-0 mt-px" />
                                         )}

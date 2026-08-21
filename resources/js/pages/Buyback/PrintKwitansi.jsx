@@ -21,6 +21,12 @@ const PERHATIAN = [
     "Dengan menerima faktur ini konsumen setuju dengan syarat dan ketentuan yang berlaku",
 ];
 
+// Foto barang: pada buyback foto tersimpan langsung di baris detail.
+const itemImageUrl = (item) => {
+    const path = item?.image_path;
+    return path ? HelperFunctions.getStorageUrl(path) : null;
+};
+
 const PrintKwitansi = () => {
     const [data, setData] = useState(null);
 
@@ -67,6 +73,7 @@ const PrintKwitansi = () => {
                 @media print {
                     @page { size: A4 portrait; margin: 6mm; }
                     .fk-wm { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .fk-foto { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 }
             `}</style>
 
@@ -147,12 +154,27 @@ const PrintKwitansi = () => {
                         {details.map((item, i) => {
                             const karat = item.inventory?.karat ?? item.karat;
                             const berat = item.inventory?.berat ?? item.berat;
+                            const foto = itemImageUrl(item);
                             return (
                                 <tr key={i} >
                                     <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">1</td>
                                     <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-left align-top break-words">
-                                        {item.product?.product_name ?? "-"}
-                                        {item.inventory_code ? ` (${item.inventory_code})` : ""}
+                                        <div className="flex items-start gap-1.5 my-1">
+                                            {foto && (
+                                                <img
+                                                    src={foto}
+                                                    alt={item.product?.product_name ?? "Foto barang"}
+                                                    className="fk-foto w-[34px] h-[34px] shrink-0 rounded-sm border border-[#ccc] object-cover bg-white"
+                                                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                                                />
+                                            )}
+                                            <div>
+                                                <div>{item.product?.product_name ?? "-"}</div>
+                                                {item.inventory_code && (
+                                                    <div className="text-[8px] text-[#555]">{item.inventory_code}</div>
+                                                )}
+                                            </div>
+                                        </div>
                                     </td>
                                     <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">{karat ? `${karat}K` : "-"}</td>
                                     <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">{berat ? `${berat}gr` : "-"}</td>
