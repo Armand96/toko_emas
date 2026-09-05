@@ -15,7 +15,7 @@ import AuthStore from "../../../Store/AuthStore";
 const JENIS_OPTIONS = [
     { value: 'HILANG', label: 'Hilang', desc: 'Item tidak ditemukan/hilang', Icon: WarningIcon, color: 'text-danger-500', bg: 'bg-danger-50' },
     { value: 'REPAIR', label: 'Repair', desc: 'Item keluar untuk perbaikan', Icon: WrenchIcon, color: 'text-neutral-500', bg: 'bg-neutral-100' },
-    { value: 'SALAH_INPUT', label: 'Salah Input', desc: 'Item salah scan/pilih saat input', Icon: ArrowUUpLeftIcon, color: 'text-warning-500', bg: 'bg-warning-50' },
+    { value: 'SALAH_INPUT', label: 'Salah Input', desc: 'Salah input di inventory', Icon: ArrowUUpLeftIcon, color: 'text-warning-500', bg: 'bg-warning-50' },
 ];
 
 const FormAdd = ({ setCurentState }) => {

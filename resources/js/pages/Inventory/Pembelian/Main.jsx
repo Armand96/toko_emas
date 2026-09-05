@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { PlusCircleIcon, PrinterIcon, ReceiptIcon } from "@phosphor-icons/react";
+import { PlusCircleIcon, PrinterIcon } from "@phosphor-icons/react";
 import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
+import PrintDropdown from "../../../components/PrintDropdown";
 import Badge from "../../../components/Badge";
 import { useDebounce } from "use-debounce";
 
@@ -300,18 +301,12 @@ const MainPembelian = ({ setCurentState }) => {
                         onClick={() => handleViewDetail(row)}
                     />
                     {row?.status === "DISETUJUI" && (
-                        <ActionButton
-                            variant="print"
-                            title="Cetak QR Code"
-                            onClick={() => HelperFunctions.printBarcode(row.inventory_code, { label: row.product?.product_name ?? row.product?.name, berat: row.berat, karat: row.karat, serial: row.serial_number })}
-                        />
-                    )}
-                    {row?.status === "DISETUJUI" && (
-                        <ActionButton
-                            icon={ReceiptIcon}
-                            title="Cetak Kwitansi"
-                            tone="default"
-                            onClick={() => handlePrintKwitansi(row)}
+                        <PrintDropdown
+                            title="Cetak"
+                            options={[
+                                { label: 'Cetak Kwitansi', onClick: () => handlePrintKwitansi(row) },
+                                { label: 'Cetak Label', onClick: () => HelperFunctions.printBarcode(row.inventory_code, { label: row.product?.product_name ?? row.product?.name, berat: row.berat, karat: row.karat, serial: row.serial_number }) },
+                            ]}
                         />
                     )}
                 </ActionButtonGroup>
