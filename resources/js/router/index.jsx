@@ -16,6 +16,7 @@ import MasterCategoryFinance from "../pages/administrator/MasterCategoryFinance/
 import PrintBarcode from "../components/Utils/PrintBarcode";
 import PrintKwitansi from "../pages/Penjualan/PrintKwitansi";
 import PrintKwitansiBuyback from "../pages/Buyback/PrintKwitansi";
+import PrintKwitansiPembelian from "../pages/Inventory/Pembelian/PrintKwitansi";
 import Finance from "../pages/Finance/Page";
 import ProtectedRoute from "../components/ProtectedRoute";
 import PublicRoute from "../components/PublicRoute";
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
     { path: "/inventory/print-barcode", element: <PrintBarcode /> },
     { path: "/penjualan/print-kwitansi", element: <PrintKwitansi /> },
     { path: "/buyback/print-kwitansi", element: <PrintKwitansiBuyback /> },
+    { path: "/pembelian/print-kwitansi", element: <PrintKwitansiPembelian /> },
 
     // ── PROTECTED ────────────────────────────────────────────
     {

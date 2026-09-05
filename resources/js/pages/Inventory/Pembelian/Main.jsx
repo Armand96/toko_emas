@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { PlusCircleIcon, PrinterIcon } from "@phosphor-icons/react";
+import { PlusCircleIcon, PrinterIcon, ReceiptIcon } from "@phosphor-icons/react";
 import ActionButton, { ActionButtonGroup } from "../../../components/ActionButton";
 import Badge from "../../../components/Badge";
 import { useDebounce } from "use-debounce";
@@ -167,6 +167,19 @@ const MainPembelian = ({ setCurentState }) => {
         confirmCancel(approvalIds);
     };
 
+    const handlePrintKwitansi = async (row) => {
+        setLoading(true);
+        try {
+            const detail = await InventoryApis.GetPembelianSingle(row.id);
+            sessionStorage.setItem('print_pembelian_kwitansi_data', JSON.stringify(detail || row));
+            window.open('/pembelian/print-kwitansi', '_blank');
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleBulkPrint = () => {
         if (approvedItems.length === 0) return;
         const barcodes = approvedItems.map(item => item.barcode);
@@ -291,6 +304,14 @@ const MainPembelian = ({ setCurentState }) => {
                             variant="print"
                             title="Cetak QR Code"
                             onClick={() => HelperFunctions.printBarcode(row.inventory_code, { label: row.product?.product_name ?? row.product?.name, berat: row.berat, karat: row.karat, serial: row.serial_number })}
+                        />
+                    )}
+                    {row?.status === "DISETUJUI" && (
+                        <ActionButton
+                            icon={ReceiptIcon}
+                            title="Cetak Kwitansi"
+                            tone="default"
+                            onClick={() => handlePrintKwitansi(row)}
                         />
                     )}
                 </ActionButtonGroup>

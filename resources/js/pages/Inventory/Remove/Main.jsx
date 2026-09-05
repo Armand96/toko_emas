@@ -15,6 +15,8 @@ import OptionsStore from "../../../Store/OptionsStore";
 import PermissionStore from "../../../Store/PermissionStore";
 import AuthStore from "../../../Store/AuthStore";
 
+const JENIS_LABEL = { HILANG: 'Hilang', REPAIR: 'Repair', SALAH_INPUT: 'Salah Input' };
+
 const Main = ({ setCurentState }) => {
     const can = PermissionStore((s) => s.can);
     const isKasir = PermissionStore((s) => s.isKasir);
@@ -74,7 +76,7 @@ const Main = ({ setCurentState }) => {
                     kode: item.code,
                     item_produk: productNames || '-',
                     cabang: item.branch?.branch_name || item.branch?.name || '-',
-                    jenis: item.jenis === 'HILANG' ? 'Hilang' : item.jenis === 'REPAIR' ? 'Repair' : item.jenis,
+                    jenis: JENIS_LABEL[item.jenis] || item.jenis,
                     status: (() => {
                         const map = { APPROVAL: 'Approval', DISETUJUI: 'Disetujui', DITOLAK: 'Ditolak', DIBATALKAN: 'Dibatalkan', RETURN: 'Return' };
                         return map[item.status] || item.status;
@@ -139,12 +141,11 @@ const Main = ({ setCurentState }) => {
             });
 
             const statusMap = { APPROVAL: 'Approval', DISETUJUI: 'Disetujui', DITOLAK: 'Ditolak', DIBATALKAN: 'Dibatalkan', RETURN: 'Return' };
-            const jenisMap = { HILANG: 'Hilang', REPAIR: 'Repair' };
 
             setSelectedDetail({
                 id: item.id,
                 kode_transaksi: item.code,
-                jenis: jenisMap[item.jenis] || item.jenis,
+                jenis: JENIS_LABEL[item.jenis] || item.jenis,
                 catatan: item.note || '-',
                 diajukan_oleh: item.created_by_user?.name || item.user?.name || '-',
                 pic_approval: item.status === 'DIBATALKAN' ? (item.user?.name || '-') : 'Owner',

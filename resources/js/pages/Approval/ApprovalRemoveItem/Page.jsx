@@ -16,7 +16,7 @@ import OptionsStore from "../../../Store/OptionsStore";
 import PermissionStore from "../../../Store/PermissionStore";
 import { useQueryParams } from "../../../utils/useQueryParams";
 
-const JENIS_LABEL = { HILANG: 'Hilang', REPAIR: 'Repair' };
+const JENIS_LABEL = { HILANG: 'Hilang', REPAIR: 'Repair', SALAH_INPUT: 'Salah Input' };
 
 const ApprovalRemoveItem = () => {
     const setLoading = LoadingStore((state) => state.setLoading);

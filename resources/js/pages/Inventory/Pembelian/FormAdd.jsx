@@ -6,6 +6,7 @@ import {
     TrashIcon,
 } from "@phosphor-icons/react";
 import GenerateQR from "../../../components/Utils/GenerateQR";
+import ModalSupplier from "../../administrator/Supplier/Modal";
 
 import HeaderSection from "../../../components/HeaderSection";
 import Dropdown from "../../../components/FormElement/SingleElement/Dropdown";
@@ -21,9 +22,12 @@ import LoadingStore from "../../../Store/LoadingStore";
 
 import InventoryApis from "../../../Services/Inventory.apis";
 import BankApis from "../../../Services/Bank.apis";
+import SupplierApis from "../../../Services/Supplier.apis";
 import OptionsStore from "../../../Store/OptionsStore";
 import AuthStore from "../../../Store/AuthStore";
 import PermissionStore from "../../../Store/PermissionStore";
+
+const ADD_NEW_SUPPLIER = "__add_new_supplier__";
 
 const emptyItem = {
     product_id: null,
@@ -75,6 +79,9 @@ const FormPembelian = ({ setCurentState }) => {
     const [branchOptions, setBranchOptions] = useState([]);
     const [bankOptions, setBankOptions] = useState([]);
     const [supplierOptions, setSupplierOptions] = useState([]);
+    const [showAddSupplier, setShowAddSupplier] = useState(false);
+    const [supplierFormData, setSupplierFormData] = useState({ is_active: true });
+    const [supplierFormError, setSupplierFormError] = useState({});
 
     const fetchOptions = async () => {
         try {
@@ -89,9 +96,10 @@ const FormPembelian = ({ setCurentState }) => {
             setBranchOptions(
                 HelperFunctions.formatDropdown(branchData, "id", "branch_name")
             );
-            setSupplierOptions(
-                HelperFunctions.formatDropdown(supplierData, "id", "supplier_name")
-            );
+            setSupplierOptions([
+                ...HelperFunctions.formatDropdown(supplierData, "id", "supplier_name"),
+                { value: ADD_NEW_SUPPLIER, label: "+ Tambah Supplier Baru" },
+            ]);
         } catch (error) {
             console.error(error);
         }
@@ -115,11 +123,80 @@ const FormPembelian = ({ setCurentState }) => {
     const refetchSupplierOptions = async () => {
         try {
             const supplierData = await ensureSuppliers(true);
-            setSupplierOptions(
-                HelperFunctions.formatDropdown(supplierData, "id", "supplier_name")
-            );
+            setSupplierOptions([
+                ...HelperFunctions.formatDropdown(supplierData, "id", "supplier_name"),
+                { value: ADD_NEW_SUPPLIER, label: "+ Tambah Supplier Baru" },
+            ]);
         } catch (error) {
             console.error(error);
+        }
+    };
+
+    const handleOpenAddSupplier = () => {
+        setSupplierFormData({ is_active: true });
+        setSupplierFormError({});
+        setShowAddSupplier(true);
+    };
+
+    const handleCloseAddSupplier = () => {
+        setShowAddSupplier(false);
+        setTimeout(() => {
+            setSupplierFormData({ is_active: true });
+            setSupplierFormError({});
+        }, 300);
+    };
+
+    const handleChangeSupplierForm = (e) => {
+        const { name, value } = e.target;
+        setSupplierFormData((prev) => ({ ...prev, [name]: value }));
+        if (supplierFormError[name]) setSupplierFormError((prev) => ({ ...prev, [name]: "" }));
+    };
+
+    const handleSubmitAddSupplier = async (submitData) => {
+        const required = [
+            ["supplier_name", "Nama supplier wajib diisi"],
+            ["phone_number", "No HP wajib diisi"],
+            ["address", "Alamat wajib diisi"],
+        ];
+        const newErrors = {};
+        required.forEach(([key, msg]) => {
+            if (!submitData?.[key] || !String(submitData[key]).trim()) newErrors[key] = msg;
+        });
+        if (Object.keys(newErrors).length > 0) {
+            setSupplierFormError(newErrors);
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const body = new FormData();
+            body.append("supplier_name", submitData.supplier_name);
+            body.append("phone_number", submitData.phone_number);
+            body.append("address", submitData.address);
+            body.append("is_active", submitData.is_active ? 1 : 0);
+
+            const res = await SupplierApis.PostSupplier(body);
+            const newSupplier = res?.data?.data || res?.data;
+            OptionsStore.getState().invalidate("suppliers");
+
+            const supplierData = await ensureSuppliers(true);
+            setSupplierOptions([
+                ...HelperFunctions.formatDropdown(supplierData, "id", "supplier_name"),
+                { value: ADD_NEW_SUPPLIER, label: "+ Tambah Supplier Baru" },
+            ]);
+
+            if (newSupplier?.id) {
+                setItem((prev) => ({ ...prev, supplier_id: newSupplier.id }));
+                setErrors((prev) => ({ ...prev, supplier_id: "" }));
+            }
+
+            handleCloseAddSupplier();
+            showAlert({ title: "Berhasil", message: "Supplier baru berhasil ditambahkan", icon: "success" });
+        } catch (error) {
+            console.error(error);
+            showAlert({ title: "Gagal", message: "Gagal menambahkan supplier", icon: "error" });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -189,6 +266,11 @@ const FormPembelian = ({ setCurentState }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
+        if (name === "supplier_id" && value === ADD_NEW_SUPPLIER) {
+            handleOpenAddSupplier();
+            return;
+        }
 
         if (name === "foto") {
             const file = e.target.files ? e.target.files[0] : value;
@@ -614,6 +696,15 @@ const FormPembelian = ({ setCurentState }) => {
                     </div>
                 </div>
             </div>
+
+            <ModalSupplier
+                isOpen={showAddSupplier}
+                onClose={handleCloseAddSupplier}
+                onSubmit={handleSubmitAddSupplier}
+                formData={supplierFormData}
+                onChange={handleChangeSupplierForm}
+                formError={supplierFormError}
+            />
         </div>
     );
 };

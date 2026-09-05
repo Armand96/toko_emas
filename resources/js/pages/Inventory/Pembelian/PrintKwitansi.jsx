@@ -1,27 +1,24 @@
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { PrinterIcon } from "@phosphor-icons/react";
-import HelperFunctions from "../../utils/HelperFunctions";
-import LogoKwintansi from "../../assets/images/logo_kwintansi.png";
+import { QRCodeCanvas } from "qrcode.react";
+import HelperFunctions from "../../../utils/HelperFunctions";
+import LogoKwintansi from "../../../assets/images/logo_kwintansi.png";
 
 // ============================================================
-// FAKTUR JUAL & BELI — BUYBACK
-// Data diambil dari sessionStorage("print_buyback_kwitansi_data"),
-// di-set saat kasir cetak kwitansi buyback.
-//
-// Catatan: pada buyback, berat/karat/serial ada langsung di baris
-// detail (bukan nested di item.inventory seperti penjualan).
+// FAKTUR PEMBELIAN
+// Data diambil dari sessionStorage("print_pembelian_kwitansi_data"),
+// di-set saat kasir cetak kwitansi pembelian (status DISETUJUI).
 // ============================================================
 
 const PERHATIAN = [
-    "Barang yang sudah kami jual, apabila dijual kembali ke toko kami, diterima sesuai harga pasar dan disertakan dengan faktur toko",
-    "Upah pembuatan dan pajak penjualan tidak dihitung",
-    "Barang telah sesuai, diperiksa dan disaksikan oleh customer. Kami tidak menerima komplain setelah barang keluar dari toko kami",
+    "Barang yang sudah kami beli, apabila dijual kembali ke toko kami, diterima sesuai harga pasar dan disertakan dengan faktur toko",
+    "Upah pembuatan dan pajak pembelian tidak dihitung",
+    "Barang telah sesuai, diperiksa dan disaksikan oleh supplier. Kami tidak menerima komplain setelah barang diterima toko kami",
     "Kami tidak menerima barang dari hasil tindak kejahatan dan barang bermasalah/sengketa lainnya yang melawan hukum",
-    "Dengan menerima faktur ini konsumen setuju dengan syarat dan ketentuan yang berlaku",
+    "Dengan menerima faktur ini supplier setuju dengan syarat dan ketentuan yang berlaku",
 ];
 
-// Foto barang: pada buyback foto tersimpan langsung di baris detail.
 const itemImageUrl = (item) => {
     const path = item?.image_path;
     return path ? HelperFunctions.getStorageUrl(path) : null;
@@ -31,7 +28,7 @@ const PrintKwitansi = () => {
     const [data, setData] = useState(null);
 
     useEffect(() => {
-        const raw = sessionStorage.getItem("print_buyback_kwitansi_data");
+        const raw = sessionStorage.getItem("print_pembelian_kwitansi_data");
         if (!raw) return;
         try {
             setData(JSON.parse(raw));
@@ -48,7 +45,8 @@ const PrintKwitansi = () => {
         );
     }
 
-    const { customer, user, details = [], branch, buyback_code, grand_total, created_at } = data;
+    const { supplier, user, branch, barcode, modal, created_at, product, berat, karat } = data;
+    const details = [data];
 
     const tanggal = created_at ? dayjs(created_at) : dayjs();
     const kota = branch?.lokasi_cabang || branch?.branch_name || "-";
@@ -80,8 +78,8 @@ const PrintKwitansi = () => {
             {/* Toolbar (tidak ikut cetak) */}
             <div className="w-full max-w-[700px] flex justify-between items-center print:hidden">
                 <div>
-                    <h1 className="text-lg font-semibold text-gray-900">Cetak Faktur Buyback</h1>
-                    <p className="text-sm text-gray-500">Buyback ID {buyback_code}</p>
+                    <h1 className="text-lg font-semibold text-gray-900">Cetak Faktur Pembelian</h1>
+                    <p className="text-sm text-gray-500">Kode {barcode}</p>
                 </div>
                 <button
                     onClick={() => window.print()}
@@ -121,7 +119,7 @@ const PrintKwitansi = () => {
                             {" / "}<span className="inline-block border-b border-[#999] min-w-[50px]">{tanggal.format("YYYY")}</span>
                         </div>
                         <div className="text-left border-b border-[#999] line-clamp-2 leading-[2]">
-                            <span className="font-semibold">Kepada Yth, </span>{customer?.customer_name ?? ""}
+                            <span className="font-semibold">Kepada Yth, </span>{supplier?.supplier_name ?? ""}
                         </div>
                     </div>
                 </div>
@@ -129,7 +127,7 @@ const PrintKwitansi = () => {
                 {/* TITLE BAR */}
                 <div className="relative z-10 flex justify-between items-end border-b-[1.5px] border-black pb-[3px] mt-1">
                     <span className="text-[14px] font-extrabold tracking-[0.3px]">FAKTUR PEMBELIAN</span>
-                    <span className="text-[11px]">No : <strong>{buyback_code ?? "-"}</strong></span>
+                    <span className="text-[11px]">No : <strong>{barcode ?? "-"}</strong></span>
                 </div>
 
                 {/* TABLE */}
@@ -151,37 +149,38 @@ const PrintKwitansi = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {details.map((item, i) => {
-                            const karat = item.inventory?.karat ?? item.karat;
-                            const berat = item.inventory?.berat ?? item.berat;
-                            const foto = itemImageUrl(item);
-                            return (
-                                <tr key={i} >
-                                    <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">1</td>
-                                    <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-left align-top break-words">
-                                        <div className="flex items-start gap-1.5 my-1">
-                                            {foto && (
+                        {details.map((item, i) => (
+                            <tr key={i} >
+                                <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">1</td>
+                                <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-left align-top break-words">
+                                    <div className="flex items-start gap-1.5 my-1">
+                                        {(() => {
+                                            const foto = itemImageUrl(item);
+                                            return foto ? (
                                                 <img
                                                     src={foto}
                                                     alt={item.product?.product_name ?? "Foto barang"}
                                                     className="fk-foto w-[34px] h-[34px] shrink-0 rounded-sm border border-[#ccc] object-cover bg-white"
                                                     onError={(e) => { e.currentTarget.style.display = "none"; }}
                                                 />
+                                            ) : null;
+                                        })()}
+                                        {item.inventory_code && (
+                                            <QRCodeCanvas value={item.inventory_code} size={30} level="M" marginSize={0} className="shrink-0 mt-px" />
+                                        )}
+                                        <div>
+                                            <div>{item.product?.product_name ?? "-"}</div>
+                                            {item.inventory_code && (
+                                                <div className="text-[8px] text-[#555]">{item.inventory_code}</div>
                                             )}
-                                            <div>
-                                                <div>{item.product?.product_name ?? "-"}</div>
-                                                {item.inventory_code && (
-                                                    <div className="text-[8px] text-[#555]">{item.inventory_code}</div>
-                                                )}
-                                            </div>
                                         </div>
-                                    </td>
-                                    <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">{karat ? `${karat}K` : "-"}</td>
-                                    <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">{berat ? `${berat}gr` : "-"}</td>
-                                    <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-right align-top">{HelperFunctions.formatCurrency(item.price)}</td>
-                                </tr>
-                            );
-                        })}
+                                    </div>
+                                </td>
+                                <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">{item.karat ? `${item.karat}K` : "-"}</td>
+                                <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-center align-top">{item.berat ? `${item.berat}gr` : "-"}</td>
+                                <td className="border-x border-black px-[7px] py-[1px] text-[10px] leading-tight text-right align-top">{HelperFunctions.formatCurrency(item.modal)}</td>
+                            </tr>
+                        ))}
                         {/* AREA KOSONG: tinggi dinamis berdasarkan jumlah item */}
                         {(() => {
                             const spacerH = Math.max(20, 70 - (details.length - 1) * 15);
@@ -222,12 +221,12 @@ const PrintKwitansi = () => {
                     <div className="w-[180px] shrink-0">
                         <div className="flex border border-black -ml-[1px]" style={{ borderTop: "none"}}>
                             <span className="w-[70px] shrink-0 box-border px-2 py-1.5 border-r  border-black font-semibold text-[12px] italic text-center">Total</span>
-                            <span className="flex-1 box-border px-2 py-1.5 text-right font-semibold text-[12px]">{HelperFunctions.formatCurrency(grand_total)}</span>
+                            <span className="flex-1 box-border px-2 py-1.5 text-right font-semibold text-[12px]">{HelperFunctions.formatCurrency(modal)}</span>
                         </div>
                         <div className="flex mt-1.5">
                             <div className="flex-1 text-center px-1">
-                                <span className="block text-[9px]">Ttd Customer</span>
-                                <span className="block text-[9px] mt-7">( {customer?.customer_name ?? "................"} )</span>
+                                <span className="block text-[9px]">Ttd Supplier</span>
+                                <span className="block text-[9px] mt-7">( {supplier?.supplier_name ?? "................"} )</span>
                             </div>
                             <div className="flex-1 text-center px-1">
                                 <span className="block text-[9px]">Hormat Kami</span>

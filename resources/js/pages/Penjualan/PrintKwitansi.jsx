@@ -129,7 +129,7 @@ const PrintKwitansi = () => {
 
                 {/* TITLE BAR */}
                 <div className="relative z-10 flex justify-between items-end border-b-[1.5px] border-black pb-[3px] mt-1">
-                    <span className="text-[14px] font-extrabold tracking-[0.3px]">FAKTUR JUAL &amp; BELI</span>
+                    <span className="text-[14px] font-extrabold tracking-[0.3px]">FAKTUR PENJUALAN</span>
                     <span className="text-[11px]">No : <strong>{order_id ?? "-"}</strong></span>
                 </div>
 

@@ -182,7 +182,8 @@ class RemoveItemController extends Controller
 
                 $removeItemData = RemoveItem::find($validated['remove_id']);
                 $jenis = RemoveItemJenis::from($removeItemData->jenis);
-                Inventory::whereIn('inventory_code', $products)->update(['status' => $jenis == RemoveItemJenis::HILANG ? InventoryStatus::LOST : InventoryStatus::REPAIR, 'updated_at' => $dateNow]);
+                $inventoryStatus = $jenis == RemoveItemJenis::REPAIR ? InventoryStatus::REPAIR : InventoryStatus::LOST;
+                Inventory::whereIn('inventory_code', $products)->update(['status' => $inventoryStatus, 'updated_at' => $dateNow]);
             } elseif ($status == RemoveItemStatus::RETURN || $status == RemoveItemStatus::DIBATALKAN || $status == RemoveItemStatus::DITOLAK) {
                 Inventory::whereIn('inventory_code', $products)->update(['status' => InventoryStatus::AVAILABLE, 'updated_at' => $dateNow]);
             }
@@ -225,7 +226,7 @@ class RemoveItemController extends Controller
                 // All details share the same header, grab it from the first one
                 $removeItemData = RemoveItem::find($details->first()->remove_header_id);
                 $jenis = RemoveItemJenis::from($removeItemData->jenis);
-                $inventoryStatus = $jenis == RemoveItemJenis::HILANG ? InventoryStatus::LOST : InventoryStatus::REPAIR;
+                $inventoryStatus = $jenis == RemoveItemJenis::REPAIR ? InventoryStatus::REPAIR : InventoryStatus::LOST;
 
                 Inventory::whereIn('inventory_code', $inventoryCodes)->update([
                     'status' => $inventoryStatus,

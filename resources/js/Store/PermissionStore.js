@@ -25,7 +25,7 @@ const PERMISSIONS = [
     { link: '/approval/pembelian',
         create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER] },
     { link: '/approval/remove-item',
-        create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER] },
+        create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER], update: [SUPER_ADMIN, OWNER], delete: [SUPER_ADMIN, OWNER] },
     { link: '/approval/transfer',
         create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER] },
 

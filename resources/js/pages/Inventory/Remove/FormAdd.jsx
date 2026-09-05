@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { WarningIcon, WrenchIcon } from "@phosphor-icons/react";
+import { WarningIcon, WrenchIcon, ArrowUUpLeftIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import ModalScanBarcode from "../../../components/ModaScanBarcode";
 import InventoryApis from "../../../Services/Inventory.apis";
@@ -15,6 +15,7 @@ import AuthStore from "../../../Store/AuthStore";
 const JENIS_OPTIONS = [
     { value: 'HILANG', label: 'Hilang', desc: 'Item tidak ditemukan/hilang', Icon: WarningIcon, color: 'text-danger-500', bg: 'bg-danger-50' },
     { value: 'REPAIR', label: 'Repair', desc: 'Item keluar untuk perbaikan', Icon: WrenchIcon, color: 'text-neutral-500', bg: 'bg-neutral-100' },
+    { value: 'SALAH_INPUT', label: 'Salah Input', desc: 'Item salah scan/pilih saat input', Icon: ArrowUUpLeftIcon, color: 'text-warning-500', bg: 'bg-warning-50' },
 ];
 
 const FormAdd = ({ setCurentState }) => {
@@ -150,7 +151,7 @@ const FormAdd = ({ setCurentState }) => {
                     <div className="flex flex-col gap-5">
                         <div className="flex flex-col gap-1.5">
                             <label className="text-sm font-medium text-gray-700">Jenis<span className="text-danger-500 ml-1">*</span></label>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {JENIS_OPTIONS.map((opt) => {
                                     const active = formData.jenis === opt.value;
                                     return (

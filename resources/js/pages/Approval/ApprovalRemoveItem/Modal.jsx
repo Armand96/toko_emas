@@ -13,7 +13,7 @@ const STATUS_VIEW = {
     'DIBATALKAN': { Icon: XCircleIcon, iconColor: 'text-danger-500', statusText: 'Dibatalkan oleh' },
 };
 
-const JENIS_LABEL = { HILANG: 'Hilang', REPAIR: 'Repair' };
+const JENIS_LABEL = { HILANG: 'Hilang', REPAIR: 'Repair', SALAH_INPUT: 'Salah Input' };
 
 export default function ModalDetailRemoveItem({
     isOpen,
