@@ -65,7 +65,7 @@ class FinanceExport implements FromCollection, WithMapping, WithStyles, WithEven
             $finance->payment_method,
             $bankInfo,
             $finance->nominal,
-            $finance->keterangan ?? '-',
+            $finance->note ?? '-',
         ];
     }
 
