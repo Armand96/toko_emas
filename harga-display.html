@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harga Emas Hari Ini</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { background: #000; }
+  .tabular { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body class="text-white">
+
+<!-- Ganti URL ini kalau halaman dibuka dari device/host lain. -->
+<script>const API_URL = 'https://auromos.tokomasarrazaq.com/api/harga-publik';</script>
+
+<div class="max-w-7xl mx-auto px-4 py-6">
+
+  <header class="text-center mb-6">
+    <h1 class="text-2xl md:text-4xl font-extrabold tracking-wide text-yellow-300">HARGA EMAS HARI INI</h1>
+    <p id="updated" class="text-xs md:text-sm text-gray-400 mt-2">Memuat…</p>
+  </header>
+
+  <div id="error" class="hidden mb-6 p-4 rounded-lg bg-red-900/40 border border-red-600 text-center">
+    <p class="text-red-300 font-semibold">Gagal memuat harga</p>
+    <p class="text-red-400/80 text-sm mt-1">Periksa koneksi ke server. Mencoba lagi otomatis…</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <section>
+      <h2 class="bg-green-700 text-center font-bold py-2 rounded-t-lg text-sm md:text-base">HARGA JUAL PERHIASAN</h2>
+      <div class="overflow-x-auto border border-yellow-600/40 rounded-b-lg">
+        <table class="w-full text-sm">
+          <thead class="bg-yellow-400 text-black">
+            <tr><th class="px-3 py-2 text-left">KARAT</th><th class="px-3 py-2 text-left">KADAR</th><th class="px-3 py-2 text-right">HARGA JUAL</th></tr>
+          </thead>
+          <tbody id="jual-perhiasan" class="bg-black text-yellow-300"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="bg-red-700 text-center font-bold py-2 rounded-t-lg text-sm md:text-base">HARGA BELI PERHIASAN</h2>
+      <div class="overflow-x-auto border border-yellow-600/40 rounded-b-lg">
+        <table class="w-full text-sm">
+          <thead class="bg-yellow-400 text-black">
+            <tr><th class="px-3 py-2 text-left">KARAT</th><th class="px-3 py-2 text-left">KADAR</th><th class="px-3 py-2 text-right">HARGA BELI</th></tr>
+          </thead>
+          <tbody id="beli-perhiasan" class="bg-black text-yellow-300"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="bg-green-700 text-center font-bold py-2 rounded-t-lg text-sm md:text-base">HARGA JUAL LOGAM MULIA</h2>
+      <div class="overflow-x-auto border border-yellow-600/40 rounded-b-lg">
+        <table class="w-full text-sm">
+          <thead class="bg-yellow-400 text-black">
+            <tr><th class="px-3 py-2 text-left">BERAT</th><th class="px-3 py-2 text-right">HARGA JUAL</th></tr>
+          </thead>
+          <tbody id="jual-lm" class="bg-black text-yellow-300"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="bg-red-700 text-center font-bold py-2 rounded-t-lg text-sm md:text-base">HARGA BELI LOGAM MULIA</h2>
+      <div class="overflow-x-auto border border-yellow-600/40 rounded-b-lg">
+        <table class="w-full text-sm">
+          <thead class="bg-yellow-400 text-black">
+            <tr><th class="px-3 py-2 text-left">BERAT</th><th class="px-3 py-2 text-right">BUY BACK</th></tr>
+          </thead>
+          <tbody id="beli-lm" class="bg-black text-yellow-300"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const rupiah = (v) => new Intl.NumberFormat('id-ID').format(Math.round(Number(v) || 0));
+const berat = (v) => String(Number(v)).replace('.', ',');
+
+const rowClass = 'border-t border-yellow-600/20';
+const tdLeft = 'px-3 py-1.5 font-semibold';
+const tdRight = 'px-3 py-1.5 text-right font-semibold tabular';
+
+function renderPerhiasan(target, rows, field) {
+  document.getElementById(target).innerHTML = rows.length
+    ? rows.map((r) => `
+        <tr class="${rowClass}">
+          <td class="${tdLeft}">${r.karat}K</td>
+          <td class="${tdLeft}">${Number(r.kadar).toFixed(3).replace('.', ',')}</td>
+          <td class="${tdRight}">${rupiah(r[field])}</td>
+        </tr>`).join('')
+    : `<tr><td colspan="3" class="px-3 py-4 text-center text-gray-500">Belum ada data</td></tr>`;
+}
+
+function renderLogamMulia(target, rows, field) {
+  document.getElementById(target).innerHTML = rows.length
+    ? rows.map((r) => `
+        <tr class="${rowClass}">
+          <td class="${tdLeft}">${berat(r.berat)} Gram</td>
+          <td class="${tdRight}">${rupiah(r[field])}</td>
+        </tr>`).join('')
+    : `<tr><td colspan="2" class="px-3 py-4 text-center text-gray-500">Belum ada data</td></tr>`;
+}
+
+async function loadData() {
+  try {
+    const res = await fetch(API_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const json = await res.json();
+    const data = json?.data ?? json;
+    const perhiasan = data?.perhiasan ?? [];
+    const logamMulia = data?.logam_mulia ?? [];
+
+    renderPerhiasan('jual-perhiasan', perhiasan, 'harga_jual');
+    renderPerhiasan('beli-perhiasan', perhiasan, 'harga_beli');
+    renderLogamMulia('jual-lm', logamMulia, 'harga_jual');
+    renderLogamMulia('beli-lm', logamMulia, 'harga_buyback');
+
+    const updatedAt = data?.dasar?.updated_at;
+    document.getElementById('updated').textContent = updatedAt
+      ? 'Update terakhir: ' + new Date(updatedAt).toLocaleString('id-ID')
+      : '';
+    document.getElementById('error').classList.add('hidden');
+  } catch (err) {
+    console.error(err);
+    document.getElementById('error').classList.remove('hidden');
+  }
+}
+
+loadData();
+setInterval(loadData, 60000);
+</script>
+
+</body>
+</html>

@@ -95,6 +95,7 @@ const sidebarData = [
       { id: "user", label: "User", icon: UsersIcon, link: "/administrator/users" },
       { id: "cabang", label: "Cabang", icon: StorefrontIcon, link: "/administrator/cabang" },
       { id: "setting", label: "Setting", icon: GearIcon, link: "/administrator/setting" },
+      { id: "SettingHarga", label: "Setting Harga", icon: GearIcon, link: "/administrator/setting-harga" },
       { id: "MasterBank", label: "Master Bank", icon: GearIcon, link: "/administrator/master-bank" },
       { id: "MasterSupplier", label: "Master Supplier", icon: GearIcon, link: "/administrator/supplier" },
       { id: "MasterCustomer", label: "Master Customer", icon: GearIcon, link: "/administrator/customer" },

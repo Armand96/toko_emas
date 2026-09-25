@@ -73,6 +73,8 @@ const PERMISSIONS = [
         create: [SUPER_ADMIN, OWNER, PIC], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER, PIC] },
     { link: '/administrator/setting',
         create: [SUPER_ADMIN, OWNER, PIC], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER, PIC] },
+    { link: '/administrator/setting-harga',
+        create: [SUPER_ADMIN, OWNER], read: [SUPER_ADMIN, OWNER], update: [SUPER_ADMIN, OWNER], delete: [SUPER_ADMIN, OWNER] },
     { link: '/administrator/master-bank',
         create: [SUPER_ADMIN, OWNER, PIC], read: [SUPER_ADMIN, OWNER, PIC], update: [SUPER_ADMIN, OWNER, PIC], delete: [SUPER_ADMIN, OWNER, PIC] },
     { link: '/administrator/supplier',

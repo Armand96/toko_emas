@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EnumController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\FinanceReportController;
+use App\Http\Controllers\HargaSettingController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\InventoryReportController;
 use App\Http\Controllers\MBankController;
@@ -44,6 +45,9 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
     Route::apiResource('suppliers', MSupplierController::class);
     Route::apiResource('categoryFinance', MCategoryFinanceController::class);
     Route::apiResource('finances', FinanceController::class);
+
+    Route::get('harga-setting', [HargaSettingController::class, 'index']);
+    Route::post('harga-setting/bulk', [HargaSettingController::class, 'bulkUpdate']);
 
     Route::get('pembelian/{pembelian}', [PembelianController::class, 'single']);
     Route::get('pembelian', [PembelianController::class, 'index']);
@@ -151,3 +155,6 @@ Route::middleware(['auth:sanctum'])->group(function () { // comment ini untuk le
 Route::prefix('enum')->group(function () {
     Route::get('pembelian-status', [EnumController::class, 'pembelianStatus']);
 });
+
+// Publik: dikonsumsi halaman display harga (harga-display.html), tanpa auth.
+Route::get('harga-publik', [HargaSettingController::class, 'publik']);

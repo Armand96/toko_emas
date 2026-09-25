@@ -13,6 +13,7 @@ import MasterUser from "../pages/administrator/user/Page";
 import MasterSupplier from "../pages/administrator/Supplier/Page";
 import MasterCustomer from "../pages/administrator/Customer/Page";
 import MasterCategoryFinance from "../pages/administrator/MasterCategoryFinance/Page";
+import SettingHarga from "../pages/administrator/SettingHarga/Page";
 import PrintBarcode from "../components/Utils/PrintBarcode";
 import PrintKwitansi from "../pages/Penjualan/PrintKwitansi";
 import PrintKwitansiBuyback from "../pages/Buyback/PrintKwitansi";
@@ -50,6 +51,7 @@ const router = createBrowserRouter([
                     { path: "/administrator/cabang", element: <Branch /> },
                     { path: "/administrator/master-bank", element: <MasterBank /> },
                     { path: "/administrator/setting", element: <SettingStore /> },
+                    { path: "/administrator/setting-harga", element: <SettingHarga /> },
                     { path: "/administrator/users", element: <MasterUser /> },
                     { path: "/administrator/supplier", element: <MasterSupplier /> },
                     { path: "/administrator/customer", element: <MasterCustomer /> },
