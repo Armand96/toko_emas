@@ -76,7 +76,5 @@ class DatabaseSeeder extends Seeder
             'email' => 'kasir@mail.com',
             'password' => Hash::make('kasir'),
         ]);
-
-        $this->call(HargaSettingSeeder::class);
     }
 }

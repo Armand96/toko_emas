@@ -28,6 +28,7 @@ class HargaSettingController extends Controller
     private function payload(bool $onlyActive = false): array
     {
         HargaPerhiasan::flushDasarCache();
+        HargaLogamMulia::flushDasarCache();
         $dasar = HargaDasar::current();
 
         $perhiasan = HargaPerhiasan::query()
@@ -58,6 +59,8 @@ class HargaSettingController extends Controller
         $validated = $request->validate([
             'harga_dasar_jual' => 'required|numeric|min:0',
             'harga_dasar_beli' => 'required|numeric|min:0',
+            'harga_dasar_jual_lm' => 'required|numeric|min:0',
+            'harga_dasar_beli_lm' => 'required|numeric|min:0',
 
             'perhiasan' => 'present|array',
             'perhiasan.*.id' => 'nullable|integer',
@@ -68,11 +71,11 @@ class HargaSettingController extends Controller
             'perhiasan.*.berat' => 'nullable|numeric|min:0',
             'perhiasan.*.is_active' => 'nullable|boolean',
 
+            // harga_jual & harga_buyback logam mulia adalah turunan dari harga
+            // dasar beli + margin, jadi tidak dikirim/disimpan.
             'logam_mulia' => 'present|array',
             'logam_mulia.*.id' => 'nullable|integer',
             'logam_mulia.*.berat' => 'required|numeric|min:0',
-            'logam_mulia.*.harga_jual' => 'required|numeric|min:0',
-            'logam_mulia.*.harga_buyback' => 'required|numeric|min:0',
             'logam_mulia.*.is_active' => 'nullable|boolean',
         ]);
 
@@ -81,6 +84,8 @@ class HargaSettingController extends Controller
                 HargaDasar::current()->update([
                     'harga_dasar_jual' => $validated['harga_dasar_jual'],
                     'harga_dasar_beli' => $validated['harga_dasar_beli'],
+                    'harga_dasar_jual_lm' => $validated['harga_dasar_jual_lm'],
+                    'harga_dasar_beli_lm' => $validated['harga_dasar_beli_lm'],
                 ]);
 
                 $this->syncRows(
@@ -92,11 +97,9 @@ class HargaSettingController extends Controller
                 $this->syncRows(
                     HargaLogamMulia::class,
                     $validated['logam_mulia'],
-                    ['berat', 'harga_jual', 'harga_buyback', 'is_active']
+                    ['berat', 'is_active']
                 );
             });
-
-            HargaPerhiasan::flushDasarCache();
 
             return ApiResponse::success($this->payload(), 'Harga berhasil disimpan');
         } catch (\Throwable $th) {

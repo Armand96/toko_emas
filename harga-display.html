@@ -6,105 +6,131 @@
 <title>Harga Emas Hari Ini</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  body { background: #000; }
+  html, body { height: 100%; margin: 0; background: #000; overflow: hidden; }
   .tabular { font-variant-numeric: tabular-nums; }
+
+  .t-title { font-size: clamp(14px, 2.4vh, 30px); }
+  .t-sub   { font-size: clamp(8px, 1.1vh, 13px); }
+  .t-head  { font-size: clamp(10px, 1.6vh, 20px); }
+  .t-col   { font-size: clamp(8px, 1.15vh, 14px); }
+  .t-cell  { font-size: clamp(10px, 1.9vh, 24px); }
+  .cell-y  { padding-top: clamp(0px, 0.35vh, 7px); padding-bottom: clamp(0px, 0.35vh, 7px); }
 </style>
 </head>
 <body class="text-white">
 
 <!-- Ganti URL ini kalau halaman dibuka dari device/host lain. -->
 <script>const API_URL = 'https://auromos.tokomasarrazaq.com/api/harga-publik';</script>
+<!-- <script>const API_URL = 'http://localhost:8000/api/harga-publik';</script> -->
 
-<div class="max-w-7xl mx-auto px-4 py-6">
+<div class="h-screen flex flex-col px-[1.5vw] py-[1vh]">
 
-  <header class="text-center mb-6">
-    <h1 class="text-2xl md:text-4xl font-extrabold tracking-wide text-yellow-300">HARGA EMAS HARI INI</h1>
-    <p id="updated" class="text-xs md:text-sm text-gray-400 mt-2">Memuat…</p>
+  <header class="text-center shrink-0">
+    <h1 class="t-title font-extrabold tracking-wide text-yellow-300">HARGA EMAS HARI INI</h1>
+    <p id="updated" class="t-sub text-gray-400">Memuat…</p>
   </header>
 
-  <div id="error" class="hidden mb-6 p-4 rounded-lg bg-red-900/40 border border-red-600 text-center">
-    <p class="text-red-300 font-semibold">Gagal memuat harga</p>
-    <p class="text-red-400/80 text-sm mt-1">Periksa koneksi ke server. Mencoba lagi otomatis…</p>
+  <div id="error" class="hidden mt-2 p-2 rounded-lg bg-red-900/40 border border-red-600 text-center shrink-0">
+    <p class="text-red-300 font-semibold t-col">Gagal memuat harga · mencoba lagi otomatis…</p>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-    <section>
-      <h2 class="bg-green-700 text-center font-bold py-2 rounded-t-lg text-sm md:text-base">HARGA JUAL PERHIASAN</h2>
-      <div class="overflow-x-auto border border-yellow-600/40 rounded-b-lg">
-        <table class="w-full text-sm">
-          <thead class="bg-yellow-400 text-black">
-            <tr><th class="px-3 py-2 text-left">KARAT</th><th class="px-3 py-2 text-left">KADAR</th><th class="px-3 py-2 text-right">HARGA JUAL</th></tr>
+  <!-- Perhiasan (19 baris) memakai tinggi penuh di dua kolom kiri; logam mulia
+       (9 baris) ditumpuk di kolom kanan, masing-masing setengah tinggi. -->
+  <div class="flex-1 min-h-0 grid grid-cols-[1fr_1fr_1fr] grid-rows-2 gap-x-[1vw] gap-y-[1vh] mt-[1vh]">
+
+    <section class="min-h-0 flex flex-col row-span-2">
+      <h2 class="bg-green-700 text-center font-bold py-[0.5vh] rounded-t-lg t-head shrink-0">HARGA JUAL PERHIASAN</h2>
+      <div class="flex-1 min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
+        <table class="w-full table-fixed">
+          <thead class="bg-yellow-400 text-black t-col">
+            <tr>
+              <th class="px-[0.8vw] py-[0.4vh] text-left w-[22%]">KARAT</th>
+              <th class="px-[0.8vw] py-[0.4vh] text-left w-[28%]">KADAR</th>
+              <th class="px-[0.8vw] py-[0.4vh] text-right">HARGA JUAL</th>
+            </tr>
           </thead>
-          <tbody id="jual-perhiasan" class="bg-black text-yellow-300"></tbody>
+          <tbody id="jual-perhiasan" class="bg-black text-yellow-300 t-cell"></tbody>
         </table>
       </div>
     </section>
 
-    <section>
-      <h2 class="bg-red-700 text-center font-bold py-2 rounded-t-lg text-sm md:text-base">HARGA BELI PERHIASAN</h2>
-      <div class="overflow-x-auto border border-yellow-600/40 rounded-b-lg">
-        <table class="w-full text-sm">
-          <thead class="bg-yellow-400 text-black">
-            <tr><th class="px-3 py-2 text-left">KARAT</th><th class="px-3 py-2 text-left">KADAR</th><th class="px-3 py-2 text-right">HARGA BELI</th></tr>
+    <section class="min-h-0 flex flex-col row-span-2">
+      <h2 class="bg-red-700 text-center font-bold py-[0.5vh] rounded-t-lg t-head shrink-0">HARGA BELI PERHIASAN</h2>
+      <div class="flex-1 min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
+        <table class="w-full table-fixed">
+          <thead class="bg-yellow-400 text-black t-col">
+            <tr>
+              <th class="px-[0.8vw] py-[0.4vh] text-left w-[22%]">KARAT</th>
+              <th class="px-[0.8vw] py-[0.4vh] text-left w-[28%]">KADAR</th>
+              <th class="px-[0.8vw] py-[0.4vh] text-right">HARGA BELI</th>
+            </tr>
           </thead>
-          <tbody id="beli-perhiasan" class="bg-black text-yellow-300"></tbody>
+          <tbody id="beli-perhiasan" class="bg-black text-yellow-300 t-cell"></tbody>
         </table>
       </div>
     </section>
 
-    <section>
-      <h2 class="bg-green-700 text-center font-bold py-2 rounded-t-lg text-sm md:text-base">HARGA JUAL LOGAM MULIA</h2>
-      <div class="overflow-x-auto border border-yellow-600/40 rounded-b-lg">
-        <table class="w-full text-sm">
-          <thead class="bg-yellow-400 text-black">
-            <tr><th class="px-3 py-2 text-left">BERAT</th><th class="px-3 py-2 text-right">HARGA JUAL</th></tr>
+    <section class="min-h-0 flex flex-col">
+      <h2 class="bg-green-700 text-center font-bold py-[0.5vh] rounded-t-lg t-head shrink-0">HARGA JUAL LOGAM MULIA</h2>
+      <div class="flex-1 min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
+        <table class="w-full table-fixed">
+          <thead class="bg-yellow-400 text-black t-col">
+            <tr>
+              <th class="px-[0.8vw] py-[0.4vh] text-left w-[40%]">BERAT</th>
+              <th class="px-[0.8vw] py-[0.4vh] text-right">HARGA JUAL</th>
+            </tr>
           </thead>
-          <tbody id="jual-lm" class="bg-black text-yellow-300"></tbody>
+          <tbody id="jual-lm" class="bg-black text-yellow-300 t-cell"></tbody>
         </table>
       </div>
     </section>
 
-    <section>
-      <h2 class="bg-red-700 text-center font-bold py-2 rounded-t-lg text-sm md:text-base">HARGA BELI LOGAM MULIA</h2>
-      <div class="overflow-x-auto border border-yellow-600/40 rounded-b-lg">
-        <table class="w-full text-sm">
-          <thead class="bg-yellow-400 text-black">
-            <tr><th class="px-3 py-2 text-left">BERAT</th><th class="px-3 py-2 text-right">BUY BACK</th></tr>
+    <section class="min-h-0 flex flex-col">
+      <h2 class="bg-red-700 text-center font-bold py-[0.5vh] rounded-t-lg t-head shrink-0">HARGA BELI LOGAM MULIA</h2>
+      <div class="flex-1 min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
+        <table class="w-full table-fixed">
+          <thead class="bg-yellow-400 text-black t-col">
+            <tr>
+              <th class="px-[0.8vw] py-[0.4vh] text-left w-[40%]">BERAT</th>
+              <th class="px-[0.8vw] py-[0.4vh] text-right">BUY BACK</th>
+            </tr>
           </thead>
-          <tbody id="beli-lm" class="bg-black text-yellow-300"></tbody>
+          <tbody id="beli-lm" class="bg-black text-yellow-300 t-cell"></tbody>
         </table>
       </div>
     </section>
+
   </div>
 </div>
 
 <script>
 const rupiah = (v) => new Intl.NumberFormat('id-ID').format(Math.round(Number(v) || 0));
-const berat = (v) => String(Number(v)).replace('.', ',');
+const beratLabel = (v) => String(Number(v)).replace('.', ',');
+const kadarLabel = (v) => Number(v).toFixed(3).replace('.', ',');
 
 const rowClass = 'border-t border-yellow-600/20';
-const tdLeft = 'px-3 py-1.5 font-semibold';
-const tdRight = 'px-3 py-1.5 text-right font-semibold tabular';
+const tdLeft = 'px-[0.8vw] cell-y font-semibold';
+const tdRight = 'px-[0.8vw] cell-y text-right font-bold tabular';
 
 function renderPerhiasan(target, rows, field) {
   document.getElementById(target).innerHTML = rows.length
     ? rows.map((r) => `
         <tr class="${rowClass}">
           <td class="${tdLeft}">${r.karat}K</td>
-          <td class="${tdLeft}">${Number(r.kadar).toFixed(3).replace('.', ',')}</td>
+          <td class="${tdLeft}">${kadarLabel(r.kadar)}</td>
           <td class="${tdRight}">${rupiah(r[field])}</td>
         </tr>`).join('')
-    : `<tr><td colspan="3" class="px-3 py-4 text-center text-gray-500">Belum ada data</td></tr>`;
+    : `<tr><td colspan="3" class="px-4 py-4 text-center text-gray-500">Belum ada data</td></tr>`;
 }
 
 function renderLogamMulia(target, rows, field) {
   document.getElementById(target).innerHTML = rows.length
     ? rows.map((r) => `
         <tr class="${rowClass}">
-          <td class="${tdLeft}">${berat(r.berat)} Gram</td>
+          <td class="${tdLeft}">${beratLabel(r.berat)} Gram</td>
           <td class="${tdRight}">${rupiah(r[field])}</td>
         </tr>`).join('')
-    : `<tr><td colspan="2" class="px-3 py-4 text-center text-gray-500">Belum ada data</td></tr>`;
+    : `<tr><td colspan="2" class="px-4 py-4 text-center text-gray-500">Belum ada data</td></tr>`;
 }
 
 async function loadData() {
@@ -135,6 +161,12 @@ async function loadData() {
 
 loadData();
 setInterval(loadData, 60000);
+
+// Browser mem-throttle timer saat tab tidak aktif / layar tidur, jadi data
+// di-refresh lagi begitu halaman kembali terlihat.
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) loadData();
+});
 </script>
 
 </body>
