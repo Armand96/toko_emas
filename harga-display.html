@@ -6,15 +6,32 @@
 <title>Harga Emas Hari Ini</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  html, body { height: 100%; margin: 0; background: #000; overflow: hidden; }
+  html, body { height: 100%; margin: 0; background: #000; }
   .tabular { font-variant-numeric: tabular-nums; }
 
-  .t-title { font-size: clamp(14px, 2.4vh, 30px); }
-  .t-sub   { font-size: clamp(8px, 1.1vh, 13px); }
-  .t-head  { font-size: clamp(10px, 1.6vh, 20px); }
-  .t-col   { font-size: clamp(8px, 1.15vh, 14px); }
-  .t-cell  { font-size: clamp(10px, 1.9vh, 24px); }
-  .cell-y  { padding-top: clamp(0px, 0.35vh, 7px); padding-bottom: clamp(0px, 0.35vh, 7px); }
+  /* Mobile: satu kolom, boleh scroll, tinggi ikut isi.
+     Desktop/TV (>=768px): satu layar penuh tanpa scroll. */
+  @media (min-width: 768px) {
+    html, body { overflow: hidden; }
+  }
+
+  /* Mobile pakai ukuran tetap; vh terlalu kecil di layar ponsel. */
+  .t-title { font-size: 22px; }
+  .t-sub   { font-size: 12px; }
+  .t-head  { font-size: 14px; }
+  .t-col   { font-size: 11px; }
+  thead th { padding: 8px 12px; }
+  /* Padding vertikal & ukuran font sel diatur JS (fitRows). */
+  tbody td { padding-left: 12px; padding-right: 12px; line-height: 1.15; }
+
+  @media (min-width: 768px) {
+    .t-title { font-size: clamp(14px, 2.4vh, 30px); }
+    .t-sub   { font-size: clamp(8px, 1.1vh, 13px); }
+    .t-head  { font-size: clamp(10px, 1.6vh, 20px); }
+    .t-col   { font-size: clamp(8px, 1.15vh, 14px); }
+    thead th { padding: 0.4vh 0.8vw; }
+    tbody td { padding-left: 0.8vw; padding-right: 0.8vw; }
+  }
 </style>
 </head>
 <body class="text-white">
@@ -23,7 +40,7 @@
 <script>const API_URL = 'https://auromos.tokomasarrazaq.com/api/harga-publik';</script>
 <!-- <script>const API_URL = 'http://localhost:8000/api/harga-publik';</script> -->
 
-<div class="h-screen flex flex-col px-[1.5vw] py-[1vh]">
+<div class="min-h-screen md:h-screen flex flex-col px-3 py-3 md:px-[1.5vw] md:py-[1vh]">
 
   <header class="text-center shrink-0">
     <h1 class="t-title font-extrabold tracking-wide text-yellow-300">HARGA EMAS HARI INI</h1>
@@ -36,66 +53,64 @@
 
   <!-- Perhiasan (19 baris) memakai tinggi penuh di dua kolom kiri; logam mulia
        (9 baris) ditumpuk di kolom kanan, masing-masing setengah tinggi. -->
-  <div class="flex-1 min-h-0 grid grid-cols-[1fr_1fr_1fr] grid-rows-2 gap-x-[1vw] gap-y-[1vh] mt-[1vh]">
+  <div class="flex-1 md:min-h-0 grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr] md:grid-rows-2 gap-3 md:gap-x-[1vw] md:gap-y-[1vh] mt-3 md:mt-[1vh]">
 
-    <section class="min-h-0 flex flex-col row-span-2">
+    <section class="md:min-h-0 flex flex-col md:row-span-2">
       <h2 class="bg-green-700 text-center font-bold py-[0.5vh] rounded-t-lg t-head shrink-0">HARGA JUAL PERHIASAN</h2>
-      <div class="flex-1 min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
+      <div class="flex-1 md:min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
         <table class="w-full table-fixed">
           <thead class="bg-yellow-400 text-black t-col">
             <tr>
-              <th class="px-[0.8vw] py-[0.4vh] text-left w-[22%]">KARAT</th>
-              <th class="px-[0.8vw] py-[0.4vh] text-left w-[28%]">KADAR</th>
-              <th class="px-[0.8vw] py-[0.4vh] text-right">HARGA JUAL</th>
+              <th class="text-left w-[35%]">KARAT</th>
+              <th class="text-right">HARGA JUAL</th>
             </tr>
           </thead>
-          <tbody id="jual-perhiasan" class="bg-black text-yellow-300 t-cell"></tbody>
+          <tbody id="jual-perhiasan" class="bg-black text-yellow-300"></tbody>
         </table>
       </div>
     </section>
 
-    <section class="min-h-0 flex flex-col row-span-2">
+    <section class="md:min-h-0 flex flex-col md:row-span-2">
       <h2 class="bg-red-700 text-center font-bold py-[0.5vh] rounded-t-lg t-head shrink-0">HARGA BELI PERHIASAN</h2>
-      <div class="flex-1 min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
+      <div class="flex-1 md:min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
         <table class="w-full table-fixed">
           <thead class="bg-yellow-400 text-black t-col">
             <tr>
-              <th class="px-[0.8vw] py-[0.4vh] text-left w-[22%]">KARAT</th>
-              <th class="px-[0.8vw] py-[0.4vh] text-left w-[28%]">KADAR</th>
-              <th class="px-[0.8vw] py-[0.4vh] text-right">HARGA BELI</th>
+              <th class="text-left w-[35%]">KARAT</th>
+              <th class="text-right">HARGA BELI</th>
             </tr>
           </thead>
-          <tbody id="beli-perhiasan" class="bg-black text-yellow-300 t-cell"></tbody>
+          <tbody id="beli-perhiasan" class="bg-black text-yellow-300"></tbody>
         </table>
       </div>
     </section>
 
-    <section class="min-h-0 flex flex-col">
+    <section class="md:min-h-0 flex flex-col">
       <h2 class="bg-green-700 text-center font-bold py-[0.5vh] rounded-t-lg t-head shrink-0">HARGA JUAL LOGAM MULIA</h2>
-      <div class="flex-1 min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
+      <div class="flex-1 md:min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
         <table class="w-full table-fixed">
           <thead class="bg-yellow-400 text-black t-col">
             <tr>
-              <th class="px-[0.8vw] py-[0.4vh] text-left w-[40%]">BERAT</th>
-              <th class="px-[0.8vw] py-[0.4vh] text-right">HARGA JUAL</th>
+              <th class="text-left w-[40%]">BERAT</th>
+              <th class="text-right">HARGA JUAL</th>
             </tr>
           </thead>
-          <tbody id="jual-lm" class="bg-black text-yellow-300 t-cell"></tbody>
+          <tbody id="jual-lm" class="bg-black text-yellow-300"></tbody>
         </table>
       </div>
     </section>
 
-    <section class="min-h-0 flex flex-col">
+    <section class="md:min-h-0 flex flex-col">
       <h2 class="bg-red-700 text-center font-bold py-[0.5vh] rounded-t-lg t-head shrink-0">HARGA BELI LOGAM MULIA</h2>
-      <div class="flex-1 min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
+      <div class="flex-1 md:min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
         <table class="w-full table-fixed">
           <thead class="bg-yellow-400 text-black t-col">
             <tr>
-              <th class="px-[0.8vw] py-[0.4vh] text-left w-[40%]">BERAT</th>
-              <th class="px-[0.8vw] py-[0.4vh] text-right">BUY BACK</th>
+              <th class="text-left w-[40%]">BERAT</th>
+              <th class="text-right">BUY BACK</th>
             </tr>
           </thead>
-          <tbody id="beli-lm" class="bg-black text-yellow-300 t-cell"></tbody>
+          <tbody id="beli-lm" class="bg-black text-yellow-300"></tbody>
         </table>
       </div>
     </section>
@@ -106,21 +121,21 @@
 <script>
 const rupiah = (v) => new Intl.NumberFormat('id-ID').format(Math.round(Number(v) || 0));
 const beratLabel = (v) => String(Number(v)).replace('.', ',');
-const kadarLabel = (v) => Number(v).toFixed(3).replace('.', ',');
+// Karat bisa desimal (24,999 untuk emas 99,9%).
+const karatLabel = (v) => String(Number(v)).replace('.', ',');
 
 const rowClass = 'border-t border-yellow-600/20';
-const tdLeft = 'px-[0.8vw] cell-y font-semibold';
-const tdRight = 'px-[0.8vw] cell-y text-right font-bold tabular';
+const tdLeft = 'font-semibold';
+const tdRight = 'text-right font-bold tabular';
 
 function renderPerhiasan(target, rows, field) {
   document.getElementById(target).innerHTML = rows.length
     ? rows.map((r) => `
         <tr class="${rowClass}">
-          <td class="${tdLeft}">${r.karat}K</td>
-          <td class="${tdLeft}">${kadarLabel(r.kadar)}</td>
+          <td class="${tdLeft}">${karatLabel(r.karat)}K</td>
           <td class="${tdRight}">${rupiah(r[field])}</td>
         </tr>`).join('')
-    : `<tr><td colspan="3" class="px-4 py-4 text-center text-gray-500">Belum ada data</td></tr>`;
+    : `<tr><td colspan="2" class="px-4 py-4 text-center text-gray-500">Belum ada data</td></tr>`;
 }
 
 function renderLogamMulia(target, rows, field) {
@@ -132,6 +147,43 @@ function renderLogamMulia(target, rows, field) {
         </tr>`).join('')
     : `<tr><td colspan="2" class="px-4 py-4 text-center text-gray-500">Belum ada data</td></tr>`;
 }
+
+// Isi tabel setinggi area yang tersedia: tinggi baris dibagi rata, font
+// mengikuti tinggi baris itu. 19 baris perhiasan jadi tidak pernah terpotong,
+// dan 9 baris logam mulia tidak menyisakan ruang kosong.
+function fitRows() {
+  // Di mobile tabel mengalir mengikuti isi (halaman boleh di-scroll), jadi
+  // tinggi baris tidak dipaksa — cukup ukuran sentuh yang nyaman.
+  const isDesktop = matchMedia('(min-width: 768px)').matches;
+
+  for (const tbody of document.querySelectorAll('tbody')) {
+    const rows = tbody.rows.length;
+    if (!rows) continue;
+
+    let rowH = null;
+    let font = 15;
+
+    if (isDesktop) {
+      const area = tbody.closest('div');
+      const head = tbody.previousElementSibling;
+      const free = area.clientHeight - (head ? head.offsetHeight : 0);
+      if (free <= 0) continue;
+      rowH = free / rows;
+      font = Math.max(9, Math.min(26, rowH * 0.58));
+    }
+
+    for (const tr of tbody.rows) {
+      tr.style.height = rowH ? rowH + 'px' : '';
+      for (const td of tr.cells) {
+        td.style.fontSize = font + 'px';
+        td.style.paddingTop = isDesktop ? '0' : '9px';
+        td.style.paddingBottom = isDesktop ? '0' : '9px';
+      }
+    }
+  }
+}
+
+addEventListener('resize', fitRows);
 
 async function loadData() {
   try {
@@ -147,6 +199,7 @@ async function loadData() {
     renderPerhiasan('beli-perhiasan', perhiasan, 'harga_beli');
     renderLogamMulia('jual-lm', logamMulia, 'harga_jual');
     renderLogamMulia('beli-lm', logamMulia, 'harga_buyback');
+    fitRows();
 
     const updatedAt = data?.dasar?.updated_at;
     document.getElementById('updated').textContent = updatedAt

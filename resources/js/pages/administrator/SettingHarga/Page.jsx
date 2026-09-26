@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { FloppyDiskIcon, PlusIcon, TrashIcon, TrendUpIcon, TrendDownIcon, PencilSimpleIcon } from "@phosphor-icons/react";
+import { FloppyDiskIcon, PlusIcon, TrashIcon, TrendUpIcon, TrendDownIcon, PencilSimpleIcon, DotsSixVerticalIcon } from "@phosphor-icons/react";
 import HeaderSection from "../../../components/HeaderSection";
 import { showAlert } from '../../../utils/showAlert';
 import HelperFunctions from '../../../utils/HelperFunctions';
@@ -67,6 +67,7 @@ const SettingHarga = () => {
     const canEdit = can('update');
 
     const [activeTab, setActiveTab] = useState('jual-perhiasan');
+    const [dragKey, setDragKey] = useState(null);
     const [dasar, setDasar] = useState({
         harga_dasar_jual: '', harga_dasar_beli: '',
         harga_dasar_jual_lm: '', harga_dasar_beli_lm: '',
@@ -146,6 +147,30 @@ const SettingHarga = () => {
     const updateRow = (setRows, key, name, value) => {
         setRows((prev) => prev.map((row) => (row.key === key ? { ...row, [name]: value } : row)));
     };
+
+    // Urutan baris disimpan dari posisinya di array (kolom `urutan` di BE).
+    const handleDrop = (setRows, targetKey) => {
+        const dragged = dragKey;
+        setDragKey(null);
+        if (!dragged || dragged === targetKey) return;
+
+        setRows((prev) => {
+            const from = prev.findIndex((row) => row.key === dragged);
+            const to = prev.findIndex((row) => row.key === targetKey);
+            if (from < 0 || to < 0) return prev;
+            const next = [...prev];
+            next.splice(to, 0, ...next.splice(from, 1));
+            return next;
+        });
+    };
+
+    const dragProps = (setRows, key) => ({
+        draggable: canEdit,
+        onDragStart: () => setDragKey(key),
+        onDragEnd: () => setDragKey(null),
+        onDragOver: (e) => e.preventDefault(),
+        onDrop: () => handleDrop(setRows, key),
+    });
 
     const toggleOverride = (key) => {
         setPerhiasan((prev) => prev.map((row) => {
@@ -322,11 +347,15 @@ const SettingHarga = () => {
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {perhiasanPreview.map((row) => (
-                                        <tr key={row.key} className="hover:bg-gray-50/60 transition">
-                                            <td className="px-4 py-3 w-28">
-                                                <input type="text" inputMode="numeric" disabled={!canEdit} className={input}
-                                                    value={row.karat ?? ''}
-                                                    onChange={(e) => updateRow(setPerhiasan, row.key, 'karat', e.target.value)} />
+                                        <tr key={row.key} {...dragProps(setPerhiasan, row.key)}
+                                            className={`hover:bg-gray-50/60 transition ${dragKey === row.key ? 'opacity-40' : ''}`}>
+                                            <td className="px-4 py-3 w-36">
+                                                <div className="flex items-center gap-2">
+                                                    {canEdit && <DotsSixVerticalIcon size={18} className="text-gray-300 cursor-grab shrink-0" />}
+                                                    <input type="text" inputMode="decimal" disabled={!canEdit} className={input}
+                                                        value={row.karat ?? ''}
+                                                        onChange={(e) => updateRow(setPerhiasan, row.key, 'karat', e.target.value)} />
+                                                </div>
                                             </td>
                                             <td className="px-4 py-3 w-32">
                                                 {isJual && !row.is_override ? (
@@ -378,6 +407,7 @@ const SettingHarga = () => {
                                 ? 'Kadar (karat ÷ 24) dan LB Jual (kadar + 0,12) dihitung otomatis dengan presisi penuh — cukup isi Karat. Klik ikon pensil untuk mengisinya manual, misal baris 24K.'
                                 : 'LB Beli diinput manual per karat — tidak dihitung dari kadar.'}
                             {' '}Baris karat dipakai bersama tab Jual & Beli Perhiasan.
+                            {canEdit && ' Tarik baris untuk mengubah urutan tampil.'}
                         </p>
                     </>
                 )}
@@ -422,11 +452,15 @@ const SettingHarga = () => {
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {logamMuliaPreview.map((row) => (
-                                        <tr key={row.key} className="hover:bg-gray-50/60 transition">
-                                            <td className="px-4 py-3 w-40">
-                                                <input type="text" inputMode="decimal" disabled={!canEdit} className={input}
-                                                    value={row.berat ?? ''}
-                                                    onChange={(e) => updateRow(setLogamMulia, row.key, 'berat', e.target.value)} />
+                                        <tr key={row.key} {...dragProps(setLogamMulia, row.key)}
+                                            className={`hover:bg-gray-50/60 transition ${dragKey === row.key ? 'opacity-40' : ''}`}>
+                                            <td className="px-4 py-3 w-48">
+                                                <div className="flex items-center gap-2">
+                                                    {canEdit && <DotsSixVerticalIcon size={18} className="text-gray-300 cursor-grab shrink-0" />}
+                                                    <input type="text" inputMode="decimal" disabled={!canEdit} className={input}
+                                                        value={row.berat ?? ''}
+                                                        onChange={(e) => updateRow(setLogamMulia, row.key, 'berat', e.target.value)} />
+                                                </div>
                                             </td>
                                             {isJual && (
                                                 <td className={`${money} font-medium text-neutral-500`}>
@@ -446,6 +480,7 @@ const SettingHarga = () => {
                         <AddButton onClick={addLogamMulia} label="Tambah Berat" />
                         <p className="text-[11px] text-neutral-400">
                             Cukup isi beratnya — harga dihitung otomatis dari harga dasar LM di atas. Daftar berat dipakai bersama tab Jual & Beli Logam Mulia.
+                            {canEdit && ' Tarik baris untuk mengubah urutan tampil.'}
                         </p>
                     </>
                 )}

@@ -64,7 +64,8 @@ class HargaSettingController extends Controller
 
             'perhiasan' => 'present|array',
             'perhiasan.*.id' => 'nullable|integer',
-            'perhiasan.*.karat' => 'required|integer|min:1|max:24',
+            // Desimal: toko memakai 24,999 untuk emas 99,9%.
+            'perhiasan.*.karat' => 'required|numeric|min:1|max:24.999',
             'perhiasan.*.kadar' => 'required|numeric|min:0',
             'perhiasan.*.lb_jual' => 'required|numeric|min:0',
             'perhiasan.*.lb_beli' => 'required|numeric|min:0',

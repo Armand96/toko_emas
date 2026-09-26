@@ -24,7 +24,7 @@ class HargaPerhiasan extends Model
     ];
 
     protected $casts = [
-        'karat' => 'integer',
+        'karat' => 'float',
         'kadar' => 'float',
         'lb_jual' => 'float',
         'lb_beli' => 'float',
