@@ -6,7 +6,7 @@
 <title>Harga Emas Hari Ini</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;0,800;1,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   html, body { height: 100%; margin: 0; }
@@ -28,62 +28,66 @@
 
   .card {
     background: #fff;
-    border-radius: 18px;
+    border-radius: 8px;
     box-shadow: 0 1px 2px rgb(30 41 59 / 0.06), 0 8px 24px -8px rgb(30 41 59 / 0.18);
     overflow: hidden;
   }
   .logo { height: 64px; width: auto; }
-  /* Foto emas (PNG transparan) di pojok kiri & kanan bawah, di belakang tabel. */
-  .deco {
-    position: absolute; bottom: 0; z-index: 0; pointer-events: none;
-    height: 120px; width: auto;
-    filter: drop-shadow(0 10px 18px rgb(120 90 20 / 0.25));
-  }
-  .deco-left  { left: 0; }
-  .deco-right { right: 0; }
-  .layer { position: relative; z-index: 1; }
-  .sec-head { color: #fff; font-weight: 800; letter-spacing: 0.04em; text-align: center; }
-  .sec-jual { background: linear-gradient(90deg, #059669, #10b981); }
-  .sec-beli { background: linear-gradient(90deg, #e11d48, #f43f5e); }
-  /* Kuning terang khas layar harga lama, dipakai di baris judul kolom. */
-  .col-jual, .col-beli { background: #fde047; color: #1f2937; }
-  thead th { font-weight: 700; letter-spacing: 0.06em; }
+
+  /* Judul tabel kuning terang; kolom jual hijau & beli merah seperti layar lama. */
+  .sec-head { background: #fde047; color: #1f2937; font-weight: 800; letter-spacing: 0.06em; text-align: center; }
+  thead th { font-weight: 800; letter-spacing: 0.06em; color: #fff; }
+  .th-label { background: #334155; }
+  .th-jual  { background: #059669; }
+  .th-beli  { background: #e11d48; }
 
   tbody tr:nth-child(even) { background: #f1f5f9; }
   tbody tr + tr { border-top: 1px solid #e2e8f0; }
   .td-label { color: #334155; font-weight: 700; }
   .td-price { color: #0f172a; font-weight: 800; text-align: right; }
+  .td-jual  { color: #047857; }
+  .td-beli  { color: #be123c; }
 
-  /* Mobile pakai ukuran tetap; vh terlalu kecil di layar ponsel. */
+  tbody td  { white-space: nowrap; }
+
+  /* Kolase foto: satu besar di kiri, dua bertumpuk di kanan. */
+  /* Slide ditumpuk; yang aktif dimunculkan dengan transisi fade. */
+  .slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease; }
+  .slide.active { opacity: 1; }
+  .slide img, .slide video { width: 100%; height: 100%; display: block; }
+  .collage img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
   .t-title { font-size: 26px; }
   .t-kicker { font-size: 12px; }
   .t-date  { font-size: 20px; }
   .t-time  { font-size: 16px; }
-  .t-head  { font-size: 15px; padding: 10px 12px; }
-  .t-col   { font-size: 12px; }
+  .t-head  { font-size: 15px; padding: 8px 12px; }
+  .t-col   { font-size: 13px; }
   .t-foot  { font-size: 15px; }
   .t-foot-sm { font-size: 12px; }
+  .t-phone { font-size: 22px; }
+  .icon    { width: 28px; height: 28px; }
   thead th { padding: 8px 14px; }
-  /* Padding vertikal & ukuran font sel diatur JS (fitRows). */
-  tbody td { padding-left: 14px; padding-right: 14px; line-height: 1.05; }
+  tbody td { padding-left: 14px; padding-right: 14px; line-height: 1; }
 
   @media (min-width: 768px) {
     .t-title  { font-size: clamp(22px, 4vh, 52px); }
     .t-kicker { font-size: clamp(10px, 1.5vh, 18px); }
     .t-date   { font-size: clamp(18px, 3.4vh, 44px); }
     .t-time   { font-size: clamp(14px, 2.4vh, 30px); }
-    .t-head   { font-size: clamp(12px, 2vh, 26px); padding: 0.6vh 1vw; }
-    .t-col    { font-size: clamp(10px, 1.4vh, 17px); }
-    .t-foot   { font-size: clamp(12px, 2.1vh, 26px); }
+    .t-head   { font-size: clamp(12px, 2vh, 26px); padding: 0.5vh 1vw; }
+    .t-col    { font-size: clamp(10px, 1.6vh, 20px); }
+    .t-foot   { font-size: clamp(12px, 2vh, 26px); }
     .t-foot-sm { font-size: clamp(10px, 1.6vh, 20px); }
+    .t-phone  { font-size: clamp(18px, 3.4vh, 44px); }
+    .icon     { width: clamp(24px, 4.4vh, 56px); height: clamp(24px, 4.4vh, 56px); }
     .logo     { height: clamp(56px, 11vh, 150px); }
-    .deco     { height: clamp(80px, 14vh, 190px); }
-    .deco-right { bottom: 1vh; }
-    .deco-left  { left: 0; }
-    .deco-right { right: 1vw; }
-    .foot-pad { padding-left: 26vh; padding-right: 26vh; }
-    thead th  { padding: 0.3vh 1.2vw; }
+    thead th  { padding: 0.5vh 1.2vw; }
     tbody td  { padding-left: 1.2vw; padding-right: 1.2vw; }
+    /* Tabel perhiasan 8 kolom: padding dirapatkan supaya angka bisa lebih besar. */
+    #tbl-perhiasan th, #tbl-perhiasan td { padding-left: 0.5vw; padding-right: 0.5vw; }
+    #tbl-perhiasan th:first-child, #tbl-perhiasan td:first-child { padding-left: 0.8vw; }
+    #tbl-perhiasan th:last-child, #tbl-perhiasan td:last-child { padding-right: 0.8vw; }
   }
 </style>
 </head>
@@ -93,42 +97,23 @@
 <script>const API_URL = 'https://auromos.tokomasarrazaq.com/api/harga-publik';</script>
 <!-- <script>const API_URL = 'http://localhost:8000/api/harga-publik';</script> -->
 
-<div class="relative min-h-screen md:h-screen flex flex-col px-4 py-4 md:px-[1.5vw] md:py-[1.4vh] overflow-hidden">
+<!-- Slide kotak vertikal kanan, diputar bergantian dari atas ke bawah lalu mengulang.
+     - Gambar (.jpg/.png/.webp): tampil selama `durasi` detik (default 15).
+     - Video (.mp4/.webm): diputar tanpa suara sampai selesai, lalu lanjut.
+     - `latar` (opsional): warna/gradien di sisa ruang kalau bentuk gambar tidak pas kotak.
+     Taruh filenya di harga-display-assets/ lalu tambahkan barisnya di sini. -->
+<script>
+const SLIDES = [
+  { src: 'harga-display-assets/promo.jpg', durasi: 5, latar: 'linear-gradient(#ffe7d6 50%, #074327 50%)' },
+  { src: 'harga-display-assets/video1.mp4' },
+  { src: 'harga-display-assets/video2.mp4' },
+];
+</script>
 
-  <!-- Dekorasi. Disimpan di harga-display-assets/, ikut di-upload bersama file ini;
-       kalau foldernya tidak ada gambar disembunyikan dan layout tetap rapi. -->
-  <img src="harga-display-assets/perhiasan.png" alt="" class="deco deco-left" onerror="this.remove()">
-  <img src="harga-display-assets/logam-mulia.png" alt="" class="deco deco-right" onerror="this.remove()">
+<div class="min-h-screen md:h-screen flex flex-col px-4 py-4 md:px-[1.5vw] md:py-[1.4vh]">
 
-  <header class="layer shrink-0 flex flex-col items-center md:grid md:grid-cols-[1fr_auto_1fr] md:items-center gap-3 md:gap-[1.5vw]">
-    <!-- Logo toko digambar ulang sebagai SVG (logo_kwintansi.png cuma 95x68 px,
-         pecah kalau diperbesar) supaya tetap tajam di TV. -->
-    <svg class="logo shrink-0 self-center" viewBox="0 0 440 250" role="img" aria-label="Arrazaq Gold &amp; Jewellery">
-      <defs>
-        <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#f7d774"/>
-          <stop offset="0.5" stop-color="#d4a017"/>
-          <stop offset="1" stop-color="#b8860b"/>
-        </linearGradient>
-      </defs>
-      <!-- Bingkai berlian, sisi kanannya terbuka untuk tulisan -->
-      <polyline points="150,160 92,224 8,104 38,62 168,62 186,102" fill="none" stroke="url(#gold)" stroke-width="13" stroke-linejoin="miter"/>
-      <!-- Ornamen bunga di tengah berlian -->
-      <g fill="none" stroke="url(#gold)" stroke-width="3.5">
-        <circle cx="96" cy="108" r="10"/>
-        <circle cx="96" cy="144" r="10"/>
-        <circle cx="78" cy="126" r="10"/>
-        <circle cx="114" cy="126" r="10"/>
-      </g>
-      <!-- Kilau -->
-      <g fill="url(#gold)">
-        <path d="M178 18 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z"/>
-        <path d="M160 36 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5z"/>
-        <path d="M184 48 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z"/>
-      </g>
-      <text x="146" y="150" font-family="'Plus Jakarta Sans', sans-serif" font-style="italic" font-weight="800" font-size="62" fill="#111827" textLength="286" lengthAdjust="spacingAndGlyphs">ARRAZAQ</text>
-      <text x="176" y="192" font-family="'Great Vibes', cursive" font-size="34" fill="#c0392b">Gold &amp; Jewellery</text>
-    </svg>
+  <header class="shrink-0 flex flex-col items-center md:grid md:grid-cols-[1fr_auto_1fr] md:items-center gap-3 md:gap-[1.5vw]">
+    <img src="harga-display-assets/logo.png" alt="Arrazaq Gold &amp; Jewellery" class="logo shrink-0 self-center" onerror="this.style.visibility='hidden'">
 
     <div class="text-center">
       <p class="t-kicker font-bold uppercase tracking-[0.25em] text-emerald-600">Update harga harian</p>
@@ -150,85 +135,86 @@
     </div>
   </header>
 
-  <div id="error" class="layer hidden mt-3 px-4 py-2 rounded-xl bg-rose-50 border-2 border-rose-300 text-center shrink-0">
+  <div id="error" class="hidden mt-3 px-4 py-2 rounded-lg bg-rose-50 border-2 border-rose-300 text-center shrink-0">
     <p class="text-rose-700 font-bold t-col">Gagal memuat harga · mencoba lagi otomatis…</p>
   </div>
 
-  <!-- Perhiasan (19 baris) memakai tinggi penuh di dua kolom kiri; logam mulia
-       (9 baris) ditumpuk di kolom kanan, masing-masing setengah tinggi. -->
-  <div class="layer flex-1 md:min-h-0 grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr] md:grid-rows-2 gap-4 md:gap-x-[1.2vw] md:gap-y-[1.4vh] mt-4 md:mt-[1.4vh]">
-
-    <section class="card md:min-h-0 flex flex-col md:row-span-2">
-      <h2 class="sec-head sec-jual t-head shrink-0">HARGA JUAL PERHIASAN</h2>
-      <div class="flex-1 md:min-h-0 overflow-hidden">
-        <table class="w-full table-fixed">
-          <thead class="col-jual t-col">
-            <tr>
-              <th class="text-left w-[38%]">KARAT</th>
-              <th class="text-right">HARGA JUAL</th>
-            </tr>
-          </thead>
-          <tbody id="jual-perhiasan"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="card md:min-h-0 flex flex-col md:row-span-2">
-      <h2 class="sec-head sec-beli t-head shrink-0">HARGA BELI PERHIASAN</h2>
-      <div class="flex-1 md:min-h-0 overflow-hidden">
-        <table class="w-full table-fixed">
-          <thead class="col-beli t-col">
-            <tr>
-              <th class="text-left w-[38%]">KARAT</th>
-              <th class="text-right">HARGA BELI</th>
-            </tr>
-          </thead>
-          <tbody id="beli-perhiasan"></tbody>
-        </table>
-      </div>
-    </section>
+  <!-- Kiri: perhiasan (19 baris) setinggi layar. Tengah: foto di atas, logam mulia
+       di bawah. Kanan: poster / video vertikal. -->
+  <main class="flex-1 md:min-h-0 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_auto] gap-4 md:gap-[1.2vw] mt-4 md:mt-[1.4vh]">
 
     <section class="card md:min-h-0 flex flex-col">
-      <h2 class="sec-head sec-jual t-head shrink-0">HARGA JUAL LOGAM MULIA</h2>
+      <h2 class="sec-head t-head shrink-0">HARGA PERHIASAN <span class="font-semibold opacity-70">/ gram</span></h2>
       <div class="flex-1 md:min-h-0 overflow-hidden">
-        <table class="w-full table-fixed">
-          <thead class="col-jual t-col">
+        <table id="tbl-perhiasan" class="w-full table-fixed">
+          <thead class="t-col">
             <tr>
-              <th class="text-left w-[42%]">BERAT</th>
-              <th class="text-right">HARGA JUAL</th>
+              <th class="th-label text-left w-[28%]">KARAT</th>
+              <th class="th-jual text-right">HARGA JUAL</th>
+              <th class="th-beli text-right">HARGA BELI</th>
             </tr>
           </thead>
-          <tbody id="jual-lm"></tbody>
+          <tbody id="perhiasan"></tbody>
         </table>
       </div>
     </section>
 
-    <section class="card md:min-h-0 flex flex-col">
-      <h2 class="sec-head sec-beli t-head shrink-0">HARGA BELI LOGAM MULIA</h2>
-      <div class="flex-1 md:min-h-0 overflow-hidden">
-        <table class="w-full table-fixed">
-          <thead class="col-beli t-col">
-            <tr>
-              <th class="text-left w-[42%]">BERAT</th>
-              <th class="text-right">BUY BACK</th>
-            </tr>
-          </thead>
-          <tbody id="beli-lm"></tbody>
-        </table>
+    <div class="md:min-h-0 flex flex-col gap-4 md:gap-[1.4vh]">
+      <!-- Foto disimpan di harga-display-assets/, ikut di-upload bersama file ini. -->
+      <div class="collage card grid grid-cols-2 gap-[3px] bg-yellow-300 h-40 md:h-auto md:flex-[0_0_34%] md:min-h-0">
+        <img src="harga-display-assets/logam-mulia.jpg" alt="Logam mulia" onerror="this.style.visibility='hidden'">
+        <img src="harga-display-assets/kalung.jpg" alt="Kalung emas" onerror="this.style.visibility='hidden'">
       </div>
-    </section>
 
-  </div>
+      <section class="card md:min-h-0 flex-1 flex flex-col">
+        <h2 class="sec-head t-head shrink-0">HARGA LOGAM MULIA</h2>
+        <div class="flex-1 md:min-h-0 overflow-hidden">
+          <table class="w-full table-fixed">
+            <thead class="t-col">
+              <tr>
+                <th class="th-label text-left w-[28%]">BERAT</th>
+                <th class="th-jual text-right">HARGA JUAL</th>
+                <th class="th-beli text-right">BUY BACK</th>
+              </tr>
+            </thead>
+            <tbody id="logam-mulia"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
 
-  <footer class="layer shrink-0 mt-4 md:mt-[1.4vh] pb-[110px] md:pb-0 foot-pad text-center md:min-h-[11vh] flex flex-col justify-center gap-1 md:gap-[0.5vh]">
-    <p class="t-foot font-extrabold text-slate-900">
+    <!-- Slot vertikal: slideshow poster & video, isinya diatur lewat SLIDES di atas. -->
+    <div id="slides" class="card relative md:min-h-0 h-[70vh] md:h-full aspect-[3/5] mx-auto bg-slate-900"></div>
+
+  </main>
+
+  <footer class="card shrink-0 mt-4 md:mt-[1.4vh] px-5 py-3 md:px-[1.4vw] md:py-[1vh] flex flex-col md:flex-row items-center gap-3 md:gap-[1.5vw] border-2 border-yellow-300">
+    <div class="flex items-center gap-3 md:gap-[0.8vw] md:flex-1 min-w-0">
+      <svg class="icon shrink-0 text-rose-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/>
+      </svg>
+      <p class="t-foot-sm font-semibold text-slate-700 leading-snug">
+        Blok M Square, Pintu Berlian 2 No. 118, Lantai UG<br>
+        Melawai, Kec. Kebayoran Baru, Jakarta Selatan
+      </p>
+    </div>
+
+    <p class="t-foot font-extrabold text-slate-900 text-center md:flex-1">
       Harga dapat berubah sewaktu waktu
     </p>
-    <p class="t-foot-sm font-semibold text-slate-600">
-      Harga perhiasan per gram
-      <span class="text-yellow-500 mx-1">&#9670;</span> Harga logam mulia per keping sesuai berat
-      <span class="text-yellow-500 mx-1">&#9670;</span> Tanyakan kasir kami untuk informasi lebih lanjut
-    </p>
+
+    <div class="flex items-center justify-end gap-3 md:gap-[0.8vw] md:flex-1">
+      <!-- Ikon telepon generik dalam lingkaran hijau (nomor WhatsApp toko). -->
+      <span class="icon shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+        <svg viewBox="0 0 24 24" fill="currentColor" class="w-3/5 h-3/5" aria-hidden="true">
+          <path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/>
+        </svg>
+      </span>
+      <div class="text-right leading-tight">
+        <p class="t-foot-sm font-bold text-emerald-600">WhatsApp</p>
+        <p class="t-phone font-extrabold text-slate-900 tabular">0813 1829 0055</p>
+      </div>
+    </div>
   </footer>
 </div>
 
@@ -238,26 +224,17 @@ const beratLabel = (v) => String(Number(v)).replace('.', ',');
 // Karat bisa desimal (24,999 untuk emas 99,9%).
 const karatLabel = (v) => String(Number(v)).replace('.', ',');
 
-const emptyRow = `<tr><td colspan="2" class="px-4 py-4 text-center text-slate-400 font-semibold">Belum ada data</td></tr>`;
+const emptyRow = (cols) => `<tr><td colspan="${cols}" class="px-4 py-4 text-center text-slate-400 font-semibold">Belum ada data</td></tr>`;
 
-function renderPerhiasan(target, rows, field) {
+function renderRows(target, rows, label, jualField, beliField) {
   document.getElementById(target).innerHTML = rows.length
     ? rows.map((r) => `
         <tr>
-          <td class="td-label">${karatLabel(r.karat)}K</td>
-          <td class="td-price tabular">${rupiah(r[field])}</td>
+          <td class="td-label"><span>${label(r)}</span></td>
+          <td class="td-price td-jual tabular"><span>${rupiah(r[jualField])}</span></td>
+          <td class="td-price td-beli tabular"><span>${rupiah(r[beliField])}</span></td>
         </tr>`).join('')
-    : emptyRow;
-}
-
-function renderLogamMulia(target, rows, field) {
-  document.getElementById(target).innerHTML = rows.length
-    ? rows.map((r) => `
-        <tr>
-          <td class="td-label">${beratLabel(r.berat)} Gram</td>
-          <td class="td-price tabular">${rupiah(r[field])}</td>
-        </tr>`).join('')
-    : emptyRow;
+    : emptyRow(3);
 }
 
 // Isi tabel setinggi area yang tersedia: tinggi baris dibagi rata, font
@@ -281,19 +258,32 @@ function fitRows() {
       const free = area.clientHeight - (head ? head.offsetHeight : 0);
       if (free <= 0) continue;
       rowH = free / rows;
-      // Batas atas mencegah logam mulia (baris sedikit) jadi terlalu besar
-      // dibanding perhiasan; lebar kolom juga membatasi supaya angka tidak terpotong.
-      const byWidth = tbody.closest('table').clientWidth * 0.075;
-      font = Math.max(10, Math.min(48, rowH * 0.82, byWidth));
+      font = Math.max(10, Math.min(52, rowH * 0.94));
     }
 
-    for (const tr of tbody.rows) {
-      tr.style.height = rowH ? rowH + 'px' : '';
-      for (const td of tr.cells) {
-        td.style.fontSize = font + 'px';
-        td.style.paddingTop = isDesktop ? '0' : '10px';
-        td.style.paddingBottom = isDesktop ? '0' : '10px';
+    const apply = () => {
+      for (const tr of tbody.rows) {
+        tr.style.height = rowH ? rowH + 'px' : '';
+        for (const td of tr.cells) {
+          td.style.fontSize = font + 'px';
+          td.style.paddingTop = isDesktop ? '0' : '10px';
+          td.style.paddingBottom = isDesktop ? '0' : '10px';
+        }
       }
+    };
+    apply();
+
+    // Lebar kolom juga membatasi: kecilkan font sampai tidak ada angka yang terpotong.
+    // Teks dibungkus <span> supaya lebarnya bisa dibandingkan dengan ruang di
+    // dalam padding sel (scrollWidth tidak menangkap teks yang memakan padding).
+    const overflows = () => [...tbody.querySelectorAll('td > span')].some((span) => {
+      const cs = getComputedStyle(span.parentElement);
+      const room = span.parentElement.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      return span.offsetWidth > room;
+    });
+    while (isDesktop && font > 10 && overflows()) {
+      font -= 1;
+      apply();
     }
   }
 }
@@ -333,10 +323,8 @@ async function loadData() {
     const perhiasan = data?.perhiasan ?? [];
     const logamMulia = data?.logam_mulia ?? [];
 
-    renderPerhiasan('jual-perhiasan', perhiasan, 'harga_jual');
-    renderPerhiasan('beli-perhiasan', perhiasan, 'harga_beli');
-    renderLogamMulia('jual-lm', logamMulia, 'harga_jual');
-    renderLogamMulia('beli-lm', logamMulia, 'harga_buyback');
+    renderRows('perhiasan', perhiasan, (r) => karatLabel(r.karat) + 'K', 'harga_jual', 'harga_beli');
+    renderRows('logam-mulia', logamMulia, (r) => beratLabel(r.berat) + ' Gram', 'harga_jual', 'harga_buyback');
     renderUpdated(data?.dasar?.updated_at);
     fitRows();
 
@@ -347,6 +335,73 @@ async function loadData() {
     fitRows();
   }
 }
+
+// Slideshow kotak kanan: gambar tampil `durasi` detik, video sampai selesai.
+function startSlides() {
+  const box = document.getElementById('slides');
+  const isVideo = (src) => /\.(mp4|webm|ogv|mov)(\?|$)/i.test(src);
+
+  const slides = SLIDES.map((cfg) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'slide';
+    if (cfg.latar) wrap.style.background = cfg.latar;
+
+    const video = isVideo(cfg.src);
+    const el = document.createElement(video ? 'video' : 'img');
+    el.src = cfg.src;
+    // Gambar utuh (contain) supaya teks poster tidak terpotong; video vertikal dipenuhkan.
+    el.style.objectFit = cfg.fit ?? (video ? 'cover' : 'contain');
+    if (video) Object.assign(el, { muted: true, playsInline: true, preload: 'auto', loop: SLIDES.length === 1 });
+    wrap.appendChild(el);
+    box.appendChild(wrap);
+    return { cfg, wrap, el, video, broken: false };
+  });
+  if (!slides.length) return;
+
+  let index = -1;
+  let timer = null;
+
+  const show = (next) => {
+    clearTimeout(timer);
+    const prev = slides[index];
+    if (prev) {
+      prev.wrap.classList.remove('active');
+      if (prev.video) prev.el.pause();
+    }
+
+    // Lewati file yang gagal dimuat; kalau semuanya rusak, berhenti.
+    for (let i = 0; i < slides.length && slides[next].broken; i++) next = (next + 1) % slides.length;
+    if (slides[next].broken) return;
+
+    index = next;
+    const cur = slides[index];
+    cur.wrap.classList.add('active');
+    if (slides.length === 1 && !cur.video) return;
+
+    const goNext = () => show((index + 1) % slides.length);
+    if (cur.video) {
+      cur.el.currentTime = 0;
+      cur.el.onended = goNext;
+      cur.el.play().catch(goNext);
+      // Jaga-jaga video macet / tidak pernah selesai: paksa lanjut setelah durasi + 5 detik.
+      const maks = (cur.cfg.durasi ?? (isFinite(cur.el.duration) ? cur.el.duration : 300)) + 5;
+      timer = setTimeout(goNext, maks * 1000);
+    } else {
+      timer = setTimeout(goNext, (cur.cfg.durasi ?? 15) * 1000);
+    }
+  };
+
+  slides.forEach((s, i) => {
+    s.el.addEventListener('error', () => {
+      s.broken = true;
+      if (i === index) show((index + 1) % slides.length);
+    });
+  });
+
+  show(0);
+}
+
+startSlides();
 
 loadData();
 setInterval(loadData, 60000);
