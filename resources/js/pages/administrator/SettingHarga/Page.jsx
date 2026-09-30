@@ -29,9 +29,20 @@ const newKey = () => crypto.randomUUID();
 // Selisih LB Jual terhadap kadar, sesuai formula Excel (=KADAR+0,12).
 const MARGIN_LB_JUAL = 0.12;
 
-// Markup harga jual logam mulia terhadap harga dasarnya.
-// Harus sama dengan MARGIN_JUAL di App\Models\HargaLogamMulia.
-const MARGIN_JUAL_LM = 0.03;
+// Default markup jual logam mulia (nilai lama yang dulu hardcode).
+// Harus sama dengan default kolom persen_jual_lm di tabel harga_dasar.
+const DEFAULT_PERSEN_JUAL_LM = 3;
+
+// Persentase boleh desimal & negatif (potongan), jadi tidak lewat formatNumberInput.
+const sanitizePersen = (value) => {
+    const cleaned = String(value ?? '').replace('.', ',').replace(/[^\d,-]/g, '');
+    const negative = cleaned.startsWith('-');
+    const [whole = '', ...rest] = cleaned.replace(/-/g, '').split(',');
+    const decimal = rest.length ? `,${rest.join('')}` : '';
+    return `${negative ? '-' : ''}${whole}${decimal}`;
+};
+
+const formatPersen = (value) => String(Number(value) || 0).replace('.', ',');
 
 
 // Formula Excel: kadar = karat/24, lb_jual = kadar + 0,12 — dihitung dari
@@ -71,6 +82,7 @@ const SettingHarga = () => {
     const [dasar, setDasar] = useState({
         harga_dasar_jual: '', harga_dasar_beli: '',
         harga_dasar_jual_lm: '', harga_dasar_beli_lm: '',
+        persen_jual_lm: formatPersen(DEFAULT_PERSEN_JUAL_LM),
     });
     const [perhiasan, setPerhiasan] = useState([]);
     const [logamMulia, setLogamMulia] = useState([]);
@@ -84,6 +96,7 @@ const SettingHarga = () => {
                 harga_dasar_beli: res?.dasar?.harga_dasar_beli ?? 0,
                 harga_dasar_jual_lm: res?.dasar?.harga_dasar_jual_lm ?? 0,
                 harga_dasar_beli_lm: res?.dasar?.harga_dasar_beli_lm ?? 0,
+                persen_jual_lm: formatPersen(res?.dasar?.persen_jual_lm ?? DEFAULT_PERSEN_JUAL_LM),
             });
             // Flag override tidak disimpan di DB: baris yang nilainya menyimpang
             // dari rumus (mis. 24K) dikenali dari selisihnya saat dimuat.
@@ -111,6 +124,7 @@ const SettingHarga = () => {
     const dasarBeli = toNumber(dasar.harga_dasar_beli);
     const dasarJualLm = toNumber(dasar.harga_dasar_jual_lm);
     const dasarBeliLm = toNumber(dasar.harga_dasar_beli_lm);
+    const persenJualLm = toNumber(dasar.persen_jual_lm);
 
     // Preview mengikuti rumus BE: harga = lb x harga dasar x berat.
     const perhiasanPreview = useMemo(
@@ -128,8 +142,8 @@ const SettingHarga = () => {
         [perhiasan, dasarJual, dasarBeli]
     );
 
-    // Logam mulia punya harga dasar sendiri; harga jual kena markup,
-    // buyback murni dasar beli x berat.
+    // Logam mulia punya harga dasar sendiri; harga jual kena markup persen,
+    // buyback murni dasar beli x berat. Rumus sama dengan accessor HargaLogamMulia.
     const logamMuliaPreview = useMemo(
         () => logamMulia.map((row) => {
             const berat = toNumber(row.berat);
@@ -137,11 +151,11 @@ const SettingHarga = () => {
             return {
                 ...row,
                 harga_dasar: hargaDasar,
-                harga_jual: Math.round(hargaDasar * (1 + MARGIN_JUAL_LM)),
+                harga_jual: Math.round(hargaDasar * (1 + persenJualLm / 100)),
                 harga_buyback: Math.round(dasarBeliLm * berat),
             };
         }),
-        [logamMulia, dasarJualLm, dasarBeliLm]
+        [logamMulia, dasarJualLm, dasarBeliLm, persenJualLm]
     );
 
     const updateRow = (setRows, key, name, value) => {
@@ -224,6 +238,7 @@ const SettingHarga = () => {
                 harga_dasar_beli: dasarBeli,
                 harga_dasar_jual_lm: dasarJualLm,
                 harga_dasar_beli_lm: dasarBeliLm,
+                persen_jual_lm: persenJualLm,
                 // Kirim hasil derive, bukan teks di input — nilai tampilan sudah
                 // dibulatkan dan akan membuat harga meleset dari acuan Excel.
                 perhiasan: perhiasan.map((row) => {
@@ -238,7 +253,7 @@ const SettingHarga = () => {
                         is_active: true,
                     };
                 }),
-                // Harga logam mulia turunan dari harga dasar beli — BE yang hitung.
+                // Harga logam mulia turunan dari harga dasar LM + persen jual — BE yang hitung.
                 logam_mulia: logamMulia.map((row) => ({
                     id: row.id,
                     berat: toNumber(row.berat),
@@ -421,20 +436,36 @@ const SettingHarga = () => {
                                     {isJual ? 'Harga Dasar Jual LM (per gram)' : 'Harga Dasar Beli LM (per gram)'}
                                 </span>
                             </div>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                disabled={!canEdit}
-                                className={`${input} text-lg font-bold tabular-nums`}
-                                value={HelperFunctions.formatNumberInput(isJual ? dasar.harga_dasar_jual_lm : dasar.harga_dasar_beli_lm)}
-                                onChange={(e) => setDasar((prev) => ({
-                                    ...prev,
-                                    [isJual ? 'harga_dasar_jual_lm' : 'harga_dasar_beli_lm']: HelperFunctions.unformatNumberInput(e.target.value),
-                                }))}
-                            />
+                            <div className={`grid grid-cols-1 gap-3 ${isJual ? 'sm:grid-cols-[1fr_11rem]' : ''}`}>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    disabled={!canEdit}
+                                    className={`${input} text-lg font-bold tabular-nums`}
+                                    value={HelperFunctions.formatNumberInput(isJual ? dasar.harga_dasar_jual_lm : dasar.harga_dasar_beli_lm)}
+                                    onChange={(e) => setDasar((prev) => ({
+                                        ...prev,
+                                        [isJual ? 'harga_dasar_jual_lm' : 'harga_dasar_beli_lm']: HelperFunctions.unformatNumberInput(e.target.value),
+                                    }))}
+                                />
+                                {isJual && (
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            inputMode="decimal"
+                                            disabled={!canEdit}
+                                            title="Persentase markup harga jual logam mulia"
+                                            className={`${input} text-lg font-bold tabular-nums pr-9`}
+                                            value={dasar.persen_jual_lm}
+                                            onChange={(e) => setDasar((prev) => ({ ...prev, persen_jual_lm: sanitizePersen(e.target.value) }))}
+                                        />
+                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-neutral-400">%</span>
+                                    </div>
+                                )}
+                            </div>
                             <span className="text-[11px] text-neutral-500">
                                 {isJual
-                                    ? `Harga dasar = harga dasar jual LM × berat, lalu harga jual = harga dasar + ${MARGIN_JUAL_LM * 100}%.`
+                                    ? `Harga dasar = harga dasar jual LM × berat, lalu harga jual = harga dasar ${persenJualLm < 0 ? '−' : '+'} ${formatPersen(Math.abs(persenJualLm))}% (default ${formatPersen(DEFAULT_PERSEN_JUAL_LM)}%, isi negatif untuk potongan).`
                                     : 'Harga beli = harga dasar beli LM × berat.'}
                                 {' '}Terpisah dari harga perhiasan.
                             </span>

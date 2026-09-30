@@ -4,9 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Harga Emas Hari Ini</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;0,800;1,800&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  html, body { height: 100%; margin: 0; background: #000; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color: #0f172a;
+    background:
+      radial-gradient(circle at 0% 0%, #fef9c3 0, transparent 40%),
+      radial-gradient(circle at 100% 100%, #fef08a 0, transparent 42%),
+      #f8fafc;
+  }
   .tabular { font-variant-numeric: tabular-nums; }
 
   /* Mobile: satu kolom, boleh scroll, tinggi ikut isi.
@@ -15,107 +26,210 @@
     html, body { overflow: hidden; }
   }
 
+  .card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 1px 2px rgb(30 41 59 / 0.06), 0 8px 24px -8px rgb(30 41 59 / 0.18);
+    overflow: hidden;
+  }
+  .logo { height: 64px; width: auto; }
+  /* Foto emas (PNG transparan) di pojok kiri & kanan bawah, di belakang tabel. */
+  .deco {
+    position: absolute; bottom: 0; z-index: 0; pointer-events: none;
+    height: 120px; width: auto;
+    filter: drop-shadow(0 10px 18px rgb(120 90 20 / 0.25));
+  }
+  .deco-left  { left: 0; }
+  .deco-right { right: 0; }
+  .layer { position: relative; z-index: 1; }
+  .sec-head { color: #fff; font-weight: 800; letter-spacing: 0.04em; text-align: center; }
+  .sec-jual { background: linear-gradient(90deg, #059669, #10b981); }
+  .sec-beli { background: linear-gradient(90deg, #e11d48, #f43f5e); }
+  /* Kuning terang khas layar harga lama, dipakai di baris judul kolom. */
+  .col-jual, .col-beli { background: #fde047; color: #1f2937; }
+  thead th { font-weight: 700; letter-spacing: 0.06em; }
+
+  tbody tr:nth-child(even) { background: #f1f5f9; }
+  tbody tr + tr { border-top: 1px solid #e2e8f0; }
+  .td-label { color: #334155; font-weight: 700; }
+  .td-price { color: #0f172a; font-weight: 800; text-align: right; }
+
   /* Mobile pakai ukuran tetap; vh terlalu kecil di layar ponsel. */
-  .t-title { font-size: 22px; }
-  .t-sub   { font-size: 12px; }
-  .t-head  { font-size: 14px; }
-  .t-col   { font-size: 11px; }
-  thead th { padding: 8px 12px; }
+  .t-title { font-size: 26px; }
+  .t-kicker { font-size: 12px; }
+  .t-date  { font-size: 20px; }
+  .t-time  { font-size: 16px; }
+  .t-head  { font-size: 15px; padding: 10px 12px; }
+  .t-col   { font-size: 12px; }
+  .t-foot  { font-size: 15px; }
+  .t-foot-sm { font-size: 12px; }
+  thead th { padding: 8px 14px; }
   /* Padding vertikal & ukuran font sel diatur JS (fitRows). */
-  tbody td { padding-left: 12px; padding-right: 12px; line-height: 1.15; }
+  tbody td { padding-left: 14px; padding-right: 14px; line-height: 1.05; }
 
   @media (min-width: 768px) {
-    .t-title { font-size: clamp(14px, 2.4vh, 30px); }
-    .t-sub   { font-size: clamp(8px, 1.1vh, 13px); }
-    .t-head  { font-size: clamp(10px, 1.6vh, 20px); }
-    .t-col   { font-size: clamp(8px, 1.15vh, 14px); }
-    thead th { padding: 0.4vh 0.8vw; }
-    tbody td { padding-left: 0.8vw; padding-right: 0.8vw; }
+    .t-title  { font-size: clamp(22px, 4vh, 52px); }
+    .t-kicker { font-size: clamp(10px, 1.5vh, 18px); }
+    .t-date   { font-size: clamp(18px, 3.4vh, 44px); }
+    .t-time   { font-size: clamp(14px, 2.4vh, 30px); }
+    .t-head   { font-size: clamp(12px, 2vh, 26px); padding: 0.6vh 1vw; }
+    .t-col    { font-size: clamp(10px, 1.4vh, 17px); }
+    .t-foot   { font-size: clamp(12px, 2.1vh, 26px); }
+    .t-foot-sm { font-size: clamp(10px, 1.6vh, 20px); }
+    .logo     { height: clamp(56px, 11vh, 150px); }
+    .deco     { height: clamp(80px, 14vh, 190px); }
+    .deco-right { bottom: 1vh; }
+    .deco-left  { left: 0; }
+    .deco-right { right: 1vw; }
+    .foot-pad { padding-left: 26vh; padding-right: 26vh; }
+    thead th  { padding: 0.3vh 1.2vw; }
+    tbody td  { padding-left: 1.2vw; padding-right: 1.2vw; }
   }
 </style>
 </head>
-<body class="text-white">
+<body>
 
 <!-- Ganti URL ini kalau halaman dibuka dari device/host lain. -->
 <script>const API_URL = 'https://auromos.tokomasarrazaq.com/api/harga-publik';</script>
 <!-- <script>const API_URL = 'http://localhost:8000/api/harga-publik';</script> -->
 
-<div class="min-h-screen md:h-screen flex flex-col px-3 py-3 md:px-[1.5vw] md:py-[1vh]">
+<div class="relative min-h-screen md:h-screen flex flex-col px-4 py-4 md:px-[1.5vw] md:py-[1.4vh] overflow-hidden">
 
-  <header class="text-center shrink-0">
-    <h1 class="t-title font-extrabold tracking-wide text-yellow-300">HARGA EMAS HARI INI</h1>
-    <p id="updated" class="t-sub text-gray-400">Memuat…</p>
+  <!-- Dekorasi. Disimpan di harga-display-assets/, ikut di-upload bersama file ini;
+       kalau foldernya tidak ada gambar disembunyikan dan layout tetap rapi. -->
+  <img src="harga-display-assets/perhiasan.png" alt="" class="deco deco-left" onerror="this.remove()">
+  <img src="harga-display-assets/logam-mulia.png" alt="" class="deco deco-right" onerror="this.remove()">
+
+  <header class="layer shrink-0 flex flex-col items-center md:grid md:grid-cols-[1fr_auto_1fr] md:items-center gap-3 md:gap-[1.5vw]">
+    <!-- Logo toko digambar ulang sebagai SVG (logo_kwintansi.png cuma 95x68 px,
+         pecah kalau diperbesar) supaya tetap tajam di TV. -->
+    <svg class="logo shrink-0 self-center" viewBox="0 0 440 250" role="img" aria-label="Arrazaq Gold &amp; Jewellery">
+      <defs>
+        <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#f7d774"/>
+          <stop offset="0.5" stop-color="#d4a017"/>
+          <stop offset="1" stop-color="#b8860b"/>
+        </linearGradient>
+      </defs>
+      <!-- Bingkai berlian, sisi kanannya terbuka untuk tulisan -->
+      <polyline points="150,160 92,224 8,104 38,62 168,62 186,102" fill="none" stroke="url(#gold)" stroke-width="13" stroke-linejoin="miter"/>
+      <!-- Ornamen bunga di tengah berlian -->
+      <g fill="none" stroke="url(#gold)" stroke-width="3.5">
+        <circle cx="96" cy="108" r="10"/>
+        <circle cx="96" cy="144" r="10"/>
+        <circle cx="78" cy="126" r="10"/>
+        <circle cx="114" cy="126" r="10"/>
+      </g>
+      <!-- Kilau -->
+      <g fill="url(#gold)">
+        <path d="M178 18 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z"/>
+        <path d="M160 36 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5z"/>
+        <path d="M184 48 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z"/>
+      </g>
+      <text x="146" y="150" font-family="'Plus Jakarta Sans', sans-serif" font-style="italic" font-weight="800" font-size="62" fill="#111827" textLength="286" lengthAdjust="spacingAndGlyphs">ARRAZAQ</text>
+      <text x="176" y="192" font-family="'Great Vibes', cursive" font-size="34" fill="#c0392b">Gold &amp; Jewellery</text>
+    </svg>
+
+    <div class="text-center">
+      <p class="t-kicker font-bold uppercase tracking-[0.25em] text-emerald-600">Update harga harian</p>
+      <h1 class="t-title font-extrabold tracking-tight text-slate-900 leading-tight">
+        Harga Emas <span class="text-emerald-600">Hari Ini</span>
+      </h1>
+    </div>
+
+    <!-- Tanggal perubahan harga dibuat mencolok supaya pelanggan yakin harga masih berlaku. -->
+    <div class="card md:justify-self-end flex items-center justify-center md:justify-end gap-3 md:gap-[1vw] px-5 py-3 md:px-[1.4vw] md:py-[1vh] border-2 border-yellow-300">
+      <span class="w-3 h-3 md:w-[1.2vh] md:h-[1.2vh] rounded-full bg-emerald-500 shrink-0 animate-pulse"></span>
+      <div class="text-center md:text-right">
+        <p class="t-kicker font-bold uppercase tracking-[0.2em] text-slate-500">Harga diperbarui</p>
+        <p class="leading-tight">
+          <span id="updated-date" class="t-date font-extrabold text-slate-900">Memuat…</span>
+          <span id="updated-time" class="t-time font-bold text-emerald-600 ml-1"></span>
+        </p>
+      </div>
+    </div>
   </header>
 
-  <div id="error" class="hidden mt-2 p-2 rounded-lg bg-red-900/40 border border-red-600 text-center shrink-0">
-    <p class="text-red-300 font-semibold t-col">Gagal memuat harga · mencoba lagi otomatis…</p>
+  <div id="error" class="layer hidden mt-3 px-4 py-2 rounded-xl bg-rose-50 border-2 border-rose-300 text-center shrink-0">
+    <p class="text-rose-700 font-bold t-col">Gagal memuat harga · mencoba lagi otomatis…</p>
   </div>
 
   <!-- Perhiasan (19 baris) memakai tinggi penuh di dua kolom kiri; logam mulia
        (9 baris) ditumpuk di kolom kanan, masing-masing setengah tinggi. -->
-  <div class="flex-1 md:min-h-0 grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr] md:grid-rows-2 gap-3 md:gap-x-[1vw] md:gap-y-[1vh] mt-3 md:mt-[1vh]">
+  <div class="layer flex-1 md:min-h-0 grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr] md:grid-rows-2 gap-4 md:gap-x-[1.2vw] md:gap-y-[1.4vh] mt-4 md:mt-[1.4vh]">
 
-    <section class="md:min-h-0 flex flex-col md:row-span-2">
-      <h2 class="bg-green-700 text-center font-bold py-[0.5vh] rounded-t-lg t-head shrink-0">HARGA JUAL PERHIASAN</h2>
-      <div class="flex-1 md:min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
+    <section class="card md:min-h-0 flex flex-col md:row-span-2">
+      <h2 class="sec-head sec-jual t-head shrink-0">HARGA JUAL PERHIASAN</h2>
+      <div class="flex-1 md:min-h-0 overflow-hidden">
         <table class="w-full table-fixed">
-          <thead class="bg-yellow-400 text-black t-col">
+          <thead class="col-jual t-col">
             <tr>
-              <th class="text-left w-[35%]">KARAT</th>
+              <th class="text-left w-[38%]">KARAT</th>
               <th class="text-right">HARGA JUAL</th>
             </tr>
           </thead>
-          <tbody id="jual-perhiasan" class="bg-black text-yellow-300"></tbody>
+          <tbody id="jual-perhiasan"></tbody>
         </table>
       </div>
     </section>
 
-    <section class="md:min-h-0 flex flex-col md:row-span-2">
-      <h2 class="bg-red-700 text-center font-bold py-[0.5vh] rounded-t-lg t-head shrink-0">HARGA BELI PERHIASAN</h2>
-      <div class="flex-1 md:min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
+    <section class="card md:min-h-0 flex flex-col md:row-span-2">
+      <h2 class="sec-head sec-beli t-head shrink-0">HARGA BELI PERHIASAN</h2>
+      <div class="flex-1 md:min-h-0 overflow-hidden">
         <table class="w-full table-fixed">
-          <thead class="bg-yellow-400 text-black t-col">
+          <thead class="col-beli t-col">
             <tr>
-              <th class="text-left w-[35%]">KARAT</th>
+              <th class="text-left w-[38%]">KARAT</th>
               <th class="text-right">HARGA BELI</th>
             </tr>
           </thead>
-          <tbody id="beli-perhiasan" class="bg-black text-yellow-300"></tbody>
+          <tbody id="beli-perhiasan"></tbody>
         </table>
       </div>
     </section>
 
-    <section class="md:min-h-0 flex flex-col">
-      <h2 class="bg-green-700 text-center font-bold py-[0.5vh] rounded-t-lg t-head shrink-0">HARGA JUAL LOGAM MULIA</h2>
-      <div class="flex-1 md:min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
+    <section class="card md:min-h-0 flex flex-col">
+      <h2 class="sec-head sec-jual t-head shrink-0">HARGA JUAL LOGAM MULIA</h2>
+      <div class="flex-1 md:min-h-0 overflow-hidden">
         <table class="w-full table-fixed">
-          <thead class="bg-yellow-400 text-black t-col">
+          <thead class="col-jual t-col">
             <tr>
-              <th class="text-left w-[40%]">BERAT</th>
+              <th class="text-left w-[42%]">BERAT</th>
               <th class="text-right">HARGA JUAL</th>
             </tr>
           </thead>
-          <tbody id="jual-lm" class="bg-black text-yellow-300"></tbody>
+          <tbody id="jual-lm"></tbody>
         </table>
       </div>
     </section>
 
-    <section class="md:min-h-0 flex flex-col">
-      <h2 class="bg-red-700 text-center font-bold py-[0.5vh] rounded-t-lg t-head shrink-0">HARGA BELI LOGAM MULIA</h2>
-      <div class="flex-1 md:min-h-0 border border-yellow-600/40 rounded-b-lg overflow-hidden">
+    <section class="card md:min-h-0 flex flex-col">
+      <h2 class="sec-head sec-beli t-head shrink-0">HARGA BELI LOGAM MULIA</h2>
+      <div class="flex-1 md:min-h-0 overflow-hidden">
         <table class="w-full table-fixed">
-          <thead class="bg-yellow-400 text-black t-col">
+          <thead class="col-beli t-col">
             <tr>
-              <th class="text-left w-[40%]">BERAT</th>
+              <th class="text-left w-[42%]">BERAT</th>
               <th class="text-right">BUY BACK</th>
             </tr>
           </thead>
-          <tbody id="beli-lm" class="bg-black text-yellow-300"></tbody>
+          <tbody id="beli-lm"></tbody>
         </table>
       </div>
     </section>
 
   </div>
+
+  <footer class="layer shrink-0 mt-4 md:mt-[1.4vh] pb-[110px] md:pb-0 foot-pad text-center md:min-h-[11vh] flex flex-col justify-center gap-1 md:gap-[0.5vh]">
+    <p class="t-foot font-extrabold text-slate-900">
+      Harga dapat berubah sewaktu waktu
+    </p>
+    <p class="t-foot-sm font-semibold text-slate-600">
+      Harga perhiasan per gram
+      <span class="text-yellow-500 mx-1">&#9670;</span> Harga logam mulia per keping sesuai berat
+      <span class="text-yellow-500 mx-1">&#9670;</span> Tanyakan kasir kami untuk informasi lebih lanjut
+    </p>
+  </footer>
 </div>
 
 <script>
@@ -124,28 +238,26 @@ const beratLabel = (v) => String(Number(v)).replace('.', ',');
 // Karat bisa desimal (24,999 untuk emas 99,9%).
 const karatLabel = (v) => String(Number(v)).replace('.', ',');
 
-const rowClass = 'border-t border-yellow-600/20';
-const tdLeft = 'font-semibold';
-const tdRight = 'text-right font-bold tabular';
+const emptyRow = `<tr><td colspan="2" class="px-4 py-4 text-center text-slate-400 font-semibold">Belum ada data</td></tr>`;
 
 function renderPerhiasan(target, rows, field) {
   document.getElementById(target).innerHTML = rows.length
     ? rows.map((r) => `
-        <tr class="${rowClass}">
-          <td class="${tdLeft}">${karatLabel(r.karat)}K</td>
-          <td class="${tdRight}">${rupiah(r[field])}</td>
+        <tr>
+          <td class="td-label">${karatLabel(r.karat)}K</td>
+          <td class="td-price tabular">${rupiah(r[field])}</td>
         </tr>`).join('')
-    : `<tr><td colspan="2" class="px-4 py-4 text-center text-gray-500">Belum ada data</td></tr>`;
+    : emptyRow;
 }
 
 function renderLogamMulia(target, rows, field) {
   document.getElementById(target).innerHTML = rows.length
     ? rows.map((r) => `
-        <tr class="${rowClass}">
-          <td class="${tdLeft}">${beratLabel(r.berat)} Gram</td>
-          <td class="${tdRight}">${rupiah(r[field])}</td>
+        <tr>
+          <td class="td-label">${beratLabel(r.berat)} Gram</td>
+          <td class="td-price tabular">${rupiah(r[field])}</td>
         </tr>`).join('')
-    : `<tr><td colspan="2" class="px-4 py-4 text-center text-gray-500">Belum ada data</td></tr>`;
+    : emptyRow;
 }
 
 // Isi tabel setinggi area yang tersedia: tinggi baris dibagi rata, font
@@ -161,7 +273,7 @@ function fitRows() {
     if (!rows) continue;
 
     let rowH = null;
-    let font = 15;
+    let font = 17;
 
     if (isDesktop) {
       const area = tbody.closest('div');
@@ -169,21 +281,47 @@ function fitRows() {
       const free = area.clientHeight - (head ? head.offsetHeight : 0);
       if (free <= 0) continue;
       rowH = free / rows;
-      font = Math.max(9, Math.min(26, rowH * 0.58));
+      // Batas atas mencegah logam mulia (baris sedikit) jadi terlalu besar
+      // dibanding perhiasan; lebar kolom juga membatasi supaya angka tidak terpotong.
+      const byWidth = tbody.closest('table').clientWidth * 0.075;
+      font = Math.max(10, Math.min(48, rowH * 0.82, byWidth));
     }
 
     for (const tr of tbody.rows) {
       tr.style.height = rowH ? rowH + 'px' : '';
       for (const td of tr.cells) {
         td.style.fontSize = font + 'px';
-        td.style.paddingTop = isDesktop ? '0' : '9px';
-        td.style.paddingBottom = isDesktop ? '0' : '9px';
+        td.style.paddingTop = isDesktop ? '0' : '10px';
+        td.style.paddingBottom = isDesktop ? '0' : '10px';
       }
     }
   }
 }
 
 addEventListener('resize', fitRows);
+// Ukuran huruf Plus Jakarta Sans baru final setelah font termuat.
+document.fonts?.ready.then(fitRows);
+
+// Toko di Jakarta: jam selalu ditampilkan dalam WIB, apa pun zona waktu device display.
+const fmtDate = new Intl.DateTimeFormat('id-ID', {
+  timeZone: 'Asia/Jakarta', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+});
+const fmtTime = new Intl.DateTimeFormat('id-ID', {
+  timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit',
+});
+
+function renderUpdated(updatedAt) {
+  const dateEl = document.getElementById('updated-date');
+  const timeEl = document.getElementById('updated-time');
+  const date = updatedAt ? new Date(updatedAt) : null;
+  if (!date || isNaN(date)) {
+    dateEl.textContent = '-';
+    timeEl.textContent = '';
+    return;
+  }
+  dateEl.textContent = fmtDate.format(date);
+  timeEl.textContent = '· ' + fmtTime.format(date) + ' WIB';
+}
 
 async function loadData() {
   try {
@@ -199,16 +337,14 @@ async function loadData() {
     renderPerhiasan('beli-perhiasan', perhiasan, 'harga_beli');
     renderLogamMulia('jual-lm', logamMulia, 'harga_jual');
     renderLogamMulia('beli-lm', logamMulia, 'harga_buyback');
+    renderUpdated(data?.dasar?.updated_at);
     fitRows();
 
-    const updatedAt = data?.dasar?.updated_at;
-    document.getElementById('updated').textContent = updatedAt
-      ? 'Update terakhir: ' + new Date(updatedAt).toLocaleString('id-ID')
-      : '';
     document.getElementById('error').classList.add('hidden');
   } catch (err) {
     console.error(err);
     document.getElementById('error').classList.remove('hidden');
+    fitRows();
   }
 }
 

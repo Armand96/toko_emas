@@ -13,6 +13,7 @@ class HargaDasar extends Model
         'harga_dasar_beli',
         'harga_dasar_jual_lm',
         'harga_dasar_beli_lm',
+        'persen_jual_lm',
     ];
 
     protected $casts = [
@@ -20,6 +21,7 @@ class HargaDasar extends Model
         'harga_dasar_beli' => 'float',
         'harga_dasar_jual_lm' => 'float',
         'harga_dasar_beli_lm' => 'float',
+        'persen_jual_lm' => 'float',
     ];
 
     public static function current(): self
@@ -29,6 +31,7 @@ class HargaDasar extends Model
             'harga_dasar_beli' => 0,
             'harga_dasar_jual_lm' => 0,
             'harga_dasar_beli_lm' => 0,
+            'persen_jual_lm' => 3,
         ]);
     }
 }

@@ -6,9 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class HargaLogamMulia extends Model
 {
-    // Markup harga jual logam mulia terhadap harga dasarnya.
-    public const MARGIN_JUAL = 0.03;
-
     protected $table = 'harga_logam_mulia';
 
     protected $fillable = [
@@ -43,7 +40,8 @@ class HargaLogamMulia extends Model
     }
 
     // Logam mulia punya harga dasar sendiri, tidak terkait harga perhiasan.
-    // Harga jual kena markup; buyback murni dasar x berat.
+    // Harga jual kena markup persen_jual_lm (diatur di Setting Harga);
+    // buyback murni dasar x berat.
     public function getHargaDasarAttribute(): float
     {
         return round(static::dasar()->harga_dasar_jual_lm * $this->berat);
@@ -51,7 +49,7 @@ class HargaLogamMulia extends Model
 
     public function getHargaJualAttribute(): float
     {
-        return round($this->harga_dasar * (1 + self::MARGIN_JUAL));
+        return round($this->harga_dasar * (1 + static::dasar()->persen_jual_lm / 100));
     }
 
     public function getHargaBuybackAttribute(): float
