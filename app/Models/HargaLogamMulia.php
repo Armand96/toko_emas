@@ -10,6 +10,7 @@ class HargaLogamMulia extends Model
 
     protected $fillable = [
         'berat',
+        'persen_jual',
         'urutan',
         'is_active',
     ];
@@ -21,6 +22,7 @@ class HargaLogamMulia extends Model
 
     protected $casts = [
         'berat' => 'float',
+        'persen_jual' => 'float',
         'urutan' => 'integer',
         'is_active' => 'boolean',
     ];
@@ -40,7 +42,7 @@ class HargaLogamMulia extends Model
     }
 
     // Logam mulia punya harga dasar sendiri, tidak terkait harga perhiasan.
-    // Harga jual kena markup persen_jual_lm (diatur di Setting Harga);
+    // Harga jual kena markup persen_jual milik baris ini (beda per berat);
     // buyback murni dasar x berat.
     public function getHargaDasarAttribute(): float
     {
@@ -49,7 +51,7 @@ class HargaLogamMulia extends Model
 
     public function getHargaJualAttribute(): float
     {
-        return round($this->harga_dasar * (1 + static::dasar()->persen_jual_lm / 100));
+        return round($this->harga_dasar * (1 + $this->persen_jual / 100));
     }
 
     public function getHargaBuybackAttribute(): float

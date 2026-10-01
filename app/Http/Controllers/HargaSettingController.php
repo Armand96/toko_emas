@@ -61,8 +61,6 @@ class HargaSettingController extends Controller
             'harga_dasar_beli' => 'required|numeric|min:0',
             'harga_dasar_jual_lm' => 'required|numeric|min:0',
             'harga_dasar_beli_lm' => 'required|numeric|min:0',
-            // Persentase markup harga jual logam mulia; negatif = potongan.
-            'persen_jual_lm' => 'required|numeric|min:-100|max:1000',
 
             'perhiasan' => 'present|array',
             'perhiasan.*.id' => 'nullable|integer',
@@ -75,10 +73,12 @@ class HargaSettingController extends Controller
             'perhiasan.*.is_active' => 'nullable|boolean',
 
             // harga_jual & harga_buyback logam mulia adalah turunan dari harga
-            // dasar LM (+ persen jual), jadi tidak dikirim/disimpan.
+            // dasar LM (+ persen jual per baris), jadi tidak dikirim/disimpan.
             'logam_mulia' => 'present|array',
             'logam_mulia.*.id' => 'nullable|integer',
             'logam_mulia.*.berat' => 'required|numeric|min:0',
+            // Persentase markup harga jual per berat; negatif = potongan.
+            'logam_mulia.*.persen_jual' => 'required|numeric|min:-100|max:1000',
             'logam_mulia.*.is_active' => 'nullable|boolean',
         ]);
 
@@ -89,7 +89,6 @@ class HargaSettingController extends Controller
                     'harga_dasar_beli' => $validated['harga_dasar_beli'],
                     'harga_dasar_jual_lm' => $validated['harga_dasar_jual_lm'],
                     'harga_dasar_beli_lm' => $validated['harga_dasar_beli_lm'],
-                    'persen_jual_lm' => $validated['persen_jual_lm'],
                 ]);
 
                 $this->syncRows(
@@ -101,7 +100,7 @@ class HargaSettingController extends Controller
                 $this->syncRows(
                     HargaLogamMulia::class,
                     $validated['logam_mulia'],
-                    ['berat', 'is_active']
+                    ['berat', 'persen_jual', 'is_active']
                 );
             });
 

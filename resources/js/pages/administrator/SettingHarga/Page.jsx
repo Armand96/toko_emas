@@ -12,11 +12,6 @@ const toNumber = (value) => {
     return Number.isFinite(parsed) ? parsed : 0;
 };
 
-// Tampilan saja, meniru Excel: kadar 3 desimal, LB 2 desimal.
-// Nilai asli tetap presisi penuh (1,07833333…) dan itu yang dipakai menghitung
-// harga — membulatkan nilainya bikin harga meleset ribuan rupiah per gram.
-// Nilai tepat di titik tengah dibulatkan ke atas seperti Excel (0,995 -> 1,00);
-// toFixed sendiri membulatkannya ke bawah karena representasi floating point.
 const displayDecimal = (value, digits = 2) => {
     const num = Number(String(value ?? '').replace(',', '.'));
     if (!Number.isFinite(num) || value === '' || value === null) return '';
@@ -29,8 +24,8 @@ const newKey = () => crypto.randomUUID();
 // Selisih LB Jual terhadap kadar, sesuai formula Excel (=KADAR+0,12).
 const MARGIN_LB_JUAL = 0.12;
 
-// Default markup jual logam mulia (nilai lama yang dulu hardcode).
-// Harus sama dengan default kolom persen_jual_lm di tabel harga_dasar.
+// Default markup jual logam mulia untuk baris berat baru.
+// Harus sama dengan default kolom persen_jual di tabel harga_logam_mulia.
 const DEFAULT_PERSEN_JUAL_LM = 3;
 
 // Persentase boleh desimal & negatif (potongan), jadi tidak lewat formatNumberInput.
@@ -82,7 +77,6 @@ const SettingHarga = () => {
     const [dasar, setDasar] = useState({
         harga_dasar_jual: '', harga_dasar_beli: '',
         harga_dasar_jual_lm: '', harga_dasar_beli_lm: '',
-        persen_jual_lm: formatPersen(DEFAULT_PERSEN_JUAL_LM),
     });
     const [perhiasan, setPerhiasan] = useState([]);
     const [logamMulia, setLogamMulia] = useState([]);
@@ -96,7 +90,6 @@ const SettingHarga = () => {
                 harga_dasar_beli: res?.dasar?.harga_dasar_beli ?? 0,
                 harga_dasar_jual_lm: res?.dasar?.harga_dasar_jual_lm ?? 0,
                 harga_dasar_beli_lm: res?.dasar?.harga_dasar_beli_lm ?? 0,
-                persen_jual_lm: formatPersen(res?.dasar?.persen_jual_lm ?? DEFAULT_PERSEN_JUAL_LM),
             });
             // Flag override tidak disimpan di DB: baris yang nilainya menyimpang
             // dari rumus (mis. 24K) dikenali dari selisihnya saat dimuat.
@@ -107,7 +100,11 @@ const SettingHarga = () => {
                     || Math.abs(toNumber(row.lb_jual) - (kadarRumus + MARGIN_LB_JUAL)) > 1e-6;
                 return { ...row, key: newKey(), is_override: menyimpang };
             }));
-            setLogamMulia((res?.logam_mulia ?? []).map((row) => ({ ...row, key: newKey() })));
+            setLogamMulia((res?.logam_mulia ?? []).map((row) => ({
+                ...row,
+                key: newKey(),
+                persen_jual: formatPersen(row.persen_jual ?? DEFAULT_PERSEN_JUAL_LM),
+            })));
         } catch (error) {
             console.error(error);
             showAlert({ icon: 'error', title: 'Gagal', message: 'Gagal memuat data harga' });
@@ -124,7 +121,6 @@ const SettingHarga = () => {
     const dasarBeli = toNumber(dasar.harga_dasar_beli);
     const dasarJualLm = toNumber(dasar.harga_dasar_jual_lm);
     const dasarBeliLm = toNumber(dasar.harga_dasar_beli_lm);
-    const persenJualLm = toNumber(dasar.persen_jual_lm);
 
     // Preview mengikuti rumus BE: harga = lb x harga dasar x berat.
     const perhiasanPreview = useMemo(
@@ -142,8 +138,8 @@ const SettingHarga = () => {
         [perhiasan, dasarJual, dasarBeli]
     );
 
-    // Logam mulia punya harga dasar sendiri; harga jual kena markup persen,
-    // buyback murni dasar beli x berat. Rumus sama dengan accessor HargaLogamMulia.
+    // Logam mulia punya harga dasar sendiri; harga jual kena markup persen milik
+    // baris itu, buyback murni dasar beli x berat. Rumus sama dengan accessor HargaLogamMulia.
     const logamMuliaPreview = useMemo(
         () => logamMulia.map((row) => {
             const berat = toNumber(row.berat);
@@ -151,11 +147,11 @@ const SettingHarga = () => {
             return {
                 ...row,
                 harga_dasar: hargaDasar,
-                harga_jual: Math.round(hargaDasar * (1 + persenJualLm / 100)),
+                harga_jual: Math.round(hargaDasar * (1 + toNumber(row.persen_jual) / 100)),
                 harga_buyback: Math.round(dasarBeliLm * berat),
             };
         }),
-        [logamMulia, dasarJualLm, dasarBeliLm, persenJualLm]
+        [logamMulia, dasarJualLm, dasarBeliLm]
     );
 
     const updateRow = (setRows, key, name, value) => {
@@ -210,7 +206,7 @@ const SettingHarga = () => {
     };
 
     const addPerhiasan = () => setPerhiasan((prev) => [...prev, { key: newKey(), id: null, karat: '', kadar: '', lb_jual: '', lb_beli: '', berat: 1 }]);
-    const addLogamMulia = () => setLogamMulia((prev) => [...prev, { key: newKey(), id: null, berat: '' }]);
+    const addLogamMulia = () => setLogamMulia((prev) => [...prev, { key: newKey(), id: null, berat: '', persen_jual: formatPersen(DEFAULT_PERSEN_JUAL_LM) }]);
 
     const handleSubmit = async () => {
         if (!perhiasan.length && !logamMulia.length) {
@@ -238,7 +234,6 @@ const SettingHarga = () => {
                 harga_dasar_beli: dasarBeli,
                 harga_dasar_jual_lm: dasarJualLm,
                 harga_dasar_beli_lm: dasarBeliLm,
-                persen_jual_lm: persenJualLm,
                 // Kirim hasil derive, bukan teks di input — nilai tampilan sudah
                 // dibulatkan dan akan membuat harga meleset dari acuan Excel.
                 perhiasan: perhiasan.map((row) => {
@@ -253,10 +248,11 @@ const SettingHarga = () => {
                         is_active: true,
                     };
                 }),
-                // Harga logam mulia turunan dari harga dasar LM + persen jual — BE yang hitung.
+                // Harga logam mulia turunan dari harga dasar LM + persen jual per baris — BE yang hitung.
                 logam_mulia: logamMulia.map((row) => ({
                     id: row.id,
                     berat: toNumber(row.berat),
+                    persen_jual: toNumber(row.persen_jual),
                     is_active: true,
                 })),
             });
@@ -436,47 +432,32 @@ const SettingHarga = () => {
                                     {isJual ? 'Harga Dasar Jual LM (per gram)' : 'Harga Dasar Beli LM (per gram)'}
                                 </span>
                             </div>
-                            <div className={`grid grid-cols-1 gap-3 ${isJual ? 'sm:grid-cols-[1fr_11rem]' : ''}`}>
-                                <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    disabled={!canEdit}
-                                    className={`${input} text-lg font-bold tabular-nums`}
-                                    value={HelperFunctions.formatNumberInput(isJual ? dasar.harga_dasar_jual_lm : dasar.harga_dasar_beli_lm)}
-                                    onChange={(e) => setDasar((prev) => ({
-                                        ...prev,
-                                        [isJual ? 'harga_dasar_jual_lm' : 'harga_dasar_beli_lm']: HelperFunctions.unformatNumberInput(e.target.value),
-                                    }))}
-                                />
-                                {isJual && (
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            inputMode="decimal"
-                                            disabled={!canEdit}
-                                            title="Persentase markup harga jual logam mulia"
-                                            className={`${input} text-lg font-bold tabular-nums pr-9`}
-                                            value={dasar.persen_jual_lm}
-                                            onChange={(e) => setDasar((prev) => ({ ...prev, persen_jual_lm: sanitizePersen(e.target.value) }))}
-                                        />
-                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-neutral-400">%</span>
-                                    </div>
-                                )}
-                            </div>
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                disabled={!canEdit}
+                                className={`${input} text-lg font-bold tabular-nums`}
+                                value={HelperFunctions.formatNumberInput(isJual ? dasar.harga_dasar_jual_lm : dasar.harga_dasar_beli_lm)}
+                                onChange={(e) => setDasar((prev) => ({
+                                    ...prev,
+                                    [isJual ? 'harga_dasar_jual_lm' : 'harga_dasar_beli_lm']: HelperFunctions.unformatNumberInput(e.target.value),
+                                }))}
+                            />
                             <span className="text-[11px] text-neutral-500">
                                 {isJual
-                                    ? `Harga dasar = harga dasar jual LM × berat, lalu harga jual = harga dasar ${persenJualLm < 0 ? '−' : '+'} ${formatPersen(Math.abs(persenJualLm))}% (default ${formatPersen(DEFAULT_PERSEN_JUAL_LM)}%, isi negatif untuk potongan).`
+                                    ? `Harga dasar = harga dasar jual LM × berat, lalu harga jual = harga dasar + persen jual di tiap baris (default ${formatPersen(DEFAULT_PERSEN_JUAL_LM)}%, isi negatif untuk potongan).`
                                     : 'Harga beli = harga dasar beli LM × berat.'}
                                 {' '}Terpisah dari harga perhiasan.
                             </span>
                         </div>
 
                         <div className="overflow-x-auto border border-gray-100 rounded-lg">
-                            <table className="w-full min-w-[560px]">
+                            <table className="w-full min-w-[680px]">
                                 <thead className="bg-gray-50 border-b border-gray-100">
                                     <tr>
                                         <th className={th}>Berat (gram)</th>
                                         {isJual && <th className={`${th} text-right`}>Harga Dasar</th>}
+                                        {isJual && <th className={th}>Persen Jual</th>}
                                         <th className={`${th} text-right`}>{isJual ? 'Harga Jual' : 'Harga Beli'}</th>
                                         {canEdit && <th className={th} />}
                                     </tr>
@@ -498,13 +479,25 @@ const SettingHarga = () => {
                                                     {HelperFunctions.formatCurrency(row.harga_dasar)}
                                                 </td>
                                             )}
+                                            {isJual && (
+                                                <td className="px-4 py-3 w-32">
+                                                    <div className="relative">
+                                                        <input type="text" inputMode="decimal" disabled={!canEdit}
+                                                            title="Persentase markup harga jual untuk berat ini"
+                                                            className={`${input} pr-8 tabular-nums`}
+                                                            value={row.persen_jual ?? ''}
+                                                            onChange={(e) => updateRow(setLogamMulia, row.key, 'persen_jual', sanitizePersen(e.target.value))} />
+                                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-neutral-400">%</span>
+                                                    </div>
+                                                </td>
+                                            )}
                                             <td className={money}>
                                                 {HelperFunctions.formatCurrency(isJual ? row.harga_jual : row.harga_buyback)}
                                             </td>
                                             <DeleteCell onClick={() => removeRow(setLogamMulia, row.key, `${row.berat || '-'} gram`)} />
                                         </tr>
                                     ))}
-                                    {!logamMuliaPreview.length && <EmptyRow cols={2 + (isJual ? 1 : 0) + (canEdit ? 1 : 0)} text="Belum ada baris berat logam mulia" />}
+                                    {!logamMuliaPreview.length && <EmptyRow cols={2 + (isJual ? 2 : 0) + (canEdit ? 1 : 0)} text="Belum ada baris berat logam mulia" />}
                                 </tbody>
                             </table>
                         </div>
